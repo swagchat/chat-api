@@ -1,0 +1,10 @@
+apiServer:
+  port: 9000
+  profiling: off
+  loggingLevel: development
+  storage: local
+  datastore: sqlite
+  messaging:
+  notification:
+realtimeServer:
+  endpoint:

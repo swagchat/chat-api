@@ -1,0 +1,9 @@
+awsS3:
+  region: IT_IS_RECOMMENDED_TO_SET_BY_ENVIRONMENT_VARIABLE_OR_RUNTIME_PARAMETER
+  accessKeyId: IT_IS_RECOMMENDED_TO_SET_BY_ENVIRONMENT_VARIABLE_OR_RUNTIME_PARAMETER
+  secretAccessKey: IT_IS_RECOMMENDED_TO_SET_BY_ENVIRONMENT_VARIABLE_OR_RUNTIME_PARAMETER
+  acl: public-read
+  userUploadBucket:
+  userUploadDirectory:
+  thumbnailBucket:
+  thumbnailDirectory:

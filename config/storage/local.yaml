@@ -1,0 +1,4 @@
+localStorage:
+  baseUrl: http://localhost:9000/v0/assets
+  path: data/assets
+

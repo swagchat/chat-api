@@ -1,0 +1,8 @@
+gcpStorage:
+  projectId: IT_IS_RECOMMENDED_TO_SET_BY_ENVIRONMENT_VARIABLE_OR_RUNTIME_PARAMETER
+  scope: https://www.googleapis.com/auth/devstorage.full_control
+  jwtConfigFilepath:
+  userUploadBucket:
+  userUploadDirectory:
+  thumbnailBucket:
+  thumbnailDirectory:
