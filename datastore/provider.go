@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"errors"
 	"net/http"
 	"os"
 
@@ -9,6 +8,7 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/pkg/errors"
 )
 
 type StoreResult struct {
@@ -26,6 +26,7 @@ type Provider interface {
 	RoomStore
 	RoomUserStore
 	MessageStore
+	DeviceStore
 }
 
 func GetProvider() Provider {
@@ -75,5 +76,6 @@ func createProblemDetail(title string, err error) *models.ProblemDetail {
 		Status:    http.StatusInternalServerError,
 		ErrorName: models.ERROR_NAME_DATABASE_ERROR,
 		Detail:    err.Error(),
+		Error:     errors.Wrap(err, title),
 	}
 }

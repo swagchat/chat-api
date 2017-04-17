@@ -181,6 +181,11 @@
 			"Rev": "afea898d27c7d17376ecc60c7c2e73c76b40060e"
 		},
 		{
+			"ImportPath": "github.com/pkg/errors",
+			"Comment": "v0.8.0-4-gff09b13",
+			"Rev": "ff09b135c25aae272398c51a07235b90a75aa4f0"
+		},
+		{
 			"ImportPath": "github.com/satori/go.uuid",
 			"Comment": "v1.1.0-8-g5bf94b6",
 			"Rev": "5bf94b69c6b68ee1b541973bb8e1144db23a194b"

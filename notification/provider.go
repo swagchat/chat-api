@@ -43,6 +43,8 @@ func GetProvider() Provider {
 			roomTopicNamePrefix: utils.Cfg.AwsSns.RoomTopicNamePrefix,
 			applicationArn:      utils.Cfg.AwsSns.ApplicationArn,
 		}
+	default:
+		provider = &NotUseProvider{}
 	}
 	return provider
 }

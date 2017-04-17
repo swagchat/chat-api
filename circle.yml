@@ -3,4 +3,6 @@ dependencies:
     - npm install -g dredd@3.2.0
 test:
   pre:
+    - go test $(go list ./... | grep -v vendor)
+  post:
     - dredd

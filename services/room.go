@@ -9,69 +9,16 @@ import (
 	"github.com/fairway-corp/swagchat-api/datastore"
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/notification"
-	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateRoom(requestRoom *models.Room) (*models.Room, *models.ProblemDetail) {
-	if requestRoom.Name == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "name",
-					Reason: "name is required, but it's empty.",
-				},
-			},
-		}
+func CreateRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
+	if pd := post.IsValid(); pd != nil {
+		return nil, pd
 	}
-
-	roomId := requestRoom.RoomId
-	if roomId != "" && !utils.IsValidId(roomId) {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
-			},
-		}
-	}
-	if roomId == "" {
-		roomId = utils.CreateUuid()
-	}
-
-	var metaData []byte
-	if requestRoom.MetaData == nil {
-		metaData = []byte("{}")
-	} else {
-		metaData = requestRoom.MetaData
-	}
-
-	var isPublic bool
-	if requestRoom.IsPublic == nil {
-		isPublic = false
-	} else {
-		isPublic = *requestRoom.IsPublic
-	}
-
-	room := &models.Room{
-		RoomId:         roomId,
-		Name:           requestRoom.Name,
-		PictureUrl:     requestRoom.PictureUrl,
-		InformationUrl: requestRoom.InformationUrl,
-		MetaData:       metaData,
-		IsPublic:       &isPublic,
-		Created:        time.Now().UnixNano(),
-		Modified:       time.Now().UnixNano(),
-	}
+	post.BeforeSave()
 
 	dp := datastore.GetProvider()
-	dRes := <-dp.RoomInsert(room)
+	dRes := <-dp.RoomInsert(post)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
@@ -89,32 +36,18 @@ func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
 }
 
 func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+	pd := IsExistRoomId(roomId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	room, pd := getRoom(roomId)
+	if pd != nil {
+		return nil, pd
 	}
 
 	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	room := dRes.Data.(*models.Room)
-	dRes = <-dp.RoomSelectUsersForRoom(roomId)
+	dRes := <-dp.RoomSelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -122,85 +55,38 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 	return room, nil
 }
 
-func PutRoom(roomId string, requestRoom *models.Room) (*models.Room, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Update room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+func PutRoom(roomId string, put *models.Room) (*models.Room, *models.ProblemDetail) {
+	pd := IsExistRoomId(roomId)
+	if pd != nil {
+		return nil, pd
 	}
+
+	room, pd := getRoom(roomId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	room.Put(put)
+	if pd := room.IsValid(); pd != nil {
+		return nil, pd
+	}
+	room.BeforeSave()
 
 	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	room := dRes.Data.(*models.Room)
-
-	if requestRoom.Name != "" {
-		room.Name = requestRoom.Name
-	}
-	if requestRoom.PictureUrl != "" {
-		room.PictureUrl = requestRoom.PictureUrl
-	}
-	if requestRoom.InformationUrl != "" {
-		room.InformationUrl = requestRoom.InformationUrl
-	}
-	if requestRoom.MetaData != nil {
-		room.MetaData = requestRoom.MetaData
-	}
-	if requestRoom.IsPublic != nil {
-		room.IsPublic = requestRoom.IsPublic
-	}
-	room.Modified = time.Now().UnixNano()
-
-	dRes = <-dp.RoomUpdate(room)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	room = dRes.Data.(*models.Room)
-
-	return room, nil
+	dRes := <-dp.RoomUpdate(room)
+	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
 func DeleteRoom(roomId string) (*models.ResponseRoomUser, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Delete room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+	pd := IsExistRoomId(roomId)
+	if pd != nil {
+		return nil, pd
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	room, pd := getRoom(roomId)
+	if pd != nil {
+		return nil, pd
 	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	room := dRes.Data.(*models.Room)
 
 	np := notification.GetProvider()
 	if np != nil {
@@ -212,7 +98,8 @@ func DeleteRoom(roomId string) (*models.ResponseRoomUser, *models.ProblemDetail)
 		}
 	}
 
-	dRes = <-dp.RoomUsersSelect(&roomId, nil)
+	dp := datastore.GetProvider()
+	dRes := <-dp.RoomUsersSelect(&roomId, nil)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -229,18 +116,9 @@ func DeleteRoom(roomId string) (*models.ResponseRoomUser, *models.ProblemDetail)
 }
 
 func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room's message list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+	pd := IsExistRoomId(roomId)
+	if pd != nil {
+		return nil, pd
 	}
 
 	var err error
@@ -294,4 +172,35 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 	}
 	messages.AllCount = dRes.Data.(*models.Messages).AllCount
 	return messages, nil
+}
+
+func IsExistRoomId(roomId string) *models.ProblemDetail {
+	if roomId == "" {
+		return &models.ProblemDetail{
+			Title:     "Request parameter error. (Get room's message list)",
+			Status:    http.StatusBadRequest,
+			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []models.InvalidParam{
+				models.InvalidParam{
+					Name:   "roomId",
+					Reason: "roomId is required, but it's empty.",
+				},
+			},
+		}
+	}
+	return nil
+}
+
+func getRoom(roomId string) (*models.Room, *models.ProblemDetail) {
+	dp := datastore.GetProvider()
+	dRes := <-dp.RoomSelect(roomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	if dRes.Data == nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusNotFound,
+		}
+	}
+	return dRes.Data.(*models.Room), nil
 }

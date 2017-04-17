@@ -15,6 +15,7 @@ type ProblemDetail struct {
 	Instance      string         `json:"instance,omitempty"`
 	ErrorName     string         `json:"errorName"`
 	InvalidParams []InvalidParam `json:"invalidParams,omitempty"`
+	Error         error          `json:"-"`
 }
 
 type InvalidParam struct {

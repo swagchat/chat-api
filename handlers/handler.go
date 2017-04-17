@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -38,6 +39,7 @@ func StartServer() {
 	SetRoomUserMux()
 	SetMessageMux()
 	SetAssetMux()
+	SetDeviceMux()
 	if utils.Cfg.ApiServer.Storage == "awsS3" {
 		SetAssetAwsSnsMux()
 	}
@@ -206,6 +208,7 @@ func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetai
 	problemDetailBytes, _ := json.Marshal(problemDetail)
 	utils.AppLogger.Error("",
 		zap.String("problemDetail", string(problemDetailBytes)),
+		zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
 	)
 	respond(w, r, status, "application/json", problemDetail)
 }

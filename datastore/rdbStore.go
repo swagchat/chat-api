@@ -7,6 +7,7 @@ const (
 	TABLE_NAME_ROOM      = "room"
 	TABLE_NAME_ROOM_USER = "room_user"
 	TABLE_NAME_MESSAGE   = "message"
+	TABLE_NAME_DEVICE    = "device"
 
 	EXIT_DB_OPEN   = 101
 	EXIT_PING      = 102

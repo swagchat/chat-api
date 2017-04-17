@@ -10,8 +10,8 @@ func (provider MysqlProvider) UserInsert(user *models.User) StoreChannel {
 	return RdbUserInsert(user)
 }
 
-func (provider MysqlProvider) UserSelect(userId string) StoreChannel {
-	return RdbUserSelect(userId)
+func (provider MysqlProvider) UserSelect(userId string, isWithRooms, isWithDevices bool) StoreChannel {
+	return RdbUserSelect(userId, isWithRooms, isWithDevices)
 }
 
 func (provider MysqlProvider) UserUpdate(user *models.User) StoreChannel {
@@ -26,9 +26,9 @@ func (provider MysqlProvider) UserSelectRoomsForUser(userId string) StoreChannel
 	return RdbUserSelectRoomsForUser(userId)
 }
 
-func (provider MysqlProvider) UserSelectUserRooms(userId string) StoreChannel {
-	return RdbUserSelectUserRooms(userId)
-}
+//func (provider MysqlProvider) UserSelectUserRooms(userId string) StoreChannel {
+//	return RdbUserSelectUserRooms(userId)
+//}
 
 func (provider MysqlProvider) UserUnreadCountUp(userId string) StoreChannel {
 	return RdbUserUnreadCountUp(userId)

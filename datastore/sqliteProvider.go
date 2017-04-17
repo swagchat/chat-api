@@ -33,6 +33,7 @@ func (provider SqliteProvider) Init() {
 	provider.RoomCreateStore()
 	provider.RoomUserCreateStore()
 	provider.MessageCreateStore()
+	provider.DeviceCreateStore()
 }
 
 func (provider SqliteProvider) DropDatabase() error {

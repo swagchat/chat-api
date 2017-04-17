@@ -24,11 +24,31 @@ func RdbUserInsert(user *models.User) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
+		trans, err := dbMap.Begin()
 		result := StoreResult{}
 
-		if err := dbMap.Insert(user); err != nil {
+		if err = trans.Insert(user); err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
 		}
+
+		if result.ProblemDetail == nil && user.Devices != nil {
+			for _, device := range user.Devices {
+				if err := trans.Insert(device); err != nil {
+					result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+				}
+			}
+		}
+
+		if result.ProblemDetail == nil {
+			if err := trans.Commit(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		} else {
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		}
+
 		result.Data = user
 
 		storeChannel <- result
@@ -36,7 +56,7 @@ func RdbUserInsert(user *models.User) StoreChannel {
 	return storeChannel
 }
 
-func RdbUserSelect(userId string) StoreChannel {
+func RdbUserSelect(userId string, isWithRooms, isWithDevices bool) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -48,8 +68,47 @@ func RdbUserSelect(userId string) StoreChannel {
 		if _, err := dbMap.Select(&users, query, params); err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while getting user item.", err)
 		}
+		var user *models.User
 		if len(users) == 1 {
-			result.Data = users[0]
+			user = users[0]
+			if isWithRooms {
+				var rooms []*models.RoomForUser
+				query := utils.AppendStrings("SELECT ",
+					"r.room_id, ",
+					"r.name, ",
+					"r.picture_url, ",
+					"r.information_url, ",
+					"r.meta_data, ",
+					"r.last_message, ",
+					"r.last_message_updated, ",
+					"r.created, ",
+					"r.modified, ",
+					"ru.unread_count AS ru_unread_count, ",
+					"ru.meta_data AS ru_meta_data ",
+					"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
+					"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ",
+					"ON ru.room_id = r.room_id ",
+					"WHERE ru.user_id = :userId AND r.deleted = 0 ",
+					"ORDER BY r.created;")
+				params := map[string]interface{}{"userId": userId}
+				_, err := dbMap.Select(&rooms, query, params)
+				if err != nil {
+					result.ProblemDetail = createProblemDetail("An error occurred while getting user rooms.", err)
+				}
+				user.Rooms = rooms
+			}
+
+			if isWithDevices {
+				var devices []*models.Device
+				query := utils.AppendStrings("SELECT * from ", TABLE_NAME_DEVICE, " WHERE user_id=:userId")
+				params := map[string]interface{}{"userId": userId}
+				_, err := dbMap.Select(&devices, query, params)
+				if err != nil {
+					result.ProblemDetail = createProblemDetail("An error occurred while getting user devices.", err)
+				}
+				user.Devices = devices
+			}
+			result.Data = user
 		}
 
 		storeChannel <- result
@@ -131,6 +190,7 @@ func RdbUserSelectRoomsForUser(userId string) StoreChannel {
 	return storeChannel
 }
 
+/*
 func RdbUserSelectUserRooms(userId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
@@ -143,14 +203,14 @@ func RdbUserSelectUserRooms(userId string) StoreChannel {
 			"r.name, ",
 			"r.picture_url, ",
 			"r.information_url, ",
-			"r.custom_data, ",
+			"r.meta_data, ",
 			"r.is_public, ",
 			"r.last_message, ",
 			"r.last_message_updated, ",
 			"r.created, ",
 			"r.modified, ",
 			"ru.unread_count,",
-			"ru.custom_data AS ru_custom_data ",
+			"ru.meta_data AS ru_meta_data ",
 			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
 			"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ",
 			"ON ru.room_id = r.room_id ",
@@ -167,6 +227,7 @@ func RdbUserSelectUserRooms(userId string) StoreChannel {
 	}()
 	return storeChannel
 }
+*/
 
 func RdbUserUnreadCountUp(userId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)

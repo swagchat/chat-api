@@ -10,8 +10,8 @@ func (provider GcpSqlProvider) UserInsert(user *models.User) StoreChannel {
 	return RdbUserInsert(user)
 }
 
-func (provider GcpSqlProvider) UserSelect(userId string) StoreChannel {
-	return RdbUserSelect(userId)
+func (provider GcpSqlProvider) UserSelect(userId string, isWithRooms, isWithDevices bool) StoreChannel {
+	return RdbUserSelect(userId, isWithRooms, isWithDevices)
 }
 
 func (provider GcpSqlProvider) UserUpdate(user *models.User) StoreChannel {
@@ -26,9 +26,9 @@ func (provider GcpSqlProvider) UserSelectRoomsForUser(userId string) StoreChanne
 	return RdbUserSelectRoomsForUser(userId)
 }
 
-func (provider GcpSqlProvider) UserSelectUserRooms(userId string) StoreChannel {
-	return RdbUserSelectUserRooms(userId)
-}
+//func (provider GcpSqlProvider) UserSelectUserRooms(userId string) StoreChannel {
+//	return RdbUserSelectUserRooms(userId)
+//}
 
 func (provider GcpSqlProvider) UserUnreadCountUp(userId string) StoreChannel {
 	return RdbUserUnreadCountUp(userId)

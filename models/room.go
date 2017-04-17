@@ -1,6 +1,11 @@
 package models
 
-import "github.com/fairway-corp/swagchat-api/utils"
+import (
+	"net/http"
+	"time"
+
+	"github.com/fairway-corp/swagchat-api/utils"
+)
 
 type Rooms struct {
 	Rooms    []*Room `json:"rooms,omitempty" db:"-"`
@@ -40,4 +45,75 @@ type UserForRoom struct {
 	RuMetaData    utils.JSONText `json:"ruMetaData,omitempty" db:"ru_meta_data"`
 	RuCreated     int64          `json:"ruCreated,omitempty" db:"ru_created"`
 	RuModified    int64          `json:"ruModified,omitempty" db:"ru_modified"`
+}
+
+func (r *Room) IsValid() *ProblemDetail {
+	if r.Name == "" {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "name",
+					Reason: "name is required, but it's empty.",
+				},
+			},
+		}
+	}
+
+	roomId := r.RoomId
+	if roomId != "" && !utils.IsValidId(roomId) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "roomId",
+					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
+				},
+			},
+		}
+	}
+	return nil
+}
+
+func (r *Room) BeforeSave() {
+	if r.RoomId == "" {
+		r.RoomId = utils.CreateUuid()
+	}
+
+	if r.MetaData == nil {
+		r.MetaData = []byte("{}")
+	}
+
+	if r.IsPublic == nil {
+		isPublic := false
+		r.IsPublic = &isPublic
+	}
+
+	nowDatetime := time.Now().UnixNano()
+	if r.Created == 0 {
+		r.Created = nowDatetime
+	}
+	r.Modified = nowDatetime
+}
+
+func (r *Room) Put(put *Room) {
+	if put.Name != "" {
+		r.Name = put.Name
+	}
+	if put.PictureUrl != "" {
+		r.PictureUrl = put.PictureUrl
+	}
+	if put.InformationUrl != "" {
+		r.InformationUrl = put.InformationUrl
+	}
+	if put.MetaData != nil {
+		r.MetaData = put.MetaData
+	}
+	if put.IsPublic != nil {
+		r.IsPublic = put.IsPublic
+	}
 }

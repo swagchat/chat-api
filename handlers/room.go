@@ -22,15 +22,15 @@ func SetRoomMux() {
 }
 
 func PostRoom(w http.ResponseWriter, r *http.Request) {
-	var requestRoom models.Room
-	if err := decodeBody(r, &requestRoom); err != nil {
+	var post models.Room
+	if err := decodeBody(r, &post); err != nil {
 		respondJsonDecodeError(w, r, "Create room item")
 		return
 	}
 
-	room, problemDetail := services.CreateRoom(&requestRoom)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	room, pd := services.CreateRoom(&post)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
@@ -39,9 +39,9 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 
 func GetRooms(w http.ResponseWriter, r *http.Request) {
 	requestParams, _ := url.ParseQuery(r.URL.RawQuery)
-	rooms, problemDetail := services.GetRooms(requestParams)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	rooms, pd := services.GetRooms(requestParams)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
@@ -50,9 +50,9 @@ func GetRooms(w http.ResponseWriter, r *http.Request) {
 
 func GetRoom(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
-	room, problemDetail := services.GetRoom(roomId)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	room, pd := services.GetRoom(roomId)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
@@ -60,16 +60,16 @@ func GetRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func PutRoom(w http.ResponseWriter, r *http.Request) {
-	var requestRoom models.Room
-	if err := decodeBody(r, &requestRoom); err != nil {
+	var put models.Room
+	if err := decodeBody(r, &put); err != nil {
 		respondJsonDecodeError(w, r, "Update room item")
 		return
 	}
 
 	roomId := bone.GetValue(r, "roomId")
-	room, problemDetail := services.PutRoom(roomId, &requestRoom)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	room, pd := services.PutRoom(roomId, &put)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
@@ -78,9 +78,9 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 
 func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
-	resRoomUser, problemDetail := services.DeleteRoom(roomId)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	resRoomUser, pd := services.DeleteRoom(roomId)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
@@ -94,9 +94,9 @@ func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 func GetRoomMessages(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
 	requestParams, _ := url.ParseQuery(r.URL.RawQuery)
-	messages, problemDetail := services.GetRoomMessages(roomId, requestParams)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	messages, pd := services.GetRoomMessages(roomId, requestParams)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
