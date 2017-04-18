@@ -9,7 +9,6 @@ import (
 
 func RdbDeviceCreateStore() {
 	tableMap := dbMap.AddTableWithName(models.Device{}, TABLE_NAME_DEVICE)
-	tableMap.SetKeys(true, "id")
 	tableMap.SetUniqueTogether("user_id", "platform")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "token" || columnMap.ColumnName == "notification_device_id" {
@@ -44,7 +43,7 @@ func RdbDeviceSelect(userId string, platform int) StoreChannel {
 		result := StoreResult{}
 
 		var devices []*models.Device
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform AND deleted=0;")
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
 		params := map[string]interface{}{
 			"userId":   userId,
 			"platform": platform,

@@ -34,6 +34,7 @@ func (provider SqliteProvider) Init() {
 	provider.RoomUserCreateStore()
 	provider.MessageCreateStore()
 	provider.DeviceCreateStore()
+	provider.SubscriptionCreateStore()
 }
 
 func (provider SqliteProvider) DropDatabase() error {

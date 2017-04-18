@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
@@ -110,17 +111,25 @@ func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) Notificat
 	return notificationChannel
 }
 
-func (provider AwsSnsProvider) CreateEndpoint(deviceToken string) NotificationChannel {
+func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	go func() {
 		defer close(notificationChannel)
 		result := NotificationResult{}
 
+		var platformApplicationArn string
+		switch platform {
+		case models.PLATFORM_IOS:
+			platformApplicationArn = utils.Cfg.AwsSns.ApplicationArn
+		default:
+			platformApplicationArn = utils.Cfg.AwsSns.ApplicationArn
+		}
+
 		client := provider.newSnsClient()
 		createPlatformEndpointInputParams := &sns.CreatePlatformEndpointInput{
-			PlatformApplicationArn: aws.String(utils.Cfg.AwsSns.ApplicationArn),
+			PlatformApplicationArn: aws.String(platformApplicationArn),
 			Token:          aws.String(deviceToken),
-			CustomUserData: aws.String(""),
+			CustomUserData: aws.String(userId),
 		}
 		createPlatformEndpointOutput, err := client.CreatePlatformEndpoint(createPlatformEndpointInputParams)
 		if err != nil {

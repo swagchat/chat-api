@@ -314,7 +314,6 @@ func PutRoomUser(roomId, userId string, requestRoomUser *models.RoomUser) *model
 	if requestRoomUser.MetaData != nil {
 		roomUser.MetaData = requestRoomUser.MetaData
 	}
-	roomUser.Modified = time.Now().UnixNano()
 
 	dRes = <-dp.RoomUserUpdate(roomUser)
 	if dRes.ProblemDetail != nil {
@@ -389,7 +388,7 @@ func addRoomUsers(roomId, notificationTopicId string, existUsers []*models.User)
 		d.Work(ctx, func(ctx context.Context) {
 			targetUser := ctx.Value("user").(*models.User)
 			if np != nil && targetUser.NotificationDeviceId == nil && targetUser.DeviceToken != nil {
-				nRes := <-np.CreateEndpoint(*targetUser.DeviceToken)
+				nRes := <-np.CreateEndpoint("", models.PLATFORM_IOS, *targetUser.DeviceToken)
 				if nRes.ProblemDetail != nil {
 					errRuChan <- &models.ErrorRoomUser{
 						UserId: targetUser.UserId,
@@ -424,8 +423,6 @@ func addRoomUsers(roomId, notificationTopicId string, existUsers []*models.User)
 						UserId:      targetUser.UserId,
 						UnreadCount: &zero,
 						MetaData:    []byte("{}"),
-						Created:     time.Now().UnixNano(),
-						Modified:    time.Now().UnixNano(),
 					}
 					if targetUser.NotificationDeviceId != nil {
 						nRes := <-np.Subscribe(notificationTopicId, *targetUser.NotificationDeviceId)
@@ -538,122 +535,6 @@ func deleteRoomUsers(roomUsers []*models.RoomUser) *models.ResponseRoomUser {
 			case <-ctx.Done():
 				return
 			case <-delDoneChan:
-				return
-			case errRu := <-errRuChan:
-				ruRes.Errors = append(ruRes.Errors, *errRu)
-				return
-			}
-		})
-	}
-	d.Wait()
-	return ruRes
-}
-
-func subscribeAllRoom(roomUsers []*models.RoomUser, notificationDeviceId string) *models.ResponseRoomUser {
-	np := notification.GetProvider()
-	dp := datastore.GetProvider()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	subscribeDoneChan := make(chan bool, 1)
-	errRuChan := make(chan *models.ErrorRoomUser, 1)
-	ruRes := &models.ResponseRoomUser{
-		Errors: make([]models.ErrorRoomUser, 0),
-	}
-
-	d := utils.NewDispatcher(10)
-	for _, roomUser := range roomUsers {
-		ctx = context.WithValue(ctx, "roomUser", roomUser)
-		d.Work(ctx, func(ctx context.Context) {
-			targetRoomUser := ctx.Value("roomUser").(*models.RoomUser)
-
-			dRes := <-dp.RoomSelect(targetRoomUser.RoomId)
-			if dRes.ProblemDetail != nil {
-				errRuChan <- &models.ErrorRoomUser{
-					UserId: targetRoomUser.UserId,
-					Error:  dRes.ProblemDetail,
-				}
-			} else {
-				room := dRes.Data.(*models.Room)
-				nRes := <-np.Subscribe(*room.NotificationTopicId, notificationDeviceId)
-				if nRes.ProblemDetail != nil {
-					errRuChan <- &models.ErrorRoomUser{
-						UserId: targetRoomUser.UserId,
-						Error:  nRes.ProblemDetail,
-					}
-				} else {
-					notificationSubscribeId := nRes.Data.(*string)
-					targetRoomUser.NotificationSubscribeId = notificationSubscribeId
-					targetRoomUser.Modified = time.Now().UnixNano()
-					dRes := <-dp.RoomUserUpdate(targetRoomUser)
-					if dRes.ProblemDetail != nil {
-						errRuChan <- &models.ErrorRoomUser{
-							UserId: targetRoomUser.UserId,
-							Error:  dRes.ProblemDetail,
-						}
-					}
-				}
-			}
-
-			subscribeDoneChan <- true
-			select {
-			case <-ctx.Done():
-				return
-			case <-subscribeDoneChan:
-				return
-			case errRu := <-errRuChan:
-				ruRes.Errors = append(ruRes.Errors, *errRu)
-				return
-			}
-		})
-	}
-	d.Wait()
-	return ruRes
-}
-
-func unsubscribeAllRoom(roomUsers []*models.RoomUser) *models.ResponseRoomUser {
-	np := notification.GetProvider()
-	dp := datastore.GetProvider()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	subscribeDoneChan := make(chan bool, 1)
-	errRuChan := make(chan *models.ErrorRoomUser, 1)
-	ruRes := &models.ResponseRoomUser{
-		Errors: make([]models.ErrorRoomUser, 0),
-	}
-
-	d := utils.NewDispatcher(10)
-	for _, roomUser := range roomUsers {
-		ctx = context.WithValue(ctx, "roomUser", roomUser)
-		d.Work(ctx, func(ctx context.Context) {
-			targetRoomUser := ctx.Value("roomUser").(*models.RoomUser)
-
-			nRes := <-np.Unsubscribe(*targetRoomUser.NotificationSubscribeId)
-			if nRes.ProblemDetail != nil {
-				errRuChan <- &models.ErrorRoomUser{
-					UserId: targetRoomUser.UserId,
-					Error:  nRes.ProblemDetail,
-				}
-			} else {
-				targetRoomUser.NotificationSubscribeId = nil
-				targetRoomUser.Modified = time.Now().UnixNano()
-				dRes := <-dp.RoomUserUpdate(targetRoomUser)
-				if dRes.ProblemDetail != nil {
-					errRuChan <- &models.ErrorRoomUser{
-						UserId: targetRoomUser.UserId,
-						Error:  dRes.ProblemDetail,
-					}
-				}
-			}
-
-			subscribeDoneChan <- true
-			select {
-			case <-ctx.Done():
-				return
-			case <-subscribeDoneChan:
 				return
 			case errRu := <-errRuChan:
 				ruRes.Errors = append(ruRes.Errors, *errRu)

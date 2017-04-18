@@ -9,7 +9,6 @@ import (
 
 func RdbRoomUserCreateStore() {
 	tableMap := dbMap.AddTableWithName(models.RoomUser{}, TABLE_NAME_ROOM_USER)
-	tableMap.SetKeys(true, "id")
 	tableMap.SetUniqueTogether("room_id", "user_id")
 	if err := dbMap.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)

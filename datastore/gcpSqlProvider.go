@@ -66,6 +66,8 @@ func (provider GcpSqlProvider) Init() {
 	provider.RoomCreateStore()
 	provider.RoomUserCreateStore()
 	provider.MessageCreateStore()
+	provider.DeviceCreateStore()
+	provider.SubscriptionCreateStore()
 }
 
 func (provider GcpSqlProvider) DropDatabase() error {

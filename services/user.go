@@ -40,7 +40,7 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	user, pd := getUser(userId)
+	user, pd := SelectUser(userId)
 	return user, pd
 }
 
@@ -50,7 +50,7 @@ func PutUser(userId string, put *models.User) (*models.User, *models.ProblemDeta
 		return nil, pd
 	}
 
-	user, pd := getUser(userId)
+	user, pd := SelectUser(userId)
 	if pd != nil {
 		return nil, pd
 	}
@@ -79,7 +79,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		return pd
 	}
 
-	user, pd := getUser(userId)
+	user, pd := SelectUser(userId)
 	if pd != nil {
 		return pd
 	}
@@ -132,7 +132,7 @@ func IsExistUserId(userId string) *models.ProblemDetail {
 	return nil
 }
 
-func getUser(userId string) (*models.User, *models.ProblemDetail) {
+func SelectUser(userId string) (*models.User, *models.ProblemDetail) {
 	dp := datastore.GetProvider()
 	dRes := <-dp.UserSelect(userId, false, false)
 	if dRes.ProblemDetail != nil {

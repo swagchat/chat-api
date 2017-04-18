@@ -1,9 +1,6 @@
 package models
 
-import (
-	"net/http"
-	"time"
-)
+import "net/http"
 
 const (
 	PLATFORM_IOS = iota + 1
@@ -12,13 +9,10 @@ const (
 )
 
 type Device struct {
-	Id                   uint64  `json:"-" db:"id"`
-	UserId               string  `json:"-" db:"user_id"`
-	Platform             int     `json:"platform" db:"platform"`
-	Token                *string `json:"token,omitempty" db:"token"`
-	NotificationDeviceId *string `json:"-" db:"notification_device_id"`
-	Created              int64   `json:"created" db:"created"`
-	Modified             int64   `json:"modified" db:"modified"`
+	UserId               string `json:"userId" db:"user_id"`
+	Platform             int    `json:"platform" db:"platform"`
+	Token                string `json:"token" db:"token"`
+	NotificationDeviceId string `json:"notificationDeviceId" db:"notification_device_id"`
 }
 
 func IsValidDevicePlatform(platform int) bool {
@@ -26,9 +20,9 @@ func IsValidDevicePlatform(platform int) bool {
 }
 
 func (d *Device) IsValid() *ProblemDetail {
-	if d.Platform < int(end) {
+	if d.Platform >= int(end) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
+			Title:     "Request parameter error. (Create device item)",
 			Status:    http.StatusBadRequest,
 			ErrorName: ERROR_NAME_INVALID_PARAM,
 			InvalidParams: []InvalidParam{
@@ -39,14 +33,25 @@ func (d *Device) IsValid() *ProblemDetail {
 			},
 		}
 	}
+
+	if d.Token == "" {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create device item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "token",
+					Reason: "token is required, but it's empty.",
+				},
+			},
+		}
+	}
+
 	return nil
 }
 
-func (d *Device) BeforeSave(userId string) {
+func (d *Device) BeforeSave(userId, notificationDeviceId string) {
 	d.UserId = userId
-	nowDatetime := time.Now().UnixNano()
-	if d.Created == 0 {
-		d.Created = nowDatetime
-	}
-	d.Modified = nowDatetime
+	d.NotificationDeviceId = notificationDeviceId
 }

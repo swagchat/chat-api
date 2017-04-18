@@ -72,6 +72,8 @@ func (provider MysqlProvider) Init() {
 	provider.RoomCreateStore()
 	provider.RoomUserCreateStore()
 	provider.MessageCreateStore()
+	provider.DeviceCreateStore()
+	provider.SubscriptionCreateStore()
 }
 
 func (provider MysqlProvider) DropDatabase() error {

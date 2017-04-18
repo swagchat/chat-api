@@ -27,6 +27,7 @@ type Provider interface {
 	RoomUserStore
 	MessageStore
 	DeviceStore
+	SubscriptionStore
 }
 
 func GetProvider() Provider {
