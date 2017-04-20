@@ -8,6 +8,10 @@ const (
 	end
 )
 
+type Devices struct {
+	Devices []*Device `json:"devices"`
+}
+
 type Device struct {
 	UserId               string `json:"userId" db:"user_id"`
 	Platform             int    `json:"platform" db:"platform"`
@@ -16,11 +20,11 @@ type Device struct {
 }
 
 func IsValidDevicePlatform(platform int) bool {
-	return platform < int(end)
+	return platform > 0 && platform < int(end)
 }
 
 func (d *Device) IsValid() *ProblemDetail {
-	if d.Platform >= int(end) {
+	if !(d.Platform > 0 && d.Platform < int(end)) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create device item)",
 			Status:    http.StatusBadRequest,
@@ -49,9 +53,4 @@ func (d *Device) IsValid() *ProblemDetail {
 	}
 
 	return nil
-}
-
-func (d *Device) BeforeSave(userId, notificationDeviceId string) {
-	d.UserId = userId
-	d.NotificationDeviceId = notificationDeviceId
 }

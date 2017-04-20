@@ -6,14 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -31,7 +28,6 @@ func StartServer() {
 	Mux = bone.New().Prefix(utils.AppendStrings("/", utils.API_VERSION))
 	Mux.GetFunc("", indexHandler)
 	Mux.GetFunc("/", indexHandler)
-	Mux.GetFunc("/sleep", sleepHandler2)
 	Mux.GetFunc("/stats", stats_api.Handler)
 	Mux.OptionsFunc("/*", optionsHandler)
 	SetUserMux()
@@ -76,67 +72,6 @@ func StartServer() {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
-}
-
-func sleepHandler(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			time.Sleep(5 * time.Second)
-			//xxx(r.Context())
-		}()
-	}
-	wg.Wait()
-	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
-}
-
-func sleepHandler2(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	//ctx := context.Background()
-
-	//sigCh := make(chan os.Signal, 1)
-	//defer close(sigCh)
-
-	//signal.Notify(sigCh, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT)
-	//go func() {
-	//	<-sigCh
-	//	cancel()
-	//}()
-
-	d := utils.NewDispatcher(5)
-	for i := 0; i < 20; i++ {
-		d.Work(ctx, func(ctx context.Context) {
-			log.Printf("start procing %d", i)
-
-			abcChan := make(chan *abc, 1)
-			abcObj := xxx()
-			abcChan <- abcObj
-
-			select {
-			case <-ctx.Done():
-				log.Printf("cancel work func")
-				return
-			case <-abcChan:
-				log.Printf("done procing")
-				return
-			}
-		})
-	}
-
-	d.Wait()
-	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
-}
-
-type abc struct {
-}
-
-func xxx() *abc {
-	time.Sleep(3 * time.Second)
-	return &abc{}
 }
 
 func ColsHandler(fn http.HandlerFunc) http.HandlerFunc {

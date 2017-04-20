@@ -14,6 +14,10 @@ func (provider MysqlProvider) DeviceSelect(userId string, platform int) StoreCha
 	return RdbDeviceSelect(userId, platform)
 }
 
+func (provider MysqlProvider) DeviceSelectByUserId(userId string) StoreChannel {
+	return RdbDeviceSelectByUserId(userId)
+}
+
 func (provider MysqlProvider) DeviceUpdate(device *models.Device) StoreChannel {
 	return RdbDeviceUpdate(device)
 }

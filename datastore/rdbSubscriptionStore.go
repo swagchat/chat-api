@@ -57,6 +57,48 @@ func RdbSubscriptionSelect(roomId, userId string, platform int) StoreChannel {
 	return storeChannel
 }
 
+func RdbSubscriptionSelectByRoomId(roomId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var subscriptions []*models.Subscription
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND deleted=0;")
+		params := map[string]interface{}{
+			"roomId": roomId,
+		}
+		if _, err := dbMap.Select(&subscriptions, query, params); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting subscription items.", err)
+		}
+		result.Data = subscriptions
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbSubscriptionSelectByUserId(userId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var subscriptions []*models.Subscription
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND deleted=0;")
+		params := map[string]interface{}{
+			"userId": userId,
+		}
+		if _, err := dbMap.Select(&subscriptions, query, params); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting subscription items.", err)
+		}
+		result.Data = subscriptions
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
 func RdbSubscriptionSelectByRoomIdAndPlatform(roomId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
@@ -124,7 +166,7 @@ func RdbSubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int
 		defer close(storeChannel)
 		result := StoreResult{}
 
-		query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, "SET deleted=:deleted WHERE room_id=:roomId AND platform=:platform;")
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId AND platform=:platform;")
 		params := map[string]interface{}{
 			"roomId":   roomId,
 			"platform": platform,
@@ -151,6 +193,48 @@ func RdbSubscriptionUpdateDeletedByUserIdAndPlatform(userId string, platform int
 			"userId":   userId,
 			"platform": platform,
 			"deleted":  time.Now().UnixNano(),
+		}
+		_, err := dbMap.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		}
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbSubscriptionUpdateDeletedByRoomId(roomId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
+		params := map[string]interface{}{
+			"roomId":  roomId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err := dbMap.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		}
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbSubscriptionUpdateDeletedByUserId(userId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId;")
+		params := map[string]interface{}{
+			"userId":  userId,
+			"deleted": time.Now().UnixNano(),
 		}
 		_, err := dbMap.Exec(query, params)
 		if err != nil {

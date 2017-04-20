@@ -18,6 +18,10 @@ func (provider SqliteProvider) UserUpdate(user *models.User) StoreChannel {
 	return RdbUserUpdate(user)
 }
 
+func (provider SqliteProvider) UserUpdateDeleted(userId string) StoreChannel {
+	return RdbUserUpdateDeleted(userId)
+}
+
 func (provider SqliteProvider) UserSelectAll() StoreChannel {
 	return RdbUserSelectAll()
 }

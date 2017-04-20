@@ -14,6 +14,10 @@ func (provider SqliteProvider) DeviceSelect(userId string, platform int) StoreCh
 	return RdbDeviceSelect(userId, platform)
 }
 
+func (provider SqliteProvider) DeviceSelectByUserId(userId string) StoreChannel {
+	return RdbDeviceSelectByUserId(userId)
+}
+
 func (provider SqliteProvider) DeviceUpdate(device *models.Device) StoreChannel {
 	return RdbDeviceUpdate(device)
 }

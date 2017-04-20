@@ -14,6 +14,10 @@ func (provider GcpSqlProvider) DeviceSelect(userId string, platform int) StoreCh
 	return RdbDeviceSelect(userId, platform)
 }
 
+func (provider GcpSqlProvider) DeviceSelectByUserId(userId string) StoreChannel {
+	return RdbDeviceSelectByUserId(userId)
+}
+
 func (provider GcpSqlProvider) DeviceUpdate(device *models.Device) StoreChannel {
 	return RdbDeviceUpdate(device)
 }

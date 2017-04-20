@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"log"
+	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
@@ -127,6 +128,66 @@ func RdbUserUpdate(user *models.User) StoreChannel {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
 		}
 		result.Data = user
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbUserUpdateDeleted(userId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		trans, err := dbMap.Begin()
+		result := StoreResult{}
+
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET deleted=:deleted WHERE user_id=:userId;")
+		params := map[string]interface{}{
+			"userId":  userId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
+		}
+
+		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
+		params = map[string]interface{}{
+			"userId": userId,
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
+		}
+
+		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
+		params = map[string]interface{}{
+			"userId": userId,
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting device items.", err)
+		}
+
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId;")
+		params = map[string]interface{}{
+			"userId":  userId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		}
+
+		if result.ProblemDetail == nil {
+			if err := trans.Commit(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		} else {
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		}
 
 		storeChannel <- result
 	}()

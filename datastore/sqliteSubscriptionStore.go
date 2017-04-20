@@ -14,6 +14,14 @@ func (provider SqliteProvider) SubscriptionSelect(roomId, userId string, platfor
 	return RdbSubscriptionSelect(roomId, userId, platform)
 }
 
+func (provider SqliteProvider) SubscriptionSelectByRoomId(roomId string) StoreChannel {
+	return RdbSubscriptionSelectByRoomId(roomId)
+}
+
+func (provider SqliteProvider) SubscriptionSelectByUserId(userId string) StoreChannel {
+	return RdbSubscriptionSelectByUserId(userId)
+}
+
 func (provider SqliteProvider) SubscriptionSelectByRoomIdAndPlatform(roomId string, platform int) StoreChannel {
 	return RdbSubscriptionSelectByRoomIdAndPlatform(roomId, platform)
 }
@@ -32,6 +40,14 @@ func (provider SqliteProvider) SubscriptionUpdateDeletedByRoomIdAndPlatform(room
 
 func (provider SqliteProvider) SubscriptionUpdateDeletedByUserIdAndPlatform(userId string, platform int) StoreChannel {
 	return RdbSubscriptionUpdateDeletedByUserIdAndPlatform(userId, platform)
+}
+
+func (provider SqliteProvider) SubscriptionUpdateDeletedByRoomId(roomId string) StoreChannel {
+	return RdbSubscriptionUpdateDeletedByRoomId(roomId)
+}
+
+func (provider SqliteProvider) SubscriptionUpdateDeletedByUserId(userId string) StoreChannel {
+	return RdbSubscriptionUpdateDeletedByUserId(userId)
 }
 
 func (provider SqliteProvider) SubscriptionDelete(subscription *models.Subscription) StoreChannel {

@@ -14,6 +14,14 @@ func (provider MysqlProvider) SubscriptionSelect(roomId, userId string, platform
 	return RdbSubscriptionSelect(roomId, userId, platform)
 }
 
+func (provider MysqlProvider) SubscriptionSelectByRoomId(roomId string) StoreChannel {
+	return RdbSubscriptionSelectByRoomId(roomId)
+}
+
+func (provider MysqlProvider) SubscriptionSelectByUserId(userId string) StoreChannel {
+	return RdbSubscriptionSelectByUserId(userId)
+}
+
 func (provider MysqlProvider) SubscriptionSelectByRoomIdAndPlatform(roomId string, platform int) StoreChannel {
 	return RdbSubscriptionSelectByRoomIdAndPlatform(roomId, platform)
 }
@@ -24,6 +32,14 @@ func (provider MysqlProvider) SubscriptionSelectByUserIdAndPlatform(userId strin
 
 func (provider MysqlProvider) SubscriptionUpdate(room *models.Subscription) StoreChannel {
 	return RdbSubscriptionUpdate(room)
+}
+
+func (provider MysqlProvider) SubscriptionUpdateDeletedByRoomId(roomId string) StoreChannel {
+	return RdbSubscriptionUpdateDeletedByRoomId(roomId)
+}
+
+func (provider MysqlProvider) SubscriptionUpdateDeletedByUserId(userId string) StoreChannel {
+	return RdbSubscriptionUpdateDeletedByUserId(userId)
 }
 
 func (provider MysqlProvider) SubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int) StoreChannel {

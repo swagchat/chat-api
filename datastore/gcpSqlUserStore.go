@@ -18,6 +18,10 @@ func (provider GcpSqlProvider) UserUpdate(user *models.User) StoreChannel {
 	return RdbUserUpdate(user)
 }
 
+func (provider GcpSqlProvider) UserUpdateDeleted(userId string) StoreChannel {
+	return RdbUserUpdateDeleted(userId)
+}
+
 func (provider GcpSqlProvider) UserSelectAll() StoreChannel {
 	return RdbUserSelectAll()
 }

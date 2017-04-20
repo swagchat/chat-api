@@ -8,9 +8,9 @@ type UserStore interface {
 	UserInsert(user *models.User) StoreChannel
 	UserSelect(userId string, isWithRooms, isWithDevices bool) StoreChannel
 	UserUpdate(user *models.User) StoreChannel
+	UserUpdateDeleted(userId string) StoreChannel
 	UserSelectAll() StoreChannel
 	UserSelectRoomsForUser(userId string) StoreChannel
-	//	UserSelectUserRooms(userId string) StoreChannel
 	UserUnreadCountUp(userId string) StoreChannel
 	UserUnreadCountRecalc(userId string) StoreChannel
 	UserSelectByUserIds(userIds []string) StoreChannel

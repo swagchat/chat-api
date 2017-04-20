@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -16,31 +17,13 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func PostRoomUsers(roomId string, requestRoomUsers *models.RoomUsers) (*models.ResponseRoomUser, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+func PostRoomUsers(roomId string, rus *models.RoomUsers) (*models.ResponseRoomUser, *models.ProblemDetail) {
+	room, pd := selectRoom(roomId)
+	if pd != nil {
+		return nil, pd
 	}
 
-	dp := datastore.GetProvider()
-	var dRes datastore.StoreResult
-
-	dRes = <-dp.RoomSelect(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	room := dRes.Data.(*models.Room)
-
-	if len(requestRoomUsers.Users) == 0 {
+	if len(rus.Users) == 0 {
 		return nil, &models.ProblemDetail{
 			Title:     "Request parameter error. (Create room's user list)",
 			Status:    http.StatusBadRequest,
@@ -54,9 +37,9 @@ func PostRoomUsers(roomId string, requestRoomUsers *models.RoomUsers) (*models.R
 		}
 	}
 
-	requestUserIds := utils.RemoveDuplicate(requestRoomUsers.Users)
+	requestUserIds := utils.RemoveDuplicate(rus.Users)
 
-	dRes = <-dp.UserSelectByUserIds(requestUserIds)
+	dRes := <-datastore.GetProvider().UserSelectByUserIds(requestUserIds)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -75,221 +58,125 @@ func PostRoomUsers(roomId string, requestRoomUsers *models.RoomUsers) (*models.R
 		}
 	}
 
-	np := notification.GetProvider()
-	if np != nil && room.NotificationTopicId == nil {
-		nRes := <-np.CreateTopic(roomId)
-		if nRes.ProblemDetail != nil {
-			return nil, nRes.ProblemDetail
-		}
-
-		room.NotificationTopicId = nRes.Data.(*string)
-		room.Modified = time.Now().UnixNano()
-		dRes = <-dp.RoomUpdate(room)
-		if dRes.ProblemDetail != nil {
-			return nil, dRes.ProblemDetail
+	if room.NotificationTopicId == "" {
+		pd = createTopic(room)
+		if pd != nil {
+			return nil, pd
 		}
 	}
+	/*
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		SubscribeByRoomUsers(ctx, existUsers)
 
-	ruRes := addRoomUsers(roomId, *room.NotificationTopicId, existUsers)
-
-	dRes = <-dp.RoomUsersSelectUserIds(roomId)
-	if dRes.ProblemDetail == nil && dRes.Data != nil {
-		currentUserIds := dRes.Data.([]string)
-		deleteUserIds := make([]string, 0)
-		var isHit bool
-		for _, currentUserId := range currentUserIds {
-			isHit = false
-			for _, requestUserId := range requestUserIds {
-				if currentUserId == requestUserId {
-					isHit = true
+		dRes = <-datastore.GetProvider().RoomUsersSelectUserIds(roomId)
+		if dRes.ProblemDetail == nil && dRes.Data != nil {
+			currentUserIds := dRes.Data.([]string)
+			deleteUserIds := make([]string, 0)
+			var isHit bool
+			for _, currentUserId := range currentUserIds {
+				isHit = false
+				for _, requestUserId := range requestUserIds {
+					if currentUserId == requestUserId {
+						isHit = true
+					}
+				}
+				if !isHit {
+					deleteUserIds = append(deleteUserIds, currentUserId)
 				}
 			}
-			if !isHit {
-				deleteUserIds = append(deleteUserIds, currentUserId)
+			if len(deleteUserIds) > 0 {
+				dRes := <-datastore.GetProvider().RoomUsersSelect(&roomId, deleteUserIds)
+				if dRes.ProblemDetail != nil {
+					return nil, dRes.ProblemDetail
+				}
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+				delRuRes := UnsubscribeByRoomUsers(ctx, dRes.Data.([]*models.RoomUser))
+				ruRes.Errors = append(ruRes.Errors, delRuRes.Errors...)
 			}
 		}
-		if len(deleteUserIds) > 0 {
-			dRes := <-dp.RoomUsersSelect(&roomId, deleteUserIds)
-			if dRes.ProblemDetail != nil {
-				return nil, dRes.ProblemDetail
-			}
-			delRuRes := deleteRoomUsers(dRes.Data.([]*models.RoomUser))
-			ruRes.Errors = append(ruRes.Errors, delRuRes.Errors...)
-		}
-	}
+	*/
 
-	return ruRes, nil
+	return nil, nil
 }
 
-/*
-func GetRoomUsers(roomId string) (*models.Room, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
+func PutRoomUsers(roomId string, rus *models.RoomUsers) ([]*models.RoomUser, *models.ProblemDetail) {
+	room, pd := selectRoom(roomId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	if pd := rus.IsValid(); pd != nil {
+		return nil, pd
+	}
+
+	rus.RemoveDuplicate()
+
+	users, pd := getUsersByUserIds(rus.Users)
+	if pd != nil {
+		return nil, pd
+	}
+
+	if room.NotificationTopicId == "" {
+		pd = createTopic(room)
+		if pd != nil {
+			return nil, pd
 		}
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomUserUsersSelect(roomId)
+	var zero int64
+	zero = 0
+	roomUsers := make([]*models.RoomUser, 0)
+	for _, u := range users {
+		roomUsers = append(roomUsers, &models.RoomUser{
+			RoomId:      roomId,
+			UserId:      u.UserId,
+			UnreadCount: &zero,
+			MetaData:    []byte("{}"),
+			Created:     time.Now().UnixNano(),
+		})
+	}
+	dRes := <-datastore.GetProvider().RoomUsersInsert(roomUsers, false)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-
-	room := &models.Room{
-		Users: dRes.Data.([]*models.User),
-	}
-	return room, nil
-}
-*/
-
-func PutRoomUsers(roomId string, requestRoomUsers *models.RoomUsers) (*models.ResponseRoomUser, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Add room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
-	}
-
-	dp := datastore.GetProvider()
-	var dRes datastore.StoreResult
-
-	dRes = <-dp.RoomSelect(roomId)
+	dRes = <-datastore.GetProvider().RoomUsersSelectIds(&roomId, nil)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	room := dRes.Data.(*models.Room)
+	roomUsers = dRes.Data.([]*models.RoomUser)
 
-	if len(requestRoomUsers.Users) == 0 {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "users",
-					Reason: "Not set.",
-				},
-			},
-		}
-	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go subscribeByRoomUsers(ctx, roomUsers)
 
-	requestUserIds := utils.RemoveDuplicate(requestRoomUsers.Users)
-
-	dRes = <-dp.UserSelectByUserIds(requestUserIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	existUsers := dRes.Data.([]*models.User)
-	if len(existUsers) != len(requestUserIds) {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "users",
-					Reason: "It contains a userId that does not exist.",
-				},
-			},
-		}
-	}
-
-	np := notification.GetProvider()
-	if np != nil && room.NotificationTopicId == nil {
-		nRes := <-np.CreateTopic(roomId)
-		if nRes.ProblemDetail != nil {
-			return nil, nRes.ProblemDetail
-		}
-
-		room.NotificationTopicId = nRes.Data.(*string)
-		room.Modified = time.Now().UnixNano()
-		dRes = <-dp.RoomUpdate(room)
-		if dRes.ProblemDetail != nil {
-			return nil, dRes.ProblemDetail
-		}
-	}
-
-	ruRes := addRoomUsers(roomId, *room.NotificationTopicId, existUsers)
 	go publishUserJoin(roomId)
-	return ruRes, nil
+	return roomUsers, nil
 }
 
-func DeleteRoomUsers(roomId string, requestRoomUsers *models.RoomUsers) (*models.ResponseRoomUser, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Delete room's user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+func DeleteRoomUsers(roomId string, rus *models.RoomUsers) (*models.ResponseRoomUser, *models.ProblemDetail) {
+	// Room existence check
+	_, pd := selectRoom(roomId)
+	if pd != nil {
+		return nil, pd
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
+	deleteUserIds := utils.RemoveDuplicate(rus.Users)
+	dRes := <-datastore.GetProvider().RoomUsersSelectIds(&roomId, deleteUserIds)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	deleteUserIds := utils.RemoveDuplicate(requestRoomUsers.Users)
-	dRes = <-dp.RoomUsersSelect(&roomId, deleteUserIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	ruRes := deleteRoomUsers(dRes.Data.([]*models.RoomUser))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go unsubscribeByRoomUsers(ctx, dRes.Data.([]*models.RoomUser))
 
-	return ruRes, nil
+	return nil, nil
 }
 
 func PutRoomUser(roomId, userId string, requestRoomUser *models.RoomUser) *models.ProblemDetail {
-	if roomId == "" {
-		return &models.ProblemDetail{
-			Title:     "Request parameter error. (Update room's user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
-	}
-	if userId == "" {
-		return &models.ProblemDetail{
-			Title:     "Request parameter error. (Update room's user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "userId",
-					Reason: "userId is required, but it's empty.",
-				},
-			},
-		}
-	}
-
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomUserSelect(roomId, userId)
+	dRes := <-datastore.GetProvider().RoomUserSelect(roomId, userId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -315,13 +202,13 @@ func PutRoomUser(roomId, userId string, requestRoomUser *models.RoomUser) *model
 		roomUser.MetaData = requestRoomUser.MetaData
 	}
 
-	dRes = <-dp.RoomUserUpdate(roomUser)
+	dRes = <-datastore.GetProvider().RoomUserUpdate(roomUser)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
 
 	if requestRoomUser.UnreadCount != nil {
-		dRes = <-dp.UserUnreadCountRecalc(userId)
+		dRes = <-datastore.GetProvider().UserUnreadCountRecalc(userId)
 		return dRes.ProblemDetail
 	}
 
@@ -329,8 +216,7 @@ func PutRoomUser(roomId, userId string, requestRoomUser *models.RoomUser) *model
 }
 
 func publishUserJoin(roomId string) {
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelectUsersForRoom(roomId)
+	dRes := <-datastore.GetProvider().RoomSelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		problemDetailBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -365,139 +251,64 @@ func publishUserJoin(roomId string) {
 	}
 }
 
-func addRoomUsers(roomId, notificationTopicId string, existUsers []*models.User) *models.ResponseRoomUser {
-	np := notification.GetProvider()
-	dp := datastore.GetProvider()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	ruChan := make(chan *models.RoomUser, 1)
-	errRuChan := make(chan *models.ErrorRoomUser, 1)
-
-	var zero int64
-	zero = 0
-	ruRes := &models.ResponseRoomUser{
-		RoomUsers: make([]models.RoomUser, 0),
-		Errors:    make([]models.ErrorRoomUser, 0),
-	}
+func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
+	doneChan := make(chan bool, 1)
+	pdChan := make(chan *models.ProblemDetail, 1)
 
 	d := utils.NewDispatcher(10)
-	for _, user := range existUsers {
-		ctx = context.WithValue(ctx, "user", user)
+	for _, roomUser := range roomUsers {
+		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			targetUser := ctx.Value("user").(*models.User)
-			if np != nil && targetUser.NotificationDeviceId == nil && targetUser.DeviceToken != nil {
-				nRes := <-np.CreateEndpoint("", models.PLATFORM_IOS, *targetUser.DeviceToken)
-				if nRes.ProblemDetail != nil {
-					errRuChan <- &models.ErrorRoomUser{
-						UserId: targetUser.UserId,
-						Error:  nRes.ProblemDetail,
-					}
-				} else {
-					targetUser.NotificationDeviceId = nRes.Data.(*string)
-					targetUser.Modified = time.Now().UnixNano()
-					dRes := <-dp.UserUpdate(targetUser)
-					if dRes.ProblemDetail != nil {
-						errRuChan <- &models.ErrorRoomUser{
-							UserId: targetUser.UserId,
-							Error:  dRes.ProblemDetail,
-						}
-					}
-				}
-			}
+			ru := ctx.Value("roomUser").(*models.RoomUser)
 
-			dRes := <-dp.RoomUserSelect(roomId, targetUser.UserId)
+			dRes := <-datastore.GetProvider().DeviceSelectByUserId(ru.UserId)
 			if dRes.ProblemDetail != nil {
-				errRuChan <- &models.ErrorRoomUser{
-					UserId: targetUser.UserId,
-					Error:  dRes.ProblemDetail,
-				}
+				pdChan <- dRes.ProblemDetail
 			}
-
-			var roomUser *models.RoomUser
-			if np != nil {
-				if dRes.Data == nil {
-					roomUser = &models.RoomUser{
-						RoomId:      roomId,
-						UserId:      targetUser.UserId,
-						UnreadCount: &zero,
-						MetaData:    []byte("{}"),
-					}
-					if targetUser.NotificationDeviceId != nil {
-						nRes := <-np.Subscribe(notificationTopicId, *targetUser.NotificationDeviceId)
-						if nRes.ProblemDetail != nil {
-							errRuChan <- &models.ErrorRoomUser{
-								UserId: targetUser.UserId,
-								Error:  nRes.ProblemDetail,
-							}
-						} else {
-							roomUser.NotificationSubscribeId = nRes.Data.(*string)
-						}
-					}
-					dRes = <-dp.RoomUserInsert(roomUser)
-					if dRes.ProblemDetail != nil {
-						errRuChan <- &models.ErrorRoomUser{
-							UserId: targetUser.UserId,
-							Error:  dRes.ProblemDetail,
-						}
-					}
-				} else {
-					roomUser = dRes.Data.(*models.RoomUser)
-					if roomUser.NotificationSubscribeId == nil {
-						if targetUser.NotificationDeviceId != nil {
-							nRes := <-np.Subscribe(notificationTopicId, *targetUser.NotificationDeviceId)
+			if dRes.Data != nil {
+				devices := dRes.Data.([]*models.Device)
+				for _, d := range devices {
+					if d.Token != "" {
+						if d.NotificationDeviceId == "" {
+							nRes := <-notification.GetProvider().CreateEndpoint("", d.Platform, d.Token)
 							if nRes.ProblemDetail != nil {
-								errRuChan <- &models.ErrorRoomUser{
-									UserId: targetUser.UserId,
-									Error:  nRes.ProblemDetail,
-								}
+								pdChan <- dRes.ProblemDetail
 							} else {
-								roomUser.NotificationSubscribeId = nRes.Data.(*string)
-							}
-						}
-						dRes = <-dp.RoomUserUpdate(roomUser)
-						if dRes.ProblemDetail != nil {
-							errRuChan <- &models.ErrorRoomUser{
-								UserId: targetUser.UserId,
-								Error:  dRes.ProblemDetail,
+								d.NotificationDeviceId = *nRes.Data.(*string)
+								dRes := <-datastore.GetProvider().DeviceUpdate(d)
+								if dRes.ProblemDetail != nil {
+									pdChan <- dRes.ProblemDetail
+								}
 							}
 						}
 					}
+					go subscribe(ctx, []*models.RoomUser{ru}, d)
 				}
 			}
-			if roomUser != nil {
-				ruChan <- roomUser
-			}
+			doneChan <- true
 
 			select {
 			case <-ctx.Done():
 				return
-			case ru := <-ruChan:
-				ruRes.RoomUsers = append(ruRes.RoomUsers, *ru)
+			case <-doneChan:
 				return
-			case errRu := <-errRuChan:
-				ruRes.Errors = append(ruRes.Errors, *errRu)
+			case pd := <-pdChan:
+				pdBytes, _ := json.Marshal(pd)
+				utils.AppLogger.Error("",
+					zap.String("problemDetail", string(pdBytes)),
+					zap.String("err", fmt.Sprintf("%+v", pd.Error)),
+				)
 				return
 			}
 		})
 	}
 	d.Wait()
-	return ruRes
+	return
 }
 
-func deleteRoomUsers(roomUsers []*models.RoomUser) *models.ResponseRoomUser {
-	np := notification.GetProvider()
-	dp := datastore.GetProvider()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	delDoneChan := make(chan bool, 1)
-	errRuChan := make(chan *models.ErrorRoomUser, 1)
-	ruRes := &models.ResponseRoomUser{
-		Errors: make([]models.ErrorRoomUser, 0),
-	}
+func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
+	doneChan := make(chan bool, 1)
+	pdChan := make(chan *models.ProblemDetail, 1)
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
@@ -505,43 +316,79 @@ func deleteRoomUsers(roomUsers []*models.RoomUser) *models.ResponseRoomUser {
 		d.Work(ctx, func(ctx context.Context) {
 			targetRoomUser := ctx.Value("roomUser").(*models.RoomUser)
 			if targetRoomUser.NotificationSubscribeId != nil {
-				nRes := <-np.Unsubscribe(*targetRoomUser.NotificationSubscribeId)
+				nRes := <-notification.GetProvider().Unsubscribe(*targetRoomUser.NotificationSubscribeId)
 				if nRes.ProblemDetail != nil {
-					errRuChan <- &models.ErrorRoomUser{
-						UserId: targetRoomUser.UserId,
-						Error:  nRes.ProblemDetail,
-					}
+					pdChan <- nRes.ProblemDetail
 				} else {
-					dRes := <-dp.RoomUserDelete(targetRoomUser.RoomId, []string{targetRoomUser.UserId})
+					dRes := <-datastore.GetProvider().RoomUserDelete(targetRoomUser.RoomId, []string{targetRoomUser.UserId})
 					if dRes.ProblemDetail != nil {
-						errRuChan <- &models.ErrorRoomUser{
-							UserId: targetRoomUser.UserId,
-							Error:  dRes.ProblemDetail,
-						}
+						pdChan <- dRes.ProblemDetail
 					}
 				}
 			} else {
-				dRes := <-dp.RoomUserDelete(targetRoomUser.RoomId, []string{targetRoomUser.UserId})
+				dRes := <-datastore.GetProvider().RoomUserDelete(targetRoomUser.RoomId, []string{targetRoomUser.UserId})
 				if dRes.ProblemDetail != nil {
-					errRuChan <- &models.ErrorRoomUser{
-						UserId: targetRoomUser.UserId,
-						Error:  dRes.ProblemDetail,
-					}
+					pdChan <- dRes.ProblemDetail
 				}
 			}
-			delDoneChan <- true
+			doneChan <- true
 
 			select {
 			case <-ctx.Done():
 				return
-			case <-delDoneChan:
+			case <-doneChan:
 				return
-			case errRu := <-errRuChan:
-				ruRes.Errors = append(ruRes.Errors, *errRu)
+			case pd := <-pdChan:
+				pdBytes, _ := json.Marshal(pd)
+				utils.AppLogger.Error("",
+					zap.String("problemDetail", string(pdBytes)),
+					zap.String("err", fmt.Sprintf("%+v", pd.Error)),
+				)
 				return
 			}
 		})
 	}
 	d.Wait()
-	return ruRes
+	return
+}
+
+func createTopic(room *models.Room) *models.ProblemDetail {
+	nRes := <-notification.GetProvider().CreateTopic(room.RoomId)
+	if nRes.ProblemDetail != nil {
+		return nRes.ProblemDetail
+	}
+
+	if nRes.Data != nil {
+		room.NotificationTopicId = *nRes.Data.(*string)
+		room.Modified = time.Now().UnixNano()
+		dRes := <-datastore.GetProvider().RoomUpdate(room)
+		if dRes.ProblemDetail != nil {
+			return dRes.ProblemDetail
+		}
+	}
+
+	return nil
+}
+
+func getUsersByUserIds(requestUserIds []string) ([]*models.User, *models.ProblemDetail) {
+	dRes := <-datastore.GetProvider().UserSelectByUserIds(requestUserIds)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	existUsers := dRes.Data.([]*models.User)
+	if len(existUsers) != len(requestUserIds) {
+		return nil, &models.ProblemDetail{
+			Title:     "Request parameter error. (Create room's user list)",
+			Status:    http.StatusBadRequest,
+			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []models.InvalidParam{
+				models.InvalidParam{
+					Name:   "users",
+					Reason: "It contains a userId that does not exist.",
+				},
+			},
+		}
+	}
+
+	return existUsers, nil
 }

@@ -18,6 +18,10 @@ func (provider MysqlProvider) RoomUpdate(room *models.Room) StoreChannel {
 	return RdbRoomUpdate(room)
 }
 
+func (provider MysqlProvider) RoomUpdateDeleted(roomId string) StoreChannel {
+	return RdbRoomUpdateDeleted(roomId)
+}
+
 func (provider MysqlProvider) RoomSelectAll() StoreChannel {
 	return RdbRoomSelectAll()
 }

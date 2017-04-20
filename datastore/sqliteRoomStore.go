@@ -18,6 +18,10 @@ func (provider SqliteProvider) RoomUpdate(room *models.Room) StoreChannel {
 	return RdbRoomUpdate(room)
 }
 
+func (provider SqliteProvider) RoomUpdateDeleted(roomId string) StoreChannel {
+	return RdbRoomUpdateDeleted(roomId)
+}
+
 func (provider SqliteProvider) RoomSelectAll() StoreChannel {
 	return RdbRoomSelectAll()
 }

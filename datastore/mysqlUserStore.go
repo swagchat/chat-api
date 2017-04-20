@@ -18,6 +18,10 @@ func (provider MysqlProvider) UserUpdate(user *models.User) StoreChannel {
 	return RdbUserUpdate(user)
 }
 
+func (provider MysqlProvider) UserUpdateDeleted(userId string) StoreChannel {
+	return RdbUserUpdateDeleted(userId)
+}
+
 func (provider MysqlProvider) UserSelectAll() StoreChannel {
 	return RdbUserSelectAll()
 }

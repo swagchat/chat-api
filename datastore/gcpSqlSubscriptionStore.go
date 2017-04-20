@@ -14,6 +14,14 @@ func (provider GcpSqlProvider) SubscriptionSelect(roomId, userId string, platfor
 	return RdbSubscriptionSelect(roomId, userId, platform)
 }
 
+func (provider GcpSqlProvider) SubscriptionSelectByRoomId(roomId string) StoreChannel {
+	return RdbSubscriptionSelectByRoomId(roomId)
+}
+
+func (provider GcpSqlProvider) SubscriptionSelectByUserId(userId string) StoreChannel {
+	return RdbSubscriptionSelectByUserId(userId)
+}
+
 func (provider GcpSqlProvider) SubscriptionSelectByRoomIdAndPlatform(roomId string, platform int) StoreChannel {
 	return RdbSubscriptionSelectByRoomIdAndPlatform(roomId, platform)
 }
@@ -24,6 +32,14 @@ func (provider GcpSqlProvider) SubscriptionSelectByUserIdAndPlatform(userId stri
 
 func (provider GcpSqlProvider) SubscriptionUpdate(room *models.Subscription) StoreChannel {
 	return RdbSubscriptionUpdate(room)
+}
+
+func (provider GcpSqlProvider) SubscriptionUpdateDeletedByRoomId(roomId string) StoreChannel {
+	return RdbSubscriptionUpdateDeletedByRoomId(roomId)
+}
+
+func (provider GcpSqlProvider) SubscriptionUpdateDeletedByUserId(userId string) StoreChannel {
+	return RdbSubscriptionUpdateDeletedByUserId(userId)
 }
 
 func (provider GcpSqlProvider) SubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int) StoreChannel {

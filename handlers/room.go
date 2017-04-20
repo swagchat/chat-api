@@ -78,17 +78,13 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 
 func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
-	resRoomUser, pd := services.DeleteRoom(roomId)
+	pd := services.DeleteRoom(roomId)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
-	if len(resRoomUser.Errors) > 0 {
-		respond(w, r, http.StatusInternalServerError, "application/json", resRoomUser)
-	} else {
-		respond(w, r, http.StatusNoContent, "", nil)
-	}
+	respond(w, r, http.StatusNoContent, "", nil)
 }
 
 func GetRoomMessages(w http.ResponseWriter, r *http.Request) {

@@ -1,10 +1,10 @@
 package models
 
-import "github.com/fairway-corp/swagchat-api/utils"
+import (
+	"net/http"
 
-type RoomUsers struct {
-	Users []string `json:"users,omitempty"`
-}
+	"github.com/fairway-corp/swagchat-api/utils"
+)
 
 type RoomUser struct {
 	RoomId                  string         `json:"roomId,omitempty" db:"room_id"`
@@ -23,4 +23,30 @@ type ErrorRoomUser struct {
 type ResponseRoomUser struct {
 	RoomUsers []RoomUser      `json:"roomUsers,omitempty"`
 	Errors    []ErrorRoomUser `json:"errors,omitempty"`
+}
+
+type RoomUsers struct {
+	Users []string `json:"users,omitempty"`
+}
+
+func (rus *RoomUsers) IsValid() *ProblemDetail {
+	if len(rus.Users) == 0 {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room's user list)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "users",
+					Reason: "Not set.",
+				},
+			},
+		}
+	}
+
+	return nil
+}
+
+func (rus *RoomUsers) RemoveDuplicate() {
+	rus.Users = utils.RemoveDuplicate(rus.Users)
 }

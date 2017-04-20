@@ -22,7 +22,7 @@ type Room struct {
 	IsPublic            *bool          `json:"isPublic,omitempty" db:"is_public"`
 	LastMessage         string         `json:"lastMessage,omitempty" db:"last_message"`
 	LastMessageUpdated  int64          `json:"lastMessageUpdated,omitempty" db:"last_message_updated"`
-	NotificationTopicId *string        `json:"-" db:"notification_topic_id"`
+	NotificationTopicId string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
 	Created             int64          `json:"created" db:"created"`
 	Modified            int64          `json:"modified" db:"modified"`
 	Deleted             int64          `json:"-" db:"deleted"`

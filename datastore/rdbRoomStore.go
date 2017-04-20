@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"log"
+	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
@@ -74,6 +75,57 @@ func RdbRoomUpdate(room *models.Room) StoreChannel {
 	return storeChannel
 }
 
+func RdbRoomUpdateDeleted(roomId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		trans, err := dbMap.Begin()
+		result := StoreResult{}
+
+		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+		params := map[string]interface{}{
+			"roomId": roomId,
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
+		}
+
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
+		params = map[string]interface{}{
+			"roomId":  roomId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		}
+
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM, " SET deleted=:deleted WHERE room_id=:roomId;")
+		params = map[string]interface{}{
+			"roomId":  roomId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
+		}
+
+		if result.ProblemDetail == nil {
+			if err := trans.Commit(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+			}
+		} else {
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+			}
+		}
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
 func RdbRoomSelectAll() StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
@@ -110,8 +162,7 @@ func RdbRoomSelectUsersForRoom(roomId string) StoreChannel {
 			"u.modified, ",
 			"ru.unread_count AS ru_unread_count, ",
 			"ru.meta_data AS ru_meta_data, ",
-			"ru.created AS ru_created, ",
-			"ru.modified AS ru_modified ",
+			"ru.created AS ru_created ",
 			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
 			"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
 			"ON ru.user_id = u.user_id ",

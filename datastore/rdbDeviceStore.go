@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"log"
+	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
@@ -60,17 +61,47 @@ func RdbDeviceSelect(userId string, platform int) StoreChannel {
 	return storeChannel
 }
 
+func RdbDeviceSelectByUserId(userId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var devices []*models.Device
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
+		params := map[string]interface{}{
+			"userId": userId,
+		}
+		if _, err := dbMap.Select(&devices, query, params); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting device item.", err)
+		}
+		if len(devices) == 1 {
+			result.Data = devices[0]
+		}
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
 func RdbDeviceUpdate(device *models.Device) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
 		result := StoreResult{}
 
-		_, err := dbMap.Update(device)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
+		var err error
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_DEVICE, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
+		params := map[string]interface{}{
+			"token":                device.Token,
+			"notificationDeviceId": device.NotificationDeviceId,
+			"userId":               device.UserId,
+			"platform":             device.Platform,
 		}
-		result.Data = device
+		_, err = dbMap.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating device item.", err)
+		}
 
 		storeChannel <- result
 	}()
@@ -84,7 +115,7 @@ func RdbDeviceSelectAll() StoreChannel {
 		result := StoreResult{}
 
 		var devices []*models.Device
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE deleted = 0;")
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, ";")
 		_, err := dbMap.Select(&devices, query)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
@@ -100,17 +131,38 @@ func RdbDeviceDelete(userId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
+		trans, err := dbMap.Begin()
 		result := StoreResult{}
 
-		var err error
 		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
 		params := map[string]interface{}{
 			"userId":   userId,
 			"platform": platform,
 		}
-		_, err = dbMap.Exec(query, params)
+		_, err = trans.Exec(query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while deleting device item.", err)
+		}
+
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
+		params = map[string]interface{}{
+			"userId":   userId,
+			"platform": platform,
+			"deleted":  time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		}
+
+		if result.ProblemDetail == nil {
+			if err := trans.Commit(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		} else {
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
 		}
 
 		storeChannel <- result

@@ -18,6 +18,10 @@ func (provider GcpSqlProvider) RoomUpdate(room *models.Room) StoreChannel {
 	return RdbRoomUpdate(room)
 }
 
+func (provider GcpSqlProvider) RoomUpdateDeleted(roomId string) StoreChannel {
+	return RdbRoomUpdateDeleted(roomId)
+}
+
 func (provider GcpSqlProvider) RoomSelectAll() StoreChannel {
 	return RdbRoomSelectAll()
 }

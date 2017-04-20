@@ -85,7 +85,7 @@ func CreateMessage(requestMessages *models.Messages) (*models.ResponseMessages, 
 			return nil, dRes.ProblemDetail
 		}
 
-		dRes = <-dp.RoomUserUsersSelect(requestMessage.RoomId)
+		dRes = <-dp.RoomUserUsersSelectByRoomId(requestMessage.RoomId)
 		if dRes.ProblemDetail != nil {
 			return nil, dRes.ProblemDetail
 		}
@@ -133,7 +133,7 @@ func CreateMessage(requestMessages *models.Messages) (*models.ResponseMessages, 
 				Text:  utils.AppendStrings("[", room.Name, "]", lastMessage),
 				Badge: *roomUser.UnreadCount,
 			}
-			nRes := <-np.Publish(*room.NotificationTopicId, messageInfo)
+			nRes := <-np.Publish(room.NotificationTopicId, messageInfo)
 			if nRes.ProblemDetail != nil {
 				problemDetailBytes, _ := json.Marshal(nRes.ProblemDetail)
 				utils.AppLogger.Error("",

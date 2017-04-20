@@ -8,6 +8,7 @@ type RoomStore interface {
 	RoomInsert(room *models.Room) StoreChannel
 	RoomSelect(roomId string) StoreChannel
 	RoomUpdate(room *models.Room) StoreChannel
+	RoomUpdateDeleted(roomId string) StoreChannel
 	RoomSelectAll() StoreChannel
 	RoomSelectUsersForRoom(roomId string) StoreChannel
 }

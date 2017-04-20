@@ -7,6 +7,7 @@ type DeviceStore interface {
 
 	DeviceInsert(device *models.Device) StoreChannel
 	DeviceSelect(userId string, platform int) StoreChannel
+	DeviceSelectByUserId(userId string) StoreChannel
 	DeviceUpdate(device *models.Device) StoreChannel
 	DeviceSelectAll() StoreChannel
 	DeviceDelete(userId string, platform int) StoreChannel

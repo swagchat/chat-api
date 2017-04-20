@@ -1,14 +1,20 @@
 package services
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/fairway-corp/swagchat-api/datastore"
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/notification"
+	"github.com/fairway-corp/swagchat-api/utils"
 )
 
 func CreateRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
@@ -17,14 +23,12 @@ func CreateRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 	}
 	post.BeforeSave()
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomInsert(post)
+	dRes := <-datastore.GetProvider().RoomInsert(post)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
 func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelectAll()
+	dRes := <-datastore.GetProvider().RoomSelectAll()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -36,18 +40,12 @@ func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
 }
 
 func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	pd := IsExistRoomId(roomId)
+	room, pd := selectRoom(roomId)
 	if pd != nil {
 		return nil, pd
 	}
 
-	room, pd := getRoom(roomId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelectUsersForRoom(roomId)
+	dRes := <-datastore.GetProvider().RoomSelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -56,12 +54,7 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 }
 
 func PutRoom(roomId string, put *models.Room) (*models.Room, *models.ProblemDetail) {
-	pd := IsExistRoomId(roomId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	room, pd := getRoom(roomId)
+	room, pd := selectRoom(roomId)
 	if pd != nil {
 		return nil, pd
 	}
@@ -72,55 +65,38 @@ func PutRoom(roomId string, put *models.Room) (*models.Room, *models.ProblemDeta
 	}
 	room.BeforeSave()
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomUpdate(room)
+	dRes := <-datastore.GetProvider().RoomUpdate(room)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
-func DeleteRoom(roomId string) (*models.ResponseRoomUser, *models.ProblemDetail) {
-	pd := IsExistRoomId(roomId)
+func DeleteRoom(roomId string) *models.ProblemDetail {
+	room, pd := selectRoom(roomId)
 	if pd != nil {
-		return nil, pd
+		return pd
 	}
 
-	room, pd := getRoom(roomId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	np := notification.GetProvider()
-	if np != nil {
-		if room.NotificationTopicId != nil {
-			nRes := <-np.DeleteTopic(*room.NotificationTopicId)
-			if nRes.ProblemDetail != nil {
-				return nil, nRes.ProblemDetail
-			}
+	if room.NotificationTopicId != "" {
+		nRes := <-notification.GetProvider().DeleteTopic(room.NotificationTopicId)
+		if nRes.ProblemDetail != nil {
+			return nRes.ProblemDetail
 		}
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomUsersSelect(&roomId, nil)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	ruRes := deleteRoomUsers(dRes.Data.([]*models.RoomUser))
-
-	room.NotificationTopicId = nil
+	room.NotificationTopicId = ""
 	room.Deleted = time.Now().UnixNano()
-	dRes = <-dp.RoomUpdate(room)
+	dRes := <-datastore.GetProvider().RoomUpdateDeleted(roomId)
 	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+		return dRes.ProblemDetail
 	}
 
-	return ruRes, nil
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go unsubscribeByRoomId(ctx, roomId)
+
+	return nil
 }
 
 func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages, *models.ProblemDetail) {
-	pd := IsExistRoomId(roomId)
-	if pd != nil {
-		return nil, pd
-	}
-
 	var err error
 	limit := 10
 	offset := 0
@@ -157,8 +133,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 		}
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.MessageSelectAll(roomId, limit, offset)
+	dRes := <-datastore.GetProvider().MessageSelectAll(roomId, limit, offset)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -166,7 +141,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 		Messages: dRes.Data.([]*models.Message),
 	}
 
-	dRes = <-dp.MessageCount(roomId)
+	dRes = <-datastore.GetProvider().MessageCount(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -174,26 +149,8 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 	return messages, nil
 }
 
-func IsExistRoomId(roomId string) *models.ProblemDetail {
-	if roomId == "" {
-		return &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room's message list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
-	}
-	return nil
-}
-
-func getRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
+func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
+	dRes := <-datastore.GetProvider().RoomSelect(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -203,4 +160,16 @@ func getRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		}
 	}
 	return dRes.Data.(*models.Room), nil
+}
+
+func unsubscribeByRoomId(ctx context.Context, roomId string) {
+	dRes := <-datastore.GetProvider().SubscriptionSelectByRoomId(roomId)
+	if dRes.ProblemDetail != nil {
+		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
+		utils.AppLogger.Error("",
+			zap.String("problemDetail", string(pdBytes)),
+			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
+		)
+	}
+	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
 }
