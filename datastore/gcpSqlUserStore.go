@@ -42,6 +42,6 @@ func (provider GcpSqlProvider) UserUnreadCountRecalc(userId string) StoreChannel
 	return RdbUserUnreadCountRecalc(userId)
 }
 
-func (provider GcpSqlProvider) UserSelectByUserIds(userIds []string) StoreChannel {
-	return RdbUserSelectByUserIds(userIds)
+func (provider GcpSqlProvider) UserUserIdsSelectByUserIds(userIds []string) StoreChannel {
+	return RdbUserUserIdsSelectByUserIds(userIds)
 }

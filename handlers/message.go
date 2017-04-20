@@ -5,27 +5,24 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
-	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetMessageMux() {
-	basePath := "/messages"
-
-	Mux.PostFunc(basePath, ColsHandler(PostMessage))
-	Mux.GetFunc(utils.AppendStrings(basePath, "/#messageId^[a-z0-9-]$"), ColsHandler(GetMessage))
+	Mux.PostFunc("/messages", ColsHandler(PostMessage))
+	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", ColsHandler(GetMessage))
 }
 
 func PostMessage(w http.ResponseWriter, r *http.Request) {
-	var requestMessages models.Messages
-	if err := decodeBody(r, &requestMessages); err != nil {
+	var post models.Messages
+	if err := decodeBody(r, &post); err != nil {
 		respondJsonDecodeError(w, r, "Create message item")
 		return
 	}
 
-	messages, problemDetail := services.CreateMessage(&requestMessages)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	messages, pd := services.CreateMessage(&post)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
@@ -34,9 +31,9 @@ func PostMessage(w http.ResponseWriter, r *http.Request) {
 
 func GetMessage(w http.ResponseWriter, r *http.Request) {
 	messageId := bone.GetValue(r, "messageId")
-	message, problemDetail := services.GetMessage(messageId)
-	if problemDetail != nil {
-		respondErr(w, r, problemDetail.Status, problemDetail)
+	message, pd := services.GetMessage(messageId)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 

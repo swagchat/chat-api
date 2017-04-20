@@ -5,18 +5,15 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
-	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetUserMux() {
-	basePath := "/users"
-	Mux.PostFunc(basePath, ColsHandler(PostUser))
-	Mux.GetFunc(basePath, ColsHandler(GetUsers))
-	Mux.GetFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$"), ColsHandler(GetUser))
-	Mux.PutFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$"), ColsHandler(PutUser))
-	Mux.DeleteFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$"), ColsHandler(DeleteUser))
-	//	Mux.GetFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$/rooms"), ColsHandler(GetUserRooms))
+	Mux.PostFunc("/users", ColsHandler(PostUser))
+	Mux.GetFunc("/users", ColsHandler(GetUsers))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$", ColsHandler(GetUser))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$", ColsHandler(PutUser))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", ColsHandler(DeleteUser))
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
@@ -83,16 +80,3 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	respond(w, r, http.StatusNoContent, "", nil)
 }
-
-/*
-func GetUserRooms(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	user, pd := services.GetUserRooms(userId)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "", user)
-}
-*/

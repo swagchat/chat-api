@@ -141,18 +141,8 @@ func RdbUserUpdateDeleted(userId string) StoreChannel {
 		trans, err := dbMap.Begin()
 		result := StoreResult{}
 
-		query := utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET deleted=:deleted WHERE user_id=:userId;")
+		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
 		params := map[string]interface{}{
-			"userId":  userId,
-			"deleted": time.Now().UnixNano(),
-		}
-		_, err = trans.Exec(query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
-		}
-
-		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
-		params = map[string]interface{}{
 			"userId": userId,
 		}
 		_, err = trans.Exec(query, params)
@@ -177,6 +167,16 @@ func RdbUserUpdateDeleted(userId string) StoreChannel {
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		}
+
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET deleted=:deleted WHERE user_id=:userId;")
+		params = map[string]interface{}{
+			"userId":  userId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
 		}
 
 		if result.ProblemDetail == nil {
@@ -232,8 +232,7 @@ func RdbUserSelectRoomsForUser(userId string) StoreChannel {
 			"r.modified, ",
 			"ru.unread_count AS ru_unread_count, ",
 			"ru.meta_data AS ru_meta_data, ",
-			"ru.created AS ru_created, ",
-			"ru.modified AS ru_modified ",
+			"ru.created AS ru_created ",
 			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
 			"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ",
 			"ON ru.room_id = r.room_id ",
@@ -331,23 +330,27 @@ func RdbUserUnreadCountRecalc(userId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbUserSelectByUserIds(userIds []string) StoreChannel {
+func RdbUserUserIdsSelectByUserIds(userIds []string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
 		result := StoreResult{}
-
 		var users []*models.User
+
 		userIdsQuery, params := utils.MakePrepareForInExpression(userIds)
 		query := utils.AppendStrings("SELECT * ",
 			"FROM ", TABLE_NAME_USER,
-			" WHERE user_id in (", userIdsQuery, ");")
+			" WHERE user_id in (", userIdsQuery, ") AND deleted = 0;")
 		_, err := dbMap.Select(&users, query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while getting userIds.", err)
 		}
-		result.Data = users
 
+		resultUuserIds := make([]string, 0)
+		for _, user := range users {
+			resultUuserIds = append(resultUuserIds, user.UserId)
+		}
+		result.Data = resultUuserIds
 		storeChannel <- result
 	}()
 	return storeChannel

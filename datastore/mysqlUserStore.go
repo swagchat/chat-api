@@ -42,6 +42,6 @@ func (provider MysqlProvider) UserUnreadCountRecalc(userId string) StoreChannel 
 	return RdbUserUnreadCountRecalc(userId)
 }
 
-func (provider MysqlProvider) UserSelectByUserIds(userIds []string) StoreChannel {
-	return RdbUserSelectByUserIds(userIds)
+func (provider MysqlProvider) UserUserIdsSelectByUserIds(userIds []string) StoreChannel {
+	return RdbUserUserIdsSelectByUserIds(userIds)
 }

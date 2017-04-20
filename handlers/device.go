@@ -6,17 +6,15 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
-	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetDeviceMux() {
-	basePath := "/users"
-	Mux.PostFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$/devices"), ColsHandler(PostDevice))
-	Mux.GetFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$/devices"), ColsHandler(GetDevices))
-	Mux.GetFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), ColsHandler(GetDevice))
-	Mux.PutFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), ColsHandler(PutDevice))
-	Mux.DeleteFunc(utils.AppendStrings(basePath, "/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), ColsHandler(DeleteDevice))
+	Mux.PostFunc("/users/#userId^[a-z0-9-]$/devices", ColsHandler(PostDevice))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", ColsHandler(GetDevices))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(GetDevice))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(PutDevice))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(DeleteDevice))
 }
 
 func PostDevice(w http.ResponseWriter, r *http.Request) {

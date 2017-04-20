@@ -25,12 +25,16 @@ type ResponseRoomUser struct {
 	Errors    []ErrorRoomUser `json:"errors,omitempty"`
 }
 
-type RoomUsers struct {
-	Users []string `json:"users,omitempty"`
+type RequestRoomUserIds struct {
+	UserIds []string `json:"userIds,omitempty"`
 }
 
-func (rus *RoomUsers) IsValid() *ProblemDetail {
-	if len(rus.Users) == 0 {
+type RoomUsers struct {
+	RoomUsers []*RoomUser `json:"roomUsers,omitempty"`
+}
+
+func (rus *RequestRoomUserIds) IsValid() *ProblemDetail {
+	if len(rus.UserIds) == 0 {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room's user list)",
 			Status:    http.StatusBadRequest,
@@ -47,6 +51,6 @@ func (rus *RoomUsers) IsValid() *ProblemDetail {
 	return nil
 }
 
-func (rus *RoomUsers) RemoveDuplicate() {
-	rus.Users = utils.RemoveDuplicate(rus.Users)
+func (rus *RequestRoomUserIds) RemoveDuplicate() {
+	rus.UserIds = utils.RemoveDuplicate(rus.UserIds)
 }

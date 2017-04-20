@@ -42,6 +42,6 @@ func (provider SqliteProvider) UserUnreadCountRecalc(userId string) StoreChannel
 	return RdbUserUnreadCountRecalc(userId)
 }
 
-func (provider SqliteProvider) UserSelectByUserIds(userIds []string) StoreChannel {
-	return RdbUserSelectByUserIds(userIds)
+func (provider SqliteProvider) UserUserIdsSelectByUserIds(userIds []string) StoreChannel {
+	return RdbUserUserIdsSelectByUserIds(userIds)
 }

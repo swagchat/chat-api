@@ -18,20 +18,24 @@ func (provider MysqlProvider) RoomUserSelect(roomId, userId string) StoreChannel
 	return RdbRoomUserSelect(roomId, userId)
 }
 
+func (provider MysqlProvider) RoomUsersSelectByRoomId(roomId string) StoreChannel {
+	return RdbRoomUsersSelectByRoomId(roomId)
+}
+
 func (provider MysqlProvider) RoomUsersSelectByUserId(userId string) StoreChannel {
 	return RdbRoomUsersSelectByUserId(userId)
 }
 
-func (provider MysqlProvider) RoomUserUsersSelectByRoomId(roomId string) StoreChannel {
-	return RdbRoomUserUsersSelectByRoomId(roomId)
+func (provider MysqlProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
+	return RdbRoomUsersUsersSelectByRoomId(roomId)
 }
 
 func (provider MysqlProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
 	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
 }
 
-func (provider MysqlProvider) RoomUsersSelectIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersSelectIds(roomId, userIds)
+func (provider MysqlProvider) RoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbRoomUsersSelectByRoomIdAndUserIds(roomId, userIds)
 }
 
 func (provider MysqlProvider) RoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
@@ -42,8 +46,8 @@ func (provider MysqlProvider) RoomUserDelete(roomId string, userIds []string) St
 	return RdbRoomUserDelete(roomId, userIds)
 }
 
-func (provider MysqlProvider) RoomUsersDeleteByUserIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersDeleteByUserIds(roomId, userIds)
+func (provider MysqlProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
 }
 
 func (provider MysqlProvider) RoomUserDeleteByRoomId(roomId string) StoreChannel {

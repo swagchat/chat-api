@@ -40,6 +40,15 @@ func GetUsers() (*models.Users, *models.ProblemDetail) {
 
 func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 	user, pd := selectUser(userId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	dRes := <-datastore.GetProvider().UserSelectRoomsForUser(userId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	user.Rooms = dRes.Data.([]*models.RoomForUser)
 	return user, pd
 }
 
@@ -113,8 +122,7 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 }
 
 func unsubscribeByUserId(ctx context.Context, userId string) {
-	dp := datastore.GetProvider()
-	dRes := <-dp.SubscriptionSelectByUserId(userId)
+	dRes := <-datastore.GetProvider().SubscriptionSelectByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

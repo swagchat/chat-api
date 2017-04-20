@@ -18,20 +18,24 @@ func (provider SqliteProvider) RoomUserSelect(roomId, userId string) StoreChanne
 	return RdbRoomUserSelect(roomId, userId)
 }
 
+func (provider SqliteProvider) RoomUsersSelectByRoomId(roomId string) StoreChannel {
+	return RdbRoomUsersSelectByRoomId(roomId)
+}
+
 func (provider SqliteProvider) RoomUsersSelectByUserId(userId string) StoreChannel {
 	return RdbRoomUsersSelectByUserId(userId)
 }
 
-func (provider SqliteProvider) RoomUserUsersSelectByRoomId(roomId string) StoreChannel {
-	return RdbRoomUserUsersSelectByRoomId(roomId)
+func (provider SqliteProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
+	return RdbRoomUsersUsersSelectByRoomId(roomId)
 }
 
 func (provider SqliteProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
 	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
 }
 
-func (provider SqliteProvider) RoomUsersSelectIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersSelectIds(roomId, userIds)
+func (provider SqliteProvider) RoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbRoomUsersSelectByRoomIdAndUserIds(roomId, userIds)
 }
 
 func (provider SqliteProvider) RoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
@@ -42,8 +46,8 @@ func (provider SqliteProvider) RoomUserDelete(roomId string, userIds []string) S
 	return RdbRoomUserDelete(roomId, userIds)
 }
 
-func (provider SqliteProvider) RoomUsersDeleteByUserIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersDeleteByUserIds(roomId, userIds)
+func (provider SqliteProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
 }
 
 func (provider SqliteProvider) RoomUserDeleteByRoomId(roomId string) StoreChannel {

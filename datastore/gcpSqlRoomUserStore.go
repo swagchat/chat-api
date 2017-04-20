@@ -18,20 +18,24 @@ func (provider GcpSqlProvider) RoomUserSelect(roomId, userId string) StoreChanne
 	return RdbRoomUserSelect(roomId, userId)
 }
 
+func (provider GcpSqlProvider) RoomUsersSelectByRoomId(roomId string) StoreChannel {
+	return RdbRoomUsersSelectByRoomId(roomId)
+}
+
 func (provider GcpSqlProvider) RoomUsersSelectByUserId(userId string) StoreChannel {
 	return RdbRoomUsersSelectByUserId(userId)
 }
 
-func (provider GcpSqlProvider) RoomUserUsersSelectByRoomId(roomId string) StoreChannel {
-	return RdbRoomUserUsersSelectByRoomId(roomId)
+func (provider GcpSqlProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
+	return RdbRoomUsersUsersSelectByRoomId(roomId)
 }
 
 func (provider GcpSqlProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
 	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
 }
 
-func (provider GcpSqlProvider) RoomUsersSelectIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersSelectIds(roomId, userIds)
+func (provider GcpSqlProvider) RoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbRoomUsersSelectByRoomIdAndUserIds(roomId, userIds)
 }
 
 func (provider GcpSqlProvider) RoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
@@ -42,8 +46,8 @@ func (provider GcpSqlProvider) RoomUserDelete(roomId string, userIds []string) S
 	return RdbRoomUserDelete(roomId, userIds)
 }
 
-func (provider GcpSqlProvider) RoomUsersDeleteByUserIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersDeleteByUserIds(roomId, userIds)
+func (provider GcpSqlProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
 }
 
 func (provider GcpSqlProvider) RoomUserDeleteByRoomId(roomId string) StoreChannel {

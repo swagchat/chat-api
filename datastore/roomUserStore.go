@@ -8,13 +8,14 @@ type RoomUserStore interface {
 	RoomUserInsert(roomUser *models.RoomUser) StoreChannel
 	RoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel
 	RoomUserSelect(roomId, userId string) StoreChannel
+	RoomUsersSelectByRoomId(roomId string) StoreChannel
 	RoomUsersSelectByUserId(userId string) StoreChannel
-	RoomUserUsersSelectByRoomId(roomId string) StoreChannel
+	RoomUsersUsersSelectByRoomId(roomId string) StoreChannel
 	RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel
-	RoomUsersSelectIds(roomId *string, userIds []string) StoreChannel
+	RoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel
 	RoomUserUpdate(*models.RoomUser) StoreChannel
 	RoomUserDelete(roomId string, userIds []string) StoreChannel
-	RoomUsersDeleteByUserIds(roomId *string, userIds []string) StoreChannel
+	RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel
 	RoomUserDeleteByRoomId(roomId string) StoreChannel
 	RoomUserDeleteByUserId(userId string) StoreChannel
 	RoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel

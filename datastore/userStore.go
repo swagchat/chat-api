@@ -13,5 +13,5 @@ type UserStore interface {
 	UserSelectRoomsForUser(userId string) StoreChannel
 	UserUnreadCountUp(userId string) StoreChannel
 	UserUnreadCountRecalc(userId string) StoreChannel
-	UserSelectByUserIds(userIds []string) StoreChannel
+	UserUserIdsSelectByUserIds(userIds []string) StoreChannel
 }

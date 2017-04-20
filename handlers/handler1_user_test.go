@@ -73,15 +73,37 @@ func TestPostUser(t *testing.T) {
 			testNo: 5,
 			in: `
 				{
-					"userId": "custom-user-id",
-					"name": "dennis"
+					"userId": "custom-user-id-1",
+					"name": "dennis-1"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 6,
+			in: `
+				{
+					"userId": "custom-user-id-2",
+					"name": "dennis-2"
+				}
+			`,
+			out:            `(?m)^{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 7,
+			in: `
+				{
+					"userId": "custom-user-id-3",
+					"name": "dennis-3"
+				}
+			`,
+			out:            `(?m)^{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 8,
 			in: `
 				{
 					"userId": "custom-user-id-for-delete",
@@ -92,10 +114,10 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 201,
 		},
 		{
-			testNo: 7,
+			testNo: 9,
 			in: `
 				{
-					"userId": "custom-user-id",
+					"userId": "custom-user-id-1",
 					"name": "dennis"
 				}
 			`,
@@ -103,7 +125,7 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 500,
 		},
 		{
-			testNo: 8,
+			testNo: 10,
 			in: `
 				{
 					"userId": "custom_id",
@@ -114,14 +136,14 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 9,
+			testNo: 11,
 			in: `
 			`,
 			out:            `(?m)^{"title":"Json parse error\. \(Create user item\)","status":400,"errorName":"invalid-json"}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 10,
+			testNo: 12,
 			in: `
 				json
 			`,
@@ -129,7 +151,7 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 11,
+			testNo: 13,
 			in: `
 				{
 					"pictureUrl": "http://example.com/picture.png"
@@ -177,7 +199,7 @@ func TestGetUsers(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			out:            `(?m)^{"users":[{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"created":[0-9]+,"modified":[0-9]+},{"userId":"custom-user-id","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}]}$`,
+			out:            `(?m)^{"users":[{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"created":[0-9]+,"modified":[0-9]+},{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}]}$`,
 			httpStatusCode: 200,
 		},
 	}
@@ -204,8 +226,8 @@ func TestGetUser(t *testing.T) {
 	ts := httptest.NewServer(Mux)
 	defer ts.Close()
 
-	if len(createUserIds) != 6 {
-		t.Fatalf("createUserIds length error \n[expected]%d\n[result  ]%d", 6, len(createUserIds))
+	if len(createUserIds) != 8 {
+		t.Fatalf("createUserIds length error \n[expected]%d\n[result  ]%d", 8, len(createUserIds))
 		t.Failed()
 	}
 
@@ -237,17 +259,29 @@ func TestGetUser(t *testing.T) {
 		{
 			testNo:         5,
 			userId:         createUserIds[4],
-			out:            `(?m)^{"userId":"custom-user-id","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         6,
 			userId:         createUserIds[5],
+			out:            `(?m)^{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo:         7,
+			userId:         createUserIds[6],
+			out:            `(?m)^{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo:         8,
+			userId:         createUserIds[7],
 			out:            `(?m)^{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
-			testNo:         6,
+			testNo:         9,
 			userId:         "not-exist-user-id",
 			out:            ``,
 			httpStatusCode: 404,
@@ -284,51 +318,51 @@ func TestPutUser(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo: 1,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"name": "Jeremy"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","name":"Jeremy","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 2,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"pictureUrl": "http://localhost/images/jeremy.png"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 3,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"informationUrl": "http://localhost/jeremy"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 4,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{"key":"value"},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{"key":"value"},"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 5,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"unreadCount": -1
@@ -339,7 +373,7 @@ func TestPutUser(t *testing.T) {
 		},
 		{
 			testNo: 6,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 			`,
 			out:            `(?m)^{"title":"Json parse error\. \(Update user item\)","status":400,"errorName":"invalid-json"}$`,
@@ -347,7 +381,7 @@ func TestPutUser(t *testing.T) {
 		},
 		{
 			testNo: 7,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				json
 			`,
@@ -378,10 +412,6 @@ func TestPutUser(t *testing.T) {
 
 		if res.StatusCode != testRecord.httpStatusCode {
 			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		if testRecord.httpStatusCode == 204 {
-			res, err = http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId)
 		}
 
 		data, err := ioutil.ReadAll(res.Body)
@@ -420,10 +450,6 @@ func TestDeleteUser(t *testing.T) {
 
 		if res.StatusCode != testRecord.httpStatusCode {
 			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		if testRecord.httpStatusCode == 204 {
-			res, err = http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId)
 		}
 
 		data, err := ioutil.ReadAll(res.Body)

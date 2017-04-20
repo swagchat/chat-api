@@ -85,7 +85,7 @@ func CreateMessage(requestMessages *models.Messages) (*models.ResponseMessages, 
 			return nil, dRes.ProblemDetail
 		}
 
-		dRes = <-dp.RoomUserUsersSelectByRoomId(requestMessage.RoomId)
+		dRes = <-dp.RoomUsersUsersSelectByRoomId(requestMessage.RoomId)
 		if dRes.ProblemDetail != nil {
 			return nil, dRes.ProblemDetail
 		}

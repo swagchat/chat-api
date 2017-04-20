@@ -25,31 +25,31 @@ func TestPostDevice(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo: 1,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"platform": 1,
 					"token": "abc"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","platform":1,"token":"abc","notificationDeviceId":"abc"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","platform":1,"token":"abc","notificationDeviceId":"abc"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 2,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"platform": 2,
 					"token": "def"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","platform":2,"token":"def","notificationDeviceId":"def"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","platform":2,"token":"def","notificationDeviceId":"def"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 3,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				{
 					"platform": 2,
@@ -61,7 +61,7 @@ func TestPostDevice(t *testing.T) {
 		},
 		{
 			testNo: 4,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 					{
 						"platform": 0,
@@ -73,7 +73,7 @@ func TestPostDevice(t *testing.T) {
 		},
 		{
 			testNo: 5,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 					{
 						"platform": 3,
@@ -85,7 +85,7 @@ func TestPostDevice(t *testing.T) {
 		},
 		{
 			testNo: 6,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 					{
 						"token": "abc"
@@ -96,7 +96,7 @@ func TestPostDevice(t *testing.T) {
 		},
 		{
 			testNo: 7,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 					{
 						"platform": 1
@@ -107,7 +107,7 @@ func TestPostDevice(t *testing.T) {
 		},
 		{
 			testNo: 8,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 				`,
 			out:            `(?m)^{"title":"Json parse error. \(Create device item\)","status":400,"errorName":"invalid-json"}$`,
@@ -115,7 +115,7 @@ func TestPostDevice(t *testing.T) {
 		},
 		{
 			testNo: 9,
-			userId: "custom-user-id",
+			userId: "custom-user-id-1",
 			in: `
 					json
 				`,
@@ -161,7 +161,7 @@ func TestGetDevices(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			userId:         "custom-user-id",
+			userId:         "custom-user-id-1",
 			out:            `(?m)^{"devices":[{"userId":"[a-z0-9-]+","platform":1,"token":"abc","notificationDeviceId":"abc"},{"userId":"[a-z0-9-]+","platform":2,"token":"def","notificationDeviceId":"def"}]}$`,
 			httpStatusCode: 200,
 		},
@@ -196,16 +196,16 @@ func TestGetDevice(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			userId:         "custom-user-id",
+			userId:         "custom-user-id-1",
 			platform:       "1",
-			out:            `(?m)^{"userId":"custom-user-id","platform":1,"token":"abc","notificationDeviceId":"abc"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","platform":1,"token":"abc","notificationDeviceId":"abc"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         2,
-			userId:         "custom-user-id",
+			userId:         "custom-user-id-1",
 			platform:       "2",
-			out:            `(?m)^{"userId":"custom-user-id","platform":2,"token":"def","notificationDeviceId":"def"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","platform":2,"token":"def","notificationDeviceId":"def"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -246,31 +246,31 @@ func TestPutDevice(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:   1,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "1",
 			in: `
 				{
 					"token": "ghi"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","platform":1,"token":"ghi","notificationDeviceId":"ghi"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","platform":1,"token":"ghi","notificationDeviceId":"ghi"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:   2,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "2",
 			in: `
 				{
 					"token": "jkl"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id","platform":2,"token":"jkl","notificationDeviceId":"jkl"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","platform":2,"token":"jkl","notificationDeviceId":"jkl"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:   3,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "1",
 			in: `
 					{
@@ -282,7 +282,7 @@ func TestPutDevice(t *testing.T) {
 		},
 		{
 			testNo:   4,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "1",
 			in: `
 					{
@@ -294,7 +294,7 @@ func TestPutDevice(t *testing.T) {
 		},
 		{
 			testNo:   5,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "1",
 			in: `
 					{
@@ -306,7 +306,7 @@ func TestPutDevice(t *testing.T) {
 		},
 		{
 			testNo:   6,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "1",
 			in: `
 				`,
@@ -315,7 +315,7 @@ func TestPutDevice(t *testing.T) {
 		},
 		{
 			testNo:   7,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "1",
 			in: `
 					json
@@ -337,7 +337,7 @@ func TestPutDevice(t *testing.T) {
 		},
 		{
 			testNo:   9,
-			userId:   "custom-user-id",
+			userId:   "custom-user-id-1",
 			platform: "3",
 			in: `
 					{
@@ -362,10 +362,6 @@ func TestPutDevice(t *testing.T) {
 			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
 		}
 
-		if testRecord.httpStatusCode == 204 {
-			res, err = http.Get(ts.URL + "/" + utils.API_VERSION + "/devices/custom-id")
-		}
-
 		data, err := ioutil.ReadAll(res.Body)
 		r := regexp.MustCompile(testRecord.out)
 		if !r.MatchString(string(data)) {
@@ -381,7 +377,7 @@ func TestDeleteDevice(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			userId:         "custom-user-id",
+			userId:         "custom-user-id-1",
 			platform:       "1",
 			out:            `(?m)^$`,
 			httpStatusCode: 204,
@@ -395,7 +391,7 @@ func TestDeleteDevice(t *testing.T) {
 		},
 		{
 			testNo:         3,
-			userId:         "custom-user-id",
+			userId:         "custom-user-id-1",
 			platform:       "3",
 			out:            `(?m)^$`,
 			httpStatusCode: 404,
@@ -411,10 +407,6 @@ func TestDeleteDevice(t *testing.T) {
 
 		if res.StatusCode != testRecord.httpStatusCode {
 			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		if testRecord.httpStatusCode == 204 {
-			res, err = http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId + "/devices/" + testRecord.platform)
 		}
 
 		data, err := ioutil.ReadAll(res.Body)

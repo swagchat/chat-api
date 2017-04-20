@@ -404,10 +404,6 @@ func TestPutRoom(t *testing.T) {
 			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
 		}
 
-		if testRecord.httpStatusCode == 204 {
-			res, err = http.Get(ts.URL + "/" + utils.API_VERSION + "/rooms/" + testRecord.roomId)
-		}
-
 		data, err := ioutil.ReadAll(res.Body)
 		r := regexp.MustCompile(testRecord.out)
 		if !r.MatchString(string(data)) {
@@ -444,10 +440,6 @@ func TestDeleteRoom(t *testing.T) {
 
 		if res.StatusCode != testRecord.httpStatusCode {
 			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		if testRecord.httpStatusCode == 204 {
-			res, err = http.Get(ts.URL + "/" + utils.API_VERSION + "/rooms/" + testRecord.roomId)
 		}
 
 		data, err := ioutil.ReadAll(res.Body)

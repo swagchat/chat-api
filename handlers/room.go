@@ -6,19 +6,16 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
-	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetRoomMux() {
-	basePath := "/rooms"
-	Mux.PostFunc(basePath, ColsHandler(PostRoom))
-	Mux.GetFunc(basePath, ColsHandler(GetRooms))
-	Mux.GetFunc(utils.AppendStrings(basePath, "/#roomId^[a-z0-9-]$"), ColsHandler(GetRoom))
-	Mux.PutFunc(utils.AppendStrings(basePath, "/#roomId^[a-z0-9-]$"), ColsHandler(PutRoom))
-	Mux.DeleteFunc(utils.AppendStrings(basePath, "/#roomId^[a-z0-9-]$"), ColsHandler(DeleteRoom))
-
-	Mux.GetFunc(utils.AppendStrings(basePath, "/#roomId^[a-z0-9-]$/messages"), ColsHandler(GetRoomMessages))
+	Mux.PostFunc("/rooms", ColsHandler(PostRoom))
+	Mux.GetFunc("/rooms", ColsHandler(GetRooms))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", ColsHandler(GetRoom))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", ColsHandler(PutRoom))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", ColsHandler(DeleteRoom))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", ColsHandler(GetRoomMessages))
 }
 
 func PostRoom(w http.ResponseWriter, r *http.Request) {
