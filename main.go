@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+
 	"go.uber.org/zap"
 
 	"net/http"
@@ -19,20 +21,20 @@ func main() {
 		}()
 	}
 
-	storageProvider := storage.GetProvider()
-	if err := storageProvider.Init(); err != nil {
+	if err := storage.GetProvider().Init(); err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)
 	}
 
-	datastoreProvider := datastore.GetProvider()
-	if err := datastoreProvider.Connect(); err != nil {
+	if err := datastore.GetProvider().Connect(); err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)
 	}
-	datastoreProvider.Init()
+	datastore.GetProvider().Init()
 
-	handlers.StartServer()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	handlers.StartServer(ctx)
 }

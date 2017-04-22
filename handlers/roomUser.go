@@ -29,7 +29,7 @@ func PostRoomUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, r, http.StatusOK, "application/json", roomUsers)
+	respond(w, r, http.StatusCreated, "application/json", roomUsers)
 }
 
 func PutRoomUser(w http.ResponseWriter, r *http.Request) {

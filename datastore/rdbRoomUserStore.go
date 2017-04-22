@@ -30,7 +30,7 @@ func RdbRoomUserInsert(roomUser *models.RoomUser) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel {
+func RdbRoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		trans, err := dbMap.Begin()
@@ -43,20 +43,62 @@ func RdbRoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreC
 			close(storeChannel)
 		}()
 
-		if isDeleteFirst {
-			query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
-			params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
-			_, err = trans.Exec(query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while deleting all room's user item.", err)
-				storeChannel <- result
-			}
+		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+		params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting all room's user item.", err)
+			storeChannel <- result
 		}
 
 		for _, roomUser := range roomUsers {
 			if err := trans.Insert(roomUser); err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
 				storeChannel <- result
+			}
+		}
+
+		if result.ProblemDetail == nil {
+			if err := trans.Commit(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			}
+		} else {
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			}
+		}
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbRoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		trans, err := dbMap.Begin()
+		result := StoreResult{}
+
+		defer func() {
+			if err = trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback.", err)
+			}
+			close(storeChannel)
+		}()
+
+		for _, roomUser := range roomUsers {
+			res := <-RdbRoomUserSelect(roomUser.RoomId, roomUser.UserId)
+			if res.ProblemDetail != nil {
+				result.ProblemDetail = res.ProblemDetail
+				storeChannel <- result
+				continue
+			}
+			if res.Data == nil {
+				if err := trans.Insert(roomUser); err != nil {
+					result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+					storeChannel <- result
+				}
+				continue
 			}
 		}
 

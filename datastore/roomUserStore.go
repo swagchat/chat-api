@@ -6,7 +6,8 @@ type RoomUserStore interface {
 	RoomUserCreateStore()
 
 	RoomUserInsert(roomUser *models.RoomUser) StoreChannel
-	RoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel
+	RoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel
+	RoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel
 	RoomUserSelect(roomId, userId string) StoreChannel
 	RoomUsersSelectByRoomId(roomId string) StoreChannel
 	RoomUsersSelectByUserId(userId string) StoreChannel

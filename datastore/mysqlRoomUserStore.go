@@ -10,8 +10,12 @@ func (provider MysqlProvider) RoomUserInsert(roomUser *models.RoomUser) StoreCha
 	return RdbRoomUserInsert(roomUser)
 }
 
-func (provider MysqlProvider) RoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel {
-	return RdbRoomUsersInsert(roomUsers, isDeleteFirst)
+func (provider MysqlProvider) RoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbRoomUsersDeleteAndInsert(roomUsers)
+}
+
+func (provider MysqlProvider) RoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbRoomUsersInsert(roomUsers)
 }
 
 func (provider MysqlProvider) RoomUserSelect(roomId, userId string) StoreChannel {

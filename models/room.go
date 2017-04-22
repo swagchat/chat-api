@@ -8,8 +8,8 @@ import (
 )
 
 type Rooms struct {
-	Rooms    []*Room `json:"rooms,omitempty" db:"-"`
-	AllCount int64   `json:"allCount,omitempty" db:"all_count"`
+	Rooms    []*Room `json:"rooms" db:"-"`
+	AllCount int64   `json:"allCount" db:"all_count"`
 }
 
 type Room struct {
@@ -48,6 +48,20 @@ type UserForRoom struct {
 }
 
 func (r *Room) IsValid() *ProblemDetail {
+	if r.RoomId != "" && !utils.IsValidId(r.RoomId) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "roomId",
+					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
+				},
+			},
+		}
+	}
+
 	if r.Name == "" {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
@@ -62,20 +76,6 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
-	roomId := r.RoomId
-	if roomId != "" && !utils.IsValidId(roomId) {
-		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
-			},
-		}
-	}
 	return nil
 }
 

@@ -41,11 +41,23 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 		}
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dRes := <-datastore.GetProvider().RoomUsersSelectByRoomId(roomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	if dRes.Data != nil {
+		oldRoomUsers := dRes.Data.([]*models.RoomUser)
+		go unsubscribeByRoomUsers(ctx, oldRoomUsers)
+	}
+
 	var zero int64
 	zero = 0
-	roomUsers := make([]*models.RoomUser, 0)
+	newRoomUsers := make([]*models.RoomUser, 0)
 	for _, userId := range userIds {
-		roomUsers = append(roomUsers, &models.RoomUser{
+		newRoomUsers = append(newRoomUsers, &models.RoomUser{
 			RoomId:      roomId,
 			UserId:      userId,
 			UnreadCount: &zero,
@@ -53,7 +65,7 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 			Created:     time.Now().UnixNano(),
 		})
 	}
-	dRes := <-datastore.GetProvider().RoomUsersInsert(roomUsers, true)
+	dRes = <-datastore.GetProvider().RoomUsersDeleteAndInsert(newRoomUsers)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -64,6 +76,10 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 	returnRoomUsers := &models.RoomUsers{
 		RoomUsers: dRes.Data.([]*models.RoomUser),
 	}
+
+	go subscribeByRoomUsers(ctx, newRoomUsers)
+
+	go publishUserJoin(roomId)
 
 	return returnRoomUsers, nil
 }
@@ -102,7 +118,7 @@ func PutRoomUser(roomId, userId string, put *models.RoomUser) (*models.RoomUser,
 	return dRes.Data.(*models.RoomUser), nil
 }
 
-func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) ([]*models.RoomUser, *models.ProblemDetail) {
+func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
 	// Room existence check
 	_, pd := selectRoom(roomId)
 	if pd != nil {
@@ -138,7 +154,9 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) ([
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	returnRoomUsers := dRes.Data.([]*models.RoomUser)
+	returnRoomUsers := &models.RoomUsers{
+		RoomUsers: dRes.Data.([]*models.RoomUser),
+	}
 
 	return returnRoomUsers, nil
 }
@@ -179,16 +197,10 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 			Created:     time.Now().UnixNano(),
 		})
 	}
-	dRes := <-datastore.GetProvider().RoomUsersInsert(roomUsers, false)
+	dRes := <-datastore.GetProvider().RoomUsersInsert(roomUsers)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go subscribeByRoomUsers(ctx, roomUsers)
-
-	go publishUserJoin(roomId)
 
 	dRes = <-datastore.GetProvider().RoomUsersSelectByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
@@ -197,6 +209,12 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 	returnRoomUsers := &models.RoomUsers{
 		RoomUsers: dRes.Data.([]*models.RoomUser),
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go subscribeByRoomUsers(ctx, roomUsers)
+
+	go publishUserJoin(roomId)
 
 	return returnRoomUsers, nil
 }
@@ -223,11 +241,10 @@ func publishUserJoin(roomId string) {
 			Payload:   utils.JSONText(buf.String()),
 		}
 		bytes, _ := json.Marshal(message)
-		messagingInfo := &messaging.MessagingInfo{
+		mi := &messaging.MessagingInfo{
 			Message: string(bytes),
 		}
-		messagingProvider := messaging.GetMessagingProvider()
-		err := messagingProvider.PublishMessage(messagingInfo)
+		err := messaging.GetMessagingProvider().PublishMessage(mi)
 		if err != nil {
 			utils.AppLogger.Error("",
 				zap.String("msg", "Publish error. (Add room's user list)"),
@@ -372,7 +389,7 @@ func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) 
 			ErrorName: models.ERROR_NAME_INVALID_PARAM,
 			InvalidParams: []models.InvalidParam{
 				models.InvalidParam{
-					Name:   "users",
+					Name:   "userIds",
 					Reason: "It contains a userId that does not exist.",
 				},
 			},

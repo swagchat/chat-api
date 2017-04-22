@@ -10,8 +10,12 @@ func (provider GcpSqlProvider) RoomUserInsert(roomUser *models.RoomUser) StoreCh
 	return RdbRoomUserInsert(roomUser)
 }
 
-func (provider GcpSqlProvider) RoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel {
-	return RdbRoomUsersInsert(roomUsers, isDeleteFirst)
+func (provider GcpSqlProvider) RoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbRoomUsersDeleteAndInsert(roomUsers)
+}
+
+func (provider GcpSqlProvider) RoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbRoomUsersInsert(roomUsers)
 }
 
 func (provider GcpSqlProvider) RoomUserSelect(roomId, userId string) StoreChannel {

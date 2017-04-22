@@ -24,11 +24,11 @@ func TestPostDevice(t *testing.T) {
 
 	testTable := []testRecord{
 		{
-			testNo: 1,
-			userId: "custom-user-id-1",
+			testNo:   1,
+			userId:   "custom-user-id-1",
+			platform: "1",
 			in: `
 				{
-					"platform": 1,
 					"token": "abc"
 				}
 			`,
@@ -36,11 +36,11 @@ func TestPostDevice(t *testing.T) {
 			httpStatusCode: 201,
 		},
 		{
-			testNo: 2,
-			userId: "custom-user-id-1",
+			testNo:   2,
+			userId:   "custom-user-id-1",
+			platform: "2",
 			in: `
 				{
-					"platform": 2,
 					"token": "def"
 				}
 			`,
@@ -48,11 +48,11 @@ func TestPostDevice(t *testing.T) {
 			httpStatusCode: 201,
 		},
 		{
-			testNo: 3,
-			userId: "custom-user-id-1",
+			testNo:   3,
+			userId:   "custom-user-id-1",
+			platform: "2",
 			in: `
 				{
-					"platform": 2,
 					"token": "def"
 				}
 			`,
@@ -60,32 +60,9 @@ func TestPostDevice(t *testing.T) {
 			httpStatusCode: 500,
 		},
 		{
-			testNo: 4,
-			userId: "custom-user-id-1",
-			in: `
-					{
-						"platform": 0,
-						"token": "abc"
-					}
-				`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create device item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"device\.platform","reason":"platform is invalid\. Currently only 1\(iOS\) and 2\(Android\) are supported\."}\]}$`,
-			httpStatusCode: 400,
-		},
-		{
-			testNo: 5,
-			userId: "custom-user-id-1",
-			in: `
-					{
-						"platform": 3,
-						"token": "abc"
-					}
-				`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create device item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"device\.platform","reason":"platform is invalid\. Currently only 1\(iOS\) and 2\(Android\) are supported\."}\]}$`,
-			httpStatusCode: 400,
-		},
-		{
-			testNo: 6,
-			userId: "custom-user-id-1",
+			testNo:   4,
+			userId:   "custom-user-id-1",
+			platform: "3",
 			in: `
 					{
 						"token": "abc"
@@ -95,27 +72,18 @@ func TestPostDevice(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 7,
-			userId: "custom-user-id-1",
-			in: `
-					{
-						"platform": 1
-					}
-				`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create device item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"token","reason":"token is required, but it's empty\."}\]}$`,
-			httpStatusCode: 400,
-		},
-		{
-			testNo: 8,
-			userId: "custom-user-id-1",
+			testNo:   5,
+			userId:   "custom-user-id-1",
+			platform: "1",
 			in: `
 				`,
 			out:            `(?m)^{"title":"Json parse error. \(Create device item\)","status":400,"errorName":"invalid-json"}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 9,
-			userId: "custom-user-id-1",
+			testNo:   6,
+			userId:   "custom-user-id-1",
+			platform: "2",
 			in: `
 					json
 				`,
@@ -126,7 +94,7 @@ func TestPostDevice(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		res, err := http.Post(ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId+"/devices", "application/json", reader)
+		res, err := http.Post(ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, "application/json", reader)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

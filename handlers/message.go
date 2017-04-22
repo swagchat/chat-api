@@ -9,24 +9,24 @@ import (
 )
 
 func SetMessageMux() {
-	Mux.PostFunc("/messages", ColsHandler(PostMessage))
+	Mux.PostFunc("/messages", ColsHandler(PostMessages))
 	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", ColsHandler(GetMessage))
 }
 
-func PostMessage(w http.ResponseWriter, r *http.Request) {
+func PostMessages(w http.ResponseWriter, r *http.Request) {
 	var post models.Messages
 	if err := decodeBody(r, &post); err != nil {
 		respondJsonDecodeError(w, r, "Create message item")
 		return
 	}
 
-	messages, pd := services.CreateMessage(&post)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	mRes := services.CreateMessage(&post)
+	if len(mRes.MessageIds) == 0 {
+		respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
 		return
 	}
 
-	respond(w, r, http.StatusCreated, "application/json", messages)
+	respond(w, r, http.StatusCreated, "application/json", mRes)
 }
 
 func GetMessage(w http.ResponseWriter, r *http.Request) {

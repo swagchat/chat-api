@@ -10,7 +10,7 @@ import (
 )
 
 func SetDeviceMux() {
-	Mux.PostFunc("/users/#userId^[a-z0-9-]$/devices", ColsHandler(PostDevice))
+	Mux.PostFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(PostDevice))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", ColsHandler(GetDevices))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(GetDevice))
 	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(PutDevice))
@@ -25,7 +25,8 @@ func PostDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId := bone.GetValue(r, "userId")
-	device, pd := services.CreateDevice(userId, &post)
+	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
+	device, pd := services.CreateDevice(userId, platform, &post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

@@ -14,18 +14,20 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateDevice(userId string, post *models.Device) (*models.Device, *models.ProblemDetail) {
+func CreateDevice(userId string, platform int, post *models.Device) (*models.Device, *models.ProblemDetail) {
 	// User existence check
 	_, pd := selectUser(userId)
 	if pd != nil {
 		return nil, pd
 	}
 
+	post.UserId = userId
+	post.Platform = platform
 	if pd := post.IsValid(); pd != nil {
 		return nil, pd
 	}
 
-	nRes := <-notification.GetProvider().CreateEndpoint(userId, post.Platform, post.Token)
+	nRes := <-notification.GetProvider().CreateEndpoint(userId, platform, post.Token)
 	if nRes.ProblemDetail != nil {
 		return nil, nRes.ProblemDetail
 	}
@@ -34,8 +36,6 @@ func CreateDevice(userId string, post *models.Device) (*models.Device, *models.P
 		notificationDeviceId = *nRes.Data.(*string)
 	}
 
-	post.UserId = userId
-	post.Platform = post.Platform
 	post.NotificationDeviceId = notificationDeviceId
 	dRes := <-datastore.GetProvider().DeviceInsert(post)
 	device := dRes.Data.(*models.Device)

@@ -10,8 +10,12 @@ func (provider SqliteProvider) RoomUserInsert(roomUser *models.RoomUser) StoreCh
 	return RdbRoomUserInsert(roomUser)
 }
 
-func (provider SqliteProvider) RoomUsersInsert(roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel {
-	return RdbRoomUsersInsert(roomUsers, isDeleteFirst)
+func (provider SqliteProvider) RoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbRoomUsersDeleteAndInsert(roomUsers)
+}
+
+func (provider SqliteProvider) RoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbRoomUsersInsert(roomUsers)
 }
 
 func (provider SqliteProvider) RoomUserSelect(roomId, userId string) StoreChannel {

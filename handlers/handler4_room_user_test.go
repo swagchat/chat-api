@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -16,282 +17,6 @@ var createRoomUserIds []string
 type roomUserStruct struct {
 	RoomUserId string `json:"roomUserId,omitempty"`
 }
-
-/*
-func TestPostRoomUser(t *testing.T) {
-	ts := httptest.NewServer(Mux)
-	defer ts.Close()
-
-	testTable := []testRecord{
-		{
-			testNo: 1,
-			roomId: "custom-room-id",
-			in: `
-				{
-					"users": ["custom-user-id"]
-				}
-			`,
-			out:            `(?m)^{"users":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 201,
-		},
-			{
-				testNo: 2,
-				in: `
-					{
-						"name": "dennis roomUser",
-						"isPublic": false
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 3,
-				in: `
-					{
-						"name": "dennis roomUser",
-						"isPublic": true
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 4,
-				in: `
-					{
-						"name": "dennis roomUser",
-						"pictureUrl": "http://localhost/images/dennis_roomUser.png"
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 5,
-				in: `
-					{
-						"name": "dennis roomUser",
-						"pictureUrl": "http://localhost/images/dennis_roomUser.png",
-						"informationUrl": "http://localhost/dennis_roomUser"
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","informationUrl":"http://localhost/dennis_roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 6,
-				in: `
-					{
-						"name": "dennis roomUser",
-						"pictureUrl": "http://localhost/images/dennis_roomUser.png",
-						"informationUrl": "http://localhost/dennis_roomUser",
-						"metaData": {"key": "value"}
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","informationUrl":"http://localhost/dennis_roomUser","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 7,
-				in: `
-					{
-						"roomUserId": "custom-roomUser-id",
-						"name": "dennis roomUser"
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"custom-roomUser-id","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 8,
-				in: `
-					{
-						"roomUserId": "custom-roomUser-id-for-delete",
-						"name": "dennis roomUser"
-					}
-				`,
-				out:            `(?m)^{"roomUserId":"custom-roomUser-id-for-delete","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-				httpStatusCode: 201,
-			},
-			{
-				testNo: 9,
-				in: `
-					{
-						"roomUserId": "custom-roomUser-id",
-						"name": "dennis roomUser"
-					}
-				`,
-				out:            `(?m)^{"title":"An error occurred while creating roomUser item.","status":500,"detail":".*","errorName":"database-error"}$`,
-				httpStatusCode: 500,
-			},
-			{
-				testNo: 10,
-				in: `
-				`,
-				out:            `(?m)^{"title":"Json parse error. \(Create roomUser item\)","status":400,"errorName":"invalid-json"}$`,
-				httpStatusCode: 400,
-			},
-			{
-				testNo: 11,
-				in: `
-					json
-				`,
-				out:            `(?m)^{"title":"Json parse error. \(Create roomUser item\)","status":400,"errorName":"invalid-json"}$`,
-				httpStatusCode: 400,
-			},
-	}
-
-	for _, testRecord := range testTable {
-		reader := strings.NewReader(testRecord.in)
-		res, err := http.Post(ts.URL+"/"+utils.API_VERSION+"/rooms/"+testRecord.roomId+"/users", "application/json", reader)
-
-		if err != nil {
-			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
-		}
-
-		data, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			t.Fatalf("TestNo %d\nError by ioutil.ReadAll(): %v", testRecord.testNo, err)
-		}
-
-		if res.StatusCode != testRecord.httpStatusCode {
-			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		r := regexp.MustCompile(testRecord.out)
-		if !r.MatchString(string(data)) {
-			t.Fatalf("TestNo %d\nResponse Body Failure\n[expected]%s\n[result  ]%s", testRecord.testNo, testRecord.out, string(data))
-		}
-
-		if testRecord.httpStatusCode == 201 {
-			roomUser := &roomUserStruct{}
-			_ = json.Unmarshal(data, roomUser)
-			createRoomUserIds = append(createRoomUserIds, roomUser.RoomUserId)
-		}
-	}
-}
-
-/*
-func TestGetRoomUsers(t *testing.T) {
-	ts := httptest.NewServer(Mux)
-	defer ts.Close()
-
-	testTable := []testRecord{
-		{
-			testNo:         1,
-			out:            `(?m)^{"roomUsers":[{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","informationUrl":"http://localhost/dennis_roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","informationUrl":"http://localhost/dennis_roomUser","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"custom-roomUser-id","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomUserId":"custom-roomUser-id-for-delete","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}]}$`,
-			httpStatusCode: 200,
-		},
-	}
-
-	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/roomUsers")
-		if err != nil {
-			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
-		}
-
-		if res.StatusCode != testRecord.httpStatusCode {
-			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		data, err := ioutil.ReadAll(res.Body)
-		r := regexp.MustCompile(testRecord.out)
-		if !r.MatchString(string(data)) {
-			t.Fatalf("TestNo %d\nResponse Body Failure\n[expected]%s\n[result  ]%s", testRecord.testNo, testRecord.out, string(data))
-		}
-	}
-}
-
-func TestGetRoomUser(t *testing.T) {
-	ts := httptest.NewServer(Mux)
-	defer ts.Close()
-
-	if len(createRoomUserIds) != 8 {
-		t.Fatalf("createRoomUserIds length error \n[expected]%d\n[result  ]%d", 8, len(createRoomUserIds))
-		t.Failed()
-	}
-
-	testTable := []testRecord{
-		{
-			testNo:         1,
-			roomUserId:     createRoomUserIds[0],
-			out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         2,
-			roomUserId:     createRoomUserIds[1],
-			out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         3,
-			roomUserId:     createRoomUserIds[2],
-			out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         4,
-			roomUserId:     createRoomUserIds[3],
-			out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         5,
-			roomUserId:     createRoomUserIds[4],
-			out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","informationUrl":"http://localhost/dennis_roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         6,
-			roomUserId:     createRoomUserIds[5],
-			out:            `(?m)^{"roomUserId":"[a-z0-9-]+","name":"dennis roomUser","pictureUrl":"http://localhost/images/dennis_roomUser.png","informationUrl":"http://localhost/dennis_roomUser","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         7,
-			roomUserId:     createRoomUserIds[6],
-			out:            `(?m)^{"roomUserId":"custom-roomUser-id","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         8,
-			roomUserId:     createRoomUserIds[7],
-			out:            `(?m)^{"roomUserId":"custom-roomUser-id-for-delete","name":"dennis roomUser","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo:         9,
-			roomUserId:     "not-exist-roomUser-id",
-			out:            ``,
-			httpStatusCode: 404,
-		},
-	}
-
-	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/roomUsers/" + testRecord.roomUserId)
-
-		if err != nil {
-			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
-		}
-
-		data, err := ioutil.ReadAll(res.Body)
-		if err != nil {
-			t.Fatalf("TestNo %d\nError by ioutil.ReadAll(): %v", testRecord.testNo, err)
-		}
-
-		if res.StatusCode != testRecord.httpStatusCode {
-			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
-		}
-
-		r := regexp.MustCompile(testRecord.out)
-		if !r.MatchString(string(data)) {
-			t.Fatalf("TestNo %d\nResponse Body Failure\n[expected]%s\n[result  ]%s", testRecord.testNo, testRecord.out, string(data))
-		}
-	}
-}
-*/
 
 func TestPutRoomUsers(t *testing.T) {
 	ts := httptest.NewServer(Mux)
@@ -328,7 +53,7 @@ func TestPutRoomUsers(t *testing.T) {
 					"userIds": []
 				}
 			`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"users","reason":"Not set\."}\]}$`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"userIds","reason":"Not set\."}\]}$`,
 			httpStatusCode: 400,
 		},
 		{
@@ -339,7 +64,7 @@ func TestPutRoomUsers(t *testing.T) {
 					"userIds": ["not-exist-user-id"]
 				}
 			`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"users","reason":"It contains a userId that does not exist\."}\]}$`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"userIds","reason":"It contains a userId that does not exist\."}\]}$`,
 			httpStatusCode: 400,
 		},
 		{
@@ -350,7 +75,7 @@ func TestPutRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id", "not-exist-user-id"]
 				}
 			`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"users","reason":"It contains a userId that does not exist\."}\]}$`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"userIds","reason":"It contains a userId that does not exist\."}\]}$`,
 			httpStatusCode: 400,
 		},
 		{
@@ -551,7 +276,7 @@ func TestDeleteRoomUsers(t *testing.T) {
 					"userIds": ["not-exist-user-id"]
 				}
 				`,
-			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"users","reason":"It contains a userId that does not exist\."}\]}$`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"userIds","reason":"It contains a userId that does not exist\."}\]}$`,
 			httpStatusCode: 400,
 		},
 	}
@@ -572,6 +297,93 @@ func TestDeleteRoomUsers(t *testing.T) {
 		r := regexp.MustCompile(testRecord.out)
 		if !r.MatchString(string(data)) {
 			t.Fatalf("TestNo %d\nResponse Body Failure\n[expected]%s\n[result  ]%s", testRecord.testNo, testRecord.out, string(data))
+		}
+	}
+}
+
+func TestPostRoomUsers(t *testing.T) {
+	ts := httptest.NewServer(Mux)
+	defer ts.Close()
+
+	testTable := []testRecord{
+		{
+			testNo: 1,
+			roomId: "custom-room-id",
+			in: `
+				{
+					"userIds": ["custom-user-id-1"]
+				}
+			`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+}]}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 2,
+			roomId: "custom-room-id",
+			in: `
+				{
+					"userIds": ["custom-user-id-1","custom-user-id-2"]
+				}
+			`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":[0-9]+}]}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 3,
+			roomId: "custom-room-id",
+			in: `
+				`,
+			out:            `(?m)^{"title":"Json parse error. \(Create room's user list\)","status":400,"errorName":"invalid-json"}$`,
+			httpStatusCode: 400,
+		},
+		{
+			testNo: 4,
+			roomId: "custom-room-id",
+			in: `
+					json
+				`,
+			out:            `(?m)^{"title":"Json parse error. \(Create room's user list\)","status":400,"errorName":"invalid-json"}$`,
+			httpStatusCode: 400,
+		},
+		{
+			testNo: 5,
+			roomId: "custom-room-id",
+			in: `
+				{
+					"userIds": ["not-exist-user-id"]
+				}
+				`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room's user list\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"userIds","reason":"It contains a userId that does not exist\."}\]}$`,
+			httpStatusCode: 400,
+		},
+	}
+
+	for _, testRecord := range testTable {
+		reader := strings.NewReader(testRecord.in)
+		res, err := http.Post(ts.URL+"/"+utils.API_VERSION+"/rooms/"+testRecord.roomId+"/users", "application/json", reader)
+
+		if err != nil {
+			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
+		}
+
+		data, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			t.Fatalf("TestNo %d\nError by ioutil.ReadAll(): %v", testRecord.testNo, err)
+		}
+
+		if res.StatusCode != testRecord.httpStatusCode {
+			t.Fatalf("TestNo %d\nHTTP Status Code Failure\n[expected]%d\n[result  ]%d", testRecord.testNo, testRecord.httpStatusCode, res.StatusCode)
+		}
+
+		r := regexp.MustCompile(testRecord.out)
+		if !r.MatchString(string(data)) {
+			t.Fatalf("TestNo %d\nResponse Body Failure\n[expected]%s\n[result  ]%s", testRecord.testNo, testRecord.out, string(data))
+		}
+
+		if testRecord.httpStatusCode == 201 {
+			roomUser := &roomUserStruct{}
+			_ = json.Unmarshal(data, roomUser)
+			createRoomUserIds = append(createRoomUserIds, roomUser.RoomUserId)
 		}
 	}
 }

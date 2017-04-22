@@ -1,8 +1,10 @@
 package datastore
 
 import (
+	"encoding/json"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
@@ -39,11 +41,85 @@ func RdbMessageInsert(message *models.Message) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
+		trans, err := dbMap.Begin()
 		result := StoreResult{}
 
-		if err := dbMap.Insert(message); err != nil {
+		if err = trans.Insert(message); err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while creating message item.", err)
 		}
+
+		var rooms []*models.Room
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
+		params := map[string]interface{}{"roomId": message.RoomId}
+		if _, err := trans.Select(&rooms, query, params); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
+		}
+		if len(rooms) != 1 {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
+		}
+		room := rooms[0]
+		var lastMessage string
+		switch message.Type {
+		case "text":
+			var payloadText models.PayloadText
+			json.Unmarshal(message.Payload, &payloadText)
+			log.Printf("%#v\n", payloadText)
+			lastMessage = payloadText.Text
+		case "image":
+			lastMessage = "画像を送信しました"
+		case "location":
+			lastMessage = "位置情報を送信しました"
+		}
+		room.LastMessage = lastMessage
+		room.LastMessageUpdated = time.Now().UnixNano()
+		_, err = trans.Update(room)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+		}
+
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
+		params = map[string]interface{}{
+			"roomId": message.RoomId,
+			"userId": message.UserId,
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user unread count.", err)
+		}
+
+		var users []*models.User
+		query = utils.AppendStrings("SELECT u.* ",
+			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
+			"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
+			"ON ru.user_id = u.user_id ",
+			"WHERE room_id = :roomId;")
+		params = map[string]interface{}{"roomId": message.RoomId}
+		_, err = trans.Select(&users, query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user list.", err)
+		}
+		for _, user := range users {
+			if user.UserId == message.UserId {
+				continue
+			}
+			query := utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET unread_count=unread_count+1 WHERE user_id=:userId;")
+			params := map[string]interface{}{"userId": user.UserId}
+			_, err := trans.Exec(query, params)
+			if err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while updating user unread count.", err)
+			}
+		}
+
+		if result.ProblemDetail == nil {
+			if err := trans.Commit(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		} else {
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			}
+		}
+		result.Data = lastMessage
 
 		storeChannel <- result
 	}()

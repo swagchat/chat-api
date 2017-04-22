@@ -7,12 +7,11 @@ import (
 )
 
 type RoomUser struct {
-	RoomId                  string         `json:"roomId,omitempty" db:"room_id"`
-	UserId                  string         `json:"userId,omitempty" db:"user_id"`
-	UnreadCount             *int64         `json:"unreadCount,omitempty" db:"unread_count"`
-	MetaData                utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
-	NotificationSubscribeId *string        `json:"-" db:"notification_subscribe_id"`
-	Created                 int64          `json:"created,omitempty" db:"created"`
+	RoomId      string         `json:"roomId,omitempty" db:"room_id"`
+	UserId      string         `json:"userId,omitempty" db:"user_id"`
+	UnreadCount *int64         `json:"unreadCount,omitempty" db:"unread_count"`
+	MetaData    utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+	Created     int64          `json:"created,omitempty" db:"created"`
 }
 
 type ErrorRoomUser struct {
@@ -30,7 +29,7 @@ type RequestRoomUserIds struct {
 }
 
 type RoomUsers struct {
-	RoomUsers []*RoomUser `json:"roomUsers,omitempty"`
+	RoomUsers []*RoomUser `json:"roomUsers"`
 }
 
 func (rus *RequestRoomUserIds) IsValid() *ProblemDetail {
@@ -41,7 +40,7 @@ func (rus *RequestRoomUserIds) IsValid() *ProblemDetail {
 			ErrorName: ERROR_NAME_INVALID_PARAM,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
-					Name:   "users",
+					Name:   "userIds",
 					Reason: "Not set.",
 				},
 			},

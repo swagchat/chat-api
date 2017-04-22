@@ -24,7 +24,7 @@ import (
 var Mux *bone.Mux
 var Context context.Context
 
-func StartServer() {
+func StartServer(ctx context.Context) {
 	Mux = bone.New().Prefix(utils.AppendStrings("/", utils.API_VERSION))
 	Mux.GetFunc("", indexHandler)
 	Mux.GetFunc("/", indexHandler)
@@ -41,20 +41,7 @@ func StartServer() {
 	}
 	Mux.NotFoundFunc(notFoundHandler)
 
-	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		for {
-			s := <-signalChan
-			if s == syscall.SIGTERM || s == syscall.SIGINT {
-				utils.AppLogger.Info("",
-					zap.String("msg", "Swagchat API Shutdown start!"),
-					zap.String("signal", s.String()),
-				)
-				gracedown.Close()
-			}
-		}
-	}()
+	go run(ctx)
 
 	utils.AppLogger.Info("",
 		zap.String("msg", "Swagchat API Start!"),
@@ -70,8 +57,27 @@ func StartServer() {
 	)
 }
 
+func run(ctx context.Context) {
+	signalChan := make(chan os.Signal)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
+	for {
+		select {
+		case <-ctx.Done():
+			gracedown.Close()
+		case s := <-signalChan:
+			if s == syscall.SIGTERM || s == syscall.SIGINT {
+				utils.AppLogger.Info("",
+					zap.String("msg", "Swagchat API Shutdown start!"),
+					zap.String("signal", s.String()),
+				)
+				gracedown.Close()
+			}
+		}
+	}
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
+	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
 }
 
 func ColsHandler(fn http.HandlerFunc) http.HandlerFunc {
