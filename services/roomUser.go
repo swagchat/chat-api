@@ -111,13 +111,15 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 	var zero int64
 	zero = 0
 	roomUsers := make([]*models.RoomUser, 0)
+	nowTimestamp := time.Now().UnixNano()
 	for _, userId := range userIds {
 		roomUsers = append(roomUsers, &models.RoomUser{
 			RoomId:      roomId,
 			UserId:      userId,
 			UnreadCount: &zero,
 			MetaData:    []byte("{}"),
-			Created:     time.Now().UnixNano(),
+			Created:     nowTimestamp,
+			Modified:    nowTimestamp,
 		})
 	}
 	dRes := <-datastore.GetProvider().InsertRoomUsers(roomUsers)
@@ -136,44 +138,25 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go subscribeByRoomUsers(ctx, roomUsers)
-
 	go publishUserJoin(roomId)
 
 	return returnRoomUsers, nil
 }
 
-func PutRoomUser(roomId, userId string, put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().SelectRoomUser(roomId, userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Update room's user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId and userId",
-					Reason: "room's user item is not exist.",
-				},
-			},
-		}
+func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
+	roomUser, pd := selectRoomUser(put.RoomId, put.UserId)
+	if pd != nil {
+		return nil, pd
 	}
 
-	put.RoomId = roomId
-	put.UserId = userId
-	dRes = <-datastore.GetProvider().UpdateRoomUser(put)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	roomUser.Put(put)
+	if pd := roomUser.IsValid(); pd != nil {
+		return nil, pd
 	}
+	roomUser.BeforeSave()
 
-	dRes = <-datastore.GetProvider().SelectRoomUser(roomId, userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-
-	return dRes.Data.(*models.RoomUser), nil
+	dRes := <-datastore.GetProvider().UpdateRoomUser(roomUser)
+	return dRes.Data.(*models.RoomUser), dRes.ProblemDetail
 }
 
 func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
@@ -217,6 +200,19 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 	}
 
 	return returnRoomUsers, nil
+}
+
+func selectRoomUser(roomId, userId string) (*models.RoomUser, *models.ProblemDetail) {
+	dRes := <-datastore.GetProvider().SelectRoomUser(roomId, userId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	if dRes.Data == nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusNotFound,
+		}
+	}
+	return dRes.Data.(*models.RoomUser), nil
 }
 
 func publishUserJoin(roomId string) {

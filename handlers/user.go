@@ -60,8 +60,8 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := bone.GetValue(r, "userId")
-	user, pd := services.PutUser(userId, &put)
+	put.UserId = bone.GetValue(r, "userId")
+	user, pd := services.PutUser(&put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

@@ -63,7 +63,6 @@ func RdbInsertMessage(message *models.Message) StoreChannel {
 		case "text":
 			var payloadText models.PayloadText
 			json.Unmarshal(message.Payload, &payloadText)
-			log.Printf("%#v\n", payloadText)
 			lastMessage = payloadText.Text
 		case "image":
 			lastMessage = "画像を送信しました"

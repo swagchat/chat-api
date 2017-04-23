@@ -56,9 +56,9 @@ func PutRoomUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomId := bone.GetValue(r, "roomId")
-	userId := bone.GetValue(r, "userId")
-	roomUser, pd := services.PutRoomUser(roomId, userId, &put)
+	put.RoomId = bone.GetValue(r, "roomId")
+	put.UserId = bone.GetValue(r, "userId")
+	roomUser, pd := services.PutRoomUser(&put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

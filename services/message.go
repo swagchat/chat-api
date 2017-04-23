@@ -69,15 +69,14 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		}
 		messageIds = append(messageIds, post.MessageId)
 
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		go publishMessage(ctx, post)
-
 		mi := &notification.MessageInfo{
 			Text:  utils.AppendStrings("[", room.Name, "]", lastMessage),
 			Badge: 1,
 		}
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
 		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, mi)
+		go publishMessage(post)
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -115,28 +114,21 @@ func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
 	return dRes.Data.(*models.Message), nil
 }
 
-func publishMessage(ctx context.Context, m *models.Message) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			m.EventName = "message"
-			bytes, err := json.Marshal(m)
-			if err != nil {
-				utils.AppLogger.Error("",
-					zap.String("msg", err.Error()),
-				)
-			}
-			mi := &messaging.MessagingInfo{
-				Message: string(bytes),
-			}
-			err = messaging.GetMessagingProvider().PublishMessage(mi)
-			if err != nil {
-				utils.AppLogger.Error("",
-					zap.String("msg", err.Error()),
-				)
-			}
-		}
+func publishMessage(m *models.Message) {
+	m.EventName = "message"
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		utils.AppLogger.Error("",
+			zap.String("msg", err.Error()),
+		)
+	}
+	mi := &messaging.MessagingInfo{
+		Message: string(bytes),
+	}
+	err = messaging.GetMessagingProvider().PublishMessage(mi)
+	if err != nil {
+		utils.AppLogger.Error("",
+			zap.String("msg", err.Error()),
+		)
 	}
 }

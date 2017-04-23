@@ -53,8 +53,8 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 	return room, nil
 }
 
-func PutRoom(roomId string, put *models.Room) (*models.Room, *models.ProblemDetail) {
-	room, pd := selectRoom(roomId)
+func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
+	room, pd := selectRoom(put.RoomId)
 	if pd != nil {
 		return nil, pd
 	}
@@ -96,11 +96,11 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 	return nil
 }
 
-func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages, *models.ProblemDetail) {
+func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *models.ProblemDetail) {
 	var err error
 	limit := 10
 	offset := 0
-	if limitArray, ok := requestParams["limit"]; ok {
+	if limitArray, ok := params["limit"]; ok {
 		limit, err = strconv.Atoi(limitArray[0])
 		if err != nil {
 			return nil, &models.ProblemDetail{
@@ -116,7 +116,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 			}
 		}
 	}
-	if offsetArray, ok := requestParams["offset"]; ok {
+	if offsetArray, ok := params["offset"]; ok {
 		offset, err = strconv.Atoi(offsetArray[0])
 		if err != nil {
 			return nil, &models.ProblemDetail{

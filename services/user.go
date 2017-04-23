@@ -52,8 +52,8 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 	return user, pd
 }
 
-func PutUser(userId string, put *models.User) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(userId)
+func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
+	user, pd := selectUser(put.UserId)
 	if pd != nil {
 		return nil, pd
 	}

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/fairway-corp/swagchat-api/utils"
+	"time"
 )
 
 type RoomUser struct {
@@ -12,6 +13,56 @@ type RoomUser struct {
 	UnreadCount *int64         `json:"unreadCount,omitempty" db:"unread_count"`
 	MetaData    utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 	Created     int64          `json:"created,omitempty" db:"created"`
+	Modified    int64          `json:"modified,omitempty" db:"modified"`
+}
+
+func (ru *RoomUser) IsValid() *ProblemDetail {
+	if ru.RoomId != "" && !utils.IsValidId(ru.RoomId) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room user item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "roomId",
+					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
+				},
+			},
+		}
+	}
+
+	if ru.UserId != "" && !utils.IsValidId(ru.UserId) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room user item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userId",
+					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
+				},
+			},
+		}
+	}
+
+	return nil
+}
+
+func (ru *RoomUser) BeforeSave() {
+	nowDatetime := time.Now().UnixNano()
+	if ru.Created == 0 {
+		ru.Created = nowDatetime
+	}
+	ru.Modified = nowDatetime
+}
+
+func (ru *RoomUser) Put(put *RoomUser) {
+	if put.UnreadCount != nil {
+		ru.UnreadCount = put.UnreadCount
+	}
+	if put.MetaData != nil {
+		ru.MetaData = put.MetaData
+	}
 }
 
 type ErrorRoomUser struct {

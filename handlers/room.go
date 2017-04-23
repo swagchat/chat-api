@@ -63,8 +63,8 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roomId := bone.GetValue(r, "roomId")
-	room, pd := services.PutRoom(roomId, &put)
+	put.RoomId = bone.GetValue(r, "roomId")
+	room, pd := services.PutRoom(&put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -86,8 +86,8 @@ func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 
 func GetRoomMessages(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
-	requestParams, _ := url.ParseQuery(r.URL.RawQuery)
-	messages, pd := services.GetRoomMessages(roomId, requestParams)
+	params, _ := url.ParseQuery(r.URL.RawQuery)
+	messages, pd := services.GetRoomMessages(roomId, params)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
