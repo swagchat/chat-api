@@ -37,7 +37,7 @@ func CreateDevice(userId string, platform int, post *models.Device) (*models.Dev
 	}
 
 	post.NotificationDeviceId = notificationDeviceId
-	dRes := <-datastore.GetProvider().DeviceInsert(post)
+	dRes := <-datastore.GetProvider().InsertDevice(post)
 	device := dRes.Data.(*models.Device)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -48,7 +48,7 @@ func CreateDevice(userId string, platform int, post *models.Device) (*models.Dev
 }
 
 func GetDevices() (*models.Devices, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().DeviceSelectAll()
+	dRes := <-datastore.GetProvider().SelectDevices()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -97,7 +97,7 @@ func PutDevice(userId string, platform int, put *models.Device) (*models.Device,
 			Token:                put.Token,
 			NotificationDeviceId: notificationDeviceId,
 		}
-		dRes := <-datastore.GetProvider().DeviceUpdate(newDevice)
+		dRes := <-datastore.GetProvider().UpdateDevice(newDevice)
 		if dRes.ProblemDetail != nil {
 			return nil, dRes.ProblemDetail
 		}
@@ -130,7 +130,7 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 		return nRes.ProblemDetail
 	}
 
-	dRes := <-datastore.GetProvider().DeviceDelete(userId, platform)
+	dRes := <-datastore.GetProvider().DeleteDevice(userId, platform)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -144,7 +144,7 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 
 func SelectDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
 	dp := datastore.GetProvider()
-	dRes := <-dp.DeviceSelect(userId, platform)
+	dRes := <-dp.SelectDevice(userId, platform)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -157,7 +157,7 @@ func SelectDevice(userId string, platform int) (*models.Device, *models.ProblemD
 }
 
 func subscribeByDevice(ctx context.Context, device *models.Device) {
-	dRes := <-datastore.GetProvider().RoomUsersSelectByUserId(device.UserId)
+	dRes := <-datastore.GetProvider().SelectRoomUsersByUserId(device.UserId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -171,7 +171,7 @@ func subscribeByDevice(ctx context.Context, device *models.Device) {
 }
 
 func unsubscribeByDevice(ctx context.Context, device *models.Device) {
-	dRes := <-datastore.GetProvider().SubscriptionSelectByUserIdAndPlatform(device.UserId, device.Platform)
+	dRes := <-datastore.GetProvider().SelectSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -193,7 +193,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
-			dRes := <-dp.RoomSelect(ru.RoomId)
+			dRes := <-dp.SelectRoom(ru.RoomId)
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			} else {
@@ -210,7 +210,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 							Platform:                   device.Platform,
 							NotificationSubscriptionId: notificationSubscriptionId,
 						}
-						dRes := <-dp.SubscriptionInsert(subscription)
+						dRes := <-dp.InsertSubscription(subscription)
 						if dRes.ProblemDetail != nil {
 							pdChan <- dRes.ProblemDetail
 						}
@@ -252,7 +252,7 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) {
 			if nRes.ProblemDetail != nil {
 				pdChan <- nRes.ProblemDetail
 			}
-			dRes := <-dp.SubscriptionDelete(subscription)
+			dRes := <-dp.DeleteSubscription(subscription)
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			}

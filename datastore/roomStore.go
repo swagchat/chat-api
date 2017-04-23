@@ -3,12 +3,12 @@ package datastore
 import "github.com/fairway-corp/swagchat-api/models"
 
 type RoomStore interface {
-	RoomCreateStore()
+	CreateRoomStore()
 
-	RoomInsert(room *models.Room) StoreChannel
-	RoomSelect(roomId string) StoreChannel
-	RoomUpdate(room *models.Room) StoreChannel
-	RoomUpdateDeleted(roomId string) StoreChannel
-	RoomSelectAll() StoreChannel
-	RoomSelectUsersForRoom(roomId string) StoreChannel
+	InsertRoom(room *models.Room) StoreChannel
+	SelectRoom(roomId string) StoreChannel
+	SelectRooms() StoreChannel
+	SelectUsersForRoom(roomId string) StoreChannel
+	UpdateRoom(room *models.Room) StoreChannel
+	UpdateRoomDeleted(roomId string) StoreChannel
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func RdbRoomCreateStore() {
+func RdbCreateRoomStore() {
 	tableMap := dbMap.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -21,7 +21,7 @@ func RdbRoomCreateStore() {
 	}
 }
 
-func RdbRoomInsert(room *models.Room) StoreChannel {
+func RdbInsertRoom(room *models.Room) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -37,7 +37,7 @@ func RdbRoomInsert(room *models.Room) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomSelect(roomId string) StoreChannel {
+func RdbSelectRoom(roomId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -58,7 +58,61 @@ func RdbRoomSelect(roomId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUpdate(room *models.Room) StoreChannel {
+func RdbSelectRooms() StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var rooms []*models.Room
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
+		_, err := dbMap.Select(&rooms, query)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room items.", err)
+		}
+		result.Data = rooms
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbSelectUsersForRoom(roomId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var users []*models.UserForRoom
+		query := utils.AppendStrings("SELECT ",
+			"u.user_id, ",
+			"u.name, ",
+			"u.picture_url, ",
+			"u.information_url, ",
+			"u.meta_data, ",
+			"u.created, ",
+			"u.modified, ",
+			"ru.unread_count AS ru_unread_count, ",
+			"ru.meta_data AS ru_meta_data, ",
+			"ru.created AS ru_created ",
+			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
+			"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
+			"ON ru.user_id = u.user_id ",
+			"WHERE ru.room_id = :roomId AND u.deleted = 0 ",
+			"ORDER BY u.created;")
+		params := map[string]interface{}{"roomId": roomId}
+		_, err := dbMap.Select(&users, query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room users.", err)
+		}
+		result.Data = users
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbUpdateRoom(room *models.Room) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -75,7 +129,7 @@ func RdbRoomUpdate(room *models.Room) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUpdateDeleted(roomId string) StoreChannel {
+func RdbUpdateRoomDeleted(roomId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -120,60 +174,6 @@ func RdbRoomUpdateDeleted(roomId string) StoreChannel {
 				result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
 			}
 		}
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbRoomSelectAll() StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var rooms []*models.Room
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
-		_, err := dbMap.Select(&rooms, query)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room items.", err)
-		}
-		result.Data = rooms
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbRoomSelectUsersForRoom(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var users []*models.UserForRoom
-		query := utils.AppendStrings("SELECT ",
-			"u.user_id, ",
-			"u.name, ",
-			"u.picture_url, ",
-			"u.information_url, ",
-			"u.meta_data, ",
-			"u.created, ",
-			"u.modified, ",
-			"ru.unread_count AS ru_unread_count, ",
-			"ru.meta_data AS ru_meta_data, ",
-			"ru.created AS ru_created ",
-			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-			"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
-			"ON ru.user_id = u.user_id ",
-			"WHERE ru.room_id = :roomId AND u.deleted = 0 ",
-			"ORDER BY u.created;")
-		params := map[string]interface{}{"roomId": roomId}
-		_, err := dbMap.Select(&users, query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room users.", err)
-		}
-		result.Data = users
 
 		storeChannel <- result
 	}()

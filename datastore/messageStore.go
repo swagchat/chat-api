@@ -3,11 +3,11 @@ package datastore
 import "github.com/fairway-corp/swagchat-api/models"
 
 type MessageStore interface {
-	MessageCreateStore()
+	CreateMessageStore()
 
-	MessageInsert(message *models.Message) StoreChannel
-	MessageSelect(messageId string) StoreChannel
-	MessageUpdate(message *models.Message) StoreChannel
-	MessageSelectAll(roomId string, limit, offset int) StoreChannel
-	MessageCount(roomId string) StoreChannel
+	InsertMessage(message *models.Message) StoreChannel
+	SelectMessage(messageId string) StoreChannel
+	SelectMessages(roomId string, limit, offset int) StoreChannel
+	SelectCountMessagesByRoomId(roomId string) StoreChannel
+	UpdateMessage(message *models.Message) StoreChannel
 }

@@ -2,46 +2,46 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider MysqlProvider) UserCreateStore() {
-	RdbUserCreateStore()
+func (provider MysqlProvider) CreateUserStore() {
+	RdbCreateUserStore()
 }
 
-func (provider MysqlProvider) UserInsert(user *models.User) StoreChannel {
-	return RdbUserInsert(user)
+func (provider MysqlProvider) InsertUser(user *models.User) StoreResult {
+	return RdbInsertUser(user)
 }
 
-func (provider MysqlProvider) UserSelect(userId string, isWithRooms, isWithDevices bool) StoreChannel {
-	return RdbUserSelect(userId, isWithRooms, isWithDevices)
+func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreChannel {
+	return RdbSelectUser(userId, isWithRooms, isWithDevices)
 }
 
-func (provider MysqlProvider) UserUpdate(user *models.User) StoreChannel {
-	return RdbUserUpdate(user)
+func (provider MysqlProvider) SelectUsers() StoreChannel {
+	return RdbSelectUsers()
 }
 
-func (provider MysqlProvider) UserUpdateDeleted(userId string) StoreChannel {
-	return RdbUserUpdateDeleted(userId)
+func (provider MysqlProvider) SelectRoomsForUser(userId string) StoreChannel {
+	return RdbSelectRoomsForUser(userId)
 }
 
-func (provider MysqlProvider) UserSelectAll() StoreChannel {
-	return RdbUserSelectAll()
+func (provider MysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreChannel {
+	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (provider MysqlProvider) UserSelectRoomsForUser(userId string) StoreChannel {
-	return RdbUserSelectRoomsForUser(userId)
+func (provider MysqlProvider) UpdateUser(user *models.User) StoreChannel {
+	return RdbUpdateUser(user)
+}
+
+func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreChannel {
+	return RdbUpdateUserDeleted(userId)
 }
 
 //func (provider MysqlProvider) UserSelectUserRooms(userId string) StoreChannel {
 //	return RdbUserSelectUserRooms(userId)
 //}
 
-func (provider MysqlProvider) UserUnreadCountUp(userId string) StoreChannel {
-	return RdbUserUnreadCountUp(userId)
-}
-
-func (provider MysqlProvider) UserUnreadCountRecalc(userId string) StoreChannel {
-	return RdbUserUnreadCountRecalc(userId)
-}
-
-func (provider MysqlProvider) UserUserIdsSelectByUserIds(userIds []string) StoreChannel {
-	return RdbUserUserIdsSelectByUserIds(userIds)
-}
+//func (provider MysqlProvider) UserUnreadCountUp(userId string) StoreChannel {
+//	return RdbUserUnreadCountUp(userId)
+//}
+//
+//func (provider MysqlProvider) UserUnreadCountRecalc(userId string) StoreChannel {
+//	return RdbUserUnreadCountRecalc(userId)
+//}

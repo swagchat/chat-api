@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/fairway-corp/swagchat-api/models"
@@ -29,7 +30,7 @@ type Provider interface {
 	DeleteEndpoint(string) NotificationChannel
 	Subscribe(string, string) NotificationChannel
 	Unsubscribe(string) NotificationChannel
-	Publish(string, *MessageInfo) NotificationChannel
+	Publish(context.Context, string, *MessageInfo) NotificationChannel
 }
 
 func GetProvider() Provider {

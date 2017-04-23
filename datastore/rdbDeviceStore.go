@@ -8,7 +8,7 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func RdbDeviceCreateStore() {
+func RdbCreateDeviceStore() {
 	tableMap := dbMap.AddTableWithName(models.Device{}, TABLE_NAME_DEVICE)
 	tableMap.SetUniqueTogether("user_id", "platform")
 	for _, columnMap := range tableMap.Columns {
@@ -21,7 +21,7 @@ func RdbDeviceCreateStore() {
 	}
 }
 
-func RdbDeviceInsert(device *models.Device) StoreChannel {
+func RdbInsertDevice(device *models.Device) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -37,7 +37,26 @@ func RdbDeviceInsert(device *models.Device) StoreChannel {
 	return storeChannel
 }
 
-func RdbDeviceSelect(userId string, platform int) StoreChannel {
+func RdbSelectDevices() StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var devices []*models.Device
+		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, ";")
+		_, err := dbMap.Select(&devices, query)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
+		}
+		result.Data = devices
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbSelectDevice(userId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -61,7 +80,7 @@ func RdbDeviceSelect(userId string, platform int) StoreChannel {
 	return storeChannel
 }
 
-func RdbDeviceSelectByUserId(userId string) StoreChannel {
+func RdbSelectDevicesByUserId(userId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -82,7 +101,7 @@ func RdbDeviceSelectByUserId(userId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbDeviceUpdate(device *models.Device) StoreChannel {
+func RdbUpdateDevice(device *models.Device) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -127,26 +146,7 @@ func RdbDeviceUpdate(device *models.Device) StoreChannel {
 	return storeChannel
 }
 
-func RdbDeviceSelectAll() StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var devices []*models.Device
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, ";")
-		_, err := dbMap.Select(&devices, query)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
-		}
-		result.Data = devices
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbDeviceDelete(userId string, platform int) StoreChannel {
+func RdbDeleteDevice(userId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)

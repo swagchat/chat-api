@@ -23,12 +23,12 @@ func CreateRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 	}
 	post.BeforeSave()
 
-	dRes := <-datastore.GetProvider().RoomInsert(post)
+	dRes := <-datastore.GetProvider().InsertRoom(post)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
 func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().RoomSelectAll()
+	dRes := <-datastore.GetProvider().SelectRooms()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -45,7 +45,7 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	dRes := <-datastore.GetProvider().RoomSelectUsersForRoom(roomId)
+	dRes := <-datastore.GetProvider().SelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -65,7 +65,7 @@ func PutRoom(roomId string, put *models.Room) (*models.Room, *models.ProblemDeta
 	}
 	room.BeforeSave()
 
-	dRes := <-datastore.GetProvider().RoomUpdate(room)
+	dRes := <-datastore.GetProvider().UpdateRoom(room)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
@@ -84,7 +84,7 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 
 	room.NotificationTopicId = ""
 	room.Deleted = time.Now().UnixNano()
-	dRes := <-datastore.GetProvider().RoomUpdateDeleted(roomId)
+	dRes := <-datastore.GetProvider().UpdateRoomDeleted(roomId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -133,7 +133,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 		}
 	}
 
-	dRes := <-datastore.GetProvider().MessageSelectAll(roomId, limit, offset)
+	dRes := <-datastore.GetProvider().SelectMessages(roomId, limit, offset)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -141,7 +141,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 		Messages: dRes.Data.([]*models.Message),
 	}
 
-	dRes = <-datastore.GetProvider().MessageCount(roomId)
+	dRes = <-datastore.GetProvider().SelectCountMessagesByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -150,7 +150,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 }
 
 func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().RoomSelect(roomId)
+	dRes := <-datastore.GetProvider().SelectRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -163,7 +163,7 @@ func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 }
 
 func unsubscribeByRoomId(ctx context.Context, roomId string) {
-	dRes := <-datastore.GetProvider().SubscriptionSelectByRoomId(roomId)
+	dRes := <-datastore.GetProvider().SelectSubscriptionsByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

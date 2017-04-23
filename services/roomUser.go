@@ -44,7 +44,7 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	dRes := <-datastore.GetProvider().RoomUsersSelectByRoomId(roomId)
+	dRes := <-datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -65,11 +65,11 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 			Created:     time.Now().UnixNano(),
 		})
 	}
-	dRes = <-datastore.GetProvider().RoomUsersDeleteAndInsert(newRoomUsers)
+	dRes = <-datastore.GetProvider().DeleteAndInsertRoomUsers(newRoomUsers)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	dRes = <-datastore.GetProvider().RoomUsersSelectByRoomId(roomId)
+	dRes = <-datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -85,7 +85,7 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 }
 
 func PutRoomUser(roomId, userId string, put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().RoomUserSelect(roomId, userId)
+	dRes := <-datastore.GetProvider().SelectRoomUser(roomId, userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -105,12 +105,12 @@ func PutRoomUser(roomId, userId string, put *models.RoomUser) (*models.RoomUser,
 
 	put.RoomId = roomId
 	put.UserId = userId
-	dRes = <-datastore.GetProvider().RoomUserUpdate(put)
+	dRes = <-datastore.GetProvider().UpdateRoomUser(put)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	dRes = <-datastore.GetProvider().RoomUserSelect(roomId, userId)
+	dRes = <-datastore.GetProvider().SelectRoomUser(roomId, userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -136,12 +136,12 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		return nil, pd
 	}
 
-	dRes := <-datastore.GetProvider().RoomUserDelete(roomId, userIds)
+	dRes := <-datastore.GetProvider().DeleteRoomUser(roomId, userIds)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	dRes = <-datastore.GetProvider().RoomUsersSelectByRoomIdAndUserIds(&roomId, userIds)
+	dRes = <-datastore.GetProvider().SelectRoomUsersByRoomIdAndUserIds(&roomId, userIds)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -150,7 +150,7 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 	defer cancel()
 	go unsubscribeByRoomUsers(ctx, dRes.Data.([]*models.RoomUser))
 
-	dRes = <-datastore.GetProvider().RoomUsersSelectByRoomId(roomId)
+	dRes = <-datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -197,12 +197,12 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 			Created:     time.Now().UnixNano(),
 		})
 	}
-	dRes := <-datastore.GetProvider().RoomUsersInsert(roomUsers)
+	dRes := <-datastore.GetProvider().InsertRoomUsers(roomUsers)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	dRes = <-datastore.GetProvider().RoomUsersSelectByRoomId(roomId)
+	dRes = <-datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -220,7 +220,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 }
 
 func publishUserJoin(roomId string) {
-	dRes := <-datastore.GetProvider().RoomSelectUsersForRoom(roomId)
+	dRes := <-datastore.GetProvider().SelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		problemDetailBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -264,7 +264,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
 
-			dRes := <-datastore.GetProvider().DeviceSelectByUserId(ru.UserId)
+			dRes := <-datastore.GetProvider().SelectDevicesByUserId(ru.UserId)
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			}
@@ -278,7 +278,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 								pdChan <- dRes.ProblemDetail
 							} else {
 								d.NotificationDeviceId = *nRes.Data.(*string)
-								dRes := <-datastore.GetProvider().DeviceUpdate(d)
+								dRes := <-datastore.GetProvider().UpdateDevice(d)
 								if dRes.ProblemDetail != nil {
 									pdChan <- dRes.ProblemDetail
 								}
@@ -318,19 +318,19 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
-			dRes := <-datastore.GetProvider().RoomUserDelete(ru.RoomId, []string{ru.UserId})
+			dRes := <-datastore.GetProvider().DeleteRoomUser(ru.RoomId, []string{ru.UserId})
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			}
 
-			dRes = <-datastore.GetProvider().DeviceSelectByUserId(ru.UserId)
+			dRes = <-datastore.GetProvider().SelectDevicesByUserId(ru.UserId)
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			}
 			if dRes.Data != nil {
 				devices := dRes.Data.([]*models.Device)
 				for _, d := range devices {
-					dRes = <-datastore.GetProvider().SubscriptionSelect(ru.RoomId, ru.UserId, d.Platform)
+					dRes = <-datastore.GetProvider().SelectSubscription(ru.RoomId, ru.UserId, d.Platform)
 					if dRes.ProblemDetail != nil {
 						pdChan <- dRes.ProblemDetail
 					}
@@ -367,7 +367,7 @@ func createTopic(room *models.Room) *models.ProblemDetail {
 	if nRes.Data != nil {
 		room.NotificationTopicId = *nRes.Data.(*string)
 		room.Modified = time.Now().UnixNano()
-		dRes := <-datastore.GetProvider().RoomUpdate(room)
+		dRes := <-datastore.GetProvider().UpdateRoom(room)
 		if dRes.ProblemDetail != nil {
 			return dRes.ProblemDetail
 		}
@@ -377,7 +377,7 @@ func createTopic(room *models.Room) *models.ProblemDetail {
 }
 
 func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().UserUserIdsSelectByUserIds(requestUserIds)
+	dRes := <-datastore.GetProvider().SelectUserIdsByUserIds(requestUserIds)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

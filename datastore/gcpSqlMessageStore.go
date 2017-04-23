@@ -2,26 +2,26 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider GcpSqlProvider) MessageCreateStore() {
+func (provider GcpSqlProvider) CreateMessageStore() {
 	RdbCreateMessageStore()
 }
 
-func (provider GcpSqlProvider) MessageInsert(message *models.Message) StoreChannel {
-	return RdbMessageInsert(message)
+func (provider GcpSqlProvider) InsertMessage(message *models.Message) StoreChannel {
+	return RdbInsertMessage(message)
 }
 
-func (provider GcpSqlProvider) MessageSelect(messageId string) StoreChannel {
-	return RdbMessageSelect(messageId)
+func (provider GcpSqlProvider) SelectMessage(messageId string) StoreChannel {
+	return RdbSelectMessage(messageId)
 }
 
-func (provider GcpSqlProvider) MessageUpdate(message *models.Message) StoreChannel {
-	return RdbMessageUpdate(message)
+func (provider GcpSqlProvider) SelectMessages(roomId string, limit, offset int) StoreChannel {
+	return RdbSelectMessages(roomId, limit, offset)
 }
 
-func (provider GcpSqlProvider) MessageSelectAll(roomId string, limit, offset int) StoreChannel {
-	return RdbMessageSelectAll(roomId, limit, offset)
+func (provider GcpSqlProvider) SelectCountMessagesByRoomId(roomId string) StoreChannel {
+	return RdbSelectCountMessagesByRoomId(roomId)
 }
 
-func (provider GcpSqlProvider) MessageCount(roomId string) StoreChannel {
-	return RdbMessageCount(roomId)
+func (provider GcpSqlProvider) UpdateMessage(message *models.Message) StoreChannel {
+	return RdbUpdateMessage(message)
 }

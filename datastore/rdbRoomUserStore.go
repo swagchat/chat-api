@@ -8,40 +8,20 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func RdbRoomUserCreateStore() {
+func RdbCreateRoomUserStore() {
 	tableMap := dbMap.AddTableWithName(models.RoomUser{}, TABLE_NAME_ROOM_USER)
 	tableMap.SetUniqueTogether("room_id", "user_id")
 	if err := dbMap.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 	}
 }
-func RdbRoomUserInsert(roomUser *models.RoomUser) StoreChannel {
+
+func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
-		result := StoreResult{}
-
-		if err := dbMap.Insert(roomUser); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-		}
-		result.Data = roomUser
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbRoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
+		defer close(storeChannel)
 		trans, err := dbMap.Begin()
 		result := StoreResult{}
-
-		defer func() {
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while rollback.", err)
-			}
-			close(storeChannel)
-		}()
 
 		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
 		params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
@@ -73,7 +53,7 @@ func RdbRoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
+func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		trans, err := dbMap.Begin()
@@ -87,7 +67,7 @@ func RdbRoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
 		}()
 
 		for _, roomUser := range roomUsers {
-			res := <-RdbRoomUserSelect(roomUser.RoomId, roomUser.UserId)
+			res := <-RdbSelectRoomUser(roomUser.RoomId, roomUser.UserId)
 			if res.ProblemDetail != nil {
 				result.ProblemDetail = res.ProblemDetail
 				storeChannel <- result
@@ -117,7 +97,7 @@ func RdbRoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUserSelect(roomId, userId string) StoreChannel {
+func RdbSelectRoomUser(roomId, userId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -141,7 +121,7 @@ func RdbRoomUserSelect(roomId, userId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUsersSelectByRoomId(roomId string) StoreChannel {
+func RdbSelectRoomUsersByRoomId(roomId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -162,7 +142,7 @@ func RdbRoomUsersSelectByRoomId(roomId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUsersSelectByUserId(userId string) StoreChannel {
+func RdbSelectRoomUsersByUserId(userId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -183,54 +163,7 @@ func RdbRoomUsersSelectByUserId(userId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var users []*models.User
-		query := utils.AppendStrings("SELECT u.* ",
-			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-			"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
-			"ON ru.user_id = u.user_id ",
-			"WHERE room_id = :roomId;")
-		params := map[string]interface{}{"roomId": roomId}
-		_, err := dbMap.Select(&users, query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user list.", err)
-		}
-		result.Data = users
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbRoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var roomUsers []string
-
-		query := utils.AppendStrings("SELECT user_id ",
-			"FROM ", TABLE_NAME_ROOM_USER,
-			" WHERE room_id=:roomId;")
-		params := map[string]interface{}{"roomId": roomId}
-		_, err := dbMap.Select(&roomUsers, query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user list.", err)
-		}
-		result.Data = roomUsers
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbRoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -271,7 +204,7 @@ func RdbRoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) Stor
 	return storeChannel
 }
 
-func RdbRoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
+func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -334,7 +267,7 @@ func RdbRoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
 	return storeChannel
 }
 
-func RdbRoomUserDelete(roomId string, userIds []string) StoreChannel {
+func RdbDeleteRoomUser(roomId string, userIds []string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -393,6 +326,73 @@ func RdbRoomUserDelete(roomId string, userIds []string) StoreChannel {
 	return storeChannel
 }
 
+/*
+func RdbRoomUserInsert(roomUser *models.RoomUser) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		result := StoreResult{}
+
+		if err := dbMap.Insert(roomUser); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		}
+		result.Data = roomUser
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+*/
+
+/*
+func RdbRoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var users []*models.User
+		query := utils.AppendStrings("SELECT u.* ",
+			"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
+			"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
+			"ON ru.user_id = u.user_id ",
+			"WHERE room_id = :roomId;")
+		params := map[string]interface{}{"roomId": roomId}
+		_, err := dbMap.Select(&users, query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user list.", err)
+		}
+		result.Data = users
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbRoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		var roomUsers []string
+
+		query := utils.AppendStrings("SELECT user_id ",
+			"FROM ", TABLE_NAME_ROOM_USER,
+			" WHERE room_id=:roomId;")
+		params := map[string]interface{}{"roomId": roomId}
+		_, err := dbMap.Select(&roomUsers, query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user list.", err)
+		}
+		result.Data = roomUsers
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+*/
+
+/*
 func RdbRoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
@@ -499,3 +499,4 @@ func RdbRoomUserMarkAllAsRead(userId string) StoreChannel {
 	}()
 	return storeChannel
 }
+*/

@@ -2,34 +2,46 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider SqliteProvider) RoomUserCreateStore() {
-	RdbRoomUserCreateStore()
+func (provider SqliteProvider) CreateRoomUserStore() {
+	RdbCreateRoomUserStore()
 }
 
-func (provider SqliteProvider) RoomUserInsert(roomUser *models.RoomUser) StoreChannel {
-	return RdbRoomUserInsert(roomUser)
+func (provider SqliteProvider) DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbDeleteAndInsertRoomUsers(roomUsers)
 }
 
-func (provider SqliteProvider) RoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel {
-	return RdbRoomUsersDeleteAndInsert(roomUsers)
+func (provider SqliteProvider) InsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel {
+	return RdbInsertRoomUsers(roomUsers)
 }
 
-func (provider SqliteProvider) RoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel {
-	return RdbRoomUsersInsert(roomUsers)
+func (provider SqliteProvider) SelectRoomUser(roomId, userId string) StoreChannel {
+	return RdbSelectRoomUser(roomId, userId)
 }
 
-func (provider SqliteProvider) RoomUserSelect(roomId, userId string) StoreChannel {
-	return RdbRoomUserSelect(roomId, userId)
+func (provider SqliteProvider) SelectRoomUsersByRoomId(roomId string) StoreChannel {
+	return RdbSelectRoomUsersByRoomId(roomId)
 }
 
-func (provider SqliteProvider) RoomUsersSelectByRoomId(roomId string) StoreChannel {
-	return RdbRoomUsersSelectByRoomId(roomId)
+func (provider SqliteProvider) SelectRoomUsersByUserId(userId string) StoreChannel {
+	return RdbSelectRoomUsersByUserId(userId)
 }
 
-func (provider SqliteProvider) RoomUsersSelectByUserId(userId string) StoreChannel {
-	return RdbRoomUsersSelectByUserId(userId)
+func (provider SqliteProvider) SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
+	return RdbSelectRoomUsersByRoomIdAndUserIds(roomId, userIds)
 }
 
+func (provider SqliteProvider) UpdateRoomUser(roomUser *models.RoomUser) StoreChannel {
+	return RdbUpdateRoomUser(roomUser)
+}
+
+func (provider SqliteProvider) DeleteRoomUser(roomId string, userIds []string) StoreChannel {
+	return RdbDeleteRoomUser(roomId, userIds)
+}
+
+//func (provider SqliteProvider) RoomUserInsert(roomUser *models.RoomUser) StoreChannel {
+//	return RdbRoomUserInsert(roomUser)
+//}
+/*
 func (provider SqliteProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
 	return RdbRoomUsersUsersSelectByRoomId(roomId)
 }
@@ -37,19 +49,8 @@ func (provider SqliteProvider) RoomUsersUsersSelectByRoomId(roomId string) Store
 func (provider SqliteProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
 	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
 }
-
-func (provider SqliteProvider) RoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersSelectByRoomIdAndUserIds(roomId, userIds)
-}
-
-func (provider SqliteProvider) RoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
-	return RdbRoomUserUpdate(roomUser)
-}
-
-func (provider SqliteProvider) RoomUserDelete(roomId string, userIds []string) StoreChannel {
-	return RdbRoomUserDelete(roomId, userIds)
-}
-
+*/
+/*
 func (provider SqliteProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
 	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
 }
@@ -69,3 +70,4 @@ func (provider SqliteProvider) RoomUserUnreadCountUp(roomId string, currentUserI
 func (provider SqliteProvider) RoomUserMarkAllAsRead(userId string) StoreChannel {
 	return RdbRoomUserMarkAllAsRead(userId)
 }
+*/

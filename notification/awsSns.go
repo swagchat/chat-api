@@ -3,6 +3,7 @@ package notification
 // [AWS SDK for Go Document] http://docs.aws.amazon.com/sdk-for-go/api/service/sns/
 
 import (
+	"context"
 	"encoding/json"
 
 	"go.uber.org/zap"
@@ -70,9 +71,9 @@ func (provider AwsSnsProvider) newSnsClient() *sns.SNS {
 }
 
 func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
+	nc := make(NotificationChannel, 1)
 	go func() {
-		defer close(notificationChannel)
+		defer close(nc)
 		result := NotificationResult{}
 
 		client := provider.newSnsClient()
@@ -86,15 +87,15 @@ func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
 			result.Data = createTopicOutput.TopicArn
 		}
 
-		notificationChannel <- result
+		nc <- result
 	}()
-	return notificationChannel
+	return nc
 }
 
 func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
+	nc := make(NotificationChannel, 1)
 	go func() {
-		defer close(notificationChannel)
+		defer close(nc)
 		result := NotificationResult{}
 
 		client := provider.newSnsClient()
@@ -106,15 +107,15 @@ func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) Notificat
 			result.ProblemDetail = createProblemDetail("An error occurred while deleting topic.", err)
 		}
 
-		notificationChannel <- result
+		nc <- result
 	}()
-	return notificationChannel
+	return nc
 }
 
 func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
+	nc := make(NotificationChannel, 1)
 	go func() {
-		defer close(notificationChannel)
+		defer close(nc)
 		result := NotificationResult{}
 
 		var platformApplicationArn string
@@ -138,15 +139,15 @@ func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, devic
 			result.Data = createPlatformEndpointOutput.EndpointArn
 		}
 
-		notificationChannel <- result
+		nc <- result
 	}()
-	return notificationChannel
+	return nc
 }
 
 func (provider AwsSnsProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
+	nc := make(NotificationChannel, 1)
 	go func() {
-		defer close(notificationChannel)
+		defer close(nc)
 		result := NotificationResult{}
 
 		client := provider.newSnsClient()
@@ -158,15 +159,15 @@ func (provider AwsSnsProvider) DeleteEndpoint(notificationDeviceId string) Notif
 			result.ProblemDetail = createProblemDetail("An error occurred while deleting endpoint.", err)
 		}
 
-		notificationChannel <- result
+		nc <- result
 	}()
-	return notificationChannel
+	return nc
 }
 
 func (provider AwsSnsProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
+	nc := make(NotificationChannel, 1)
 	go func() {
-		defer close(notificationChannel)
+		defer close(nc)
 		result := NotificationResult{}
 
 		client := provider.newSnsClient()
@@ -182,15 +183,15 @@ func (provider AwsSnsProvider) Subscribe(notificationTopicId string, notificatio
 			result.Data = subscribeOutput.SubscriptionArn
 		}
 
-		notificationChannel <- result
+		nc <- result
 	}()
-	return notificationChannel
+	return nc
 }
 
 func (provider AwsSnsProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
+	nc := make(NotificationChannel, 1)
 	go func() {
-		defer close(notificationChannel)
+		defer close(nc)
 		result := NotificationResult{}
 
 		client := provider.newSnsClient()
@@ -202,69 +203,72 @@ func (provider AwsSnsProvider) Unsubscribe(notificationSubscribeId string) Notif
 			result.ProblemDetail = createProblemDetail("An error occurred while unsubscribing.", err)
 		}
 
-		notificationChannel <- result
+		nc <- result
 	}()
-	return notificationChannel
+	return nc
 }
 
-func (provider AwsSnsProvider) Publish(notificationTopicId string, messageInfo *MessageInfo) NotificationChannel {
-	notificationChannel := make(NotificationChannel, 1)
-	go func() {
-		defer close(notificationChannel)
-		result := NotificationResult{}
+func (provider AwsSnsProvider) Publish(ctx context.Context, notificationTopicId string, messageInfo *MessageInfo) NotificationChannel {
+	nc := make(NotificationChannel, 1)
+	defer close(nc)
+	result := NotificationResult{}
 
-		client := provider.newSnsClient()
-		iosPush := iosPush{
-			Alert: messageInfo.Text,
-			Badge: &messageInfo.Badge,
-		}
+	client := provider.newSnsClient()
+	iosPush := iosPush{
+		Alert: messageInfo.Text,
+		Badge: &messageInfo.Badge,
+	}
 
-		wrapper := wrapper{}
-		ios := iosPushWrapper{
-			APS: iosPush,
-		}
-		b, err := json.Marshal(ios)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
-			notificationChannel <- result
-		}
-		wrapper.APNS = string(b[:])
-		wrapper.APNSSandbox = wrapper.APNS
-		wrapper.Default = messageInfo.Text
-		gcm := gcmPushWrapper{
-			Data: gcmPush{
-				Message: messageInfo.Text,
-				Badge:   &messageInfo.Badge,
-			},
-		}
-		b, err = json.Marshal(gcm)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
-			notificationChannel <- result
-		}
-		wrapper.GCM = string(b[:])
-		pushData, err := json.Marshal(wrapper)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
-			notificationChannel <- result
-		}
-		message := string(pushData[:])
+	wrapper := wrapper{}
+	ios := iosPushWrapper{
+		APS: iosPush,
+	}
+	b, err := json.Marshal(ios)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
+		nc <- result
+	}
+	wrapper.APNS = string(b[:])
+	wrapper.APNSSandbox = wrapper.APNS
+	wrapper.Default = messageInfo.Text
+	gcm := gcmPushWrapper{
+		Data: gcmPush{
+			Message: messageInfo.Text,
+			Badge:   &messageInfo.Badge,
+		},
+	}
+	b, err = json.Marshal(gcm)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
+		nc <- result
+	}
+	wrapper.GCM = string(b[:])
+	pushData, err := json.Marshal(wrapper)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
+		nc <- result
+	}
+	message := string(pushData[:])
 
-		params := &sns.PublishInput{
-			Message:          aws.String(message),
-			MessageStructure: aws.String("json"),
-			Subject:          aws.String("subject"),
-			TopicArn:         aws.String(notificationTopicId),
-		}
-		res, err := client.Publish(params)
-		utils.AppLogger.Info("",
-			zap.String("msg", "[Amazon SNS]Publish message."),
-			zap.String("topicArn", notificationTopicId),
-			zap.String("message", message),
-			zap.String("response", res.String()),
-		)
+	params := &sns.PublishInput{
+		Message:          aws.String(message),
+		MessageStructure: aws.String("json"),
+		Subject:          aws.String("subject"),
+		TopicArn:         aws.String(notificationTopicId),
+	}
+	res, err := client.Publish(params)
+	utils.AppLogger.Info("",
+		zap.String("msg", "[Amazon SNS]Publish message."),
+		zap.String("topicArn", notificationTopicId),
+		zap.String("message", message),
+		zap.String("response", res.String()),
+	)
+	nc <- result
 
-		notificationChannel <- result
-	}()
-	return notificationChannel
+	select {
+	case <-ctx.Done():
+		return nc
+	case <-nc:
+		return nc
+	}
 }

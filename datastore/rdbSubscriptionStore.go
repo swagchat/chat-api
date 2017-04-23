@@ -2,13 +2,12 @@ package datastore
 
 import (
 	"log"
-	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func RdbSubscriptionCreateStore() {
+func RdbCreateSubscriptionStore() {
 	tableMap := dbMap.AddTableWithName(models.Subscription{}, TABLE_NAME_SUBSCRIPTION)
 	tableMap.SetUniqueTogether("room_id", "user_id", "platform")
 	if err := dbMap.CreateTablesIfNotExists(); err != nil {
@@ -16,7 +15,7 @@ func RdbSubscriptionCreateStore() {
 	}
 }
 
-func RdbSubscriptionInsert(subscription *models.Subscription) StoreChannel {
+func RdbInsertSubscription(subscription *models.Subscription) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -32,7 +31,7 @@ func RdbSubscriptionInsert(subscription *models.Subscription) StoreChannel {
 	return storeChannel
 }
 
-func RdbSubscriptionSelect(roomId, userId string, platform int) StoreChannel {
+func RdbSelectSubscription(roomId, userId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -57,7 +56,7 @@ func RdbSubscriptionSelect(roomId, userId string, platform int) StoreChannel {
 	return storeChannel
 }
 
-func RdbSubscriptionSelectByRoomId(roomId string) StoreChannel {
+func RdbSelectSubscriptionsByRoomId(roomId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -78,7 +77,7 @@ func RdbSubscriptionSelectByRoomId(roomId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbSubscriptionSelectByUserId(userId string) StoreChannel {
+func RdbSelectSubscriptionsByUserId(userId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -99,7 +98,7 @@ func RdbSubscriptionSelectByUserId(userId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbSubscriptionSelectByRoomIdAndPlatform(roomId string, platform int) StoreChannel {
+func RdbSelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -121,7 +120,7 @@ func RdbSubscriptionSelectByRoomIdAndPlatform(roomId string, platform int) Store
 	return storeChannel
 }
 
-func RdbSubscriptionSelectByUserIdAndPlatform(userId string, platform int) StoreChannel {
+func RdbSelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -143,6 +142,29 @@ func RdbSubscriptionSelectByUserIdAndPlatform(userId string, platform int) Store
 	return storeChannel
 }
 
+func RdbDeleteSubscription(subscription *models.Subscription) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;")
+		params := map[string]interface{}{
+			"roomId":   subscription.RoomId,
+			"userId":   subscription.UserId,
+			"platform": subscription.Platform,
+		}
+		_, err := dbMap.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription item.", err)
+		}
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+/*
 func RdbSubscriptionUpdate(subscription *models.Subscription) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
@@ -245,25 +267,4 @@ func RdbSubscriptionUpdateDeletedByUserId(userId string) StoreChannel {
 	}()
 	return storeChannel
 }
-
-func RdbSubscriptionDelete(subscription *models.Subscription) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;")
-		params := map[string]interface{}{
-			"roomId":   subscription.RoomId,
-			"userId":   subscription.UserId,
-			"platform": subscription.Platform,
-		}
-		_, err := dbMap.Exec(query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating subscription item.", err)
-		}
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
+*/

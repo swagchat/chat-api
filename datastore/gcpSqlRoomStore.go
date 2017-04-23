@@ -2,30 +2,30 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider GcpSqlProvider) RoomCreateStore() {
-	RdbRoomCreateStore()
+func (provider GcpSqlProvider) CreateRoomStore() {
+	RdbCreateRoomStore()
 }
 
-func (provider GcpSqlProvider) RoomInsert(room *models.Room) StoreChannel {
-	return RdbRoomInsert(room)
+func (provider GcpSqlProvider) InsertRoom(room *models.Room) StoreChannel {
+	return RdbInsertRoom(room)
 }
 
-func (provider GcpSqlProvider) RoomSelect(roomId string) StoreChannel {
-	return RdbRoomSelect(roomId)
+func (provider GcpSqlProvider) SelectRoom(roomId string) StoreChannel {
+	return RdbSelectRoom(roomId)
 }
 
-func (provider GcpSqlProvider) RoomUpdate(room *models.Room) StoreChannel {
-	return RdbRoomUpdate(room)
+func (provider GcpSqlProvider) SelectRooms() StoreChannel {
+	return RdbSelectRooms()
 }
 
-func (provider GcpSqlProvider) RoomUpdateDeleted(roomId string) StoreChannel {
-	return RdbRoomUpdateDeleted(roomId)
+func (provider GcpSqlProvider) SelectUsersForRoom(roomId string) StoreChannel {
+	return RdbSelectUsersForRoom(roomId)
 }
 
-func (provider GcpSqlProvider) RoomSelectAll() StoreChannel {
-	return RdbRoomSelectAll()
+func (provider GcpSqlProvider) UpdateRoom(room *models.Room) StoreChannel {
+	return RdbUpdateRoom(room)
 }
 
-func (provider GcpSqlProvider) RoomSelectUsersForRoom(roomId string) StoreChannel {
-	return RdbRoomSelectUsersForRoom(roomId)
+func (provider GcpSqlProvider) UpdateRoomDeleted(roomId string) StoreChannel {
+	return RdbUpdateRoomDeleted(roomId)
 }

@@ -57,7 +57,7 @@ func CreateMessage(posts *models.Messages) *models.ResponseMessages {
 		}
 
 		post.BeforeSave()
-		dRes := <-datastore.GetProvider().MessageInsert(post)
+		dRes := <-datastore.GetProvider().InsertMessage(post)
 		if dRes.ProblemDetail != nil {
 			errors = append(errors, dRes.ProblemDetail)
 			continue
@@ -73,22 +73,11 @@ func CreateMessage(posts *models.Messages) *models.ResponseMessages {
 		defer cancel()
 		go publishMessage(ctx, post)
 
-		// Push Notification
-		dRes = <-datastore.GetProvider().RoomUserSelect(post.RoomId, post.UserId)
-		if dRes.Data != nil {
-			roomUser := dRes.Data.(*models.RoomUser)
-			messageInfo := &notification.MessageInfo{
-				Text:  utils.AppendStrings("[", room.Name, "]", lastMessage),
-				Badge: *roomUser.UnreadCount,
-			}
-			nRes := <-notification.GetProvider().Publish(room.NotificationTopicId, messageInfo)
-			if nRes.ProblemDetail != nil {
-				problemDetailBytes, _ := json.Marshal(nRes.ProblemDetail)
-				utils.AppLogger.Error("",
-					zap.String("problemDetail", string(problemDetailBytes)),
-				)
-			}
+		mi := &notification.MessageInfo{
+			Text:  utils.AppendStrings("[", room.Name, "]", lastMessage),
+			Badge: 1,
 		}
+		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, mi)
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -96,6 +85,34 @@ func CreateMessage(posts *models.Messages) *models.ResponseMessages {
 		Errors:     errors,
 	}
 	return responseMessages
+}
+
+func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
+	if messageId == "" {
+		return nil, &models.ProblemDetail{
+			Title:     "Request parameter error. (Get message item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []models.InvalidParam{
+				models.InvalidParam{
+					Name:   "messageId",
+					Reason: "messageId is required, but it's empty.",
+				},
+			},
+		}
+	}
+
+	dp := datastore.GetProvider()
+	dRes := <-dp.SelectMessage(messageId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	if dRes.Data == nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusNotFound,
+		}
+	}
+	return dRes.Data.(*models.Message), nil
 }
 
 func publishMessage(ctx context.Context, m *models.Message) {
@@ -122,32 +139,4 @@ func publishMessage(ctx context.Context, m *models.Message) {
 			}
 		}
 	}
-}
-
-func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
-	if messageId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get message item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "messageId",
-					Reason: "messageId is required, but it's empty.",
-				},
-			},
-		}
-	}
-
-	dp := datastore.GetProvider()
-	dRes := <-dp.MessageSelect(messageId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	return dRes.Data.(*models.Message), nil
 }

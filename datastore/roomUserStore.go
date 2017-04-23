@@ -3,22 +3,22 @@ package datastore
 import "github.com/fairway-corp/swagchat-api/models"
 
 type RoomUserStore interface {
-	RoomUserCreateStore()
+	CreateRoomUserStore()
 
-	RoomUserInsert(roomUser *models.RoomUser) StoreChannel
-	RoomUsersDeleteAndInsert(roomUsers []*models.RoomUser) StoreChannel
-	RoomUsersInsert(roomUsers []*models.RoomUser) StoreChannel
-	RoomUserSelect(roomId, userId string) StoreChannel
-	RoomUsersSelectByRoomId(roomId string) StoreChannel
-	RoomUsersSelectByUserId(userId string) StoreChannel
-	RoomUsersUsersSelectByRoomId(roomId string) StoreChannel
-	RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel
-	RoomUsersSelectByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel
-	RoomUserUpdate(*models.RoomUser) StoreChannel
-	RoomUserDelete(roomId string, userIds []string) StoreChannel
-	RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel
-	RoomUserDeleteByRoomId(roomId string) StoreChannel
-	RoomUserDeleteByUserId(userId string) StoreChannel
-	RoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel
-	RoomUserMarkAllAsRead(userId string) StoreChannel
+	DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel
+	InsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel
+	SelectRoomUser(roomId, userId string) StoreChannel
+	SelectRoomUsersByRoomId(roomId string) StoreChannel
+	SelectRoomUsersByUserId(userId string) StoreChannel
+	SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel
+	UpdateRoomUser(*models.RoomUser) StoreChannel
+	DeleteRoomUser(roomId string, userIds []string) StoreChannel
+	//RoomUserInsert(roomUser *models.RoomUser) StoreChannel
+	//RoomUsersUsersSelectByRoomId(roomId string) StoreChannel
+	//RoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel
+	//RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel
+	//RoomUserDeleteByRoomId(roomId string) StoreChannel
+	//RoomUserDeleteByUserId(userId string) StoreChannel
+	//RoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel
+	//RoomUserMarkAllAsRead(userId string) StoreChannel
 }

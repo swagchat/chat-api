@@ -37,7 +37,7 @@ func RdbCreateMessageStore() {
 	}
 }
 
-func RdbMessageInsert(message *models.Message) StoreChannel {
+func RdbInsertMessage(message *models.Message) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -126,7 +126,7 @@ func RdbMessageInsert(message *models.Message) StoreChannel {
 	return storeChannel
 }
 
-func RdbMessageSelect(messageId string) StoreChannel {
+func RdbSelectMessage(messageId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -147,24 +147,7 @@ func RdbMessageSelect(messageId string) StoreChannel {
 	return storeChannel
 }
 
-func RdbMessageUpdate(message *models.Message) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		_, err := dbMap.Update(message)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating message item.", err)
-		}
-		result.Data = message
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbMessageSelectAll(roomId string, limit, offset int) StoreChannel {
+func RdbSelectMessages(roomId string, limit, offset int) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -194,7 +177,7 @@ func RdbMessageSelectAll(roomId string, limit, offset int) StoreChannel {
 	return storeChannel
 }
 
-func RdbMessageCount(roomId string) StoreChannel {
+func RdbSelectCountMessagesByRoomId(roomId string) StoreChannel {
 	storeChannel := make(StoreChannel, 1)
 	go func() {
 		defer close(storeChannel)
@@ -212,6 +195,23 @@ func RdbMessageCount(roomId string) StoreChannel {
 			result.ProblemDetail = createProblemDetail("An error occurred while getting message item.", err)
 		}
 		result.Data = messages
+
+		storeChannel <- result
+	}()
+	return storeChannel
+}
+
+func RdbUpdateMessage(message *models.Message) StoreChannel {
+	storeChannel := make(StoreChannel, 1)
+	go func() {
+		defer close(storeChannel)
+		result := StoreResult{}
+
+		_, err := dbMap.Update(message)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating message item.", err)
+		}
+		result.Data = message
 
 		storeChannel <- result
 	}()

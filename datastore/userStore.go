@@ -3,15 +3,15 @@ package datastore
 import "github.com/fairway-corp/swagchat-api/models"
 
 type UserStore interface {
-	UserCreateStore()
+	CreateUserStore()
 
-	UserInsert(user *models.User) StoreChannel
-	UserSelect(userId string, isWithRooms, isWithDevices bool) StoreChannel
-	UserUpdate(user *models.User) StoreChannel
-	UserUpdateDeleted(userId string) StoreChannel
-	UserSelectAll() StoreChannel
-	UserSelectRoomsForUser(userId string) StoreChannel
-	UserUnreadCountUp(userId string) StoreChannel
-	UserUnreadCountRecalc(userId string) StoreChannel
-	UserUserIdsSelectByUserIds(userIds []string) StoreChannel
+	InsertUser(user *models.User) StoreResult
+	SelectUser(userId string, isWithRooms, isWithDevices bool) StoreChannel
+	SelectUsers() StoreChannel
+	SelectRoomsForUser(userId string) StoreChannel
+	SelectUserIdsByUserIds(userIds []string) StoreChannel
+	UpdateUser(user *models.User) StoreChannel
+	UpdateUserDeleted(userId string) StoreChannel
+	//UserUnreadCountUp(userId string) StoreChannel
+	//UserUnreadCountRecalc(userId string) StoreChannel
 }

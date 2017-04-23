@@ -68,12 +68,12 @@ func (provider MysqlProvider) Connect() error {
 }
 
 func (provider MysqlProvider) Init() {
-	provider.UserCreateStore()
-	provider.RoomCreateStore()
-	provider.RoomUserCreateStore()
-	provider.MessageCreateStore()
-	provider.DeviceCreateStore()
-	provider.SubscriptionCreateStore()
+	provider.CreateUserStore()
+	provider.CreateRoomStore()
+	provider.CreateRoomUserStore()
+	provider.CreateMessageStore()
+	provider.CreateDeviceStore()
+	provider.CreateSubscriptionStore()
 }
 
 func (provider MysqlProvider) DropDatabase() error {
