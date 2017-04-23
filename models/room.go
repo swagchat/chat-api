@@ -93,11 +93,11 @@ func (r *Room) BeforeSave() {
 		r.IsPublic = &isPublic
 	}
 
-	nowDatetime := time.Now().UnixNano()
+	nowTimestamp := time.Now().UnixNano()
 	if r.Created == 0 {
-		r.Created = nowDatetime
+		r.Created = nowTimestamp
 	}
-	r.Modified = nowDatetime
+	r.Modified = nowTimestamp
 }
 
 func (r *Room) Put(put *Room) {

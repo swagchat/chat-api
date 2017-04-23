@@ -57,7 +57,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		}
 
 		post.BeforeSave()
-		dRes := <-datastore.GetProvider().InsertMessage(post)
+		dRes := datastore.GetProvider().InsertMessage(post)
 		if dRes.ProblemDetail != nil {
 			errors = append(errors, dRes.ProblemDetail)
 			continue
@@ -101,8 +101,7 @@ func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
 		}
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.SelectMessage(messageId)
+	dRes := datastore.GetProvider().SelectMessage(messageId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

@@ -27,7 +27,7 @@ func PostUser(post *models.User) (*models.User, *models.ProblemDetail) {
 }
 
 func GetUsers() (*models.Users, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().SelectUsers()
+	dRes := datastore.GetProvider().SelectUsers()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -44,7 +44,7 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	dRes := <-datastore.GetProvider().SelectRoomsForUser(userId)
+	dRes := datastore.GetProvider().SelectRoomsForUser(userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -63,7 +63,7 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 		return nil, pd
 	}
 	user.BeforeSave()
-	dRes := <-datastore.GetProvider().UpdateUser(user)
+	dRes := datastore.GetProvider().UpdateUser(user)
 	return dRes.Data.(*models.User), dRes.ProblemDetail
 }
 
@@ -74,7 +74,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		return pd
 	}
 
-	dRes := <-datastore.GetProvider().SelectDevicesByUserId(userId)
+	dRes := datastore.GetProvider().SelectDevicesByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -88,7 +88,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		}
 	}
 
-	dRes = <-datastore.GetProvider().UpdateUserDeleted(userId)
+	dRes = datastore.GetProvider().UpdateUserDeleted(userId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -101,7 +101,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 }
 
 func selectUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().SelectUser(userId, false, false)
+	dRes := datastore.GetProvider().SelectUser(userId, false, false)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -114,7 +114,7 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 }
 
 func unsubscribeByUserId(ctx context.Context, userId string) {
-	dRes := <-datastore.GetProvider().SelectSubscriptionsByUserId(userId)
+	dRes := datastore.GetProvider().SelectSubscriptionsByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

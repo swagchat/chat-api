@@ -314,7 +314,7 @@ func TestPostRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id-1"]
 				}
 			`,
-			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+}]}$`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}]}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -325,7 +325,7 @@ func TestPostRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id-1","custom-user-id-2"]
 				}
 			`,
-			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":[0-9]+}]}$`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}]}$`,
 			httpStatusCode: 201,
 		},
 		{

@@ -16,319 +16,252 @@ func RdbCreateRoomUserStore() {
 	}
 }
 
-func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		trans, err := dbMap.Begin()
-		result := StoreResult{}
+func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
+	trans, err := dbMap.Begin()
+	result := StoreResult{}
+	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+	params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
+	_, err = trans.Exec(query, params)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while deleting all room's user item.", err)
+	}
 
-		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
-		params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
+	for _, roomUser := range roomUsers {
+		if err := trans.Insert(roomUser); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		}
+	}
+
+	if result.ProblemDetail == nil {
+		if err := trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		}
+	} else {
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		}
+	}
+	return result
+}
+
+func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
+	result := StoreResult{}
+	trans, err := dbMap.Begin()
+	for _, roomUser := range roomUsers {
+		res := RdbSelectRoomUser(roomUser.RoomId, roomUser.UserId)
+		if res.ProblemDetail != nil {
+			result.ProblemDetail = res.ProblemDetail
+			continue
+		}
+		if res.Data == nil {
+			if err = trans.Insert(roomUser); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			}
+			continue
+		}
+	}
+
+	if result.ProblemDetail == nil {
+		if err := trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		}
+	} else {
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		}
+	}
+	return result
+}
+
+func RdbSelectRoomUser(roomId, userId string) StoreResult {
+	result := StoreResult{}
+	var roomUsers []*models.RoomUser
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id=:userId;")
+	params := map[string]interface{}{
+		"roomId": roomId,
+		"userId": userId,
+	}
+	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
+	}
+	if len(roomUsers) == 1 {
+		result.Data = roomUsers[0]
+	}
+	return result
+}
+
+func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
+	result := StoreResult{}
+	var roomUsers []*models.RoomUser
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+	params := map[string]interface{}{
+		"roomId": roomId,
+	}
+	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
+	}
+	result.Data = roomUsers
+	return result
+}
+
+func RdbSelectRoomUsersByUserId(userId string) StoreResult {
+	result := StoreResult{}
+	var roomUsers []*models.RoomUser
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
+	params := map[string]interface{}{
+		"userId": userId,
+	}
+	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
+	}
+	result.Data = roomUsers
+	return result
+}
+
+func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
+	result := StoreResult{}
+	var roomUsers []*models.RoomUser
+	var userIdsQuery string
+	var userIdsParams map[string]interface{}
+	var roomIdParams map[string]interface{}
+	if userIds != nil {
+		userIdsQuery, userIdsParams = utils.MakePrepareForInExpression(userIds)
+	}
+	if roomId != nil {
+		roomIdParams = map[string]interface{}{"roomId": roomId}
+	}
+	params := utils.MergeMap(userIdsParams, roomIdParams)
+
+	query := utils.AppendStrings("SELECT * ",
+		"FROM ", TABLE_NAME_ROOM_USER,
+		" WHERE ")
+	if roomId != nil {
+		query = utils.AppendStrings(query, " room_id=:roomId")
+	}
+	if roomId != nil && userIds != nil {
+		query = utils.AppendStrings(query, " AND ")
+	}
+	if userIds != nil {
+		query = utils.AppendStrings(query, " user_id IN (", userIdsQuery, ")")
+	}
+	_, err := dbMap.Select(&roomUsers, query, params)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user ids.", err)
+	}
+	result.Data = roomUsers
+	return result
+}
+
+func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
+	trans, err := dbMap.Begin()
+	result := StoreResult{}
+	updateQuery := ""
+	params := map[string]interface{}{
+		"roomId": roomUser.RoomId,
+		"userId": roomUser.UserId,
+	}
+	if roomUser.UnreadCount != nil {
+		params["unreadCount"] = roomUser.UnreadCount
+		updateQuery = "unread_count=:unreadCount"
+	}
+	if roomUser.MetaData != nil {
+		params["metaData"] = roomUser.MetaData
+		if updateQuery == "" {
+			updateQuery = "meta_data=:metaData"
+		} else {
+			updateQuery = utils.AppendStrings(updateQuery, ",", "meta_data=:metaData")
+		}
+	}
+	if updateQuery != "" {
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while deleting all room's user item.", err)
-			storeChannel <- result
+			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
 		}
 
-		for _, roomUser := range roomUsers {
-			if err := trans.Insert(roomUser); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-				storeChannel <- result
-			}
-		}
-
-		if result.ProblemDetail == nil {
-			if err := trans.Commit(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-			}
-		} else {
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-			}
-		}
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		trans, err := dbMap.Begin()
-		result := StoreResult{}
-
-		defer func() {
-			if err = trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while rollback.", err)
-			}
-			close(storeChannel)
-		}()
-
-		for _, roomUser := range roomUsers {
-			res := <-RdbSelectRoomUser(roomUser.RoomId, roomUser.UserId)
-			if res.ProblemDetail != nil {
-				result.ProblemDetail = res.ProblemDetail
-				storeChannel <- result
-				continue
-			}
-			if res.Data == nil {
-				if err := trans.Insert(roomUser); err != nil {
-					result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-					storeChannel <- result
-				}
-				continue
-			}
-		}
-
-		if result.ProblemDetail == nil {
-			if err := trans.Commit(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-			}
-		} else {
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-			}
-		}
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbSelectRoomUser(roomId, userId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var roomUsers []*models.RoomUser
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id=:userId;")
-		params := map[string]interface{}{
-			"roomId": roomId,
-			"userId": userId,
-		}
-		if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
-		}
-		if len(roomUsers) == 1 {
-			result.Data = roomUsers[0]
-		}
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbSelectRoomUsersByRoomId(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var roomUsers []*models.RoomUser
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
-		params := map[string]interface{}{
-			"roomId": roomId,
-		}
-		if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
-		}
-		result.Data = roomUsers
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbSelectRoomUsersByUserId(userId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var roomUsers []*models.RoomUser
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
-		params := map[string]interface{}{
-			"userId": userId,
-		}
-		if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
-		}
-		result.Data = roomUsers
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var roomUsers []*models.RoomUser
-		var userIdsQuery string
-		var userIdsParams map[string]interface{}
-		var roomIdParams map[string]interface{}
-		if userIds != nil {
-			userIdsQuery, userIdsParams = utils.MakePrepareForInExpression(userIds)
-		}
-		if roomId != nil {
-			roomIdParams = map[string]interface{}{"roomId": roomId}
-		}
-		params := utils.MergeMap(userIdsParams, roomIdParams)
-
-		query := utils.AppendStrings("SELECT * ",
-			"FROM ", TABLE_NAME_ROOM_USER,
-			" WHERE ")
-		if roomId != nil {
-			query = utils.AppendStrings(query, " room_id=:roomId")
-		}
-		if roomId != nil && userIds != nil {
-			query = utils.AppendStrings(query, " AND ")
-		}
-		if userIds != nil {
-			query = utils.AppendStrings(query, " user_id IN (", userIdsQuery, ")")
-		}
-		_, err := dbMap.Select(&roomUsers, query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting room's user ids.", err)
-		}
-		result.Data = roomUsers
-
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		trans, err := dbMap.Begin()
-		result := StoreResult{}
-
-		updateQuery := ""
-		params := map[string]interface{}{
-			"roomId": roomUser.RoomId,
-			"userId": roomUser.UserId,
-		}
 		if roomUser.UnreadCount != nil {
-			params["unreadCount"] = roomUser.UnreadCount
-			updateQuery = "unread_count=:unreadCount"
-		}
-		if roomUser.MetaData != nil {
-			params["metaData"] = roomUser.MetaData
-			if updateQuery == "" {
-				updateQuery = "meta_data=:metaData"
-			} else {
-				updateQuery = utils.AppendStrings(updateQuery, ",", "meta_data=:metaData")
+			query = utils.AppendStrings("UPDATE ", TABLE_NAME_USER,
+				" SET unread_count=(SELECT SUM(unread_count) FROM ", TABLE_NAME_ROOM_USER,
+				" WHERE user_id=:userId1) WHERE user_id=:userId2;")
+			params = map[string]interface{}{
+				"userId1": roomUser.UserId,
+				"userId2": roomUser.UserId,
 			}
-		}
-		if updateQuery != "" {
-			query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
 			_, err = trans.Exec(query, params)
 			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
-			}
-
-			if roomUser.UnreadCount != nil {
-				query = utils.AppendStrings("UPDATE ", TABLE_NAME_USER,
-					" SET unread_count=(SELECT SUM(unread_count) FROM ", TABLE_NAME_ROOM_USER,
-					" WHERE user_id=:userId1) WHERE user_id=:userId2;")
-				params = map[string]interface{}{
-					"userId1": roomUser.UserId,
-					"userId2": roomUser.UserId,
-				}
-				_, err = trans.Exec(query, params)
-				if err != nil {
-					result.ProblemDetail = createProblemDetail("An error occurred while updating user unread count.", err)
-				}
+				result.ProblemDetail = createProblemDetail("An error occurred while updating user unread count.", err)
 			}
 		}
+	}
 
-		if result.ProblemDetail == nil {
-			if err := trans.Commit(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-			}
-		} else {
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-			}
+	if result.ProblemDetail == nil {
+		if err := trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
 		}
-
-		result.Data = roomUser
-
-		storeChannel <- result
-	}()
-	return storeChannel
+	} else {
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+		}
+	}
+	result.Data = roomUser
+	return result
 }
 
-func RdbDeleteRoomUser(roomId string, userIds []string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		trans, err := dbMap.Begin()
-		result := StoreResult{}
-
-		var query string
-		var params map[string]interface{}
-		if userIds == nil {
-			query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
-			params = map[string]interface{}{"roomId": roomId}
-			_, err = trans.Exec(query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user item.", err)
-			}
-
-			query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
-			params = map[string]interface{}{
-				"roomId":  roomId,
-				"deleted": time.Now().UnixNano(),
-			}
-			_, err = trans.Exec(query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)
-			}
-		} else {
-			var userIdsQuery string
-			userIdsQuery, params = utils.MakePrepareForInExpression(userIds)
-			query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
-			params["roomId"] = roomId
-			_, err = trans.Exec(query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user item.", err)
-			}
-
-			query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
-			params["deleted"] = time.Now().UnixNano()
-			_, err = trans.Exec(query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)
-			}
+func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
+	trans, err := dbMap.Begin()
+	result := StoreResult{}
+	var query string
+	var params map[string]interface{}
+	if userIds == nil {
+		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+		params = map[string]interface{}{"roomId": roomId}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user item.", err)
 		}
 
-		if result.ProblemDetail == nil {
-			if err := trans.Commit(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-			}
-		} else {
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-			}
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
+		params = map[string]interface{}{
+			"roomId":  roomId,
+			"deleted": time.Now().UnixNano(),
+		}
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)
+		}
+	} else {
+		var userIdsQuery string
+		userIdsQuery, params = utils.MakePrepareForInExpression(userIds)
+		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
+		params["roomId"] = roomId
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user item.", err)
 		}
 
-		storeChannel <- result
-	}()
-	return storeChannel
+		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
+		params["deleted"] = time.Now().UnixNano()
+		_, err = trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)
+		}
+	}
+
+	if result.ProblemDetail == nil {
+		if err := trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+		}
+	} else {
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+		}
+	}
+	return result
 }
 
 /*
-func RdbRoomUserInsert(roomUser *models.RoomUser) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUserInsert(roomUser *models.RoomUser) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
 		result := StoreResult{}
 
@@ -337,17 +270,17 @@ func RdbRoomUserInsert(roomUser *models.RoomUser) StoreChannel {
 		}
 		result.Data = roomUser
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 */
 
 /*
-func RdbRoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUsersUsersSelectByRoomId(roomId string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		var users []*models.User
@@ -363,15 +296,15 @@ func RdbRoomUsersUsersSelectByRoomId(roomId string) StoreChannel {
 		}
 		result.Data = users
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 
-func RdbRoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUsersUserIdsSelectByRoomId(roomId string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		var roomUsers []string
@@ -386,17 +319,17 @@ func RdbRoomUsersUserIdsSelectByRoomId(roomId string) StoreChannel {
 		}
 		result.Data = roomUsers
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 */
 
 /*
-func RdbRoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		userIdsQuery, params := utils.MakePrepareForInExpression(userIds)
@@ -414,15 +347,15 @@ func RdbRoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) Stor
 			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user list.", err)
 		}
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 
-func RdbRoomUserDeleteByRoomId(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUserDeleteByRoomId(roomId string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
@@ -434,15 +367,15 @@ func RdbRoomUserDeleteByRoomId(roomId string) StoreChannel {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
 		}
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 
-func RdbRoomUserDeleteByUserId(userId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUserDeleteByUserId(userId string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
@@ -454,15 +387,15 @@ func RdbRoomUserDeleteByUserId(userId string) StoreChannel {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
 		}
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 
-func RdbRoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUserUnreadCountUp(roomId string, currentUserId string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
@@ -475,15 +408,15 @@ func RdbRoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel 
 			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user unread count.", err)
 		}
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 
-func RdbRoomUserMarkAllAsRead(userId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
+func RdbRoomUserMarkAllAsRead(userId string) StoreResult {
+	StoreResult := make(StoreResult, 1)
 	go func() {
-		defer close(storeChannel)
+		defer close(StoreResult)
 		result := StoreResult{}
 
 		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=0 WHERE user_id=:userId;")
@@ -495,8 +428,8 @@ func RdbRoomUserMarkAllAsRead(userId string) StoreChannel {
 			result.ProblemDetail = createProblemDetail("An error occurred while mark all as read.", err)
 		}
 
-		storeChannel <- result
+		StoreResult <- result
 	}()
-	return storeChannel
+	return StoreResult
 }
 */

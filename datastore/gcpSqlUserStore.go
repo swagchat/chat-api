@@ -10,27 +10,27 @@ func (provider GcpSqlProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider GcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreChannel {
+func (provider GcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 	return RdbSelectUser(userId, isWithRooms, isWithDevices)
 }
 
-func (provider GcpSqlProvider) SelectUsers() StoreChannel {
+func (provider GcpSqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider GcpSqlProvider) SelectRoomsForUser(userId string) StoreChannel {
+func (provider GcpSqlProvider) SelectRoomsForUser(userId string) StoreResult {
 	return RdbSelectRoomsForUser(userId)
 }
 
-func (provider GcpSqlProvider) SelectUserIdsByUserIds(userIds []string) StoreChannel {
+func (provider GcpSqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (provider GcpSqlProvider) UpdateUser(user *models.User) StoreChannel {
+func (provider GcpSqlProvider) UpdateUser(user *models.User) StoreResult {
 	return RdbUpdateUser(user)
 }
 
-func (provider GcpSqlProvider) UpdateUserDeleted(userId string) StoreChannel {
+func (provider GcpSqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
 

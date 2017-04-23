@@ -92,11 +92,11 @@ func (u *User) BeforeSave() {
 		u.UnreadCount = &unreadCount
 	}
 
-	nowDatetime := time.Now().UnixNano()
+	nowTimestamp := time.Now().UnixNano()
 	if u.Created == 0 {
-		u.Created = nowDatetime
+		u.Created = nowTimestamp
 	}
-	u.Modified = nowDatetime
+	u.Modified = nowTimestamp
 }
 
 func (u *User) Put(put *User) {

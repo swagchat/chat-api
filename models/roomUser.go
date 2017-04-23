@@ -49,11 +49,11 @@ func (ru *RoomUser) IsValid() *ProblemDetail {
 }
 
 func (ru *RoomUser) BeforeSave() {
-	nowDatetime := time.Now().UnixNano()
+	nowTimestamp := time.Now().UnixNano()
 	if ru.Created == 0 {
-		ru.Created = nowDatetime
+		ru.Created = nowTimestamp
 	}
-	ru.Modified = nowDatetime
+	ru.Modified = nowTimestamp
 }
 
 func (ru *RoomUser) Put(put *RoomUser) {

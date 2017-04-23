@@ -23,12 +23,12 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 	}
 	post.BeforeSave()
 
-	dRes := <-datastore.GetProvider().InsertRoom(post)
+	dRes := datastore.GetProvider().InsertRoom(post)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
 func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().SelectRooms()
+	dRes := datastore.GetProvider().SelectRooms()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -36,6 +36,8 @@ func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
 	rooms := &models.Rooms{
 		Rooms: dRes.Data.([]*models.Room),
 	}
+	dRes = datastore.GetProvider().SelectCountRooms()
+	rooms.AllCount = dRes.Data.(int64)
 	return rooms, nil
 }
 
@@ -45,7 +47,7 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	dRes := <-datastore.GetProvider().SelectUsersForRoom(roomId)
+	dRes := datastore.GetProvider().SelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -65,7 +67,7 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 	}
 	room.BeforeSave()
 
-	dRes := <-datastore.GetProvider().UpdateRoom(room)
+	dRes := datastore.GetProvider().UpdateRoom(room)
 	return dRes.Data.(*models.Room), dRes.ProblemDetail
 }
 
@@ -84,7 +86,7 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 
 	room.NotificationTopicId = ""
 	room.Deleted = time.Now().UnixNano()
-	dRes := <-datastore.GetProvider().UpdateRoomDeleted(roomId)
+	dRes := datastore.GetProvider().UpdateRoomDeleted(roomId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -133,7 +135,7 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 		}
 	}
 
-	dRes := <-datastore.GetProvider().SelectMessages(roomId, limit, offset)
+	dRes := datastore.GetProvider().SelectMessages(roomId, limit, offset)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -141,16 +143,16 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 		Messages: dRes.Data.([]*models.Message),
 	}
 
-	dRes = <-datastore.GetProvider().SelectCountMessagesByRoomId(roomId)
+	dRes = datastore.GetProvider().SelectCountMessagesByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	messages.AllCount = dRes.Data.(*models.Messages).AllCount
+	messages.AllCount = dRes.Data.(int64)
 	return messages, nil
 }
 
 func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().SelectRoom(roomId)
+	dRes := datastore.GetProvider().SelectRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -163,7 +165,7 @@ func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 }
 
 func unsubscribeByRoomId(ctx context.Context, roomId string) {
-	dRes := <-datastore.GetProvider().SelectSubscriptionsByRoomId(roomId)
+	dRes := datastore.GetProvider().SelectSubscriptionsByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

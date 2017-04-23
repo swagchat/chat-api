@@ -9,10 +9,6 @@ const (
 	TABLE_NAME_MESSAGE      = "message"
 	TABLE_NAME_DEVICE       = "device"
 	TABLE_NAME_SUBSCRIPTION = "subscription"
-
-	EXIT_DB_OPEN   = 101
-	EXIT_PING      = 102
-	EXIT_NO_DRIVER = 103
 )
 
 var dbMap *gorp.DbMap

@@ -37,7 +37,7 @@ func PostDevice(userId string, platform int, post *models.Device) (*models.Devic
 	}
 
 	post.NotificationDeviceId = notificationDeviceId
-	dRes := <-datastore.GetProvider().InsertDevice(post)
+	dRes := datastore.GetProvider().InsertDevice(post)
 	device := dRes.Data.(*models.Device)
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -48,7 +48,7 @@ func PostDevice(userId string, platform int, post *models.Device) (*models.Devic
 }
 
 func GetDevices() (*models.Devices, *models.ProblemDetail) {
-	dRes := <-datastore.GetProvider().SelectDevices()
+	dRes := datastore.GetProvider().SelectDevices()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -97,7 +97,7 @@ func PutDevice(userId string, platform int, put *models.Device) (*models.Device,
 			Token:                put.Token,
 			NotificationDeviceId: notificationDeviceId,
 		}
-		dRes := <-datastore.GetProvider().UpdateDevice(newDevice)
+		dRes := datastore.GetProvider().UpdateDevice(newDevice)
 		if dRes.ProblemDetail != nil {
 			return nil, dRes.ProblemDetail
 		}
@@ -130,7 +130,7 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 		return nRes.ProblemDetail
 	}
 
-	dRes := <-datastore.GetProvider().DeleteDevice(userId, platform)
+	dRes := datastore.GetProvider().DeleteDevice(userId, platform)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -143,8 +143,7 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 }
 
 func SelectDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
-	dp := datastore.GetProvider()
-	dRes := <-dp.SelectDevice(userId, platform)
+	dRes := datastore.GetProvider().SelectDevice(userId, platform)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -157,7 +156,7 @@ func SelectDevice(userId string, platform int) (*models.Device, *models.ProblemD
 }
 
 func subscribeByDevice(ctx context.Context, device *models.Device) {
-	dRes := <-datastore.GetProvider().SelectRoomUsersByUserId(device.UserId)
+	dRes := datastore.GetProvider().SelectRoomUsersByUserId(device.UserId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -171,7 +170,7 @@ func subscribeByDevice(ctx context.Context, device *models.Device) {
 }
 
 func unsubscribeByDevice(ctx context.Context, device *models.Device) {
-	dRes := <-datastore.GetProvider().SelectSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
+	dRes := datastore.GetProvider().SelectSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -193,7 +192,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
-			dRes := <-dp.SelectRoom(ru.RoomId)
+			dRes := dp.SelectRoom(ru.RoomId)
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			} else {
@@ -208,9 +207,9 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 							RoomId:                     ru.RoomId,
 							UserId:                     ru.UserId,
 							Platform:                   device.Platform,
-							NotificationSubscriptionId: notificationSubscriptionId,
+							NotificationSubscriptionId: *notificationSubscriptionId,
 						}
-						dRes := <-dp.InsertSubscription(subscription)
+						dRes := dp.InsertSubscription(subscription)
 						if dRes.ProblemDetail != nil {
 							pdChan <- dRes.ProblemDetail
 						}
@@ -248,11 +247,11 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) {
 		ctx = context.WithValue(ctx, "subscription", subscription)
 		d.Work(ctx, func(ctx context.Context) {
 			targetSubscription := ctx.Value("subscription").(*models.Subscription)
-			nRes := <-np.Unsubscribe(*targetSubscription.NotificationSubscriptionId)
+			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionId)
 			if nRes.ProblemDetail != nil {
 				pdChan <- nRes.ProblemDetail
 			}
-			dRes := <-dp.DeleteSubscription(subscription)
+			dRes := dp.DeleteSubscription(subscription)
 			if dRes.ProblemDetail != nil {
 				pdChan <- dRes.ProblemDetail
 			}

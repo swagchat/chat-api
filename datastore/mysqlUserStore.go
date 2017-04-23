@@ -10,27 +10,27 @@ func (provider MysqlProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreChannel {
+func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 	return RdbSelectUser(userId, isWithRooms, isWithDevices)
 }
 
-func (provider MysqlProvider) SelectUsers() StoreChannel {
+func (provider MysqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider MysqlProvider) SelectRoomsForUser(userId string) StoreChannel {
+func (provider MysqlProvider) SelectRoomsForUser(userId string) StoreResult {
 	return RdbSelectRoomsForUser(userId)
 }
 
-func (provider MysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreChannel {
+func (provider MysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (provider MysqlProvider) UpdateUser(user *models.User) StoreChannel {
+func (provider MysqlProvider) UpdateUser(user *models.User) StoreResult {
 	return RdbUpdateUser(user)
 }
 
-func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreChannel {
+func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
 
