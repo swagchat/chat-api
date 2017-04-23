@@ -17,7 +17,7 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
+func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 	if pd := post.IsValid(); pd != nil {
 		return nil, pd
 	}

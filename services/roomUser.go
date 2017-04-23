@@ -84,6 +84,64 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 	return returnRoomUsers, nil
 }
 
+func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
+	room, pd := selectRoom(roomId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	if pd := put.IsValid(); pd != nil {
+		return nil, pd
+	}
+
+	put.RemoveDuplicate()
+
+	userIds, pd := getExistUserIds(put.UserIds)
+	if pd != nil {
+		return nil, pd
+	}
+
+	if room.NotificationTopicId == "" {
+		pd = createTopic(room)
+		if pd != nil {
+			return nil, pd
+		}
+	}
+
+	var zero int64
+	zero = 0
+	roomUsers := make([]*models.RoomUser, 0)
+	for _, userId := range userIds {
+		roomUsers = append(roomUsers, &models.RoomUser{
+			RoomId:      roomId,
+			UserId:      userId,
+			UnreadCount: &zero,
+			MetaData:    []byte("{}"),
+			Created:     time.Now().UnixNano(),
+		})
+	}
+	dRes := <-datastore.GetProvider().InsertRoomUsers(roomUsers)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+
+	dRes = <-datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	returnRoomUsers := &models.RoomUsers{
+		RoomUsers: dRes.Data.([]*models.RoomUser),
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go subscribeByRoomUsers(ctx, roomUsers)
+
+	go publishUserJoin(roomId)
+
+	return returnRoomUsers, nil
+}
+
 func PutRoomUser(roomId, userId string, put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
 	dRes := <-datastore.GetProvider().SelectRoomUser(roomId, userId)
 	if dRes.ProblemDetail != nil {
@@ -157,64 +215,6 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 	returnRoomUsers := &models.RoomUsers{
 		RoomUsers: dRes.Data.([]*models.RoomUser),
 	}
-
-	return returnRoomUsers, nil
-}
-
-func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
-	room, pd := selectRoom(roomId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	if pd := put.IsValid(); pd != nil {
-		return nil, pd
-	}
-
-	put.RemoveDuplicate()
-
-	userIds, pd := getExistUserIds(put.UserIds)
-	if pd != nil {
-		return nil, pd
-	}
-
-	if room.NotificationTopicId == "" {
-		pd = createTopic(room)
-		if pd != nil {
-			return nil, pd
-		}
-	}
-
-	var zero int64
-	zero = 0
-	roomUsers := make([]*models.RoomUser, 0)
-	for _, userId := range userIds {
-		roomUsers = append(roomUsers, &models.RoomUser{
-			RoomId:      roomId,
-			UserId:      userId,
-			UnreadCount: &zero,
-			MetaData:    []byte("{}"),
-			Created:     time.Now().UnixNano(),
-		})
-	}
-	dRes := <-datastore.GetProvider().InsertRoomUsers(roomUsers)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-
-	dRes = <-datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnRoomUsers := &models.RoomUsers{
-		RoomUsers: dRes.Data.([]*models.RoomUser),
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go subscribeByRoomUsers(ctx, roomUsers)
-
-	go publishUserJoin(roomId)
 
 	return returnRoomUsers, nil
 }

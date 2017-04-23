@@ -14,7 +14,7 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateDevice(userId string, platform int, post *models.Device) (*models.Device, *models.ProblemDetail) {
+func PostDevice(userId string, platform int, post *models.Device) (*models.Device, *models.ProblemDetail) {
 	// User existence check
 	_, pd := selectUser(userId)
 	if pd != nil {

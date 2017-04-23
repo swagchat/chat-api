@@ -10,9 +10,9 @@ import (
 
 func SetRoomUserMux() {
 	Mux.PostFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(PostRoomUsers))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(PutRoomUsers))
 	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", ColsHandler(PutRoomUser))
 	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(DeleteRoomUsers))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(PutRoomUsers))
 }
 
 func PostRoomUsers(w http.ResponseWriter, r *http.Request) {
@@ -30,6 +30,23 @@ func PostRoomUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, r, http.StatusCreated, "application/json", roomUsers)
+}
+
+func PutRoomUsers(w http.ResponseWriter, r *http.Request) {
+	var put models.RequestRoomUserIds
+	if err := decodeBody(r, &put); err != nil {
+		respondJsonDecodeError(w, r, "Adding room's user list")
+		return
+	}
+
+	roomId := bone.GetValue(r, "roomId")
+	roomUsers, pd := services.PutRoomUsers(roomId, &put)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	respond(w, r, http.StatusOK, "application/json", roomUsers)
 }
 
 func PutRoomUser(w http.ResponseWriter, r *http.Request) {
@@ -59,23 +76,6 @@ func DeleteRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	roomId := bone.GetValue(r, "roomId")
 	roomUsers, pd := services.DeleteRoomUsers(roomId, &deleteRus)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "application/json", roomUsers)
-}
-
-func PutRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var put models.RequestRoomUserIds
-	if err := decodeBody(r, &put); err != nil {
-		respondJsonDecodeError(w, r, "Adding room's user list")
-		return
-	}
-
-	roomId := bone.GetValue(r, "roomId")
-	roomUsers, pd := services.PutRoomUsers(roomId, &put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

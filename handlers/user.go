@@ -23,7 +23,7 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, pd := services.CreateUser(&post)
+	user, pd := services.PostUser(&post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

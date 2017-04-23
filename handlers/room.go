@@ -25,7 +25,7 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, pd := services.CreateRoom(&post)
+	room, pd := services.PostRoom(&post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

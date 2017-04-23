@@ -16,7 +16,7 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateUser(post *models.User) (*models.User, *models.ProblemDetail) {
+func PostUser(post *models.User) (*models.User, *models.ProblemDetail) {
 	if pd := post.IsValid(); pd != nil {
 		return nil, pd
 	}

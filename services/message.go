@@ -14,7 +14,7 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateMessage(posts *models.Messages) *models.ResponseMessages {
+func PostMessage(posts *models.Messages) *models.ResponseMessages {
 	messageIds := make([]string, 0)
 	errors := make([]*models.ProblemDetail, 0)
 	var lastMessage string

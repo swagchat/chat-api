@@ -26,7 +26,7 @@ func PostDevice(w http.ResponseWriter, r *http.Request) {
 
 	userId := bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	device, pd := services.CreateDevice(userId, platform, &post)
+	device, pd := services.PostDevice(userId, platform, &post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
