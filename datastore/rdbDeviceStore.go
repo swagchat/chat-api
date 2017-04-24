@@ -67,7 +67,7 @@ func RdbSelectDevicesByUserId(userId string) StoreResult {
 		"userId": userId,
 	}
 	if _, err := dbMap.Select(&devices, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting device item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
 	}
 	result.Data = devices
 	return result
@@ -85,6 +85,10 @@ func RdbUpdateDevice(device *models.Device) StoreResult {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating device item.", err)
+		}
+		return result
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_DEVICE, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
@@ -97,15 +101,15 @@ func RdbUpdateDevice(device *models.Device) StoreResult {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating device item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating device item.", err)
+		}
+		return result
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit updating device item.", err)
 		}
 	}
 	return result
@@ -123,6 +127,10 @@ func RdbDeleteDevice(userId string, platform int) StoreResult {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting device item.", err)
+		}
+		return result
 	}
 
 	query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
@@ -133,15 +141,15 @@ func RdbDeleteDevice(userId string, platform int) StoreResult {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while deleting device item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting device item.", err)
+		}
+		return result
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit deleting device item.", err)
 		}
 	}
 	return result

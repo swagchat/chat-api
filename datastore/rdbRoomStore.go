@@ -78,7 +78,7 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 	params := map[string]interface{}{"roomId": roomId}
 	_, err := dbMap.Select(&users, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room users.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's users.", err)
 	}
 	result.Data = users
 	return result
@@ -100,7 +100,7 @@ func RdbUpdateRoom(room *models.Room) StoreResult {
 	result := StoreResult{}
 	_, err := dbMap.Update(room)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
 	}
 	result.Data = room
 	return result
@@ -115,7 +115,11 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room item.", err)
+		}
+		return result
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
@@ -126,6 +130,10 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room item.", err)
+		}
+		return result
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM, " SET deleted=:deleted WHERE room_id=:roomId;")
@@ -135,16 +143,16 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room item.", err)
+		}
+		return result
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit updating room item.", err)
 		}
 	}
 	return result

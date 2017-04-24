@@ -158,7 +158,10 @@ func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail)
 	roomUser.BeforeSave()
 
 	dRes := datastore.GetProvider().UpdateRoomUser(roomUser)
-	return dRes.Data.(*models.RoomUser), dRes.ProblemDetail
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	return dRes.Data.(*models.RoomUser), nil
 }
 
 func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {

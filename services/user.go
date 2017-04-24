@@ -23,7 +23,10 @@ func PostUser(post *models.User) (*models.User, *models.ProblemDetail) {
 
 	post.BeforeSave()
 	dRes := datastore.GetProvider().InsertUser(post)
-	return dRes.Data.(*models.User), dRes.ProblemDetail
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	return dRes.Data.(*models.User), nil
 }
 
 func GetUsers() (*models.Users, *models.ProblemDetail) {
@@ -64,7 +67,10 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 	}
 	user.BeforeSave()
 	dRes := datastore.GetProvider().UpdateUser(user)
-	return dRes.Data.(*models.User), dRes.ProblemDetail
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	return dRes.Data.(*models.User), nil
 }
 
 func DeleteUser(userId string) *models.ProblemDetail {

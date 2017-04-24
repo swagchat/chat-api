@@ -110,7 +110,7 @@ func RdbDeleteSubscription(subscription *models.Subscription) StoreResult {
 	}
 	_, err := dbMap.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while deleting subscription item.", err)
 	}
 	return result
 }

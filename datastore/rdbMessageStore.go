@@ -42,6 +42,10 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 	result := StoreResult{}
 	if err = trans.Insert(message); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating message item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
 	}
 
 	var rooms []*models.Room
@@ -49,10 +53,15 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 	params := map[string]interface{}{"roomId": message.RoomId}
 	if _, err := trans.Select(&rooms, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
 	}
 	if len(rooms) != 1 {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
 	}
+
 	room := rooms[0]
 	var lastMessage string
 	switch message.Type {
@@ -70,6 +79,10 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 	_, err = trans.Update(room)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
@@ -80,6 +93,10 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating room's user unread count.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
 	}
 
 	var users []*models.User
@@ -91,7 +108,11 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 	params = map[string]interface{}{"roomId": message.RoomId}
 	_, err = trans.Select(&users, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user list.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
 	}
 	for _, user := range users {
 		if user.UserId == message.UserId {
@@ -102,16 +123,16 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 		_, err := trans.Exec(query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating user unread count.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+			}
+			return result
 		}
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit creating message item.", err)
 		}
 	}
 	result.Data = lastMessage
@@ -149,7 +170,7 @@ func RdbSelectMessages(roomId string, limit, offset int) StoreResult {
 	}
 	_, err := dbMap.Select(&messages, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting message list.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting message items.", err)
 	}
 	result.Data = messages
 	return result
@@ -166,7 +187,7 @@ func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
 	}
 	count, err := dbMap.SelectInt(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting message item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting message count.", err)
 	}
 	result.Data = count
 	return result

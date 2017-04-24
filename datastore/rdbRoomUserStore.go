@@ -23,22 +23,26 @@ func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
 	params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while deleting all room's user item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user item.", err)
+		}
+		return result
 	}
 
 	for _, roomUser := range roomUsers {
 		if err := trans.Insert(roomUser); err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
+			}
+			return result
 		}
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit creating room's user items.", err)
 		}
 	}
 	return result
@@ -51,23 +55,25 @@ func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
 		res := RdbSelectRoomUser(roomUser.RoomId, roomUser.UserId)
 		if res.ProblemDetail != nil {
 			result.ProblemDetail = res.ProblemDetail
-			continue
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
+			}
+			return result
 		}
 		if res.Data == nil {
 			if err = trans.Insert(roomUser); err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+				if err := trans.Rollback(); err != nil {
+					result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
+				}
+				return result
 			}
-			continue
 		}
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit creating room's user items.", err)
 		}
 	}
 	return result
@@ -98,7 +104,7 @@ func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
 		"roomId": roomId,
 	}
 	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user items.", err)
 	}
 	result.Data = roomUsers
 	return result
@@ -112,7 +118,7 @@ func RdbSelectRoomUsersByUserId(userId string) StoreResult {
 		"userId": userId,
 	}
 	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user items.", err)
 	}
 	result.Data = roomUsers
 	return result
@@ -176,7 +182,11 @@ func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
 		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user items.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while updating room's user item.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room's user item.", err)
+			}
+			return result
 		}
 
 		if roomUser.UnreadCount != nil {
@@ -190,17 +200,17 @@ func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
 			_, err = trans.Exec(query, params)
 			if err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while updating user unread count.", err)
+				if err := trans.Rollback(); err != nil {
+					result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room's user item.", err)
+				}
+				return result
 			}
 		}
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit updating room's user item.", err)
 		}
 	}
 	result.Data = roomUser
@@ -217,7 +227,11 @@ func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
 		params = map[string]interface{}{"roomId": roomId}
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting room's user items.", err)
+			}
+			return result
 		}
 
 		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
@@ -228,6 +242,10 @@ func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting room's user items.", err)
+			}
+			return result
 		}
 	} else {
 		var userIdsQuery string
@@ -236,7 +254,11 @@ func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
 		params["roomId"] = roomId
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting room's user items.", err)
+			}
+			return result
 		}
 
 		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
@@ -244,16 +266,16 @@ func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting room's user items.", err)
+			}
+			return result
 		}
 	}
 
 	if result.ProblemDetail == nil {
 		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-		}
-	} else {
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while commit deleting room's user items.", err)
 		}
 	}
 	return result

@@ -24,7 +24,10 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 	post.BeforeSave()
 
 	dRes := datastore.GetProvider().InsertRoom(post)
-	return dRes.Data.(*models.Room), dRes.ProblemDetail
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	return dRes.Data.(*models.Room), nil
 }
 
 func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
@@ -68,7 +71,10 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 	room.BeforeSave()
 
 	dRes := datastore.GetProvider().UpdateRoom(room)
-	return dRes.Data.(*models.Room), dRes.ProblemDetail
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	return dRes.Data.(*models.Room), nil
 }
 
 func DeleteRoom(roomId string) *models.ProblemDetail {
