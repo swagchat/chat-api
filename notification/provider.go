@@ -1,6 +1,7 @@
 package notification
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/fairway-corp/swagchat-api/models"
@@ -25,11 +26,11 @@ type NotificationChannel chan NotificationResult
 type Provider interface {
 	CreateTopic(string) NotificationChannel
 	DeleteTopic(string) NotificationChannel
-	CreateEndpoint(string) NotificationChannel
+	CreateEndpoint(string, int, string) NotificationChannel
 	DeleteEndpoint(string) NotificationChannel
 	Subscribe(string, string) NotificationChannel
 	Unsubscribe(string) NotificationChannel
-	Publish(string, *MessageInfo) NotificationChannel
+	Publish(context.Context, string, *MessageInfo) NotificationChannel
 }
 
 func GetProvider() Provider {
@@ -43,6 +44,8 @@ func GetProvider() Provider {
 			roomTopicNamePrefix: utils.Cfg.AwsSns.RoomTopicNamePrefix,
 			applicationArn:      utils.Cfg.AwsSns.ApplicationArn,
 		}
+	default:
+		provider = &NotUseProvider{}
 	}
 	return provider
 }

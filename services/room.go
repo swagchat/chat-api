@@ -1,10 +1,15 @@
 package services
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"go.uber.org/zap"
 
 	"github.com/fairway-corp/swagchat-api/datastore"
 	"github.com/fairway-corp/swagchat-api/models"
@@ -12,72 +17,21 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func CreateRoom(requestRoom *models.Room) (*models.Room, *models.ProblemDetail) {
-	if requestRoom.Name == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "name",
-					Reason: "name is required, but it's empty.",
-				},
-			},
-		}
+func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
+	if pd := post.IsValid(); pd != nil {
+		return nil, pd
 	}
+	post.BeforeSave()
 
-	roomId := requestRoom.RoomId
-	if roomId != "" && !utils.IsValidId(roomId) {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
-			},
-		}
+	dRes := datastore.GetProvider().InsertRoom(post)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
 	}
-	if roomId == "" {
-		roomId = utils.CreateUuid()
-	}
-
-	var metaData []byte
-	if requestRoom.MetaData == nil {
-		metaData = []byte("{}")
-	} else {
-		metaData = requestRoom.MetaData
-	}
-
-	var isPublic bool
-	if requestRoom.IsPublic == nil {
-		isPublic = false
-	} else {
-		isPublic = *requestRoom.IsPublic
-	}
-
-	room := &models.Room{
-		RoomId:         roomId,
-		Name:           requestRoom.Name,
-		PictureUrl:     requestRoom.PictureUrl,
-		InformationUrl: requestRoom.InformationUrl,
-		MetaData:       metaData,
-		IsPublic:       &isPublic,
-		Created:        time.Now().UnixNano(),
-		Modified:       time.Now().UnixNano(),
-	}
-
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomInsert(room)
-	return dRes.Data.(*models.Room), dRes.ProblemDetail
+	return dRes.Data.(*models.Room), nil
 }
 
 func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelectAll()
+	dRes := datastore.GetProvider().SelectRooms()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -85,36 +39,18 @@ func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
 	rooms := &models.Rooms{
 		Rooms: dRes.Data.([]*models.Room),
 	}
+	dRes = datastore.GetProvider().SelectCountRooms()
+	rooms.AllCount = dRes.Data.(int64)
 	return rooms, nil
 }
 
 func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+	room, pd := selectRoom(roomId)
+	if pd != nil {
+		return nil, pd
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	room := dRes.Data.(*models.Room)
-	dRes = <-dp.RoomSelectUsersForRoom(roomId)
+	dRes := datastore.GetProvider().SelectUsersForRoom(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -122,131 +58,57 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 	return room, nil
 }
 
-func PutRoom(roomId string, requestRoom *models.Room) (*models.Room, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Update room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
+func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
+	room, pd := selectRoom(put.RoomId)
+	if pd != nil {
+		return nil, pd
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
+	room.Put(put)
+	if pd := room.IsValid(); pd != nil {
+		return nil, pd
+	}
+	room.BeforeSave()
+
+	dRes := datastore.GetProvider().UpdateRoom(room)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	room := dRes.Data.(*models.Room)
-
-	if requestRoom.Name != "" {
-		room.Name = requestRoom.Name
-	}
-	if requestRoom.PictureUrl != "" {
-		room.PictureUrl = requestRoom.PictureUrl
-	}
-	if requestRoom.InformationUrl != "" {
-		room.InformationUrl = requestRoom.InformationUrl
-	}
-	if requestRoom.MetaData != nil {
-		room.MetaData = requestRoom.MetaData
-	}
-	if requestRoom.IsPublic != nil {
-		room.IsPublic = requestRoom.IsPublic
-	}
-	room.Modified = time.Now().UnixNano()
-
-	dRes = <-dp.RoomUpdate(room)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	room = dRes.Data.(*models.Room)
-
-	return room, nil
+	return dRes.Data.(*models.Room), nil
 }
 
-func DeleteRoom(roomId string) (*models.ResponseRoomUser, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Delete room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
+func DeleteRoom(roomId string) *models.ProblemDetail {
+	room, pd := selectRoom(roomId)
+	if pd != nil {
+		return pd
+	}
+
+	if room.NotificationTopicId != "" {
+		nRes := <-notification.GetProvider().DeleteTopic(room.NotificationTopicId)
+		if nRes.ProblemDetail != nil {
+			return nRes.ProblemDetail
 		}
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.RoomSelect(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-	room := dRes.Data.(*models.Room)
-
-	np := notification.GetProvider()
-	if np != nil {
-		if room.NotificationTopicId != nil {
-			nRes := <-np.DeleteTopic(*room.NotificationTopicId)
-			if nRes.ProblemDetail != nil {
-				return nil, nRes.ProblemDetail
-			}
-		}
-	}
-
-	dRes = <-dp.RoomUsersSelect(&roomId, nil)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	ruRes := deleteRoomUsers(dRes.Data.([]*models.RoomUser))
-
-	room.NotificationTopicId = nil
+	room.NotificationTopicId = ""
 	room.Deleted = time.Now().UnixNano()
-	dRes = <-dp.RoomUpdate(room)
+	dRes := datastore.GetProvider().UpdateRoomDeleted(roomId)
 	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+		return dRes.ProblemDetail
 	}
 
-	return ruRes, nil
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go unsubscribeByRoomId(ctx, roomId)
+
+	return nil
 }
 
-func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages, *models.ProblemDetail) {
-	if roomId == "" {
-		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room's message list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is required, but it's empty.",
-				},
-			},
-		}
-	}
-
+func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *models.ProblemDetail) {
 	var err error
 	limit := 10
 	offset := 0
-	if limitArray, ok := requestParams["limit"]; ok {
+	if limitArray, ok := params["limit"]; ok {
 		limit, err = strconv.Atoi(limitArray[0])
 		if err != nil {
 			return nil, &models.ProblemDetail{
@@ -262,7 +124,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 			}
 		}
 	}
-	if offsetArray, ok := requestParams["offset"]; ok {
+	if offsetArray, ok := params["offset"]; ok {
 		offset, err = strconv.Atoi(offsetArray[0])
 		if err != nil {
 			return nil, &models.ProblemDetail{
@@ -279,8 +141,7 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 		}
 	}
 
-	dp := datastore.GetProvider()
-	dRes := <-dp.MessageSelectAll(roomId, limit, offset)
+	dRes := datastore.GetProvider().SelectMessages(roomId, limit, offset)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -288,10 +149,35 @@ func GetRoomMessages(roomId string, requestParams url.Values) (*models.Messages,
 		Messages: dRes.Data.([]*models.Message),
 	}
 
-	dRes = <-dp.MessageCount(roomId)
+	dRes = datastore.GetProvider().SelectCountMessagesByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	messages.AllCount = dRes.Data.(*models.Messages).AllCount
+	messages.AllCount = dRes.Data.(int64)
 	return messages, nil
+}
+
+func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
+	dRes := datastore.GetProvider().SelectRoom(roomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	if dRes.Data == nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusNotFound,
+		}
+	}
+	return dRes.Data.(*models.Room), nil
+}
+
+func unsubscribeByRoomId(ctx context.Context, roomId string) {
+	dRes := datastore.GetProvider().SelectSubscriptionsByRoomId(roomId)
+	if dRes.ProblemDetail != nil {
+		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
+		utils.AppLogger.Error("",
+			zap.String("problemDetail", string(pdBytes)),
+			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
+		)
+	}
+	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
 }

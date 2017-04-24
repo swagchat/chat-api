@@ -2,26 +2,26 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider MysqlProvider) MessageCreateStore() {
+func (provider MysqlProvider) CreateMessageStore() {
 	RdbCreateMessageStore()
 }
 
-func (provider MysqlProvider) MessageInsert(message *models.Message) StoreChannel {
-	return RdbMessageInsert(message)
+func (provider MysqlProvider) InsertMessage(message *models.Message) StoreResult {
+	return RdbInsertMessage(message)
 }
 
-func (provider MysqlProvider) MessageSelect(messageId string) StoreChannel {
-	return RdbMessageSelect(messageId)
+func (provider MysqlProvider) SelectMessage(messageId string) StoreResult {
+	return RdbSelectMessage(messageId)
 }
 
-func (provider MysqlProvider) MessageUpdate(message *models.Message) StoreChannel {
-	return RdbMessageUpdate(message)
+func (provider MysqlProvider) SelectMessages(roomId string, limit, offset int) StoreResult {
+	return RdbSelectMessages(roomId, limit, offset)
 }
 
-func (provider MysqlProvider) MessageSelectAll(roomId string, limit, offset int) StoreChannel {
-	return RdbMessageSelectAll(roomId, limit, offset)
+func (provider MysqlProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {
+	return RdbSelectCountMessagesByRoomId(roomId)
 }
 
-func (provider MysqlProvider) MessageCount(roomId string) StoreChannel {
-	return RdbMessageCount(roomId)
+func (provider MysqlProvider) UpdateMessage(message *models.Message) StoreResult {
+	return RdbUpdateMessage(message)
 }

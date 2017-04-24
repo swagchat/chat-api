@@ -2,26 +2,34 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider MysqlProvider) RoomCreateStore() {
-	RdbRoomCreateStore()
+func (provider MysqlProvider) CreateRoomStore() {
+	RdbCreateRoomStore()
 }
 
-func (provider MysqlProvider) RoomInsert(room *models.Room) StoreChannel {
-	return RdbRoomInsert(room)
+func (provider MysqlProvider) InsertRoom(room *models.Room) StoreResult {
+	return RdbInsertRoom(room)
 }
 
-func (provider MysqlProvider) RoomSelect(roomId string) StoreChannel {
-	return RdbRoomSelect(roomId)
+func (provider MysqlProvider) SelectRoom(roomId string) StoreResult {
+	return RdbSelectRoom(roomId)
 }
 
-func (provider MysqlProvider) RoomUpdate(room *models.Room) StoreChannel {
-	return RdbRoomUpdate(room)
+func (provider MysqlProvider) SelectRooms() StoreResult {
+	return RdbSelectRooms()
 }
 
-func (provider MysqlProvider) RoomSelectAll() StoreChannel {
-	return RdbRoomSelectAll()
+func (provider MysqlProvider) SelectUsersForRoom(roomId string) StoreResult {
+	return RdbSelectUsersForRoom(roomId)
 }
 
-func (provider MysqlProvider) RoomSelectUsersForRoom(roomId string) StoreChannel {
-	return RdbRoomSelectUsersForRoom(roomId)
+func (provider MysqlProvider) SelectCountRooms() StoreResult {
+	return RdbSelectCountRooms()
+}
+
+func (provider MysqlProvider) UpdateRoom(room *models.Room) StoreResult {
+	return RdbUpdateRoom(room)
+}
+
+func (provider MysqlProvider) UpdateRoomDeleted(roomId string) StoreResult {
+	return RdbUpdateRoomDeleted(roomId)
 }

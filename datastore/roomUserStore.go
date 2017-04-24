@@ -3,18 +3,22 @@ package datastore
 import "github.com/fairway-corp/swagchat-api/models"
 
 type RoomUserStore interface {
-	RoomUserCreateStore()
+	CreateRoomUserStore()
 
-	RoomUserInsert(roomUser *models.RoomUser) StoreChannel
-	RoomUsersInsert(roomId string, roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel
-	RoomUserUsersSelect(roomId string) StoreChannel
-	RoomUsersSelect(roomId *string, userIds []string) StoreChannel
-	RoomUsersSelectUserIds(roomId string) StoreChannel
-	RoomUsersSelectIds(roomId *string, userIds []string) StoreChannel
-	RoomUserSelect(roomId, userId string) StoreChannel
-	RoomUserUpdate(*models.RoomUser) StoreChannel
-	RoomUserDelete(roomId string, userIds []string) StoreChannel
-	RoomUsersDeleteByUserIds(roomId *string, userIds []string) StoreChannel
-	RoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel
-	RoomUserMarkAllAsRead(userId string) StoreChannel
+	DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult
+	InsertRoomUsers(roomUsers []*models.RoomUser) StoreResult
+	SelectRoomUser(roomId, userId string) StoreResult
+	SelectRoomUsersByRoomId(roomId string) StoreResult
+	SelectRoomUsersByUserId(userId string) StoreResult
+	SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult
+	UpdateRoomUser(*models.RoomUser) StoreResult
+	DeleteRoomUser(roomId string, userIds []string) StoreResult
+	//RoomUserInsert(roomUser *models.RoomUser) StoreResult
+	//RoomUsersUsersSelectByRoomId(roomId string) StoreResult
+	//RoomUsersUserIdsSelectByRoomId(roomId string) StoreResult
+	//RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult
+	//RoomUserDeleteByRoomId(roomId string) StoreResult
+	//RoomUserDeleteByUserId(userId string) StoreResult
+	//RoomUserUnreadCountUp(roomId string, currentUserId string) StoreResult
+	//RoomUserMarkAllAsRead(userId string) StoreResult
 }

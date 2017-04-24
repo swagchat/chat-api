@@ -2,26 +2,34 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider SqliteProvider) RoomCreateStore() {
-	RdbRoomCreateStore()
+func (provider SqliteProvider) CreateRoomStore() {
+	RdbCreateRoomStore()
 }
 
-func (provider SqliteProvider) RoomInsert(room *models.Room) StoreChannel {
-	return RdbRoomInsert(room)
+func (provider SqliteProvider) InsertRoom(room *models.Room) StoreResult {
+	return RdbInsertRoom(room)
 }
 
-func (provider SqliteProvider) RoomSelect(roomId string) StoreChannel {
-	return RdbRoomSelect(roomId)
+func (provider SqliteProvider) SelectRoom(roomId string) StoreResult {
+	return RdbSelectRoom(roomId)
 }
 
-func (provider SqliteProvider) RoomUpdate(room *models.Room) StoreChannel {
-	return RdbRoomUpdate(room)
+func (provider SqliteProvider) SelectRooms() StoreResult {
+	return RdbSelectRooms()
 }
 
-func (provider SqliteProvider) RoomSelectAll() StoreChannel {
-	return RdbRoomSelectAll()
+func (provider SqliteProvider) SelectUsersForRoom(roomId string) StoreResult {
+	return RdbSelectUsersForRoom(roomId)
 }
 
-func (provider SqliteProvider) RoomSelectUsersForRoom(roomId string) StoreChannel {
-	return RdbRoomSelectUsersForRoom(roomId)
+func (provider SqliteProvider) SelectCountRooms() StoreResult {
+	return RdbSelectCountRooms()
+}
+
+func (provider SqliteProvider) UpdateRoom(room *models.Room) StoreResult {
+	return RdbUpdateRoom(room)
+}
+
+func (provider SqliteProvider) UpdateRoomDeleted(roomId string) StoreResult {
+	return RdbUpdateRoomDeleted(roomId)
 }

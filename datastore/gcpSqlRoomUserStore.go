@@ -2,54 +2,73 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider GcpSqlProvider) RoomUserCreateStore() {
-	RdbRoomUserCreateStore()
+func (provider GcpSqlProvider) CreateRoomUserStore() {
+	RdbCreateRoomUserStore()
 }
 
-func (provider GcpSqlProvider) RoomUserInsert(roomUser *models.RoomUser) StoreChannel {
-	return RdbRoomUserInsert(roomUser)
+func (provider GcpSqlProvider) DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
+	return RdbDeleteAndInsertRoomUsers(roomUsers)
 }
 
-func (provider GcpSqlProvider) RoomUsersInsert(roomId string, roomUsers []*models.RoomUser, isDeleteFirst bool) StoreChannel {
-	return RdbRoomUsersInsert(roomId, roomUsers, isDeleteFirst)
+func (provider GcpSqlProvider) InsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
+	return RdbInsertRoomUsers(roomUsers)
 }
 
-func (provider GcpSqlProvider) RoomUserUsersSelect(roomId string) StoreChannel {
-	return RdbRoomUserUsersSelect(roomId)
+func (provider GcpSqlProvider) SelectRoomUser(roomId, userId string) StoreResult {
+	return RdbSelectRoomUser(roomId, userId)
 }
 
-func (provider GcpSqlProvider) RoomUsersSelect(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersSelect(roomId, userIds)
+func (provider GcpSqlProvider) SelectRoomUsersByRoomId(roomId string) StoreResult {
+	return RdbSelectRoomUsersByRoomId(roomId)
 }
 
-func (provider GcpSqlProvider) RoomUsersSelectUserIds(roomId string) StoreChannel {
-	return RdbRoomUsersSelectUserIds(roomId)
+func (provider GcpSqlProvider) SelectRoomUsersByUserId(userId string) StoreResult {
+	return RdbSelectRoomUsersByUserId(userId)
 }
 
-func (provider GcpSqlProvider) RoomUsersSelectIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersSelectIds(roomId, userIds)
+func (provider GcpSqlProvider) SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
+	return RdbSelectRoomUsersByRoomIdAndUserIds(roomId, userIds)
 }
 
-func (provider GcpSqlProvider) RoomUserSelect(roomId, userId string) StoreChannel {
-	return RdbRoomUserSelect(roomId, userId)
+func (provider GcpSqlProvider) UpdateRoomUser(roomUser *models.RoomUser) StoreResult {
+	return RdbUpdateRoomUser(roomUser)
 }
 
-func (provider GcpSqlProvider) RoomUserUpdate(roomUser *models.RoomUser) StoreChannel {
-	return RdbRoomUserUpdate(roomUser)
+func (provider GcpSqlProvider) DeleteRoomUser(roomId string, userIds []string) StoreResult {
+	return RdbDeleteRoomUser(roomId, userIds)
 }
 
-func (provider GcpSqlProvider) RoomUserDelete(roomId string, userIds []string) StoreChannel {
-	return RdbRoomUserDelete(roomId, userIds)
+//func (provider GcpSqlProvider) RoomUserInsert(roomUser *models.RoomUser) StoreResult {
+//	return RdbRoomUserInsert(roomUser)
+//}
+
+/*
+func (provider GcpSqlProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreResult {
+	return RdbRoomUsersUsersSelectByRoomId(roomId)
 }
 
-func (provider GcpSqlProvider) RoomUsersDeleteByUserIds(roomId *string, userIds []string) StoreChannel {
-	return RdbRoomUsersDeleteByUserIds(roomId, userIds)
+func (provider GcpSqlProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreResult {
+	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
+}
+*/
+/*
+func (provider GcpSqlProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
+	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
 }
 
-func (provider GcpSqlProvider) RoomUserUnreadCountUp(roomId string, currentUserId string) StoreChannel {
+func (provider GcpSqlProvider) RoomUserDeleteByRoomId(roomId string) StoreResult {
+	return RdbRoomUserDeleteByRoomId(roomId)
+}
+
+func (provider GcpSqlProvider) RoomUserDeleteByUserId(userId string) StoreResult {
+	return RdbRoomUserDeleteByUserId(userId)
+}
+
+func (provider GcpSqlProvider) RoomUserUnreadCountUp(roomId string, currentUserId string) StoreResult {
 	return RdbRoomUserUnreadCountUp(roomId, currentUserId)
 }
 
-func (provider GcpSqlProvider) RoomUserMarkAllAsRead(userId string) StoreChannel {
+func (provider GcpSqlProvider) RoomUserMarkAllAsRead(userId string) StoreResult {
 	return RdbRoomUserMarkAllAsRead(userId)
 }
+*/

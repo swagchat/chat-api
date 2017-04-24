@@ -1,8 +1,10 @@
 package datastore
 
 import (
+	"encoding/json"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
@@ -35,109 +37,168 @@ func RdbCreateMessageStore() {
 	}
 }
 
-func RdbMessageInsert(message *models.Message) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		if err := dbMap.Insert(message); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating message item.", err)
+func RdbInsertMessage(message *models.Message) StoreResult {
+	trans, err := dbMap.Begin()
+	result := StoreResult{}
+	if err = trans.Insert(message); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while creating message item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
 		}
+		return result
+	}
 
-		storeChannel <- result
-	}()
-	return storeChannel
-}
-
-func RdbMessageSelect(messageId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var messages []*models.Message
-		query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_MESSAGE, " WHERE message_id=:messageId;")
-		params := map[string]interface{}{"messageId": messageId}
-		if _, err := dbMap.Select(&messages, query, params); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting message item.", err)
+	var rooms []*models.Room
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
+	params := map[string]interface{}{"roomId": message.RoomId}
+	if _, err := trans.Select(&rooms, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
 		}
-		if len(messages) == 1 {
-			result.Data = messages[0]
+		return result
+	}
+	if len(rooms) != 1 {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
+	}
+
+	room := rooms[0]
+	var lastMessage string
+	switch message.Type {
+	case "text":
+		var payloadText models.PayloadText
+		json.Unmarshal(message.Payload, &payloadText)
+		lastMessage = payloadText.Text
+	case "image":
+		lastMessage = "画像を送信しました"
+	case "location":
+		lastMessage = "位置情報を送信しました"
+	}
+	room.LastMessage = lastMessage
+	room.LastMessageUpdated = time.Now().UnixNano()
+	_, err = trans.Update(room)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
 		}
+		return result
+	}
 
-		storeChannel <- result
-	}()
-	return storeChannel
-}
+	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
+	params = map[string]interface{}{
+		"roomId": message.RoomId,
+		"userId": message.UserId,
+	}
+	_, err = trans.Exec(query, params)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while updating room's user unread count.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
+	}
 
-func RdbMessageUpdate(message *models.Message) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		_, err := dbMap.Update(message)
+	var users []*models.User
+	query = utils.AppendStrings("SELECT u.* ",
+		"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
+		"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
+		"ON ru.user_id = u.user_id ",
+		"WHERE room_id = :roomId;")
+	params = map[string]interface{}{"roomId": message.RoomId}
+	_, err = trans.Select(&users, query, params)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user items.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+		}
+		return result
+	}
+	for _, user := range users {
+		if user.UserId == message.UserId {
+			continue
+		}
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET unread_count=unread_count+1 WHERE user_id=:userId;")
+		params := map[string]interface{}{"userId": user.UserId}
+		_, err := trans.Exec(query, params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while updating message item.", err)
+			result.ProblemDetail = createProblemDetail("An error occurred while updating user unread count.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback creating message item.", err)
+			}
+			return result
 		}
-		result.Data = message
+	}
 
-		storeChannel <- result
-	}()
-	return storeChannel
+	if result.ProblemDetail == nil {
+		if err := trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while commit creating message item.", err)
+		}
+	}
+	result.Data = lastMessage
+	return result
 }
 
-func RdbMessageSelectAll(roomId string, limit, offset int) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
-
-		var messages []*models.Message
-		query := utils.AppendStrings("SELECT * ",
-			"FROM ", TABLE_NAME_MESSAGE, " ",
-			"WHERE room_id = :roomId ",
-			"AND deleted = 0 ",
-			"ORDER BY created ASC ",
-			"LIMIT  :limit ",
-			"OFFSET :offset;")
-		params := map[string]interface{}{
-			"roomId": roomId,
-			"limit":  limit,
-			"offset": offset,
-		}
-		_, err := dbMap.Select(&messages, query, params)
-		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting message list.", err)
-		}
-		result.Data = messages
-
-		storeChannel <- result
-	}()
-	return storeChannel
+func RdbSelectMessage(messageId string) StoreResult {
+	result := StoreResult{}
+	var messages []*models.Message
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_MESSAGE, " WHERE message_id=:messageId;")
+	params := map[string]interface{}{"messageId": messageId}
+	if _, err := dbMap.Select(&messages, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting message item.", err)
+	}
+	if len(messages) == 1 {
+		result.Data = messages[0]
+	}
+	return result
 }
 
-func RdbMessageCount(roomId string) StoreChannel {
-	storeChannel := make(StoreChannel, 1)
-	go func() {
-		defer close(storeChannel)
-		result := StoreResult{}
+func RdbSelectMessages(roomId string, limit, offset int) StoreResult {
+	result := StoreResult{}
+	var messages []*models.Message
+	query := utils.AppendStrings("SELECT * ",
+		"FROM ", TABLE_NAME_MESSAGE, " ",
+		"WHERE room_id = :roomId ",
+		"AND deleted = 0 ",
+		"ORDER BY created ASC ",
+		"LIMIT  :limit ",
+		"OFFSET :offset;")
+	params := map[string]interface{}{
+		"roomId": roomId,
+		"limit":  limit,
+		"offset": offset,
+	}
+	_, err := dbMap.Select(&messages, query, params)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting message items.", err)
+	}
+	result.Data = messages
+	return result
+}
 
-		var messages *models.Messages
-		query := utils.AppendStrings("SELECT count(id) as all_count ",
-			"FROM ", TABLE_NAME_MESSAGE, " ",
-			"WHERE room_id = :roomId ",
-			"AND deleted = 0;")
-		params := map[string]interface{}{
-			"roomId": roomId,
-		}
-		if err := dbMap.SelectOne(&messages, query, params); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while getting message item.", err)
-		}
-		result.Data = messages
+func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
+	result := StoreResult{}
+	query := utils.AppendStrings("SELECT count(id) ",
+		"FROM ", TABLE_NAME_MESSAGE, " ",
+		"WHERE room_id = :roomId ",
+		"AND deleted = 0;")
+	params := map[string]interface{}{
+		"roomId": roomId,
+	}
+	count, err := dbMap.SelectInt(query, params)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting message count.", err)
+	}
+	result.Data = count
+	return result
+}
 
-		storeChannel <- result
-	}()
-	return storeChannel
+func RdbUpdateMessage(message *models.Message) StoreResult {
+	result := StoreResult{}
+	_, err := dbMap.Update(message)
+	if err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while updating message item.", err)
+	}
+	result.Data = message
+	return result
 }

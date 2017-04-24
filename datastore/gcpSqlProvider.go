@@ -62,10 +62,12 @@ func (provider GcpSqlProvider) Connect() error {
 }
 
 func (provider GcpSqlProvider) Init() {
-	provider.UserCreateStore()
-	provider.RoomCreateStore()
-	provider.RoomUserCreateStore()
-	provider.MessageCreateStore()
+	provider.CreateUserStore()
+	provider.CreateRoomStore()
+	provider.CreateRoomUserStore()
+	provider.CreateMessageStore()
+	provider.CreateDeviceStore()
+	provider.CreateSubscriptionStore()
 }
 
 func (provider GcpSqlProvider) DropDatabase() error {

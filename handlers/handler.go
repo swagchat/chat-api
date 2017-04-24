@@ -5,14 +5,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -26,11 +24,10 @@ import (
 var Mux *bone.Mux
 var Context context.Context
 
-func StartServer() {
+func StartServer(ctx context.Context) {
 	Mux = bone.New().Prefix(utils.AppendStrings("/", utils.API_VERSION))
 	Mux.GetFunc("", indexHandler)
 	Mux.GetFunc("/", indexHandler)
-	Mux.GetFunc("/sleep", sleepHandler2)
 	Mux.GetFunc("/stats", stats_api.Handler)
 	Mux.OptionsFunc("/*", optionsHandler)
 	SetUserMux()
@@ -38,25 +35,13 @@ func StartServer() {
 	SetRoomUserMux()
 	SetMessageMux()
 	SetAssetMux()
+	SetDeviceMux()
 	if utils.Cfg.ApiServer.Storage == "awsS3" {
 		SetAssetAwsSnsMux()
 	}
 	Mux.NotFoundFunc(notFoundHandler)
 
-	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
-	go func() {
-		for {
-			s := <-signalChan
-			if s == syscall.SIGTERM || s == syscall.SIGINT {
-				utils.AppLogger.Info("",
-					zap.String("msg", "Swagchat API Shutdown start!"),
-					zap.String("signal", s.String()),
-				)
-				gracedown.Close()
-			}
-		}
-	}()
+	go run(ctx)
 
 	utils.AppLogger.Info("",
 		zap.String("msg", "Swagchat API Start!"),
@@ -72,69 +57,27 @@ func StartServer() {
 	)
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
-}
-
-func sleepHandler(w http.ResponseWriter, r *http.Request) {
-	var wg sync.WaitGroup
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			time.Sleep(5 * time.Second)
-			//xxx(r.Context())
-		}()
-	}
-	wg.Wait()
-	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
-}
-
-func sleepHandler2(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	//ctx := context.Background()
-
-	//sigCh := make(chan os.Signal, 1)
-	//defer close(sigCh)
-
-	//signal.Notify(sigCh, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGINT)
-	//go func() {
-	//	<-sigCh
-	//	cancel()
-	//}()
-
-	d := utils.NewDispatcher(5)
-	for i := 0; i < 20; i++ {
-		d.Work(ctx, func(ctx context.Context) {
-			log.Printf("start procing %d", i)
-
-			abcChan := make(chan *abc, 1)
-			abcObj := xxx()
-			abcChan <- abcObj
-
-			select {
-			case <-ctx.Done():
-				log.Printf("cancel work func")
-				return
-			case <-abcChan:
-				log.Printf("done procing")
-				return
+func run(ctx context.Context) {
+	signalChan := make(chan os.Signal)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
+	for {
+		select {
+		case <-ctx.Done():
+			gracedown.Close()
+		case s := <-signalChan:
+			if s == syscall.SIGTERM || s == syscall.SIGINT {
+				utils.AppLogger.Info("",
+					zap.String("msg", "Swagchat API Shutdown start!"),
+					zap.String("signal", s.String()),
+				)
+				gracedown.Close()
 			}
-		})
+		}
 	}
-
-	d.Wait()
-	respond(w, r, http.StatusCreated, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
 }
 
-type abc struct {
-}
-
-func xxx() *abc {
-	time.Sleep(3 * time.Second)
-	return &abc{}
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
 }
 
 func ColsHandler(fn http.HandlerFunc) http.HandlerFunc {
@@ -206,6 +149,7 @@ func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetai
 	problemDetailBytes, _ := json.Marshal(problemDetail)
 	utils.AppLogger.Error("",
 		zap.String("problemDetail", string(problemDetailBytes)),
+		zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
 	)
 	respond(w, r, status, "application/json", problemDetail)
 }
