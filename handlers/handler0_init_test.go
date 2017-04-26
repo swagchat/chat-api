@@ -44,6 +44,7 @@ func TestMain(m *testing.M) {
 	*/
 	ctx, _ := context.WithTimeout(context.Background(), 7*time.Second)
 	StartServer(ctx)
+	utils.IsTesting = true
 	testRC := m.Run()
 	err = datastoreProvider.DropDatabase()
 	if err != nil {

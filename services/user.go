@@ -42,17 +42,17 @@ func GetUsers() (*models.Users, *models.ProblemDetail) {
 }
 
 func GetUser(userId string) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(userId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	dRes := datastore.GetProvider().SelectRoomsForUser(userId)
+	dRes := datastore.GetProvider().SelectUser(userId, true, true)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	user.Rooms = dRes.Data.([]*models.RoomForUser)
-	return user, pd
+	if dRes.Data == nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusNotFound,
+		}
+	}
+
+	return dRes.Data.(*models.User), nil
 }
 
 func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"path/filepath"
 
 	"github.com/olebedev/config"
@@ -143,22 +142,25 @@ type Config struct {
 	AwsSns *AwsSns
 }
 
-var Cfg *Config = &Config{
-	ApiServer:      &ApiServer{},
-	RealtimeServer: &RealtimeServer{},
-	// Storage
-	LocalStorage: &LocalStorage{},
-	GcpStorage:   &GcpStorage{},
-	AwsS3:        &AwsS3{},
-	// Datastore
-	Mysql:  &Mysql{},
-	Sqlite: &Sqlite{},
-	GcpSql: &GcpSql{},
-	// Messaging
-	GcpPubsub: &GcpPubsub{},
-	// Notification
-	AwsSns: &AwsSns{},
-}
+var (
+	IsTesting         = false
+	Cfg       *Config = &Config{
+		ApiServer:      &ApiServer{},
+		RealtimeServer: &RealtimeServer{},
+		// Storage
+		LocalStorage: &LocalStorage{},
+		GcpStorage:   &GcpStorage{},
+		AwsS3:        &AwsS3{},
+		// Datastore
+		Mysql:  &Mysql{},
+		Sqlite: &Sqlite{},
+		GcpSql: &GcpSql{},
+		// Messaging
+		GcpPubsub: &GcpPubsub{},
+		// Notification
+		AwsSns: &AwsSns{},
+	}
+)
 
 func setupConfig() {
 	var err error
@@ -217,74 +219,59 @@ func setupConfig() {
 	if Cfg.ApiServer.Storage == "gcpStorage" {
 		gcpStorageConfig := readConfig("config/storage/gcpStorage.yaml")
 		if gcpStorageConfig == nil {
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.ProjectId, err = gcpStorageConfig.String("gcpStorage.projectId"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.JwtConfigFilepath, err = gcpStorageConfig.String("gcpStorage.jwtConfigFilepath"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.Scope, err = gcpStorageConfig.String("gcpStorage.scope"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.UserUploadBucket, err = gcpStorageConfig.String("gcpStorage.userUploadBucket"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.UserUploadDirectory, err = gcpStorageConfig.String("gcpStorage.userUploadDirectory"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.ThumbnailBucket, err = gcpStorageConfig.String("gcpStorage.thumbnailBucket"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpStorage.ThumbnailDirectory, err = gcpStorageConfig.String("gcpStorage.thumbnailDirectory"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
+		} else {
+			if Cfg.GcpStorage.ProjectId, err = gcpStorageConfig.String("gcpStorage.projectId"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpStorage.JwtConfigFilepath, err = gcpStorageConfig.String("gcpStorage.jwtConfigFilepath"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpStorage.Scope, err = gcpStorageConfig.String("gcpStorage.scope"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpStorage.UserUploadBucket, err = gcpStorageConfig.String("gcpStorage.userUploadBucket"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpStorage.UserUploadDirectory, err = gcpStorageConfig.String("gcpStorage.userUploadDirectory"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpStorage.ThumbnailBucket, err = gcpStorageConfig.String("gcpStorage.thumbnailBucket"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpStorage.ThumbnailDirectory, err = gcpStorageConfig.String("gcpStorage.thumbnailDirectory"); err != nil {
+				log.Println(err.Error())
+			}
 		}
 	}
 
 	if Cfg.ApiServer.Storage == "awsS3" {
 		awsS3Config := readConfig("config/storage/awsS3.yaml")
 		if awsS3Config == nil {
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.Region, err = awsS3Config.String("awsS3.region"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.AccessKeyId, err = awsS3Config.String("awsS3.accessKeyId"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.SecretAccessKey, err = awsS3Config.String("awsS3.secretAccessKey"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.Acl, err = awsS3Config.String("awsS3.acl"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.UserUploadBucket, err = awsS3Config.String("awsS3.userUploadBucket"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.UserUploadDirectory, err = awsS3Config.String("awsS3.userUploadDirectory"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.ThumbnailBucket, err = awsS3Config.String("awsS3.thumbnailBucket"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsS3.ThumbnailDirectory, err = awsS3Config.String("awsS3.thumbnailDirectory"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
+		} else {
+			if Cfg.AwsS3.Region, err = awsS3Config.String("awsS3.region"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.AccessKeyId, err = awsS3Config.String("awsS3.accessKeyId"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.SecretAccessKey, err = awsS3Config.String("awsS3.secretAccessKey"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.Acl, err = awsS3Config.String("awsS3.acl"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.UserUploadBucket, err = awsS3Config.String("awsS3.userUploadBucket"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.UserUploadDirectory, err = awsS3Config.String("awsS3.userUploadDirectory"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.ThumbnailBucket, err = awsS3Config.String("awsS3.thumbnailBucket"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsS3.ThumbnailDirectory, err = awsS3Config.String("awsS3.thumbnailDirectory"); err != nil {
+				log.Println(err.Error())
+			}
 		}
 	}
 
@@ -302,53 +289,44 @@ func setupConfig() {
 	if Cfg.ApiServer.Datastore == "mysql" {
 		mysqlConfig := readConfig("config/datastore/mysql.yaml")
 		if mysqlConfig == nil {
-			os.Exit(0)
-		}
-		if Cfg.Mysql.User, err = mysqlConfig.String("mysql.user"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.Mysql.Password, err = mysqlConfig.String("mysql.password"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.Mysql.Database, err = mysqlConfig.String("mysql.database"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.Mysql.MasterHost, err = mysqlConfig.String("mysql.masterHost"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.Mysql.MasterPort, err = mysqlConfig.String("mysql.masterPort"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.Mysql.MaxIdleConnection, err = mysqlConfig.String("mysql.maxIdleConnection"); err != nil {
-			Cfg.Mysql.MaxIdleConnection = DEFAULT_MYSQL_MAXIDLECONNECTION
-		}
-		if Cfg.Mysql.MaxOpenConnection, err = mysqlConfig.String("mysql.maxOpenConnection"); err != nil {
-			Cfg.Mysql.MaxOpenConnection = DEFAULT_MYSQL_MAXOPENCONNECTION
-		}
-		if Cfg.Mysql.UseSSL, err = mysqlConfig.String("mysql.useSSL"); err != nil {
-			Cfg.Mysql.UseSSL = DEFAULT_MYSQL_USESSL
-		}
-		if Cfg.Mysql.UseSSL == "on" {
-			if Cfg.Mysql.ServerName, err = mysqlConfig.String("mysql.serverName"); err != nil {
+		} else {
+			if Cfg.Mysql.User, err = mysqlConfig.String("mysql.user"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
 			}
-			if Cfg.Mysql.ServerCaPath, err = mysqlConfig.String("mysql.serverCaPath"); err != nil {
+			if Cfg.Mysql.Password, err = mysqlConfig.String("mysql.password"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
 			}
-			if Cfg.Mysql.ClientCertPath, err = mysqlConfig.String("mysql.clientCertPath"); err != nil {
+			if Cfg.Mysql.Database, err = mysqlConfig.String("mysql.database"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
 			}
-			if Cfg.Mysql.ClientKeyPath, err = mysqlConfig.String("mysql.clientKeyPath"); err != nil {
+			if Cfg.Mysql.MasterHost, err = mysqlConfig.String("mysql.masterHost"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
+			}
+			if Cfg.Mysql.MasterPort, err = mysqlConfig.String("mysql.masterPort"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.Mysql.MaxIdleConnection, err = mysqlConfig.String("mysql.maxIdleConnection"); err != nil {
+				Cfg.Mysql.MaxIdleConnection = DEFAULT_MYSQL_MAXIDLECONNECTION
+			}
+			if Cfg.Mysql.MaxOpenConnection, err = mysqlConfig.String("mysql.maxOpenConnection"); err != nil {
+				Cfg.Mysql.MaxOpenConnection = DEFAULT_MYSQL_MAXOPENCONNECTION
+			}
+			if Cfg.Mysql.UseSSL, err = mysqlConfig.String("mysql.useSSL"); err != nil {
+				Cfg.Mysql.UseSSL = DEFAULT_MYSQL_USESSL
+			}
+			if Cfg.Mysql.UseSSL == "on" {
+				if Cfg.Mysql.ServerName, err = mysqlConfig.String("mysql.serverName"); err != nil {
+					log.Println(err.Error())
+				}
+				if Cfg.Mysql.ServerCaPath, err = mysqlConfig.String("mysql.serverCaPath"); err != nil {
+					log.Println(err.Error())
+				}
+				if Cfg.Mysql.ClientCertPath, err = mysqlConfig.String("mysql.clientCertPath"); err != nil {
+					log.Println(err.Error())
+				}
+				if Cfg.Mysql.ClientKeyPath, err = mysqlConfig.String("mysql.clientKeyPath"); err != nil {
+					log.Println(err.Error())
+				}
 			}
 		}
 	}
@@ -356,57 +334,47 @@ func setupConfig() {
 	if Cfg.ApiServer.Datastore == "gcpSql" {
 		gcpSqlConfig := readConfig("config/datastore/gcpSql.yaml")
 		if gcpSqlConfig == nil {
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.ProjectId, err = gcpSqlConfig.String("gcpSql.projectId"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.SqlInstanceId, err = gcpSqlConfig.String("gcpSql.sqlInstanceId"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.User, err = gcpSqlConfig.String("gcpSql.user"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.Password, err = gcpSqlConfig.String("gcpSql.password"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.Database, err = gcpSqlConfig.String("gcpSql.database"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.MasterHost, err = gcpSqlConfig.String("gcpSql.masterHost"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.MasterPort, err = gcpSqlConfig.String("gcpSql.masterPort"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpSql.MaxIdleConnection, err = gcpSqlConfig.String("gcpSql.maxIdleConnection"); err != nil {
-			Cfg.GcpSql.MaxIdleConnection = DEFAULT_MYSQL_MAXIDLECONNECTION
-		}
-		if Cfg.GcpSql.MaxOpenConnection, err = gcpSqlConfig.String("gcpSql.maxOpenConnection"); err != nil {
-			Cfg.GcpSql.MaxOpenConnection = DEFAULT_MYSQL_MAXOPENCONNECTION
-		}
-		if Cfg.GcpSql.UseSSL, err = gcpSqlConfig.String("gcpSql.useSSL"); err != nil {
-			Cfg.GcpSql.UseSSL = DEFAULT_MYSQL_USESSL
-		}
-		if Cfg.GcpSql.UseSSL == "on" {
-			if Cfg.GcpSql.ServerCaPath, err = gcpSqlConfig.String("gcpSql.serverCaPath"); err != nil {
+		} else {
+			if Cfg.GcpSql.ProjectId, err = gcpSqlConfig.String("gcpSql.projectId"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
 			}
-			if Cfg.GcpSql.ClientCertPath, err = gcpSqlConfig.String("gcpSql.clientCertPath"); err != nil {
+			if Cfg.GcpSql.SqlInstanceId, err = gcpSqlConfig.String("gcpSql.sqlInstanceId"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
 			}
-			if Cfg.GcpSql.ClientKeyPath, err = gcpSqlConfig.String("gcpSql.clientKeyPath"); err != nil {
+			if Cfg.GcpSql.User, err = gcpSqlConfig.String("gcpSql.user"); err != nil {
 				log.Println(err.Error())
-				os.Exit(0)
+			}
+			if Cfg.GcpSql.Password, err = gcpSqlConfig.String("gcpSql.password"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpSql.Database, err = gcpSqlConfig.String("gcpSql.database"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpSql.MasterHost, err = gcpSqlConfig.String("gcpSql.masterHost"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpSql.MasterPort, err = gcpSqlConfig.String("gcpSql.masterPort"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpSql.MaxIdleConnection, err = gcpSqlConfig.String("gcpSql.maxIdleConnection"); err != nil {
+				Cfg.GcpSql.MaxIdleConnection = DEFAULT_MYSQL_MAXIDLECONNECTION
+			}
+			if Cfg.GcpSql.MaxOpenConnection, err = gcpSqlConfig.String("gcpSql.maxOpenConnection"); err != nil {
+				Cfg.GcpSql.MaxOpenConnection = DEFAULT_MYSQL_MAXOPENCONNECTION
+			}
+			if Cfg.GcpSql.UseSSL, err = gcpSqlConfig.String("gcpSql.useSSL"); err != nil {
+				Cfg.GcpSql.UseSSL = DEFAULT_MYSQL_USESSL
+			}
+			if Cfg.GcpSql.UseSSL == "on" {
+				if Cfg.GcpSql.ServerCaPath, err = gcpSqlConfig.String("gcpSql.serverCaPath"); err != nil {
+					log.Println(err.Error())
+				}
+				if Cfg.GcpSql.ClientCertPath, err = gcpSqlConfig.String("gcpSql.clientCertPath"); err != nil {
+					log.Println(err.Error())
+				}
+				if Cfg.GcpSql.ClientKeyPath, err = gcpSqlConfig.String("gcpSql.clientKeyPath"); err != nil {
+					log.Println(err.Error())
+				}
 			}
 		}
 	}
@@ -414,51 +382,44 @@ func setupConfig() {
 	if Cfg.ApiServer.Messaging == "gcpPubSub" {
 		gcpPubSubConfig := readConfig("config/messaging/gcpPubSub.yaml")
 		if gcpPubSubConfig == nil {
-			os.Exit(0)
-		}
-		if Cfg.GcpPubsub.ThumbnailTopic, err = gcpPubSubConfig.String("gcpPubSub.topicNameForCreateThumbnail"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpPubsub.PushMessageTopic, err = gcpPubSubConfig.String("gcpPubSub.topicNameForPushMessage"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpPubsub.Scope, err = gcpPubSubConfig.String("gcpPubSub.scope"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.GcpPubsub.JwtConfigFilepath, err = gcpPubSubConfig.String("gcpPubSub.jwtConfigFilepath"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
+		} else {
+			if Cfg.GcpPubsub.ThumbnailTopic, err = gcpPubSubConfig.String("gcpPubSub.topicNameForCreateThumbnail"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpPubsub.PushMessageTopic, err = gcpPubSubConfig.String("gcpPubSub.topicNameForPushMessage"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpPubsub.Scope, err = gcpPubSubConfig.String("gcpPubSub.scope"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.GcpPubsub.JwtConfigFilepath, err = gcpPubSubConfig.String("gcpPubSub.jwtConfigFilepath"); err != nil {
+				log.Println(err.Error())
+			}
 		}
 	}
 
 	if Cfg.ApiServer.Notification == "awsSns" {
 		awsSnsConfig := readConfig("config/notification/awsSns.yaml")
-		log.Println("%#v", awsSnsConfig)
 		if awsSnsConfig == nil {
-			os.Exit(0)
-		}
-		if Cfg.AwsSns.Region, err = awsSnsConfig.String("awsSns.region"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsSns.AccessKeyId, err = awsSnsConfig.String("awsSns.accessKeyId"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsSns.SecretAccessKey, err = awsSnsConfig.String("awsSns.secretAccessKey"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsSns.ApplicationArn, err = awsSnsConfig.String("awsSns.applicationArn"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
-		}
-		if Cfg.AwsSns.RoomTopicNamePrefix, err = awsSnsConfig.String("awsSns.roomTopicNamePrefix"); err != nil {
-			log.Println(err.Error())
-			os.Exit(0)
+			Cfg.AwsSns = &AwsSns{
+				Region: "",
+			}
+		} else {
+			if Cfg.AwsSns.Region, err = awsSnsConfig.String("awsSns.region"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsSns.AccessKeyId, err = awsSnsConfig.String("awsSns.accessKeyId"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsSns.SecretAccessKey, err = awsSnsConfig.String("awsSns.secretAccessKey"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsSns.ApplicationArn, err = awsSnsConfig.String("awsSns.applicationArn"); err != nil {
+				log.Println(err.Error())
+			}
+			if Cfg.AwsSns.RoomTopicNamePrefix, err = awsSnsConfig.String("awsSns.roomTopicNamePrefix"); err != nil {
+				log.Println(err.Error())
+			}
 		}
 	}
 }
@@ -655,19 +616,19 @@ func settingFlag() {
 		Cfg.GcpPubsub.JwtConfigFilepath = stringValue
 	}
 
-	if stringValue = *flag.String("awssns-region", "", "Amazon SNS Region  Env: AWSSNS_REGION"); stringValue != "" {
+	if stringValue = *flag.String("awsSns-region", "", "Amazon SNS Region  Env: AWSSNS_REGION"); stringValue != "" {
 		Cfg.AwsSns.Region = stringValue
 	}
-	if stringValue = *flag.String("awssns-accessKeyId", "", "Amazon SNS AccessKeyId  Env: AWSSNS_ACCESSKEYID"); stringValue != "" {
+	if stringValue = *flag.String("awsSns-accessKeyId", "", "Amazon SNS AccessKeyId  Env: AWSSNS_ACCESSKEYID"); stringValue != "" {
 		Cfg.AwsSns.AccessKeyId = stringValue
 	}
-	if stringValue = *flag.String("awssns-secretAccessKey", "", "Amazon SNS SecretAccessKey  Env: AWSSNS_SECRETACCESSKEY"); stringValue != "" {
+	if stringValue = *flag.String("awsSns-secretAccessKey", "", "Amazon SNS SecretAccessKey  Env: AWSSNS_SECRETACCESSKEY"); stringValue != "" {
 		Cfg.AwsSns.SecretAccessKey = stringValue
 	}
-	if stringValue = *flag.String("awssns-applicationArn", "", "Amazon SNS ApplicationArn  Env: AWSSNS_APPLICATIONARN"); stringValue != "" {
+	if stringValue = *flag.String("awsSns-applicationArn", "", "Amazon SNS ApplicationArn  Env: AWSSNS_APPLICATIONARN"); stringValue != "" {
 		Cfg.AwsSns.ApplicationArn = stringValue
 	}
-	if stringValue = *flag.String("awssns-roomTopicNamePrefix", "", "Amazon SNS RoomTopicNamePrefix  Env: AWSSNS_ROOMTOPICNAMEPREFIX"); stringValue != "" {
+	if stringValue = *flag.String("awsSns-roomTopicNamePrefix", "", "Amazon SNS RoomTopicNamePrefix  Env: AWSSNS_ROOMTOPICNAMEPREFIX"); stringValue != "" {
 		Cfg.AwsSns.RoomTopicNamePrefix = stringValue
 	}
 

@@ -18,10 +18,6 @@ func (provider SqliteProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider SqliteProvider) SelectRoomsForUser(userId string) StoreResult {
-	return RdbSelectRoomsForUser(userId)
-}
-
 func (provider SqliteProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
@@ -33,15 +29,3 @@ func (provider SqliteProvider) UpdateUser(user *models.User) StoreResult {
 func (provider SqliteProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
-
-//func (provider SqliteProvider) UserSelectUserRooms(userId string) StoreChannel {
-//	return RdbUserSelectUserRooms(userId)
-//}
-
-//func (provider SqliteProvider) UserUnreadCountUp(userId string) StoreChannel {
-//	return RdbUserUnreadCountUp(userId)
-//}
-//
-//func (provider SqliteProvider) UserUnreadCountRecalc(userId string) StoreChannel {
-//	return RdbUserUnreadCountRecalc(userId)
-//}

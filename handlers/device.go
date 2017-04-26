@@ -24,9 +24,10 @@ func PostDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := bone.GetValue(r, "userId")
+	post.UserId = bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	device, pd := services.PostDevice(userId, platform, &post)
+	post.Platform = platform
+	device, pd := services.PostDevice(&post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -64,9 +65,10 @@ func PutDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId := bone.GetValue(r, "userId")
+	put.UserId = bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	device, pd := services.PutDevice(userId, platform, &put)
+	put.Platform = platform
+	device, pd := services.PutDevice(&put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

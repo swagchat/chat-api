@@ -33,25 +33,3 @@ func (provider GcpSqlProvider) SelectSubscriptionsByUserIdAndPlatform(userId str
 func (provider GcpSqlProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {
 	return RdbDeleteSubscription(subscription)
 }
-
-/*
-func (provider GcpSqlProvider) SubscriptionUpdate(room *models.Subscription) StoreResult {
-	return RdbSubscriptionUpdate(room)
-}
-
-func (provider GcpSqlProvider) SubscriptionUpdateDeletedByRoomId(roomId string) StoreResult {
-	return RdbSubscriptionUpdateDeletedByRoomId(roomId)
-}
-
-func (provider GcpSqlProvider) SubscriptionUpdateDeletedByUserId(userId string) StoreResult {
-	return RdbSubscriptionUpdateDeletedByUserId(userId)
-}
-
-func (provider GcpSqlProvider) SubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int) StoreResult {
-	return RdbSubscriptionUpdateDeletedByRoomIdAndPlatform(roomId, platform)
-}
-
-func (provider GcpSqlProvider) SubscriptionUpdateDeletedByUserIdAndPlatform(userId string, platform int) StoreResult {
-	return RdbSubscriptionUpdateDeletedByUserIdAndPlatform(userId, platform)
-}
-*/

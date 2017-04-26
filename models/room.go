@@ -15,6 +15,7 @@ type Rooms struct {
 type Room struct {
 	Id                  uint64         `json:"-" db:"id"`
 	RoomId              string         `json:"roomId" db:"room_id"`
+	UserId              string         `json:"userId" db:"user_id"`
 	Name                string         `json:"name" db:"name"`
 	PictureUrl          string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl      string         `json:"informationUrl,omitempty" db:"information_url"`
@@ -62,6 +63,34 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
+	if r.UserId == "" {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userId",
+					Reason: "userId is required, but it's empty.",
+				},
+			},
+		}
+	}
+
+	if r.UserId != "" && !utils.IsValidId(r.UserId) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userId",
+					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
+				},
+			},
+		}
+	}
+
 	if r.Name == "" {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
@@ -101,6 +130,9 @@ func (r *Room) BeforeSave() {
 }
 
 func (r *Room) Put(put *Room) {
+	if put.UserId != "" {
+		r.UserId = put.UserId
+	}
 	if put.Name != "" {
 		r.Name = put.Name
 	}

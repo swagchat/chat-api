@@ -37,37 +37,3 @@ func (provider SqliteProvider) UpdateRoomUser(roomUser *models.RoomUser) StoreRe
 func (provider SqliteProvider) DeleteRoomUser(roomId string, userIds []string) StoreResult {
 	return RdbDeleteRoomUser(roomId, userIds)
 }
-
-//func (provider SqliteProvider) RoomUserInsert(roomUser *models.RoomUser) StoreResult {
-//	return RdbRoomUserInsert(roomUser)
-//}
-/*
-func (provider SqliteProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreResult {
-	return RdbRoomUsersUsersSelectByRoomId(roomId)
-}
-
-func (provider SqliteProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreResult {
-	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
-}
-*/
-/*
-func (provider SqliteProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
-	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
-}
-
-func (provider SqliteProvider) RoomUserDeleteByRoomId(roomId string) StoreResult {
-	return RdbRoomUserDeleteByRoomId(roomId)
-}
-
-func (provider SqliteProvider) RoomUserDeleteByUserId(userId string) StoreResult {
-	return RdbRoomUserDeleteByUserId(userId)
-}
-
-func (provider SqliteProvider) RoomUserUnreadCountUp(roomId string, currentUserId string) StoreResult {
-	return RdbRoomUserUnreadCountUp(roomId, currentUserId)
-}
-
-func (provider SqliteProvider) RoomUserMarkAllAsRead(userId string) StoreResult {
-	return RdbRoomUserMarkAllAsRead(userId)
-}
-*/
