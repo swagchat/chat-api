@@ -13,12 +13,4 @@ type RoomUserStore interface {
 	SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult
 	UpdateRoomUser(*models.RoomUser) StoreResult
 	DeleteRoomUser(roomId string, userIds []string) StoreResult
-	//RoomUserInsert(roomUser *models.RoomUser) StoreResult
-	//RoomUsersUsersSelectByRoomId(roomId string) StoreResult
-	//RoomUsersUserIdsSelectByRoomId(roomId string) StoreResult
-	//RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult
-	//RoomUserDeleteByRoomId(roomId string) StoreResult
-	//RoomUserDeleteByUserId(userId string) StoreResult
-	//RoomUserUnreadCountUp(roomId string, currentUserId string) StoreResult
-	//RoomUserMarkAllAsRead(userId string) StoreResult
 }

@@ -245,8 +245,8 @@ func TestPutDevice(t *testing.T) {
 						"token": ""
 					}
 				`,
-			out:            `(?m)^$`,
-			httpStatusCode: 304,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create device item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"token","reason":"token is required, but it's empty\."}\]}$`,
+			httpStatusCode: 400,
 		},
 		{
 			testNo:   4,
@@ -269,8 +269,8 @@ func TestPutDevice(t *testing.T) {
 						"token2": "ghi"
 					}
 				`,
-			out:            `(?m)^$`,
-			httpStatusCode: 304,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create device item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"token","reason":"token is required, but it's empty\."}\]}$`,
+			httpStatusCode: 400,
 		},
 		{
 			testNo:   6,
@@ -313,7 +313,7 @@ func TestPutDevice(t *testing.T) {
 					}
 				`,
 			out:            `(?m)^$`,
-			httpStatusCode: 404,
+			httpStatusCode: 400,
 		},
 	}
 

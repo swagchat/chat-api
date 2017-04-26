@@ -12,9 +12,4 @@ type SubscriptionStore interface {
 	SelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) StoreResult
 	SelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult
 	DeleteSubscription(subscription *models.Subscription) StoreResult
-	//SubscriptionUpdate(subscription *models.Subscription) StoreResult
-	//SubscriptionUpdateDeletedByRoomId(roomId string) StoreResult
-	//SubscriptionUpdateDeletedByUserId(userId string) StoreResult
-	//SubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int) StoreResult
-	//SubscriptionUpdateDeletedByUserIdAndPlatform(userId string, platform int) StoreResult
 }

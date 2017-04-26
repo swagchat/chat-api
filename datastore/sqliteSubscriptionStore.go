@@ -33,25 +33,3 @@ func (provider SqliteProvider) SelectSubscriptionsByUserIdAndPlatform(userId str
 func (provider SqliteProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {
 	return RdbDeleteSubscription(subscription)
 }
-
-/*
-func (provider SqliteProvider) SubscriptionUpdate(room *models.Subscription) StoreResult {
-	return RdbSubscriptionUpdate(room)
-}
-
-func (provider SqliteProvider) SubscriptionUpdateDeletedByRoomId(roomId string) StoreResult {
-	return RdbSubscriptionUpdateDeletedByRoomId(roomId)
-}
-
-func (provider SqliteProvider) SubscriptionUpdateDeletedByUserId(userId string) StoreResult {
-	return RdbSubscriptionUpdateDeletedByUserId(userId)
-}
-
-func (provider SqliteProvider) SubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int) StoreResult {
-	return RdbSubscriptionUpdateDeletedByRoomIdAndPlatform(roomId, platform)
-}
-
-func (provider SqliteProvider) SubscriptionUpdateDeletedByUserIdAndPlatform(userId string, platform int) StoreResult {
-	return RdbSubscriptionUpdateDeletedByUserIdAndPlatform(userId, platform)
-}
-*/

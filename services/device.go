@@ -14,20 +14,22 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func PostDevice(userId string, platform int, post *models.Device) (*models.Device, *models.ProblemDetail) {
-	// User existence check
-	_, pd := selectUser(userId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	post.UserId = userId
-	post.Platform = platform
+func PostDevice(post *models.Device) (*models.Device, *models.ProblemDetail) {
 	if pd := post.IsValid(); pd != nil {
 		return nil, pd
 	}
 
-	nRes := <-notification.GetProvider().CreateEndpoint(userId, platform, post.Token)
+	// User existence check
+	_, pd := selectUser(post.UserId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	if pd := post.IsValid(); pd != nil {
+		return nil, pd
+	}
+
+	nRes := <-notification.GetProvider().CreateEndpoint(post.UserId, post.Platform, post.Token)
 	if nRes.ProblemDetail != nil {
 		return nil, nRes.ProblemDetail
 	}
@@ -64,40 +66,38 @@ func GetDevice(userId string, platform int) (*models.Device, *models.ProblemDeta
 	return user, pd
 }
 
-func PutDevice(userId string, platform int, put *models.Device) (*models.Device, *models.ProblemDetail) {
+func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
+	if pd := put.IsValid(); pd != nil {
+		return nil, pd
+	}
+
 	// User existence check
-	_, pd := selectUser(userId)
+	_, pd := selectUser(put.UserId)
 	if pd != nil {
 		return nil, pd
 	}
 
-	device, pd := SelectDevice(userId, platform)
+	device, pd := SelectDevice(put.UserId, put.Platform)
 	if pd != nil {
 		return nil, pd
 	}
 
-	if put.Token != "" && device.Token != put.Token {
+	if device.Token != put.Token {
 		np := notification.GetProvider()
 		nRes := <-np.DeleteEndpoint(device.NotificationDeviceId)
 		if nRes.ProblemDetail != nil {
 			return nil, nRes.ProblemDetail
 		}
-		nRes = <-np.CreateEndpoint(userId, platform, put.Token)
+		nRes = <-np.CreateEndpoint(put.UserId, put.Platform, put.Token)
 		if nRes.ProblemDetail != nil {
 			return nil, nRes.ProblemDetail
 		}
-		notificationDeviceId := put.Token
+		put.NotificationDeviceId = put.Token
 		if nRes.Data != nil {
-			notificationDeviceId = *nRes.Data.(*string)
+			put.NotificationDeviceId = *nRes.Data.(*string)
 		}
 
-		newDevice := &models.Device{
-			UserId:               userId,
-			Platform:             platform,
-			Token:                put.Token,
-			NotificationDeviceId: notificationDeviceId,
-		}
-		dRes := datastore.GetProvider().UpdateDevice(newDevice)
+		dRes := datastore.GetProvider().UpdateDevice(put)
 		if dRes.ProblemDetail != nil {
 			return nil, dRes.ProblemDetail
 		}
@@ -105,8 +105,8 @@ func PutDevice(userId string, platform int, put *models.Device) (*models.Device,
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		go unsubscribeByDevice(ctx, device)
-		go subscribeByDevice(ctx, newDevice)
-		return newDevice, nil
+		go subscribeByDevice(ctx, put)
+		return put, nil
 	} else {
 		return nil, nil
 	}

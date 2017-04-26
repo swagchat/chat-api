@@ -18,10 +18,6 @@ func (provider MysqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider MysqlProvider) SelectRoomsForUser(userId string) StoreResult {
-	return RdbSelectRoomsForUser(userId)
-}
-
 func (provider MysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
@@ -33,15 +29,3 @@ func (provider MysqlProvider) UpdateUser(user *models.User) StoreResult {
 func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
-
-//func (provider MysqlProvider) UserSelectUserRooms(userId string) StoreChannel {
-//	return RdbUserSelectUserRooms(userId)
-//}
-
-//func (provider MysqlProvider) UserUnreadCountUp(userId string) StoreChannel {
-//	return RdbUserUnreadCountUp(userId)
-//}
-//
-//func (provider MysqlProvider) UserUnreadCountRecalc(userId string) StoreChannel {
-//	return RdbUserUnreadCountRecalc(userId)
-//}

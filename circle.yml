@@ -4,5 +4,5 @@ dependencies:
 test:
   pre:
     - go test $(go list ./... | grep -v vendor)
-  post:
-    - dredd
+#  post:
+#    - dredd

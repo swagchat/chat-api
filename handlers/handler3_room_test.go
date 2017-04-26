@@ -27,68 +27,74 @@ func TestPostRoom(t *testing.T) {
 			testNo: 1,
 			in: `
 				{
-					"name": "dennis room"
+					"userId": "custom-user-id-1",
+					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 2,
 			in: `
 				{
-					"name": "dennis room",
+					"userId": "custom-user-id-1",
+					"name": "room name 1",
 					"isPublic": false
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 3,
 			in: `
 				{
-					"name": "dennis room",
+					"userId": "custom-user-id-1",
+					"name": "room name 1",
 					"isPublic": true
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 4,
 			in: `
 				{
-					"name": "dennis room",
+					"userId": "custom-user-id-1",
+					"name": "room name 1",
 					"pictureUrl": "http://localhost/images/dennis_room.png"
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 5,
 			in: `
 				{
-					"name": "dennis room",
+					"userId": "custom-user-id-1",
+					"name": "room name 1",
 					"pictureUrl": "http://localhost/images/dennis_room.png",
 					"informationUrl": "http://localhost/dennis_room"
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 6,
 			in: `
 				{
-					"name": "dennis room",
+					"userId": "custom-user-id-1",
+					"name": "room name 1",
 					"pictureUrl": "http://localhost/images/dennis_room.png",
 					"informationUrl": "http://localhost/dennis_room",
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -96,10 +102,11 @@ func TestPostRoom(t *testing.T) {
 			in: `
 				{
 					"roomId": "custom-room-id",
-					"name": "dennis room"
+					"userId": "custom-user-id-1",
+					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -107,32 +114,54 @@ func TestPostRoom(t *testing.T) {
 			in: `
 				{
 					"roomId": "custom-room-id-for-delete",
-					"name": "dennis room"
+					"userId": "custom-user-id-1",
+					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id-for-delete","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 9,
 			in: `
 				{
+					"name": "room name 1"
+				}
+			`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"userId","reason":"userId is required, but it's empty\."}\]}$`,
+			httpStatusCode: 400,
+		},
+		{
+			testNo: 10,
+			in: `
+				{
+					"userId": "custom-user-id-1"
+				}
+			`,
+			out:            `(?m)^{"title":"Request parameter error\. \(Create room item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"name","reason":"name is required, but it's empty\."}\]}$`,
+			httpStatusCode: 400,
+		},
+		{
+			testNo: 11,
+			in: `
+				{
 					"roomId": "custom-room-id",
-					"name": "dennis room"
+					"userId": "custom-user-id-1",
+					"name": "room name 1"
 				}
 			`,
 			out:            `(?m)^{"title":"An error occurred while creating room item.","status":500,"detail":".*","errorName":"database-error"}$`,
 			httpStatusCode: 500,
 		},
 		{
-			testNo: 10,
+			testNo: 12,
 			in: `
 			`,
 			out:            `(?m)^{"title":"Json parse error. \(Create room item\)","status":400,"errorName":"invalid-json"}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 11,
+			testNo: 13,
 			in: `
 				json
 			`,
@@ -178,7 +207,7 @@ func TestGetRooms(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			out:            `(?m)^{"rooms":[{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom-room-id","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom-room-id-for-delete","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}],"allCount":8}$`,
+			out:            `(?m)^{"rooms":[{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}],"allCount":8}$`,
 			httpStatusCode: 200,
 		},
 	}
@@ -214,49 +243,49 @@ func TestGetRoom(t *testing.T) {
 		{
 			testNo:         1,
 			roomId:         createRoomIds[0],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         2,
 			roomId:         createRoomIds[1],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         3,
 			roomId:         createRoomIds[2],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         4,
 			roomId:         createRoomIds[3],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         5,
 			roomId:         createRoomIds[4],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         6,
 			roomId:         createRoomIds[5],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","name":"dennis room","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         7,
 			roomId:         createRoomIds[6],
-			out:            `(?m)^{"roomId":"custom-room-id","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         8,
 			roomId:         createRoomIds[7],
-			out:            `(?m)^{"roomId":"custom-room-id-for-delete","name":"dennis room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -300,10 +329,10 @@ func TestPutRoom(t *testing.T) {
 			roomId: "custom-room-id",
 			in: `
 				{
-					"name": "Jeremy room"
+					"userId": "custom-user-id-2"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"Jeremy room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 1","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -311,10 +340,10 @@ func TestPutRoom(t *testing.T) {
 			roomId: "custom-room-id",
 			in: `
 				{
-					"isPublic": true
+					"name": "room name 2"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"Jeremy room","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 2","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -322,10 +351,10 @@ func TestPutRoom(t *testing.T) {
 			roomId: "custom-room-id",
 			in: `
 				{
-					"isPublic": false
+					"isPublic": true
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"Jeremy room","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 2","metaData":{},"isPublic":true,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -333,10 +362,10 @@ func TestPutRoom(t *testing.T) {
 			roomId: "custom-room-id",
 			in: `
 				{
-					"pictureUrl": "http://localhost/images/jeremy.png"
+					"isPublic": false
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"Jeremy room","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 2","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -344,10 +373,10 @@ func TestPutRoom(t *testing.T) {
 			roomId: "custom-room-id",
 			in: `
 				{
-					"informationUrl": "http://localhost/jeremy"
+					"pictureUrl": "http://localhost/images/jeremy.png"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"Jeremy room","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -355,14 +384,25 @@ func TestPutRoom(t *testing.T) {
 			roomId: "custom-room-id",
 			in: `
 				{
-					"metaData": {"key": "value"}
+					"informationUrl": "http://localhost/jeremy"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","name":"Jeremy room","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 7,
+			roomId: "custom-room-id",
+			in: `
+				{
+					"metaData": {"key": "value"}
+				}
+			`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-2","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"isPublic":false,"created":[0-9]+,"modified":[0-9]+}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo: 8,
 			roomId: "custom-room-id",
 			in: `
 			`,
@@ -370,7 +410,7 @@ func TestPutRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 8,
+			testNo: 9,
 			roomId: "custom-room-id",
 			in: `
 				json
@@ -379,7 +419,7 @@ func TestPutRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 9,
+			testNo: 10,
 			roomId: "not-exist-room-id",
 			in: `
 				{

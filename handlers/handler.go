@@ -103,9 +103,6 @@ func optionsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
-	utils.AppLogger.Error("",
-		zap.String("msg", "404 Not Found"),
-	)
 	respond(w, r, http.StatusNotFound, "", nil)
 }
 
@@ -146,11 +143,13 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 }
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	problemDetailBytes, _ := json.Marshal(problemDetail)
-	utils.AppLogger.Error("",
-		zap.String("problemDetail", string(problemDetailBytes)),
-		zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
-	)
+	if !utils.IsTesting {
+		problemDetailBytes, _ := json.Marshal(problemDetail)
+		utils.AppLogger.Error("",
+			zap.String("problemDetail", string(problemDetailBytes)),
+			zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
+		)
+	}
 	respond(w, r, status, "application/json", problemDetail)
 }
 

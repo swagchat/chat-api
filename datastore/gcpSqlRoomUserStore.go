@@ -37,38 +37,3 @@ func (provider GcpSqlProvider) UpdateRoomUser(roomUser *models.RoomUser) StoreRe
 func (provider GcpSqlProvider) DeleteRoomUser(roomId string, userIds []string) StoreResult {
 	return RdbDeleteRoomUser(roomId, userIds)
 }
-
-//func (provider GcpSqlProvider) RoomUserInsert(roomUser *models.RoomUser) StoreResult {
-//	return RdbRoomUserInsert(roomUser)
-//}
-
-/*
-func (provider GcpSqlProvider) RoomUsersUsersSelectByRoomId(roomId string) StoreResult {
-	return RdbRoomUsersUsersSelectByRoomId(roomId)
-}
-
-func (provider GcpSqlProvider) RoomUsersUserIdsSelectByRoomId(roomId string) StoreResult {
-	return RdbRoomUsersUserIdsSelectByRoomId(roomId)
-}
-*/
-/*
-func (provider GcpSqlProvider) RoomUsersDeleteByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
-	return RdbRoomUsersDeleteByRoomIdAndUserIds(roomId, userIds)
-}
-
-func (provider GcpSqlProvider) RoomUserDeleteByRoomId(roomId string) StoreResult {
-	return RdbRoomUserDeleteByRoomId(roomId)
-}
-
-func (provider GcpSqlProvider) RoomUserDeleteByUserId(userId string) StoreResult {
-	return RdbRoomUserDeleteByUserId(userId)
-}
-
-func (provider GcpSqlProvider) RoomUserUnreadCountUp(roomId string, currentUserId string) StoreResult {
-	return RdbRoomUserUnreadCountUp(roomId, currentUserId)
-}
-
-func (provider GcpSqlProvider) RoomUserMarkAllAsRead(userId string) StoreResult {
-	return RdbRoomUserMarkAllAsRead(userId)
-}
-*/

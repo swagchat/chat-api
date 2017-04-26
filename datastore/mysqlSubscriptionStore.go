@@ -33,25 +33,3 @@ func (provider MysqlProvider) SelectSubscriptionsByUserIdAndPlatform(userId stri
 func (provider MysqlProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {
 	return RdbDeleteSubscription(subscription)
 }
-
-/*
-func (provider MysqlProvider) SubscriptionUpdate(room *models.Subscription) StoreResult {
-	return RdbSubscriptionUpdate(room)
-}
-
-func (provider MysqlProvider) SubscriptionUpdateDeletedByRoomId(roomId string) StoreResult {
-	return RdbSubscriptionUpdateDeletedByRoomId(roomId)
-}
-
-func (provider MysqlProvider) SubscriptionUpdateDeletedByUserId(userId string) StoreResult {
-	return RdbSubscriptionUpdateDeletedByUserId(userId)
-}
-
-func (provider MysqlProvider) SubscriptionUpdateDeletedByRoomIdAndPlatform(roomId string, platform int) StoreResult {
-	return RdbSubscriptionUpdateDeletedByRoomIdAndPlatform(roomId, platform)
-}
-
-func (provider MysqlProvider) SubscriptionUpdateDeletedByUserIdAndPlatform(userId string, platform int) StoreResult {
-	return RdbSubscriptionUpdateDeletedByUserIdAndPlatform(userId, platform)
-}
-*/

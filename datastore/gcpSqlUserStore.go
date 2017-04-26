@@ -18,10 +18,6 @@ func (provider GcpSqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider GcpSqlProvider) SelectRoomsForUser(userId string) StoreResult {
-	return RdbSelectRoomsForUser(userId)
-}
-
 func (provider GcpSqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
@@ -33,15 +29,3 @@ func (provider GcpSqlProvider) UpdateUser(user *models.User) StoreResult {
 func (provider GcpSqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
-
-//func (provider GcpSqlProvider) UserSelectUserRooms(userId string) StoreChannel {
-//	return RdbUserSelectUserRooms(userId)
-//}
-
-//func (provider GcpSqlProvider) UserUnreadCountUp(userId string) StoreChannel {
-//	return RdbUserUnreadCountUp(userId)
-//}
-//
-//func (provider GcpSqlProvider) UserUnreadCountRecalc(userId string) StoreChannel {
-//	return RdbUserUnreadCountRecalc(userId)
-//}
