@@ -26,41 +26,43 @@ type AwsS3StorageProvider struct {
 	thumbnailDirectory  string
 }
 
-var awsS3Client *s3.S3
-
 func (provider AwsS3StorageProvider) Init() error {
-	if awsS3Client == nil {
-		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(utils.Cfg.AwsS3.Region),
-			Credentials: credentials.NewStaticCredentials(utils.Cfg.AwsS3.AccessKeyId, utils.Cfg.AwsS3.SecretAccessKey, ""),
-		})
-		if err != nil {
-			return err
-		}
-		awsS3Client := s3.New(sess)
-
-		params := &s3.CreateBucketInput{
-			Bucket: aws.String(utils.Cfg.AwsS3.UserUploadBucket),
-		}
-		createBucketResp, err := awsS3Client.CreateBucket(params)
-		if err != nil {
-			return err
-		}
-		log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
-
-		params = &s3.CreateBucketInput{
-			Bucket: aws.String(utils.Cfg.AwsS3.ThumbnailBucket),
-		}
-		createBucketResp, err = awsS3Client.CreateBucket(params)
-		if err != nil {
-			return err
-		}
-		log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
+	awsS3Client, err := getSession()
+	if err != nil {
+		return err
 	}
+
+	params := &s3.CreateBucketInput{
+		Bucket: aws.String(utils.Cfg.AwsS3.UserUploadBucket),
+	}
+	createBucketResp, err := awsS3Client.CreateBucket(params)
+	if err != nil {
+		return err
+	}
+	log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
+
+	params = &s3.CreateBucketInput{
+		Bucket: aws.String(utils.Cfg.AwsS3.ThumbnailBucket),
+	}
+	createBucketResp, err = awsS3Client.CreateBucket(params)
+	if err != nil {
+		return err
+	}
+	log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
 	return nil
 }
 
 func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models.ProblemDetail) {
+	awsS3Client, err := getSession()
+	if err != nil {
+		return "", &models.ProblemDetail{
+			Title:     "Create session failed. (Amazon S3)",
+			Status:    http.StatusInternalServerError,
+			ErrorName: "storage-error",
+			Detail:    err.Error(),
+		}
+	}
+
 	byteData, err := ioutil.ReadAll(assetInfo.Data)
 	if err != nil {
 		return "", &models.ProblemDetail{
@@ -96,4 +98,15 @@ func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models
 
 func (provider AwsS3StorageProvider) Get(assetInfo *AssetInfo) ([]byte, *models.ProblemDetail) {
 	return nil, nil
+}
+
+func getSession() (*s3.S3, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(utils.Cfg.AwsS3.Region),
+		Credentials: credentials.NewStaticCredentials(utils.Cfg.AwsS3.AccessKeyId, utils.Cfg.AwsS3.SecretAccessKey, ""),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return s3.New(sess), nil
 }
