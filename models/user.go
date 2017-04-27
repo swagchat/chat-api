@@ -30,6 +30,7 @@ type User struct {
 type RoomForUser struct {
 	// from room
 	RoomId             string         `json:"roomId,omitempty" db:"room_id"`
+	UserId             string         `json:"userId,omitempty" db:"user_id"`
 	Name               string         `json:"name,omitempty" db:"name"`
 	PictureUrl         string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl     string         `json:"informationUrl,omitempty" db:"information_url"`

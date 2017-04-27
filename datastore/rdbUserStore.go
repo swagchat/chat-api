@@ -68,6 +68,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 			var rooms []*models.RoomForUser
 			query := utils.AppendStrings("SELECT ",
 				"r.room_id, ",
+				"r.user_id, ",
 				"r.name, ",
 				"r.picture_url, ",
 				"r.information_url, ",
@@ -117,36 +118,6 @@ func RdbSelectUsers() StoreResult {
 	result.Data = users
 	return result
 }
-
-//func RdbSelectRoomsForUser(userId string) StoreResult {
-//	result := StoreResult{}
-//	var rooms []*models.RoomForUser
-//	query := utils.AppendStrings("SELECT ",
-//		"r.room_id, ",
-//		"r.name, ",
-//		"r.picture_url, ",
-//		"r.information_url, ",
-//		"r.meta_data, ",
-//		"r.last_message, ",
-//		"r.last_message_updated, ",
-//		"r.created, ",
-//		"r.modified, ",
-//		"ru.unread_count AS ru_unread_count, ",
-//		"ru.meta_data AS ru_meta_data, ",
-//		"ru.created AS ru_created ",
-//		"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-//		"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ",
-//		"ON ru.room_id = r.room_id ",
-//		"WHERE ru.user_id = :userId AND r.deleted = 0 ",
-//		"ORDER BY r.last_message_updated DESC;")
-//	params := map[string]interface{}{"userId": userId}
-//	_, err := dbMap.Select(&rooms, query, params)
-//	if err != nil {
-//		result.ProblemDetail = createProblemDetail("An error occurred while getting room's users.", err)
-//	}
-//	result.Data = rooms
-//	return result
-//}
 
 func RdbSelectUserIdsByUserIds(userIds []string) StoreResult {
 	result := StoreResult{}
