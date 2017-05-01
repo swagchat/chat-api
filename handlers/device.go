@@ -37,7 +37,8 @@ func PostDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetDevices(w http.ResponseWriter, r *http.Request) {
-	devices, pd := services.GetDevices()
+	userId := bone.GetValue(r, "userId")
+	devices, pd := services.GetDevices(userId)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

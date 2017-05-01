@@ -13,10 +13,10 @@ type Devices struct {
 }
 
 type Device struct {
-	UserId               string `json:"userId" db:"user_id"`
-	Platform             int    `json:"platform" db:"platform"`
-	Token                string `json:"token" db:"token"`
-	NotificationDeviceId string `json:"notificationDeviceId" db:"notification_device_id"`
+	UserId               string `json:"userId,omitempty" db:"user_id"`
+	Platform             int    `json:"platform,omitempty" db:"platform"`
+	Token                string `json:"token,omitempty" db:"token"`
+	NotificationDeviceId string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
 }
 
 func IsValidDevicePlatform(platform int) bool {

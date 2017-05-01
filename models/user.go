@@ -41,7 +41,7 @@ type RoomForUser struct {
 	Modified           int64          `json:"modified,omitempty" db:"modified"`
 
 	// from RoomUser
-	RuUnreadCount *int64         `json:"ruUnreadCount,omitempty" db:"ru_unread_count"`
+	RuUnreadCount int64          `json:"ruUnreadCount,omitempty" db:"ru_unread_count"`
 	RuMetaData    utils.JSONText `json:"ruMetaData,omitempty" db:"ru_meta_data"`
 	RuCreated     int64          `json:"ruCreated,omitempty" db:"ru_created"`
 	RuModified    int64          `json:"ruModified,omitempty" db:"ru_modified"`

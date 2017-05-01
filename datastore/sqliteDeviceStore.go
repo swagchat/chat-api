@@ -10,8 +10,8 @@ func (provider SqliteProvider) InsertDevice(device *models.Device) StoreResult {
 	return RdbInsertDevice(device)
 }
 
-func (provider SqliteProvider) SelectDevices() StoreResult {
-	return RdbSelectDevices()
+func (provider SqliteProvider) SelectDevices(userId string) StoreResult {
+	return RdbSelectDevices(userId)
 }
 
 func (provider SqliteProvider) SelectDevice(userId string, platform int) StoreResult {

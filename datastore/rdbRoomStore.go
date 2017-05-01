@@ -22,11 +22,40 @@ func RdbCreateRoomStore() {
 }
 
 func RdbInsertRoom(room *models.Room) StoreResult {
+	trans, err := dbMap.Begin()
 	result := StoreResult{}
-	if err := dbMap.Insert(room); err != nil {
+	if err = dbMap.Insert(room); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating room item.", err)
+		if err = trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room item.", err)
+		}
+		return result
 	}
 	result.Data = room
+
+	var zero int64
+	zero = 0
+	roomUser := &models.RoomUser{
+		RoomId:      room.RoomId,
+		UserId:      room.UserId,
+		UnreadCount: &zero,
+		MetaData:    []byte("{}"),
+		Created:     room.Created,
+		Modified:    room.Modified,
+	}
+	if err = trans.Insert(roomUser); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+		if err = trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
+		}
+		return result
+	}
+
+	if result.ProblemDetail == nil {
+		if err = trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while commit creating room item.", err)
+		}
+	}
 	return result
 }
 

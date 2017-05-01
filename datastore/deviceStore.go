@@ -6,7 +6,7 @@ type DeviceStore interface {
 	CreateDeviceStore()
 
 	InsertDevice(device *models.Device) StoreResult
-	SelectDevices() StoreResult
+	SelectDevices(userId string) StoreResult
 	SelectDevice(userId string, platform int) StoreResult
 	SelectDevicesByUserId(userId string) StoreResult
 	UpdateDevice(device *models.Device) StoreResult

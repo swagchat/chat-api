@@ -49,8 +49,8 @@ func PostDevice(post *models.Device) (*models.Device, *models.ProblemDetail) {
 	return device, dRes.ProblemDetail
 }
 
-func GetDevices() (*models.Devices, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectDevices()
+func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
+	dRes := datastore.GetProvider().SelectDevices(userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

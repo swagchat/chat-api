@@ -28,11 +28,9 @@ Swagchat is an open source chat components for your webapps.
 
 ## API Reference
 
-[swagger.yaml](swagger.yaml)
-
 ### SWAGGER HUB
 
-[https://app.swaggerhub.com/api/fairway-corp/swagchat-api/0.1.0](https://app.swaggerhub.com/api/fairway-corp/swagchat-api/0.1.0)
+[https://app.swaggerhub.com/api/fairway-corp/swagchat-api](https://app.swaggerhub.com/api/fairway-corp/swagchat-api)
 
 ### Apiary
 

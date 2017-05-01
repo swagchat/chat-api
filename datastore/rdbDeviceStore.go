@@ -30,11 +30,14 @@ func RdbInsertDevice(device *models.Device) StoreResult {
 	return result
 }
 
-func RdbSelectDevices() StoreResult {
+func RdbSelectDevices(userId string) StoreResult {
 	result := StoreResult{}
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, ";")
-	_, err := dbMap.Select(&devices, query)
+	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
+	params := map[string]interface{}{
+		"userId": userId,
+	}
+	_, err := dbMap.Select(&devices, query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
 	}

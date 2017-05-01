@@ -10,8 +10,8 @@ func (provider GcpSqlProvider) InsertDevice(device *models.Device) StoreResult {
 	return RdbInsertDevice(device)
 }
 
-func (provider GcpSqlProvider) SelectDevices() StoreResult {
-	return RdbSelectDevices()
+func (provider GcpSqlProvider) SelectDevices(userId string) StoreResult {
+	return RdbSelectDevices(userId)
 }
 
 func (provider GcpSqlProvider) SelectDevice(userId string, platform int) StoreResult {

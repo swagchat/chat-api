@@ -78,7 +78,9 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 				"r.created, ",
 				"r.modified, ",
 				"ru.unread_count AS ru_unread_count, ",
-				"ru.meta_data AS ru_meta_data ",
+				"ru.meta_data AS ru_meta_data, ",
+				"ru.created AS ru_created, ",
+				"ru.modified AS ru_modified ",
 				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
 				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ",
 				"ON ru.room_id = r.room_id ",
@@ -94,7 +96,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 
 		if isWithDevices {
 			var devices []*models.Device
-			query := utils.AppendStrings("SELECT * from ", TABLE_NAME_DEVICE, " WHERE user_id=:userId")
+			query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", TABLE_NAME_DEVICE, " WHERE user_id=:userId")
 			params := map[string]interface{}{"userId": userId}
 			_, err := dbMap.Select(&devices, query, params)
 			if err != nil {

@@ -21,8 +21,8 @@ type Room struct {
 	InformationUrl      string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData            utils.JSONText `json:"metaData" db:"meta_data"`
 	IsPublic            *bool          `json:"isPublic,omitempty" db:"is_public"`
-	LastMessage         string         `json:"lastMessage,omitempty" db:"last_message"`
-	LastMessageUpdated  int64          `json:"lastMessageUpdated,omitempty" db:"last_message_updated"`
+	LastMessage         string         `json:"lastMessage" db:"last_message"`
+	LastMessageUpdated  int64          `json:"lastMessageUpdated" db:"last_message_updated"`
 	NotificationTopicId string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
 	Created             int64          `json:"created" db:"created"`
 	Modified            int64          `json:"modified" db:"modified"`

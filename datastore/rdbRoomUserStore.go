@@ -99,7 +99,7 @@ func RdbSelectRoomUser(roomId, userId string) StoreResult {
 func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+	query := utils.AppendStrings("SELECT room_id, user_id, unread_count, meta_data, created, modified FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{
 		"roomId": roomId,
 	}

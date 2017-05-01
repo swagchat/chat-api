@@ -1,8 +1,0 @@
-dependencies:
-#  pre:
-#    - npm install -g dredd@3.2.0
-test:
-  override:
-    - go test $(go list ./... | grep -v vendor)
-#  post:
-#    - dredd

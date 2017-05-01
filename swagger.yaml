@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Swagchat RESTful API
   description: ""
-  version: 0.1.0
+  version: 0.3.2
   contact:
     email: shinichi.minobe@gmail.com
   license:
@@ -26,79 +26,33 @@ paths:
         description: Create user item json
         required: true
         schema:
-          $ref: '#/definitions/postUser'
+          $ref: '#/definitions/RequestUserForPost'
       responses:
         201:
           description: Created
           schema:
-            $ref: '#/definitions/user'
+            $ref: '#/definitions/ResponseUser'
         400:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
     get:
       summary: Get user list.
       produces:
       - application/json
       responses:
         200:
-          description: User list
+          description: OK
           schema:
-            type: object
-            items:
-              $ref: '#/definitions/users'
-          examples:
-            application/json: |-
-              {
-                "users": [
-                  {
-                    "id": 1,
-                    "userId": "custom-user-id-0001",
-                    "name": "custom user 0001",
-                    "unreadCount": 0,
-                    "customData": {"key": "value"},
-                    "created": 1488294000000000000,
-                    "modified": 1488294000000000000 
-                  }
-                ]
-              }
+            $ref: '#/definitions/ResponseUsers'
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
   /users/{userId}:
     get:
       summary: Get user item.
@@ -113,34 +67,15 @@ paths:
         x-example: custom-user-id-0001
       responses:
         200:
-          description: User item
+          description: OK
           schema:
-            $ref: '#/definitions/user'
-          examples:
-            application/json: |-
-              {
-                "id": 1,
-                "userId": "custom-user-id-0001",
-                "name": "custom user 0001",
-                "pictureUrl": "http://example.com/img/rick.png",
-                "informationUrl": "http://example.com/user/rick",
-                "unreadCount": 0,
-                "customData": {"key": "value"},
-                "created": 1488294000000000000,
-                "modified": 1488294000000000000 
-              }
+            $ref: '#/definitions/ResponseUserWithRoomsAndDevices'
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
     put:
       summary: Update user item.
       produces:
@@ -159,39 +94,22 @@ paths:
         description: Update user item json
         required: true
         schema:
-          $ref: '#/definitions/postUser'
+          $ref: '#/definitions/RequestUserForPut'
       responses:
-        204:
-          description: No Content
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseUser'
         400:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
     delete:
       summary: Delete user item.
       produces:
@@ -206,38 +124,150 @@ paths:
       responses:
         204:
           description: No Content
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
-  /users/{userId}/rooms:
+  /users/{userId}/devices/{platform}:
+    post:
+      summary: Create device item.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: userId
+        description: User ID
+        required: true
+        type: string
+        x-example: custom-user-id-0001
+      - in: path
+        name: platform
+        description: Platform
+        required: true
+        type: integer
+        x-example: 1
+      - in: body
+        name: device item
+        description: Create device item json
+        required: true
+        schema:
+          $ref: '#/definitions/RequestDevice'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/ResponseDevice'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        404:
+          description: Not Found.
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
     get:
-      summary: Get user's room list
+      summary: Get device item.
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: userId
+        description: User ID
+        required: true
+        type: string
+        x-example: custom-user-id-0001
+      - in: path
+        name: platform
+        description: Platform
+        required: true
+        type: integer
+        x-example: 1
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseDevice'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+    put:
+      summary: Update device item.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: userId
+        description: User ID
+        required: true
+        type: string
+        x-example: custom-user-id-0001
+      - in: path
+        name: platform
+        description: Platform
+        required: true
+        type: integer
+        x-example: 1
+      - in: body
+        name: user item json
+        description: Update user item json
+        required: true
+        schema:
+          $ref: '#/definitions/RequestDevice'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseDevice'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+    delete:
+      summary: Delete device item.
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: userId
+        description: User ID
+        required: true
+        type: string
+        x-example: custom-user-id-0001
+      - in: path
+        name: platform
+        description: Platform
+        required: true
+        type: integer
+        x-example: 1
+      responses:
+        204:
+          description: No Content
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+  /users/{userId}/devices:
+    get:
+      summary: Get device list.
       produces:
       - application/json
       parameters:
@@ -249,40 +279,13 @@ paths:
         x-example: custom-user-id-0001
       responses:
         200:
-          description: User's room list
+          description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/room'
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
+            $ref: '#/definitions/ResponseDevices'
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
   /rooms:
     post:
       summary: Create room item.
@@ -296,64 +299,33 @@ paths:
         description: Create room item json
         required: true
         schema:
-          $ref: '#/definitions/postRoom'
+          $ref: '#/definitions/RequestRoomForPost'
       responses:
         201:
           description: Created
           schema:
-            $ref: '#/definitions/room'
+            $ref: '#/definitions/ResponseRoom'
         400:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
     get:
       summary: Get room list.
       produces:
       - application/json
       responses:
         200:
-          description: Room list
+          description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/room'
+            $ref: '#/definitions/ResponseRooms'
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
   /rooms/{roomId}:
     get:
       summary: Get room item.
@@ -368,21 +340,15 @@ paths:
         x-example: custom-room-id-0001
       responses:
         200:
-          description: Room item
+          description: OK
           schema:
-            $ref: '#/definitions/room'
+            $ref: '#/definitions/ResponseRoom'
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
     put:
       summary: Update room item.
       produces:
@@ -401,39 +367,22 @@ paths:
         description: Update room item json
         required: true
         schema:
-          $ref: '#/definitions/postRoom'
+          $ref: '#/definitions/RequestRoomForPut'
       responses:
-        204:
-          description: No Content
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseRoom'
         400:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
     delete:
       summary: Delete room item.
       produces:
@@ -454,239 +403,12 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
-  /rooms/{roomId}/users:
-    post:
-      summary: Create room's user item.
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      parameters:
-      - in: path
-        name: roomId
-        description: Room ID
-        required: true
-        type: string
-        x-example: custom-room-id-0001
-      - in: body
-        name: room's user ids json
-        description: Create room's user ids json
-        required: true
-        schema:
-          $ref: '#/definitions/postRoomsUsers'
-      responses:
-        201:
-          description: Created
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
-        500:
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
-    get:
-      summary: Get room's user list
-      produces:
-      - application/json
-      parameters:
-      - in: path
-        name: roomId
-        description: Room ID
-        required: true
-        type: string
-        x-example: custom-room-id-0001
-      responses:
-        200:
-          description: room's user list
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/room'
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
-        500:
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
-  /rooms/{roomId}/users/{userId}:
-    put:
-      summary: Update room's user item.
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      parameters:
-      - in: path
-        name: roomId
-        description: Room ID
-        required: true
-        type: string
-        x-example: custom-room-id-0001
-      - in: path
-        name: userId
-        description: User ID
-        required: true
-        type: string
-        x-example: custom-user-id-0001
-      - in: body
-        name: room user item json
-        description: Update room user item json
-        required: true
-        schema:
-          $ref: '#/definitions/postRoomUser'
-      responses:
-        204:
-          description: No Content
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
-        500:
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
-    delete:
-      summary: Delete room's user item.
-      produces:
-      - application/json
-      consumes:
-      - application/json
-      parameters:
-      - in: path
-        name: roomId
-        description: Room ID
-        required: true
-        type: string
-        x-example: custom-room-id-0001
-      - in: path
-        name: userId
-        description: User ID
-        required: true
-        type: string
-        x-example: custom-user-id-0001
-      responses:
-        204:
-          description: No Content
-        400:
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
-        500:
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
   /rooms/{roomId}/messages:
     get:
       summary: Get room's message list
@@ -713,40 +435,157 @@ paths:
         x-example: 0
       responses:
         200:
-          description: Room's message list
+          description: OK
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/message'
+            $ref: '#/definitions/ResponseMessages'
         400:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
+        404:
+          description: Not Found
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
+  /rooms/{roomId}/users:
+    post:
+      summary: Create room's user item.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: roomId
+        description: Room ID
+        required: true
+        type: string
+        x-example: custom-room-id-0001
+      - in: body
+        name: room's user ids json
+        description: Create room's user ids json
+        required: true
+        schema:
+          $ref: '#/definitions/RequestRoomsUsers'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/ResponseRoomUsers'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+    put:
+      summary: Update room's user item.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: roomId
+        description: Room ID
+        required: true
+        type: string
+        x-example: custom-room-id-0001
+      - in: body
+        name: room user item json
+        description: Update room user item json
+        required: true
+        schema:
+          $ref: '#/definitions/RequestRoomUserForPut'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseRoomUsers'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+    delete:
+      summary: Delete room's user item.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: roomId
+        description: Room ID
+        required: true
+        type: string
+        x-example: custom-room-id-0001
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseRoomUsers'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+  /rooms/{roomId}/users/{userId}:
+    put:
+      summary: Update room's user item.
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: roomId
+        description: Room ID
+        required: true
+        type: string
+        x-example: custom-room-id-0001
+      - in: path
+        name: userId
+        description: User ID
+        required: true
+        type: string
+        x-example: custom-user-id-0001
+      - in: body
+        name: room user item json
+        description: Update room user item json
+        required: true
+        schema:
+          $ref: '#/definitions/RequestRoomUserForPut'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ResponseRoomUser'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        404:
+          description: Not Found
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
   /messages:
     post:
       summary: Create message item.
@@ -759,7 +598,7 @@ paths:
         name: message item
         required: true
         schema:
-          $ref: '#/definitions/postMessage'
+          $ref: '#/definitions/RequestMessage'
       responses:
         201:
           description: Created
@@ -806,9 +645,9 @@ paths:
         x-example: custom-message-id-0001
       responses:
         200:
-          description: message item
+          description: OK
           schema:
-            $ref: '#/definitions/message'
+            $ref: '#/definitions/ResponseMessage'
         400:
           description: Bad Request
           schema:
@@ -838,21 +677,96 @@ paths:
                 "detail": "UNIQUE constraint failed: user.user_id",
                 "errorName": "database-error"
               }
+  /assets:
+    post:
+      summary: Create asset item.
+      produces:
+      - application/json
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - in: body
+        name: user item
+        description: Create user item json
+        required: true
+        schema:
+          $ref: '#/definitions/RequestUserForPost'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: '#/definitions/ResponseAsset'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/problemDetailForBadGateway'
+        500:
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/problemDetailForInternalServerError'
+    get:
+      summary: Get asset item.
+      produces: [
+        "image/png", "image/jpeg", "image/gif"
+      ]
+      responses:
+        200:
+          description: OK
+        404:
+          description: Not Found
 definitions:
-  user:
+  RequestUserForPost:
     type: object
     required:
-    - id
+    - name
+    properties:
+      userId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      name:
+        type: string
+        example: rick
+      pictureUrl:
+        type: string
+        example: http://example.com/img/rick.png
+      informationUrl:
+        type: string
+        example: http://example.com/user/rick
+      unreadCount:
+        type: integer
+        example: 0
+      metaData:
+        type: object
+        example: {"key": "value"}
+  RequestUserForPut:
+    type: object
+    properties:
+      name:
+        type: string
+        example: rick
+      pictureUrl:
+        type: string
+        example: http://example.com/img/rick.png
+      informationUrl:
+        type: string
+        example: http://example.com/user/rick
+      unreadCount:
+        type: integer
+        example: 0
+      metaData:
+        type: object
+        example: {"key": "value"}
+  ResponseUser:
+    type: object
+    required:
     - userId
     - name
+    - pictureUrl
     - unreadCount
-    - customData
+    - metaData
     - created
     - modified
     properties:
-      id:
-        type: integer
-        example: 1
       userId:
         type: string
         example: custom-user-id-0001
@@ -868,104 +782,115 @@ definitions:
       unreadCount:
         type: integer
         example: 0
-      customData:
-        $ref: '#/definitions/sampleCustomData'
+      metaData:
+        type: object
+        example: {"key": "value"}
       created:
         type: integer
         example: 1488294000000000000
       modified:
         type: integer
-        example:
-          key: value
-  users:
+        example: 1488294000000000000
+  ResponseUsers:
     type: object
     required:
     - users
     properties:
       users:
-        type: array
         items:
-          $ref: '#/definitions/user'
-  postUser:
+          $ref: '#/definitions/ResponseUser'
+  ResponseUserWithRoomsAndDevices:
     type: object
     required:
+    - userId
     - name
+    - pictureUrl
+    - unreadCount
+    - metaData
+    - created
+    - modified
+    - rooms
+    - devices
     properties:
       userId:
         type: string
-        pattern: "[0-9a-zA-Z-]"
-        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        example: custom-user-id-0001
       name:
         type: string
-        example: rick
+        example: custom user 0001
       pictureUrl:
         type: string
         example: http://example.com/img/rick.png
       informationUrl:
         type: string
         example: http://example.com/user/rick
-      customData:
-        $ref: '#/definitions/sampleCustomData'
-  sampleCustomData:
-    type: object
-    properties:
-      key:
-        type: string
-        example: value
-
-  room:
-    type: object
-    required:
-    - id
-    - roomId
-    - name
-    - customData
-    - isPublic
-    - lastMessage
-    - lastMessageUpdated
-    - created
-    - modified
-    properties:
-      id:
+      unreadCount:
         type: integer
-        example: 1
-      roomId:
-        type: string
-        example: d290f1ee-6c54-4b01-90e6-d701748f0851
-      name:
-        type: string
-        example: rick
-      pictureUrl:
-        type: string
-        example: http://example.com/img/rick.png
-      informationUrl:
-        type: string
-        example: http://example.com/user/rick
-      customData:
-        $ref: '#/definitions/sampleCustomData'
-      isPublic:
-        type: boolean
-        example: true
-      lastMessage:
-        type: string
-        example: Hello, World
-      lastMessageUpdated:
-        type: integer
-        example: 1488294000000000000
+        example: 0
+      metaData:
+        type: object
+        example: {"key": "value"}
       created:
         type: integer
         example: 1488294000000000000
       modified:
         type: integer
         example: 1488294000000000000
-  postRoom:
+      rooms:
+        type: array
+        items:
+          $ref: '#/definitions/ResponseRoom'
+      devices:
+        type: array
+        items:
+          $ref: '#/definitions/ResponseDevice'
+  RequestDevice:
     type: object
     required:
+    - token
+    properties:
+      token:
+        type: string
+        example: abcdefghijelmnopqrstuvwxyz
+  ResponseDevice:
+    type: object
+    required:
+    - userId
+    - platform
+    - token
+    - notificationDeviceId
+    properties:
+      userId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      platform:
+        type: integer
+        example: 1
+      token:
+        type: string
+        example: abcdefghijelmnopqrstuvwxyz
+      notificationDeviceId:
+        type: string
+        example: abcdefghijelmnopqrstuvwxyz
+  ResponseDevices:
+    type: object
+    required:
+    - devices
+    properties:
+      devices:
+        items:
+          $ref: '#/definitions/ResponseDevice'
+  RequestRoomForPost:
+    type: object
+    required:
+    - userId
     - name
     properties:
       roomId:
         type: string
-        pattern: "[0-9a-zA-Z-]"
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      userId:
+        type: string
         example: d290f1ee-6c54-4b01-90e6-d701748f0851
       name:
         type: string
@@ -976,26 +901,118 @@ definitions:
       informationUrl:
         type: string
         example: http://example.com/room/rick
-      customData:
-        $ref: '#/definitions/sampleCustomData'
+      metaData:
+        type: object
+        example: {"key": "value"}
       isPublic:
         type: boolean
         example: true
-  postRoomsUsers:
+  RequestRoomForPut:
     type: object
-    required:
-    - users
     properties:
-      users:
-        type: array
-        items:
-          type: string
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851, d290f1ee-6c54-4b01-90e6-d701748f0852
-  postRoomUser:
+      userId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      name:
+        type: string
+        example: rick's room
+      pictureUrl:
+        type: string
+        example: http://example.com/img/rick-room.png
+      informationUrl:
+        type: string
+        example: http://example.com/room/rick
+      metaData:
+        type: object
+        example: {"key": "value"}
+      isPublic:
+        type: boolean
+        example: true
+  ResponseRoom:
     type: object
     required:
     - roomId
     - userId
+    - name
+    - metaData
+    - isPublic
+    - lastMessage
+    - lastMessageUpdated
+    - created
+    - modified
+    properties:
+      roomId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      userId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      name:
+        type: string
+        example: rick
+      pictureUrl:
+        type: string
+        example: http://example.com/img/rick.png
+      informationUrl:
+        type: string
+        example: http://example.com/user/rick
+      metaData:
+        type: object
+        example: {"key": "value"}
+      isPublic:
+        type: boolean
+        example: true
+      lastMessage:
+        type: string
+        example: Hello, World
+      lastMessageUpdated:
+        type: integer
+        example: 1488294000000000000
+      notificationTopicId:
+        type: string
+        example: abcdefghijklmnopqrstuvwz
+      created:
+        type: integer
+        example: 1488294000000000000
+      modified:
+        type: integer
+        example: 1488294000000000000
+  ResponseRooms:
+    type: object
+    required:
+    - rooms
+    properties:
+      rooms:
+        items:
+          $ref: '#/definitions/ResponseRoom'
+  RequestRoomsUsers:
+    type: object
+    required:
+    - userIds
+    properties:
+      userIds:
+        type: array
+        items:
+          type: string
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851, d290f1ee-6c54-4b01-90e6-d701748f0852
+  RequestRoomUserForPut:
+    type: object
+    properties:
+      unreadCount:
+        type: integer
+        example: 1
+      metaData:
+        type: object
+        example: {"key": "value"}
+  ResponseRoomUser:
+    type: object
+    required:
+    - roomId
+    - userId
+    - unreadCount
+    - metaData
+    - created
+    - modified
     properties:
       roomId:
         type: string
@@ -1006,12 +1023,46 @@ definitions:
       unreadCount:
         type: integer
         example: 1
-      customData:
-        $ref: '#/definitions/sampleCustomData'
-  message:
+      metaData:
+        type: object
+        example: {"key": "value"}
+      created:
+        type: integer
+        example: 1488294000000000000
+      modified:
+        type: integer
+        example: 1488294000000000000
+  ResponseRoomUsers:
     type: object
     required:
-    - id
+    - roomUsers
+    properties:
+      roomUsers:
+        items:
+          $ref: '#/definitions/ResponseRoomUser'
+  RequestMessage:
+    type: object
+    required:
+    - roomId
+    - userId
+    - type
+    - payload
+    properties:
+      roomId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      userId:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      type:
+        type: string
+        example: text
+      payload:
+        type: object
+        example: {"text":"Hello, world."}
+  ResponseMessage:
+    type: object
+    required:
     - messageId
     - roomId
     - userId
@@ -1044,32 +1095,30 @@ definitions:
       modified:
         type: integer
         example: 1488294000000000000
-  postMessage:
+  ResponseMessages:
     type: object
     required:
-    - roomId
-    - userId
-    - type
-    - payload
+    - messages
     properties:
-      messageId:
+      messages:
+        items:
+          $ref: '#/definitions/ResponseMessage'
+  ResponseAsset:
+    type: object
+    required:
+    - assetId
+    - sourceUrl
+    - mime
+    properties:
+      assetId:
         type: string
-        pattern: "[0-9a-zA-Z-]"
         example: d290f1ee-6c54-4b01-90e6-d701748f0851
-      roomId:
+      sourceUrl:
         type: string
-        pattern: "[0-9a-zA-Z-]"
-        example: d290f1ee-6c54-4b01-90e6-d701748f0851
-      userId:
+        example: http://example.com/img/asset.png
+      mime:
         type: string
-        pattern: "[0-9a-zA-Z-]"
-        example: d290f1ee-6c54-4b01-90e6-d701748f0851
-      type:
-        type: string
-        example: text
-      payload:
-        type: object
-        example: {"text":"Hello, world."}
+        example: image/png
   problemDetailForBadGateway :
     type: object
     required:

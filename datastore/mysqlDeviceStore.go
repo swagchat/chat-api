@@ -10,8 +10,8 @@ func (provider MysqlProvider) InsertDevice(device *models.Device) StoreResult {
 	return RdbInsertDevice(device)
 }
 
-func (provider MysqlProvider) SelectDevices() StoreResult {
-	return RdbSelectDevices()
+func (provider MysqlProvider) SelectDevices(userId string) StoreResult {
+	return RdbSelectDevices(userId)
 }
 
 func (provider MysqlProvider) SelectDevice(userId string, platform int) StoreResult {
