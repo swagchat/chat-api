@@ -14,15 +14,15 @@ type Users struct {
 
 type User struct {
 	Id             uint64         `json:"-" db:"id"`
-	UserId         string         `json:"userId" db:"user_id"`
-	Name           string         `json:"name" db:"name"`
+	UserId         string         `json:"userId" db:"user_id,notnull"`
+	Name           string         `json:"name" db:"name,notnull"`
 	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
-	UnreadCount    *uint64        `json:"unreadCount" db:"unread_count"`
+	UnreadCount    *uint64        `json:"unreadCount" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
-	Created        int64          `json:"created" db:"created"`
-	Modified       int64          `json:"modified" db:"modified"`
-	Deleted        int64          `json:"-" db:"deleted"`
+	Created        int64          `json:"created" db:"created,notnull"`
+	Modified       int64          `json:"modified" db:"modified,notnull"`
+	Deleted        int64          `json:"-" db:"deleted,notnull"`
 
 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices []*Device      `json:"devices,omitempty" db:"-"`

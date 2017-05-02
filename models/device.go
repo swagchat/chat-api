@@ -13,9 +13,9 @@ type Devices struct {
 }
 
 type Device struct {
-	UserId               string `json:"userId,omitempty" db:"user_id"`
-	Platform             int    `json:"platform,omitempty" db:"platform"`
-	Token                string `json:"token,omitempty" db:"token"`
+	UserId               string `json:"userId,omitempty" db:"user_id,notnull"`
+	Platform             int    `json:"platform,omitempty" db:"platform,notnull"`
+	Token                string `json:"token,omitempty" db:"token,notnull"`
 	NotificationDeviceId string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
 }
 

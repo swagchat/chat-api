@@ -20,15 +20,15 @@ type Messages struct {
 
 type Message struct {
 	Id        uint64         `json:"-" db:"id"`
-	MessageId string         `json:"messageId" db:"message_id"`
-	RoomId    string         `json:"roomId" db:"room_id"`
-	UserId    string         `json:"userId" db:"user_id"`
+	MessageId string         `json:"messageId" db:"message_id,notnull"`
+	RoomId    string         `json:"roomId" db:"room_id,notnull"`
+	UserId    string         `json:"userId" db:"user_id,notnull"`
 	Type      string         `json:"type,omitempty" db:"type"`
 	EventName string         `json:"eventName,omitempty" db:"-"`
 	Payload   utils.JSONText `json:"payload" db:"payload"`
-	Created   int64          `json:"created" db:"created"`
-	Modified  int64          `json:"modified" db:"modified"`
-	Deleted   int64          `json:"-" db:"deleted"`
+	Created   int64          `json:"created" db:"created,notnull"`
+	Modified  int64          `json:"modified" db:"modified,notnull"`
+	Deleted   int64          `json:"-" db:"deleted,notnull"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {

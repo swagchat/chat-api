@@ -4,17 +4,18 @@ import (
 	"net/http"
 
 	"encoding/json"
-	"github.com/fairway-corp/swagchat-api/utils"
 	"time"
+
+	"github.com/fairway-corp/swagchat-api/utils"
 )
 
 type RoomUser struct {
-	RoomId      string         `json:"roomId" db:"room_id"`
-	UserId      string         `json:"userId" db:"user_id"`
+	RoomId      string         `json:"roomId" db:"room_id,notnull"`
+	UserId      string         `json:"userId" db:"user_id,notnull"`
 	UnreadCount *int64         `json:"unreadCount" db:"unread_count"`
 	MetaData    utils.JSONText `json:"metaData" db:"meta_data"`
-	Created     int64          `json:"created" db:"created"`
-	Modified    int64          `json:"modified" db:"modified"`
+	Created     int64          `json:"created" db:"created,notnull"`
+	Modified    int64          `json:"modified" db:"modified,notnull"`
 }
 
 func (ru *RoomUser) MarshalJSON() ([]byte, error) {

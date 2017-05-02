@@ -16,19 +16,19 @@ type Rooms struct {
 
 type Room struct {
 	Id                  uint64         `json:"-" db:"id"`
-	RoomId              string         `json:"roomId" db:"room_id"`
-	UserId              string         `json:"userId" db:"user_id"`
-	Name                string         `json:"name" db:"name"`
+	RoomId              string         `json:"roomId" db:"room_id,notnull"`
+	UserId              string         `json:"userId" db:"user_id,notnull"`
+	Name                string         `json:"name" db:"name,notnull"`
 	PictureUrl          string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl      string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData            utils.JSONText `json:"metaData" db:"meta_data"`
-	IsPublic            *bool          `json:"isPublic,omitempty" db:"is_public"`
+	IsPublic            *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	LastMessage         string         `json:"lastMessage" db:"last_message"`
-	LastMessageUpdated  int64          `json:"lastMessageUpdated" db:"last_message_updated"`
+	LastMessageUpdated  int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
 	NotificationTopicId string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
-	Created             int64          `json:"created" db:"created"`
-	Modified            int64          `json:"modified" db:"modified"`
-	Deleted             int64          `json:"-" db:"deleted"`
+	Created             int64          `json:"created" db:"created,notnull"`
+	Modified            int64          `json:"modified" db:"modified,notnull"`
+	Deleted             int64          `json:"-" db:"deleted,notnull"`
 
 	Users []*UserForRoom `json:"users,omitempty" db:"-"`
 }
