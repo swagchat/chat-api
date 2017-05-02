@@ -154,7 +154,7 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
 	params = map[string]interface{}{
 		"roomId":  roomId,
-		"deleted": time.Now().UnixNano(),
+		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
@@ -168,7 +168,7 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM, " SET deleted=:deleted WHERE room_id=:roomId;")
 	params = map[string]interface{}{
 		"roomId":  roomId,
-		"deleted": time.Now().UnixNano(),
+		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {

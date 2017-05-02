@@ -237,7 +237,7 @@ func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
 		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
 		params = map[string]interface{}{
 			"roomId":  roomId,
-			"deleted": time.Now().UnixNano(),
+			"deleted": time.Now().Unix(),
 		}
 		_, err = trans.Exec(query, params)
 		if err != nil {
@@ -262,7 +262,7 @@ func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
 		}
 
 		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
-		params["deleted"] = time.Now().UnixNano()
+		params["deleted"] = time.Now().Unix()
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while updating subsctiption items.", err)

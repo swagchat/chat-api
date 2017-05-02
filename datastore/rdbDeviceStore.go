@@ -83,7 +83,7 @@ func RdbUpdateDevice(device *models.Device) StoreResult {
 	params := map[string]interface{}{
 		"userId":   device.UserId,
 		"platform": device.Platform,
-		"deleted":  time.Now().UnixNano(),
+		"deleted":  time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
@@ -125,7 +125,7 @@ func RdbDeleteDevice(userId string, platform int) StoreResult {
 	params := map[string]interface{}{
 		"userId":   userId,
 		"platform": platform,
-		"deleted":  time.Now().UnixNano(),
+		"deleted":  time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {

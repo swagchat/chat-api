@@ -75,7 +75,7 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 		lastMessage = "位置情報を送信しました"
 	}
 	room.LastMessage = lastMessage
-	room.LastMessageUpdated = time.Now().UnixNano()
+	room.LastMessageUpdated = time.Now().Unix()
 	_, err = trans.Update(room)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)

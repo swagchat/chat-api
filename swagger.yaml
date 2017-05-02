@@ -606,31 +606,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
   /messages/{messageId}:
     get:
       summary: Get message item.
@@ -652,31 +631,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/problemDetailForBadGateway'
-          examples:
-            application/json: |-
-              {
-                "title": "Request parameter error. (Create user item)",
-                "status": 400,
-                "errorName": "invalid-param",
-                "invalidParams": [
-                  {
-                    "name": "name",
-                    "reason": "name is required, but it's empty."
-                  }
-                ]
-              }
         500:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/problemDetailForInternalServerError'
-          examples:
-            application/json: |-
-              {
-                "title": "An error occurred while creating user item.",
-                "status": 500,
-                "detail": "UNIQUE constraint failed: user.user_id",
-                "errorName": "database-error"
-              }
   /assets:
     post:
       summary: Create asset item.
@@ -786,11 +744,11 @@ definitions:
         type: object
         example: {"key": "value"}
       created:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
       modified:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
   ResponseUsers:
     type: object
     required:
@@ -831,11 +789,11 @@ definitions:
         type: object
         example: {"key": "value"}
       created:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
       modified:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
       rooms:
         type: array
         items:
@@ -910,9 +868,6 @@ definitions:
   RequestRoomForPut:
     type: object
     properties:
-      userId:
-        type: string
-        example: d290f1ee-6c54-4b01-90e6-d701748f0851
       name:
         type: string
         example: rick's room
@@ -972,11 +927,11 @@ definitions:
         type: string
         example: abcdefghijklmnopqrstuvwz
       created:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
       modified:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
   ResponseRooms:
     type: object
     required:
@@ -1027,11 +982,11 @@ definitions:
         type: object
         example: {"key": "value"}
       created:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
       modified:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
   ResponseRoomUsers:
     type: object
     required:
@@ -1090,11 +1045,11 @@ definitions:
         type: object
         example: {"text":"Hello, world."}
       created:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
       modified:
-        type: integer
-        example: 1488294000000000000
+        type: string
+        example: "2017-05-01T00:00:00Z"
   ResponseMessages:
     type: object
     required:

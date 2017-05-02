@@ -20,15 +20,38 @@ type Messages struct {
 
 type Message struct {
 	Id        uint64         `json:"-" db:"id"`
-	MessageId string         `json:"messageId,omitempty" db:"message_id"`
+	MessageId string         `json:"messageId" db:"message_id"`
 	RoomId    string         `json:"roomId" db:"room_id"`
-	UserId    string         `json:"userId,omitempty" db:"user_id"`
+	UserId    string         `json:"userId" db:"user_id"`
 	Type      string         `json:"type,omitempty" db:"type"`
 	EventName string         `json:"eventName,omitempty" db:"-"`
-	Payload   utils.JSONText `json:"payload,omitempty" db:"payload"`
-	Created   int64          `json:"created,omitempty" db:"created"`
-	Modified  int64          `json:"modified,omitempty" db:"modified"`
+	Payload   utils.JSONText `json:"payload" db:"payload"`
+	Created   int64          `json:"created" db:"created"`
+	Modified  int64          `json:"modified" db:"modified"`
 	Deleted   int64          `json:"-" db:"deleted"`
+}
+
+func (m *Message) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	return json.Marshal(&struct {
+		MessageId string         `json:"messageId"`
+		RoomId    string         `json:"roomId"`
+		UserId    string         `json:"userId"`
+		Type      string         `json:"type"`
+		EventName string         `json:"eventName,omitempty"`
+		Payload   utils.JSONText `json:"payload"`
+		Created   string         `json:"created"`
+		Modified  string         `json:"modified"`
+	}{
+		MessageId: m.MessageId,
+		RoomId:    m.RoomId,
+		UserId:    m.UserId,
+		Type:      m.Type,
+		EventName: m.EventName,
+		Payload:   m.Payload,
+		Created:   time.Unix(m.Created, 0).In(l).Format(time.RFC3339),
+		Modified:  time.Unix(m.Modified, 0).In(l).Format(time.RFC3339),
+	})
 }
 
 type ResponseMessages struct {
@@ -130,7 +153,7 @@ func (m *Message) BeforeSave() {
 		m.MessageId = utils.CreateUuid()
 	}
 
-	nowDatetime := time.Now().UnixNano()
+	nowDatetime := time.Now().Unix()
 	if m.Created == 0 {
 		m.Created = nowDatetime
 	}

@@ -91,7 +91,7 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 	}
 
 	room.NotificationTopicId = ""
-	room.Deleted = time.Now().UnixNano()
+	room.Deleted = time.Now().Unix()
 	dRes := datastore.GetProvider().UpdateRoomDeleted(roomId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail

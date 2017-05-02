@@ -70,7 +70,7 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respond(w, r, http.StatusOK, "", room)
+	respond(w, r, http.StatusOK, "application/json", room)
 }
 
 func DeleteRoom(w http.ResponseWriter, r *http.Request) {

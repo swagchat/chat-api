@@ -56,7 +56,7 @@ func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.Room
 	var zero int64
 	zero = 0
 	newRoomUsers := make([]*models.RoomUser, 0)
-	nowTimestamp := time.Now().UnixNano()
+	nowTimestamp := time.Now().Unix()
 	for _, userId := range userIds {
 		newRoomUsers = append(newRoomUsers, &models.RoomUser{
 			RoomId:      roomId,
@@ -113,7 +113,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 	var zero int64
 	zero = 0
 	roomUsers := make([]*models.RoomUser, 0)
-	nowTimestamp := time.Now().UnixNano()
+	nowTimestamp := time.Now().Unix()
 	for _, userId := range userIds {
 		roomUsers = append(roomUsers, &models.RoomUser{
 			RoomId:      roomId,
@@ -367,7 +367,7 @@ func createTopic(room *models.Room) *models.ProblemDetail {
 
 	if nRes.Data != nil {
 		room.NotificationTopicId = *nRes.Data.(*string)
-		room.Modified = time.Now().UnixNano()
+		room.Modified = time.Now().Unix()
 		dRes := datastore.GetProvider().UpdateRoom(room)
 		if dRes.ProblemDetail != nil {
 			return dRes.ProblemDetail

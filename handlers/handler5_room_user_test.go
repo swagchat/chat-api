@@ -31,7 +31,7 @@ func TestPutRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id-1"]
 				}
 			`,
-			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}\]}$`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -42,7 +42,7 @@ func TestPutRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id-2","custom-user-id-3"]
 				}
 			`,
-			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-3","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}\]}$`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-3","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -143,7 +143,7 @@ func TestPutRoomUser(t *testing.T) {
 					"unreadCount": 100
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","unreadCount":100,"metaData":{},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","unreadCount":100,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -155,7 +155,7 @@ func TestPutRoomUser(t *testing.T) {
 					"metaData": {"key":"value"}
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","unreadCount":100,"metaData":{"key":"value"},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","unreadCount":100,"metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -168,7 +168,7 @@ func TestPutRoomUser(t *testing.T) {
 					"metaData": {"key2":"value2"}
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","unreadCount":200,"metaData":{"key2":"value2"},"created":[0-9]+,"modified":[0-9]+}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","unreadCount":200,"metaData":{"key2":"value2"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -314,7 +314,7 @@ func TestPostRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id-1"]
 				}
 			`,
-			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}]}$`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}]}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -325,7 +325,7 @@ func TestPostRoomUsers(t *testing.T) {
 					"userIds": ["custom-user-id-1","custom-user-id-2"]
 				}
 			`,
-			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":[0-9]+,"modified":[0-9]+}]}$`,
+			out:            `(?m)^{"roomUsers":\[{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-1","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom\-room\-id","userId":"custom\-user\-id\-2","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}]}$`,
 			httpStatusCode: 201,
 		},
 		{

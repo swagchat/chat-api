@@ -209,7 +209,7 @@ func RdbUpdateUserDeleted(userId string) StoreResult {
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId;")
 	params = map[string]interface{}{
 		"userId":  userId,
-		"deleted": time.Now().UnixNano(),
+		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
@@ -223,7 +223,7 @@ func RdbUpdateUserDeleted(userId string) StoreResult {
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET deleted=:deleted WHERE user_id=:userId;")
 	params = map[string]interface{}{
 		"userId":  userId,
-		"deleted": time.Now().UnixNano(),
+		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {

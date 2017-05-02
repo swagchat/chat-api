@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"encoding/json"
+
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
@@ -33,19 +35,84 @@ type Room struct {
 
 type UserForRoom struct {
 	// from User
-	UserId         string         `json:"userId,omitempty" db:"user_id"`
-	Name           string         `json:"name,omitempty" db:"name"`
+	UserId         string         `json:"userId" db:"user_id"`
+	Name           string         `json:"name" db:"name"`
 	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
-	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
 	Created        int64          `json:"created" db:"created"`
-	Modified       int64          `json:"modified,omitempty" db:"modified"`
+	Modified       int64          `json:"modified" db:"modified"`
 
 	// from RoomUser
-	RuUnreadCount *int64         `json:"ruUnreadCount,omitempty" db:"ru_unread_count"`
-	RuMetaData    utils.JSONText `json:"ruMetaData,omitempty" db:"ru_meta_data"`
-	RuCreated     int64          `json:"ruCreated,omitempty" db:"ru_created"`
-	RuModified    int64          `json:"ruModified,omitempty" db:"ru_modified"`
+	RuUnreadCount int64          `json:"ruUnreadCount" db:"ru_unread_count"`
+	RuMetaData    utils.JSONText `json:"ruMetaData" db:"ru_meta_data"`
+	RuCreated     int64          `json:"ruCreated" db:"ru_created"`
+	RuModified    int64          `json:"ruModified" db:"ru_modified"`
+}
+
+func (r *Room) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	lmu := ""
+	if r.LastMessageUpdated != 0 {
+		lmu = time.Unix(r.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
+	}
+	return json.Marshal(&struct {
+		RoomId              string         `json:"roomId"`
+		UserId              string         `json:"userId"`
+		Name                string         `json:"name"`
+		PictureUrl          string         `json:"pictureUrl,omitempty"`
+		InformationUrl      string         `json:"informationUrl,omitempty"`
+		MetaData            utils.JSONText `json:"metaData"`
+		IsPublic            *bool          `json:"isPublic"`
+		LastMessage         string         `json:"lastMessage"`
+		LastMessageUpdated  string         `json:"lastMessageUpdated"`
+		NotificationTopicId string         `json:"notificationTopicId,omitempty"`
+		Created             string         `json:"created"`
+		Modified            string         `json:"modified"`
+		Users               []*UserForRoom `json:"users,omitempty"`
+	}{
+		RoomId:             r.RoomId,
+		UserId:             r.UserId,
+		Name:               r.Name,
+		PictureUrl:         r.PictureUrl,
+		InformationUrl:     r.InformationUrl,
+		MetaData:           r.MetaData,
+		IsPublic:           r.IsPublic,
+		LastMessage:        r.LastMessage,
+		LastMessageUpdated: lmu,
+		Created:            time.Unix(r.Created, 0).In(l).Format(time.RFC3339),
+		Modified:           time.Unix(r.Modified, 0).In(l).Format(time.RFC3339),
+		Users:              r.Users,
+	})
+}
+
+func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	return json.Marshal(&struct {
+		UserId         string         `json:"userId"`
+		Name           string         `json:"name"`
+		PictureUrl     string         `json:"pictureUrl,omitempty"`
+		InformationUrl string         `json:"informationUrl,omitempty"`
+		MetaData       utils.JSONText `json:"metaData"`
+		Created        string         `json:"created"`
+		Modified       string         `json:"modified"`
+		RuUnreadCount  int64          `json:"ruUnreadCount"`
+		RuMetaData     utils.JSONText `json:"ruMetaData"`
+		RuCreated      string         `json:"ruCreated"`
+		RuModified     string         `json:"ruModified"`
+	}{
+		UserId:         ufr.UserId,
+		Name:           ufr.Name,
+		PictureUrl:     ufr.PictureUrl,
+		InformationUrl: ufr.InformationUrl,
+		MetaData:       ufr.MetaData,
+		Created:        time.Unix(ufr.Created, 0).In(l).Format(time.RFC3339),
+		Modified:       time.Unix(ufr.Modified, 0).In(l).Format(time.RFC3339),
+		RuUnreadCount:  ufr.RuUnreadCount,
+		RuMetaData:     ufr.RuMetaData,
+		RuCreated:      time.Unix(ufr.RuCreated, 0).In(l).Format(time.RFC3339),
+		RuModified:     time.Unix(ufr.RuModified, 0).In(l).Format(time.RFC3339),
+	})
 }
 
 func (r *Room) IsValid() *ProblemDetail {
@@ -122,7 +189,7 @@ func (r *Room) BeforeSave() {
 		r.IsPublic = &isPublic
 	}
 
-	nowTimestamp := time.Now().UnixNano()
+	nowTimestamp := time.Now().Unix()
 	if r.Created == 0 {
 		r.Created = nowTimestamp
 	}
@@ -130,9 +197,6 @@ func (r *Room) BeforeSave() {
 }
 
 func (r *Room) Put(put *Room) {
-	if put.UserId != "" {
-		r.UserId = put.UserId
-	}
 	if put.Name != "" {
 		r.Name = put.Name
 	}

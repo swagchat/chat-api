@@ -3,17 +3,37 @@ package models
 import (
 	"net/http"
 
+	"encoding/json"
 	"github.com/fairway-corp/swagchat-api/utils"
 	"time"
 )
 
 type RoomUser struct {
-	RoomId      string         `json:"roomId,omitempty" db:"room_id"`
-	UserId      string         `json:"userId,omitempty" db:"user_id"`
-	UnreadCount *int64         `json:"unreadCount,omitempty" db:"unread_count"`
-	MetaData    utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
-	Created     int64          `json:"created,omitempty" db:"created"`
-	Modified    int64          `json:"modified,omitempty" db:"modified"`
+	RoomId      string         `json:"roomId" db:"room_id"`
+	UserId      string         `json:"userId" db:"user_id"`
+	UnreadCount *int64         `json:"unreadCount" db:"unread_count"`
+	MetaData    utils.JSONText `json:"metaData" db:"meta_data"`
+	Created     int64          `json:"created" db:"created"`
+	Modified    int64          `json:"modified" db:"modified"`
+}
+
+func (ru *RoomUser) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	return json.Marshal(&struct {
+		RoomId      string         `json:"roomId"`
+		UserId      string         `json:"userId"`
+		UnreadCount *int64         `json:"unreadCount"`
+		MetaData    utils.JSONText `json:"metaData"`
+		Created     string         `json:"created"`
+		Modified    string         `json:"modified"`
+	}{
+		RoomId:      ru.RoomId,
+		UserId:      ru.UserId,
+		UnreadCount: ru.UnreadCount,
+		MetaData:    ru.MetaData,
+		Created:     time.Unix(ru.Created, 0).In(l).Format(time.RFC3339),
+		Modified:    time.Unix(ru.Modified, 0).In(l).Format(time.RFC3339),
+	})
 }
 
 func (ru *RoomUser) IsValid() *ProblemDetail {
@@ -49,7 +69,7 @@ func (ru *RoomUser) IsValid() *ProblemDetail {
 }
 
 func (ru *RoomUser) BeforeSave() {
-	nowTimestamp := time.Now().UnixNano()
+	nowTimestamp := time.Now().Unix()
 	if ru.Created == 0 {
 		ru.Created = nowTimestamp
 	}
