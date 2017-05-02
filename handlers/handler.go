@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -159,4 +160,10 @@ func respondJsonDecodeError(w http.ResponseWriter, r *http.Request, title string
 		Status:    http.StatusBadRequest,
 		ErrorName: models.ERROR_NAME_INVALID_JSON,
 	})
+}
+
+func setLastModified(w http.ResponseWriter, timestamp int64) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	lm := time.Unix(timestamp, 0).In(l).Format(http.TimeFormat)
+	w.Header().Set("Last-Modified", lm)
 }

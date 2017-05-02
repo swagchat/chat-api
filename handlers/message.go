@@ -37,5 +37,6 @@ func GetMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setLastModified(w, message.Modified)
 	respond(w, r, http.StatusOK, "application/json", message)
 }

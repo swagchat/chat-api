@@ -64,6 +64,7 @@ func PutRoomUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setLastModified(w, roomUser.Modified)
 	respond(w, r, http.StatusOK, "application/json", roomUser)
 }
 

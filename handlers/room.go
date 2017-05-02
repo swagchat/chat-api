@@ -31,6 +31,7 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setLastModified(w, room.Modified)
 	respond(w, r, http.StatusCreated, "application/json", room)
 }
 
@@ -53,6 +54,7 @@ func GetRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setLastModified(w, room.Modified)
 	respond(w, r, http.StatusOK, "application/json", room)
 }
 
@@ -70,6 +72,7 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	setLastModified(w, room.Modified)
 	respond(w, r, http.StatusOK, "application/json", room)
 }
 
