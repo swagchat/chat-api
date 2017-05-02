@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.7.5
+    working_directory: /go/src/github.com/fairway-corpo/swagchat-api
+    steps:
+      - checkout
+      - run:
+          name: "run go test"
+          command: |
+            go test $(go list ./... | grep -v vendor)
