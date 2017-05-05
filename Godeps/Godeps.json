@@ -163,8 +163,20 @@
 			"Rev": "c9c7427a2a70d2eb3bafa0ab2dc163e45f143317"
 		},
 		{
+			"ImportPath": "github.com/google/go-github/github",
+			"Rev": "e8d46665e050742f457a58088b1e6b794b2ae966"
+		},
+		{
+			"ImportPath": "github.com/google/go-querystring/query",
+			"Rev": "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+		},
+		{
 			"ImportPath": "github.com/googleapis/gax-go",
 			"Rev": "9af46dd5a1713e8b5cd71106287eba3cefdde50b"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-version",
+			"Rev": "03c5bf6be031b6dd45afec16b1cf94fc8938bc77"
 		},
 		{
 			"ImportPath": "github.com/jmespath/go-jmespath",
@@ -189,6 +201,11 @@
 		{
 			"ImportPath": "github.com/shogo82148/go-gracedown",
 			"Rev": "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
+		},
+		{
+			"ImportPath": "github.com/tcnksm/go-latest",
+			"Comment": "0.1.1-9-ge3007ae",
+			"Rev": "e3007ae9052ed85144087e7392e4c3fbc07962fa"
 		},
 		{
 			"ImportPath": "go.uber.org/atomic",
@@ -236,6 +253,14 @@
 		},
 		{
 			"ImportPath": "golang.org/x/net/context/ctxhttp",
+			"Rev": "60c41d1de8da134c05b7b40154a9a82bf5b7edb9"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html",
+			"Rev": "60c41d1de8da134c05b7b40154a9a82bf5b7edb9"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html/atom",
 			"Rev": "60c41d1de8da134c05b7b40154a9a82bf5b7edb9"
 		},
 		{
