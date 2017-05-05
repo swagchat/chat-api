@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-
-	"go.uber.org/zap"
-
+	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 
@@ -12,9 +10,15 @@ import (
 	"github.com/fairway-corp/swagchat-api/handlers"
 	"github.com/fairway-corp/swagchat-api/storage"
 	"github.com/fairway-corp/swagchat-api/utils"
+	"go.uber.org/zap"
 )
 
 func main() {
+	if utils.IsShowVersion {
+		fmt.Printf("API Version %s\nBuild Version %s\n", utils.API_VERSION, utils.BUILD_VERSION)
+		return
+	}
+
 	if utils.Cfg.Profiling {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)

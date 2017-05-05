@@ -15,7 +15,10 @@ const (
 	BUILD_VERSION = "v0.3.2"
 )
 
-var Cfg *Config
+var (
+	Cfg           *Config
+	IsShowVersion bool
+)
 
 type Config struct {
 	Version        string
@@ -151,11 +154,8 @@ func loadDefaultSettings() {
 }
 
 func loadYaml() {
-	buf, err := ioutil.ReadFile("config/swagchat.yaml")
-	if err != nil {
-		log.Println("The setting file (swagchat.yaml) could not be loaded. Load default settings.")
-	}
-	err = yaml.Unmarshal(buf, Cfg)
+	buf, _ := ioutil.ReadFile("config/swagchat.yaml")
+	yaml.Unmarshal(buf, Cfg)
 }
 
 func loadEnvironment() {
@@ -329,6 +329,9 @@ func loadEnvironment() {
 }
 
 func parseFlag() {
+	flag.BoolVar(&IsShowVersion, "v", false, "")
+	flag.BoolVar(&IsShowVersion, "version", false, "show version")
+
 	flag.StringVar(&Cfg.Port, "port", Cfg.Port, "")
 	flag.BoolVar(&Cfg.Profiling, "profiling", Cfg.Profiling, "")
 	flag.BoolVar(&Cfg.ErrorLogging, "errorLogging", Cfg.ErrorLogging, "")

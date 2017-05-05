@@ -8,6 +8,9 @@ import (
 
 func init() {
 	setupConfig()
+	if IsShowVersion {
+		return
+	}
 	setupLogger()
 	AppLogger.Info("",
 		zap.String("configName", "Config"),
