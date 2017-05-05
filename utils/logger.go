@@ -24,7 +24,8 @@ func setupLogger() {
 		}
 		AppLogger = logger.WithOptions(zap.Fields(
 			zap.String("appName", APP_NAME),
-			zap.String("version", API_VERSION),
+			zap.String("apiVersion", API_VERSION),
+			zap.String("buildVersion", BUILD_VERSION),
 		))
 	}
 }

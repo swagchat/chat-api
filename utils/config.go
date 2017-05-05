@@ -12,7 +12,7 @@ import (
 const (
 	APP_NAME      = "swagchat-api"
 	API_VERSION   = "v0"
-	BUILD_VERSION = "v0.3.2"
+	BUILD_VERSION = "v0.4.0"
 )
 
 var (
@@ -24,13 +24,13 @@ type Config struct {
 	Version        string
 	Port           string
 	Profiling      bool
-	ErrorLogging   bool
+	ErrorLogging   bool `yaml:"errorLogging"`
 	Logging        *Logging
 	Storage        *Storage
 	Datastore      *Datastore
 	Messaging      *Messaging
 	Notification   *Notification
-	RealtimeServer *RealtimeServer
+	RealtimeServer *RealtimeServer `yaml:"realtimeServer"`
 }
 
 type Logging struct {
@@ -46,7 +46,7 @@ type Storage struct {
 
 	// Local
 	BaseUrl   string `yaml:"baseUrl"`
-	LocalPath string
+	LocalPath string `yaml:"localPath"`
 
 	// GCP Storage
 	GcpProjectId string `yaml:"gcpProjectId"`
@@ -59,10 +59,11 @@ type Storage struct {
 }
 
 type Datastore struct {
-	Provider string
+	Provider        string
+	TableNamePrefix string `yaml:"tableNamePrefix"`
 
 	// SQLite
-	SqlitePath string
+	SqlitePath string `yaml:"sqlitePath"`
 
 	// MySQL, GCP SQL
 	User              string
@@ -232,6 +233,9 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_DATASTORE_PROVIDER"); v != "" {
 		Cfg.Datastore.Provider = v
 	}
+	if v = os.Getenv("SC_DATASTORE_TABLE_NAME_PREFIX"); v != "" {
+		Cfg.Datastore.TableNamePrefix = v
+	}
 
 	// Datastore - SQLite
 	if v = os.Getenv("SC_DATASTORE_SQLITE_PATH"); v != "" {
@@ -361,6 +365,7 @@ func parseFlag() {
 
 	// Datastore
 	flag.StringVar(&Cfg.Datastore.Provider, "datastore.provider", Cfg.Datastore.Provider, "")
+	flag.StringVar(&Cfg.Datastore.TableNamePrefix, "datastore.tableNamePrefix", Cfg.Datastore.TableNamePrefix, "")
 
 	// Datastore - SQLite
 	flag.StringVar(&Cfg.Datastore.SqlitePath, "datastore.sqlitePath", Cfg.Datastore.SqlitePath, "")

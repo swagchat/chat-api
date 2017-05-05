@@ -144,7 +144,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 }
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	if !utils.Cfg.ErrorLogging {
+	if utils.Cfg.ErrorLogging {
 		problemDetailBytes, _ := json.Marshal(problemDetail)
 		utils.AppLogger.Error("",
 			zap.String("problemDetail", string(problemDetailBytes)),
