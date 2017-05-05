@@ -338,23 +338,23 @@ func parseFlag() {
 
 	// Storage
 	flag.StringVar(&Cfg.Storage.Provider, "storage.provider", Cfg.Storage.Provider, "")
-	flag.StringVar(&Cfg.Storage.UploadBucket, "storage.uploadBucket", "", "")
-	flag.StringVar(&Cfg.Storage.UploadDirectory, "storage.uploadDirectory", "", "")
-	flag.StringVar(&Cfg.Storage.ThumbnailBucket, "storage.thumbnailBucket", "", "")
-	flag.StringVar(&Cfg.Storage.ThumbnailDirectory, "storage.thumbnailDirectory", "", "")
+	flag.StringVar(&Cfg.Storage.UploadBucket, "storage.uploadBucket", Cfg.Storage.UploadBucket, "")
+	flag.StringVar(&Cfg.Storage.UploadDirectory, "storage.uploadDirectory", Cfg.Storage.UploadDirectory, "")
+	flag.StringVar(&Cfg.Storage.ThumbnailBucket, "storage.thumbnailBucket", Cfg.Storage.ThumbnailBucket, "")
+	flag.StringVar(&Cfg.Storage.ThumbnailDirectory, "storage.thumbnailDirectory", Cfg.Storage.ThumbnailDirectory, "")
 
 	// Storage - Local
 	flag.StringVar(&Cfg.Storage.BaseUrl, "storage.baseUrl", Cfg.Storage.BaseUrl, "")
 	flag.StringVar(&Cfg.Storage.LocalPath, "storage.localPath", Cfg.Storage.LocalPath, "")
 
 	// Storage - GCP Storage
-	flag.StringVar(&Cfg.Storage.GcpProjectId, "storage.gcpProjectId", "", "")
-	flag.StringVar(&Cfg.Storage.GcpJwtPath, "storage.gcpJwtPath", "", "")
+	flag.StringVar(&Cfg.Storage.GcpProjectId, "storage.gcpProjectId", Cfg.Storage.GcpProjectId, "")
+	flag.StringVar(&Cfg.Storage.GcpJwtPath, "storage.gcpJwtPath", Cfg.Storage.GcpJwtPath, "")
 
 	// Storage - AWS S3
-	flag.StringVar(&Cfg.Storage.AwsRegion, "storage.awsRegion", "", "")
-	flag.StringVar(&Cfg.Storage.AwsAccessKeyId, "storage.awsAccessKeyId", "", "")
-	flag.StringVar(&Cfg.Storage.AwsSecretAccessKey, "storage.awsSecretAccessKey", "", "")
+	flag.StringVar(&Cfg.Storage.AwsRegion, "storage.awsRegion", Cfg.Storage.AwsRegion, "")
+	flag.StringVar(&Cfg.Storage.AwsAccessKeyId, "storage.awsAccessKeyId", Cfg.Storage.AwsAccessKeyId, "")
+	flag.StringVar(&Cfg.Storage.AwsSecretAccessKey, "storage.awsSecretAccessKey", Cfg.Storage.AwsSecretAccessKey, "")
 
 	// Datastore
 	flag.StringVar(&Cfg.Datastore.Provider, "datastore.provider", Cfg.Datastore.Provider, "")
@@ -363,43 +363,43 @@ func parseFlag() {
 	flag.StringVar(&Cfg.Datastore.SqlitePath, "datastore.sqlitePath", Cfg.Datastore.SqlitePath, "")
 
 	// Datastore - MySQL, GCP SQL
-	flag.StringVar(&Cfg.Datastore.User, "datastore.user", "", "")
-	flag.StringVar(&Cfg.Datastore.Password, "datastore.password", "", "")
-	flag.StringVar(&Cfg.Datastore.Database, "datastore.database", "", "")
-	flag.StringVar(&Cfg.Datastore.MasterHost, "datastore.masterHost", "", "")
-	flag.StringVar(&Cfg.Datastore.MasterPort, "datastore.masterPort", "", "")
-	flag.StringVar(&Cfg.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", "", "")
-	flag.StringVar(&Cfg.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", "", "")
+	flag.StringVar(&Cfg.Datastore.User, "datastore.user", Cfg.Datastore.User, "")
+	flag.StringVar(&Cfg.Datastore.Password, "datastore.password", Cfg.Datastore.Password, "")
+	flag.StringVar(&Cfg.Datastore.Database, "datastore.database", Cfg.Datastore.Database, "")
+	flag.StringVar(&Cfg.Datastore.MasterHost, "datastore.masterHost", Cfg.Datastore.MasterHost, "")
+	flag.StringVar(&Cfg.Datastore.MasterPort, "datastore.masterPort", Cfg.Datastore.MasterPort, "")
+	flag.StringVar(&Cfg.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", Cfg.Datastore.MaxIdleConnection, "")
+	flag.StringVar(&Cfg.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", Cfg.Datastore.MaxOpenConnection, "")
 	flag.StringVar(&Cfg.Datastore.UseSSL, "datastore.useSSL", Cfg.Datastore.UseSSL, "")
-	flag.StringVar(&Cfg.Datastore.ServerName, "datastore.serverName", "", "")
-	flag.StringVar(&Cfg.Datastore.ServerCaPath, "datastore.serverCaPath", "", "")
-	flag.StringVar(&Cfg.Datastore.ClientCertPath, "datastore.clientCertPath", "", "")
-	flag.StringVar(&Cfg.Datastore.ClientKeyPath, "datastore.clientKeyPath", "", "")
+	flag.StringVar(&Cfg.Datastore.ServerName, "datastore.serverName", Cfg.Datastore.ServerName, "")
+	flag.StringVar(&Cfg.Datastore.ServerCaPath, "datastore.serverCaPath", Cfg.Datastore.ServerCaPath, "")
+	flag.StringVar(&Cfg.Datastore.ClientCertPath, "datastore.clientCertPath", Cfg.Datastore.ClientCertPath, "")
+	flag.StringVar(&Cfg.Datastore.ClientKeyPath, "datastore.clientKeyPath", Cfg.Datastore.ClientKeyPath, "")
 
 	// Datastore -GCP SQL
-	flag.StringVar(&Cfg.Datastore.GcpProjectId, "datastore.gcpProjectId", "", "")
+	flag.StringVar(&Cfg.Datastore.GcpProjectId, "datastore.gcpProjectId", Cfg.Datastore.GcpProjectId, "")
 
 	// Messaging
-	flag.StringVar(&Cfg.Messaging.Provider, "messaging.provider", "", "")
-	flag.StringVar(&Cfg.Messaging.ThumbnailTopic, "messaging.thumbnailTopic", "", "")
+	flag.StringVar(&Cfg.Messaging.Provider, "messaging.provider", Cfg.Messaging.Provider, "")
+	flag.StringVar(&Cfg.Messaging.ThumbnailTopic, "messaging.thumbnailTopic", Cfg.Messaging.ThumbnailTopic, "")
 
 	// Messaging - GCP Pubsub
-	flag.StringVar(&Cfg.Messaging.GcpProjectId, "messaging.gcpProjectId", "", "")
-	flag.StringVar(&Cfg.Messaging.GcpJwtPath, "messaging.gcpJwtPath", "", "")
+	flag.StringVar(&Cfg.Messaging.GcpProjectId, "messaging.gcpProjectId", Cfg.Messaging.GcpProjectId, "")
+	flag.StringVar(&Cfg.Messaging.GcpJwtPath, "messaging.gcpJwtPath", Cfg.Messaging.GcpJwtPath, "")
 
 	// Notification
-	flag.StringVar(&Cfg.Notification.Provider, "notification.provider", "", "")
-	flag.StringVar(&Cfg.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", "", "")
+	flag.StringVar(&Cfg.Notification.Provider, "notification.provider", Cfg.Notification.Provider, "")
+	flag.StringVar(&Cfg.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", Cfg.Notification.RoomTopicNamePrefix, "")
 
 	// Notification - AWS SNS
-	flag.StringVar(&Cfg.Notification.AwsRegion, "notification.awsRegion", "", "")
-	flag.StringVar(&Cfg.Notification.AwsAccessKeyId, "notification.awsAccessKeyId", "", "")
-	flag.StringVar(&Cfg.Notification.AwsSecretAccessKey, "notification.awsSecretAccessKey", "", "")
-	flag.StringVar(&Cfg.Notification.AwsApplicationArnIos, "notification.awsApplicationArnIos", "", "")
-	flag.StringVar(&Cfg.Notification.AwsApplicationArnAndroid, "notification.awsApplicationArnAndroid", "", "")
+	flag.StringVar(&Cfg.Notification.AwsRegion, "notification.awsRegion", Cfg.Notification.AwsRegion, "")
+	flag.StringVar(&Cfg.Notification.AwsAccessKeyId, "notification.awsAccessKeyId", Cfg.Notification.AwsAccessKeyId, "")
+	flag.StringVar(&Cfg.Notification.AwsSecretAccessKey, "notification.awsSecretAccessKey", Cfg.Notification.AwsSecretAccessKey, "")
+	flag.StringVar(&Cfg.Notification.AwsApplicationArnIos, "notification.awsApplicationArnIos", Cfg.Notification.AwsApplicationArnIos, "")
+	flag.StringVar(&Cfg.Notification.AwsApplicationArnAndroid, "notification.awsApplicationArnAndroid", Cfg.Notification.AwsApplicationArnAndroid, "")
 
 	// Realtime Server
-	flag.StringVar(&Cfg.RealtimeServer.Endpoint, "realtimeServer.endpoint", "", "")
+	flag.StringVar(&Cfg.RealtimeServer.Endpoint, "realtimeServer.endpoint", Cfg.RealtimeServer.Endpoint, "")
 
 	flag.Parse()
 }
