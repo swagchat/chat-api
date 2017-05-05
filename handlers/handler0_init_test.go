@@ -33,18 +33,8 @@ func TestMain(m *testing.M) {
 		log.Println(err.Error())
 	}
 	datastoreProvider.Init()
-	/*
-		Mux = bone.New().Prefix("/" + utils.API_VERSION)
-		SetUserMux()
-		SetRoomMux()
-		SetRoomUserMux()
-		SetMessageMux()
-		SetAssetMux()
-		SetDeviceMux()
-	*/
 	ctx, _ := context.WithTimeout(context.Background(), 7*time.Second)
 	StartServer(ctx)
-	utils.IsTesting = true
 	testRC := m.Run()
 	err = datastoreProvider.DropDatabase()
 	if err != nil {

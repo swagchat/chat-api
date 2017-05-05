@@ -13,17 +13,17 @@ import (
 )
 
 type GcpPubSubProvider struct {
-	thumbnailTopic    string
-	pushMessageTopic  string
-	scope             string
-	jwtConfigFilepath string
+	thumbnailTopic   string
+	pushMessageTopic string
+	scope            string
+	jwtPath          string
 }
 
 var gcpPubSubService *pubsub.Service
 
 func (provider GcpPubSubProvider) Init() error {
 	if gcpPubSubService == nil {
-		data, err := ioutil.ReadFile(provider.jwtConfigFilepath)
+		data, err := ioutil.ReadFile(provider.jwtPath)
 		if err != nil {
 			return err
 		}

@@ -35,14 +35,15 @@ type Provider interface {
 
 func GetProvider() Provider {
 	var provider Provider
-	switch utils.Cfg.ApiServer.Notification {
+	switch utils.Cfg.Notification.Provider {
 	case "awsSns":
 		provider = &AwsSnsProvider{
-			region:              utils.Cfg.AwsSns.Region,
-			accessKeyId:         utils.Cfg.AwsSns.AccessKeyId,
-			secretAccessKey:     utils.Cfg.AwsSns.SecretAccessKey,
-			roomTopicNamePrefix: utils.Cfg.AwsSns.RoomTopicNamePrefix,
-			applicationArn:      utils.Cfg.AwsSns.ApplicationArn,
+			region:                utils.Cfg.Notification.AwsRegion,
+			accessKeyId:           utils.Cfg.Notification.AwsAccessKeyId,
+			secretAccessKey:       utils.Cfg.Notification.AwsSecretAccessKey,
+			roomTopicNamePrefix:   utils.Cfg.Notification.RoomTopicNamePrefix,
+			applicationArnIos:     utils.Cfg.Notification.AwsApplicationArnIos,
+			applicationArnAndroid: utils.Cfg.Notification.AwsApplicationArnAndroid,
 		}
 	default:
 		provider = &NotUseProvider{}

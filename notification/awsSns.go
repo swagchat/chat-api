@@ -17,11 +17,12 @@ import (
 )
 
 type AwsSnsProvider struct {
-	region              string
-	accessKeyId         string
-	secretAccessKey     string
-	roomTopicNamePrefix string
-	applicationArn      string
+	region                string
+	accessKeyId           string
+	secretAccessKey       string
+	roomTopicNamePrefix   string
+	applicationArnIos     string
+	applicationArnAndroid string
 }
 
 type PushNotification struct {
@@ -78,7 +79,7 @@ func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
 
 		client := provider.newSnsClient()
 		params := &sns.CreateTopicInput{
-			Name: aws.String(utils.AppendStrings(utils.Cfg.AwsSns.RoomTopicNamePrefix, roomId)),
+			Name: aws.String(utils.AppendStrings(utils.Cfg.Notification.RoomTopicNamePrefix, roomId)),
 		}
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
@@ -121,9 +122,12 @@ func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, devic
 		var platformApplicationArn string
 		switch platform {
 		case models.PLATFORM_IOS:
-			platformApplicationArn = utils.Cfg.AwsSns.ApplicationArn
+			platformApplicationArn = utils.Cfg.Notification.AwsApplicationArnIos
+		case models.PLATFORM_ANDROID:
+			platformApplicationArn = utils.Cfg.Notification.AwsApplicationArnAndroid
 		default:
-			platformApplicationArn = utils.Cfg.AwsSns.ApplicationArn
+			// TODO new error
+			platformApplicationArn = ""
 		}
 
 		client := provider.newSnsClient()

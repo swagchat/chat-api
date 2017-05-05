@@ -16,20 +16,20 @@ import (
 )
 
 type GcpStorageProvider struct {
-	projectId           string
-	scope               string
-	jwtConfigFilepath   string
-	userUploadBucket    string
-	userUploadDirectory string
-	thumbnailBucket     string
-	thumbnailDirectory  string
+	projectId          string
+	scope              string
+	jwtPath            string
+	uploadBucket       string
+	uploadDirectory    string
+	thumbnailBucket    string
+	thumbnailDirectory string
 }
 
 var gcpStorageService *storage.Service
 
 func (provider GcpStorageProvider) Init() error {
 	if gcpStorageService == nil {
-		data, err := ioutil.ReadFile(provider.jwtConfigFilepath)
+		data, err := ioutil.ReadFile(provider.jwtPath)
 		if err != nil {
 			return err
 		}
@@ -46,10 +46,10 @@ func (provider GcpStorageProvider) Init() error {
 		}
 		gcpStorageService = service
 
-		if _, err := gcpStorageService.Buckets.Get(provider.userUploadBucket).Do(); err != nil {
+		if _, err := gcpStorageService.Buckets.Get(provider.uploadBucket).Do(); err != nil {
 			return err
 		}
-		if _, err := gcpStorageService.Buckets.Insert(provider.projectId, &storage.Bucket{Name: provider.userUploadBucket}).Do(); err != nil {
+		if _, err := gcpStorageService.Buckets.Insert(provider.projectId, &storage.Bucket{Name: provider.uploadBucket}).Do(); err != nil {
 			return err
 		}
 	}
@@ -57,13 +57,13 @@ func (provider GcpStorageProvider) Init() error {
 }
 
 func (provider GcpStorageProvider) Post(assetInfo *AssetInfo) (string, *models.ProblemDetail) {
-	filePath := utils.AppendStrings(provider.userUploadDirectory, "/", assetInfo.FileName)
+	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.FileName)
 	object := &storage.Object{
 		Name: filePath,
 	}
 	var res *storage.Object
 	var err error
-	if res, err = gcpStorageService.Objects.Insert(provider.userUploadBucket, object).Media(assetInfo.Data).Do(); err == nil {
+	if res, err = gcpStorageService.Objects.Insert(provider.uploadBucket, object).Media(assetInfo.Data).Do(); err == nil {
 		utils.AppLogger.Info("",
 			zap.String("name", res.Name),
 			zap.String("selfLink", res.SelfLink),
@@ -80,16 +80,16 @@ func (provider GcpStorageProvider) Post(assetInfo *AssetInfo) (string, *models.P
 		}
 	}
 
-	if res, err = gcpStorageService.Objects.Get(provider.userUploadBucket, filePath).Do(); err == nil {
-		log.Println("The media download link for %v/%v is %v.\n\n", provider.userUploadBucket, res.Name, res.MediaLink)
+	if res, err = gcpStorageService.Objects.Get(provider.uploadBucket, filePath).Do(); err == nil {
+		log.Println("The media download link for %v/%v is %v.\n\n", provider.uploadBucket, res.Name, res.MediaLink)
 		utils.AppLogger.Info("",
-			zap.String("bucketName", provider.userUploadBucket),
+			zap.String("bucketName", provider.uploadBucket),
 			zap.String("name", res.Name),
 			zap.String("mediaLink", res.MediaLink),
 		)
 	} else {
 		utils.AppLogger.Error("",
-			zap.String("bucketName", provider.userUploadBucket),
+			zap.String("bucketName", provider.uploadBucket),
 			zap.String("filePath", filePath),
 			zap.String("error", err.Error()),
 		)

@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	if utils.Cfg.ApiServer.Profiling == "true" {
+	if utils.Cfg.Profiling {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)
 		}()

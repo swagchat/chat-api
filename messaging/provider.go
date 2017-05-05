@@ -18,15 +18,14 @@ type Provider interface {
 
 func GetMessagingProvider() Provider {
 	var provider Provider
-	switch utils.Cfg.ApiServer.Messaging {
+	switch utils.Cfg.Messaging.Provider {
 	case "":
 		provider = &NotUseProvider{}
 	case "gcpPubSub":
 		provider = &GcpPubSubProvider{
-			thumbnailTopic:    utils.Cfg.GcpPubsub.ThumbnailTopic,
-			pushMessageTopic:  utils.Cfg.GcpPubsub.PushMessageTopic,
-			scope:             utils.Cfg.GcpPubsub.Scope,
-			jwtConfigFilepath: utils.Cfg.GcpPubsub.JwtConfigFilepath,
+			thumbnailTopic: utils.Cfg.Messaging.ThumbnailTopic,
+			scope:          "pubsub.PubsubScope",
+			jwtPath:        utils.Cfg.Messaging.GcpJwtPath,
 		}
 	default:
 		utils.AppLogger.Error("",

@@ -101,7 +101,7 @@ func mysqlSetupConnection(conType, driverName, database, datasource string, maxI
 	var err error
 	if useSSL == "on" {
 		rootCertPool := x509.NewCertPool()
-		pem, err := ioutil.ReadFile(utils.Cfg.Mysql.ServerCaPath)
+		pem, err := ioutil.ReadFile(utils.Cfg.Datastore.ServerCaPath)
 		if err != nil {
 			return nil, err
 		}
@@ -109,7 +109,7 @@ func mysqlSetupConnection(conType, driverName, database, datasource string, maxI
 			return nil, err
 		}
 		clientCert := make([]tls.Certificate, 0, 1)
-		certs, err := tls.LoadX509KeyPair(utils.Cfg.Mysql.ClientCertPath, utils.Cfg.Mysql.ClientKeyPath)
+		certs, err := tls.LoadX509KeyPair(utils.Cfg.Datastore.ClientCertPath, utils.Cfg.Datastore.ClientKeyPath)
 		if err != nil {
 			return nil, err
 		}
@@ -117,7 +117,7 @@ func mysqlSetupConnection(conType, driverName, database, datasource string, maxI
 		mysql.RegisterTLSConfig("config", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
-			ServerName:         utils.Cfg.Mysql.ServerName,
+			ServerName:         utils.Cfg.Datastore.ServerName,
 			InsecureSkipVerify: false,
 		})
 		datasource = utils.AppendStrings(datasource, "?tls=config")

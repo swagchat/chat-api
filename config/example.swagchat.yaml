@@ -1,0 +1,22 @@
+#################################################
+#             SwagChat settings                 #
+#################################################
+version: "0"
+port: 9000
+profiling: off
+errorLogging: off
+
+#################### Logging ####################
+logging:
+  level: development
+
+#################### Storage ####################
+storage:
+  provider: local
+  baseurl: http://localhost:9000/v0/assets
+  path: data/assets
+
+#################### Datastore ##################
+datastore:
+  provider: sqlite
+  sqlitePath: /tmp/swagchat.db

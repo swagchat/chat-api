@@ -12,8 +12,8 @@ import (
 )
 
 type LocalStorageProvider struct {
-	baseUrl string
-	path    string
+	baseUrl   string
+	localPath string
 }
 
 func (provider LocalStorageProvider) Init() error {
@@ -21,7 +21,7 @@ func (provider LocalStorageProvider) Init() error {
 }
 
 func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models.ProblemDetail) {
-	if err := os.MkdirAll(provider.path, 0775); err != nil {
+	if err := os.MkdirAll(provider.localPath, 0775); err != nil {
 		return "", &models.ProblemDetail{
 			Title:     "Create directory failed. (Local Storage)",
 			Status:    http.StatusInternalServerError,
@@ -40,7 +40,7 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 		}
 	}
 
-	filePath := utils.AppendStrings(provider.path, "/", assetInfo.FileName)
+	filePath := utils.AppendStrings(provider.localPath, "/", assetInfo.FileName)
 	err = ioutil.WriteFile(filePath, data, 0644)
 	if err != nil {
 		return "", &models.ProblemDetail{
@@ -56,7 +56,7 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 }
 
 func (provider LocalStorageProvider) Get(assetInfo *AssetInfo) ([]byte, *models.ProblemDetail) {
-	file, err := os.Open(fmt.Sprintf("%s/%s", provider.path, assetInfo.FileName))
+	file, err := os.Open(fmt.Sprintf("%s/%s", provider.localPath, assetInfo.FileName))
 	defer file.Close()
 	if err != nil {
 		return nil, &models.ProblemDetail{

@@ -95,7 +95,7 @@ func googleCloudSqlSetupConnection(conType string, driverName string, database s
 	var err error
 	if useSSL == "on" {
 		rootCertPool := x509.NewCertPool()
-		pem, err := ioutil.ReadFile(utils.Cfg.GcpSql.ServerCaPath)
+		pem, err := ioutil.ReadFile(utils.Cfg.Datastore.ServerCaPath)
 		if err != nil {
 			return nil, err
 		}
@@ -103,7 +103,7 @@ func googleCloudSqlSetupConnection(conType string, driverName string, database s
 			return nil, err
 		}
 		clientCert := make([]tls.Certificate, 0, 1)
-		certs, err := tls.LoadX509KeyPair(utils.Cfg.GcpSql.ClientCertPath, utils.Cfg.GcpSql.ClientKeyPath)
+		certs, err := tls.LoadX509KeyPair(utils.Cfg.Datastore.ClientCertPath, utils.Cfg.Datastore.ClientKeyPath)
 		if err != nil {
 			return nil, err
 		}
@@ -111,7 +111,7 @@ func googleCloudSqlSetupConnection(conType string, driverName string, database s
 		mysql.RegisterTLSConfig("config", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
-			ServerName:         utils.AppendStrings(utils.Cfg.GcpSql.ProjectId, ":", utils.Cfg.GcpSql.SqlInstanceId),
+			ServerName:         utils.AppendStrings(utils.Cfg.Datastore.GcpProjectId, ":", utils.Cfg.Datastore.ServerName),
 			InsecureSkipVerify: false,
 		})
 		datasource = utils.AppendStrings(datasource, "?tls=config")

@@ -23,36 +23,36 @@ type Provider interface {
 
 func GetProvider() Provider {
 	var provider Provider
-	switch utils.Cfg.ApiServer.Storage {
+	switch utils.Cfg.Storage.Provider {
 	case "local":
 		provider = &LocalStorageProvider{
-			baseUrl: utils.Cfg.LocalStorage.BaseUrl,
-			path:    utils.Cfg.LocalStorage.Path,
+			baseUrl:   utils.Cfg.Storage.BaseUrl,
+			localPath: utils.Cfg.Storage.LocalPath,
 		}
 	case "gcpStorage":
 		provider = &GcpStorageProvider{
-			projectId:           utils.Cfg.GcpStorage.ProjectId,
-			scope:               utils.Cfg.GcpStorage.Scope,
-			jwtConfigFilepath:   utils.Cfg.GcpStorage.JwtConfigFilepath,
-			userUploadBucket:    utils.Cfg.GcpStorage.UserUploadBucket,
-			userUploadDirectory: utils.Cfg.GcpStorage.UserUploadDirectory,
-			thumbnailBucket:     utils.Cfg.GcpStorage.ThumbnailBucket,
-			thumbnailDirectory:  utils.Cfg.GcpStorage.ThumbnailDirectory,
+			projectId:          utils.Cfg.Storage.GcpProjectId,
+			jwtPath:            utils.Cfg.Storage.GcpJwtPath,
+			scope:              "https://www.googleapis.com/auth/devstorage.full_control",
+			uploadBucket:       utils.Cfg.Storage.UploadBucket,
+			uploadDirectory:    utils.Cfg.Storage.UploadDirectory,
+			thumbnailBucket:    utils.Cfg.Storage.ThumbnailBucket,
+			thumbnailDirectory: utils.Cfg.Storage.ThumbnailDirectory,
 		}
 	case "awsS3":
 		provider = &AwsS3StorageProvider{
-			accessKeyId:         utils.Cfg.AwsS3.AccessKeyId,
-			secretAccessKey:     utils.Cfg.AwsS3.SecretAccessKey,
-			region:              utils.Cfg.AwsS3.Region,
-			acl:                 utils.Cfg.AwsS3.Acl,
-			userUploadBucket:    utils.Cfg.AwsS3.UserUploadBucket,
-			userUploadDirectory: utils.Cfg.AwsS3.UserUploadDirectory,
-			thumbnailBucket:     utils.Cfg.AwsS3.ThumbnailBucket,
-			thumbnailDirectory:  utils.Cfg.AwsS3.ThumbnailDirectory,
+			accessKeyId:        utils.Cfg.Storage.AwsAccessKeyId,
+			secretAccessKey:    utils.Cfg.Storage.AwsSecretAccessKey,
+			region:             utils.Cfg.Storage.AwsRegion,
+			acl:                "public-read",
+			uploadBucket:       utils.Cfg.Storage.UploadBucket,
+			uploadDirectory:    utils.Cfg.Storage.UploadDirectory,
+			thumbnailBucket:    utils.Cfg.Storage.ThumbnailBucket,
+			thumbnailDirectory: utils.Cfg.Storage.ThumbnailDirectory,
 		}
 	default:
 		utils.AppLogger.Error("",
-			zap.String("msg", "utils.Cfg.ApiServer.Storage is incorrect"),
+			zap.String("msg", "Storage provider is incorrect"),
 		)
 		os.Exit(0)
 	}

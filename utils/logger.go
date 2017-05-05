@@ -12,10 +12,10 @@ func setupLogger() {
 	if AppLogger == nil {
 		var err error
 		var logger *zap.Logger
-		if Cfg.ApiServer.LoggingLevel == "development" {
-			logger, err = zap.NewDevelopment()
-		} else if Cfg.ApiServer.LoggingLevel == "production" {
+		if Cfg.Logging.Level == "production" {
 			logger, err = zap.NewProduction()
+		} else if Cfg.Logging.Level == "development" {
+			logger, err = zap.NewDevelopment()
 		} else {
 			os.Exit(0)
 		}

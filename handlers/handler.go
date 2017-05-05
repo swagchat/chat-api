@@ -37,7 +37,7 @@ func StartServer(ctx context.Context) {
 	SetMessageMux()
 	SetAssetMux()
 	SetDeviceMux()
-	if utils.Cfg.ApiServer.Storage == "awsS3" {
+	if utils.Cfg.Storage.Provider == "awsS3" {
 		SetAssetAwsSnsMux()
 	}
 	Mux.NotFoundFunc(notFoundHandler)
@@ -46,9 +46,9 @@ func StartServer(ctx context.Context) {
 
 	utils.AppLogger.Info("",
 		zap.String("msg", "Swagchat API Start!"),
-		zap.String("port", utils.Cfg.ApiServer.Port),
+		zap.String("port", utils.Cfg.Port),
 	)
-	if err := gracedown.ListenAndServe(utils.AppendStrings(":", utils.Cfg.ApiServer.Port), Mux); err != nil {
+	if err := gracedown.ListenAndServe(utils.AppendStrings(":", utils.Cfg.Port), Mux); err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)
@@ -144,7 +144,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 }
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	if !utils.IsTesting {
+	if !utils.Cfg.ErrorLogging {
 		problemDetailBytes, _ := json.Marshal(problemDetail)
 		utils.AppLogger.Error("",
 			zap.String("problemDetail", string(problemDetailBytes)),

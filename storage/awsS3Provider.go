@@ -16,24 +16,24 @@ import (
 )
 
 type AwsS3StorageProvider struct {
-	accessKeyId         string
-	secretAccessKey     string
-	region              string
-	acl                 string
-	userUploadBucket    string
-	userUploadDirectory string
-	thumbnailBucket     string
-	thumbnailDirectory  string
+	accessKeyId        string
+	secretAccessKey    string
+	region             string
+	acl                string
+	uploadBucket       string
+	uploadDirectory    string
+	thumbnailBucket    string
+	thumbnailDirectory string
 }
 
 func (provider AwsS3StorageProvider) Init() error {
-	awsS3Client, err := getSession()
+	awsS3Client, err := provider.getSession()
 	if err != nil {
 		return err
 	}
 
 	params := &s3.CreateBucketInput{
-		Bucket: aws.String(utils.Cfg.AwsS3.UserUploadBucket),
+		Bucket: aws.String(provider.uploadBucket),
 	}
 	createBucketResp, err := awsS3Client.CreateBucket(params)
 	if err != nil {
@@ -42,7 +42,7 @@ func (provider AwsS3StorageProvider) Init() error {
 	log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
 
 	params = &s3.CreateBucketInput{
-		Bucket: aws.String(utils.Cfg.AwsS3.ThumbnailBucket),
+		Bucket: aws.String(provider.thumbnailBucket),
 	}
 	createBucketResp, err = awsS3Client.CreateBucket(params)
 	if err != nil {
@@ -53,7 +53,7 @@ func (provider AwsS3StorageProvider) Init() error {
 }
 
 func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models.ProblemDetail) {
-	awsS3Client, err := getSession()
+	awsS3Client, err := provider.getSession()
 	if err != nil {
 		return "", &models.ProblemDetail{
 			Title:     "Create session failed. (Amazon S3)",
@@ -74,12 +74,12 @@ func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models
 	}
 
 	data := bytes.NewReader(byteData)
-	filePath := utils.AppendStrings(provider.userUploadDirectory, "/", assetInfo.FileName)
+	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.FileName)
 	putObjectResp, err := awsS3Client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(provider.userUploadBucket),
+		Bucket: aws.String(provider.uploadBucket),
 		Key:    aws.String(filePath),
 		Body:   data,
-		ACL:    &utils.Cfg.AwsS3.Acl,
+		ACL:    &provider.acl,
 	})
 	if err != nil {
 		return "", &models.ProblemDetail{
@@ -91,7 +91,7 @@ func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models
 	}
 	log.Println("Created object %#v", awsutil.StringValue(putObjectResp))
 
-	sourceUrl := utils.AppendStrings("https://s3-ap-northeast-1.amazonaws.com/", provider.userUploadBucket, "/", filePath)
+	sourceUrl := utils.AppendStrings("https://s3-ap-northeast-1.amazonaws.com/", provider.uploadBucket, "/", filePath)
 	log.Println("sourceUrl:", sourceUrl)
 	return sourceUrl, nil
 }
@@ -100,10 +100,10 @@ func (provider AwsS3StorageProvider) Get(assetInfo *AssetInfo) ([]byte, *models.
 	return nil, nil
 }
 
-func getSession() (*s3.S3, error) {
+func (provider AwsS3StorageProvider) getSession() (*s3.S3, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(utils.Cfg.AwsS3.Region),
-		Credentials: credentials.NewStaticCredentials(utils.Cfg.AwsS3.AccessKeyId, utils.Cfg.AwsS3.SecretAccessKey, ""),
+		Region:      aws.String(provider.region),
+		Credentials: credentials.NewStaticCredentials(provider.accessKeyId, provider.secretAccessKey, ""),
 	})
 	if err != nil {
 		return nil, err

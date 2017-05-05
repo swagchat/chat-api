@@ -32,32 +32,32 @@ type Provider interface {
 
 func GetProvider() Provider {
 	var provider Provider
-	switch utils.Cfg.ApiServer.Datastore {
+	switch utils.Cfg.Datastore.Provider {
 	case "sqlite":
 		provider = &SqliteProvider{
-			databasePath: utils.Cfg.Sqlite.DatabasePath,
+			sqlitePath: utils.Cfg.Datastore.SqlitePath,
 		}
 	case "mysql":
 		provider = &MysqlProvider{
-			user:              utils.Cfg.Mysql.User,
-			password:          utils.Cfg.Mysql.Password,
-			database:          utils.Cfg.Mysql.Database,
-			masterHost:        utils.Cfg.Mysql.MasterHost,
-			masterPort:        utils.Cfg.Mysql.MasterPort,
-			maxIdleConnection: utils.Cfg.Mysql.MaxIdleConnection,
-			maxOpenConnection: utils.Cfg.Mysql.MaxOpenConnection,
-			useSSL:            utils.Cfg.Mysql.UseSSL,
+			user:              utils.Cfg.Datastore.User,
+			password:          utils.Cfg.Datastore.Password,
+			database:          utils.Cfg.Datastore.Database,
+			masterHost:        utils.Cfg.Datastore.MasterHost,
+			masterPort:        utils.Cfg.Datastore.MasterPort,
+			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
+			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
+			useSSL:            utils.Cfg.Datastore.UseSSL,
 		}
 	case "gcpSql":
 		provider = &GcpSqlProvider{
-			user:              utils.Cfg.GcpSql.User,
-			password:          utils.Cfg.GcpSql.Password,
-			database:          utils.Cfg.GcpSql.Database,
-			masterHost:        utils.Cfg.GcpSql.MasterHost,
-			masterPort:        utils.Cfg.GcpSql.MasterPort,
-			maxIdleConnection: utils.Cfg.GcpSql.MaxIdleConnection,
-			maxOpenConnection: utils.Cfg.GcpSql.MaxOpenConnection,
-			useSSL:            utils.Cfg.GcpSql.UseSSL,
+			user:              utils.Cfg.Datastore.User,
+			password:          utils.Cfg.Datastore.Password,
+			database:          utils.Cfg.Datastore.Database,
+			masterHost:        utils.Cfg.Datastore.MasterHost,
+			masterPort:        utils.Cfg.Datastore.MasterPort,
+			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
+			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
+			useSSL:            utils.Cfg.Datastore.UseSSL,
 		}
 	default:
 		utils.AppLogger.Error("",

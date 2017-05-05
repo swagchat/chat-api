@@ -10,15 +10,15 @@ import (
 )
 
 type SqliteProvider struct {
-	databasePath string
+	sqlitePath string
 }
 
 func (provider SqliteProvider) Connect() error {
 	if dbMap == nil {
-		if provider.databasePath == "" {
-			return errors.New("not key databasePath")
+		if provider.sqlitePath == "" {
+			return errors.New("not key sqlitePath")
 		} else {
-			db, err := sql.Open("sqlite3", provider.databasePath)
+			db, err := sql.Open("sqlite3", provider.sqlitePath)
 			if err != nil {
 				return err
 			}
@@ -38,7 +38,7 @@ func (provider SqliteProvider) Init() {
 }
 
 func (provider SqliteProvider) DropDatabase() error {
-	if err := os.Remove(provider.databasePath); err != nil {
+	if err := os.Remove(provider.sqlitePath); err != nil {
 		return err
 	}
 	return nil
