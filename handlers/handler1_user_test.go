@@ -30,7 +30,7 @@ func TestPostUser(t *testing.T) {
 					"name": "dennis"
 				}
 			`,
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -41,7 +41,7 @@ func TestPostUser(t *testing.T) {
 					"pictureUrl": "http://localhost/images/dennis.png"
 				}
 			`,
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -53,7 +53,7 @@ func TestPostUser(t *testing.T) {
 					"informationUrl": "http://localhost/dennis"
 				}
 			`,
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -66,55 +66,69 @@ func TestPostUser(t *testing.T) {
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 5,
 			in: `
 				{
-					"userId": "custom-user-id-1",
-					"name": "dennis-1"
+					"name": "dennis",
+					"pictureUrl": "http://localhost/images/dennis.png",
+					"informationUrl": "http://localhost/dennis",
+					"metaData": {"key": "value"},
+					"isPublic": true
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"isPublic":true,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 6,
 			in: `
 				{
-					"userId": "custom-user-id-2",
-					"name": "dennis-2"
+					"userId": "custom-user-id-1",
+					"name": "dennis-1"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 7,
 			in: `
 				{
-					"userId": "custom-user-id-3",
-					"name": "dennis-3"
+					"userId": "custom-user-id-2",
+					"name": "dennis-2"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 8,
 			in: `
 				{
-					"userId": "custom-user-id-for-delete",
-					"name": "dennis"
+					"userId": "custom-user-id-3",
+					"name": "dennis-3"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 9,
+			in: `
+				{
+					"userId": "custom-user-id-for-delete",
+					"name": "dennis"
+				}
+			`,
+			out:            `(?m)^{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"isPublic":false,"accessToken":"[a-zA-Z0-9-._~+/]+","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 10,
 			in: `
 				{
 					"userId": "custom-user-id-1",
@@ -125,7 +139,7 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 500,
 		},
 		{
-			testNo: 10,
+			testNo: 11,
 			in: `
 				{
 					"userId": "custom_id",
@@ -136,14 +150,14 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 11,
+			testNo: 12,
 			in: `
 			`,
 			out:            `(?m)^{"title":"Json parse error\. \(Create user item\)","status":400,"errorName":"invalid-json"}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 12,
+			testNo: 13,
 			in: `
 				json
 			`,
@@ -151,7 +165,7 @@ func TestPostUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 13,
+			testNo: 14,
 			in: `
 				{
 					"pictureUrl": "http://example.com/picture.png"
@@ -199,7 +213,7 @@ func TestGetUsers(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			out:            `(?m)^{"users":[{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}]}$`,
+			out:            `(?m)^{"users":[{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"isPublic":true,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}]}$`,
 			httpStatusCode: 200,
 		},
 	}
@@ -226,8 +240,8 @@ func TestGetUser(t *testing.T) {
 	ts := httptest.NewServer(Mux)
 	defer ts.Close()
 
-	if len(createUserIds) != 8 {
-		t.Fatalf("createUserIds length error \n[expected]%d\n[result  ]%d", 8, len(createUserIds))
+	if len(createUserIds) != 9 {
+		t.Fatalf("createUserIds length error \n[expected]%d\n[result  ]%d", 9, len(createUserIds))
 		t.Failed()
 	}
 
@@ -235,53 +249,60 @@ func TestGetUser(t *testing.T) {
 		{
 			testNo:         1,
 			userId:         createUserIds[0],
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         2,
 			userId:         createUserIds[1],
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         3,
 			userId:         createUserIds[2],
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         4,
 			userId:         createUserIds[3],
-			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         5,
 			userId:         createUserIds[4],
-			out:            `(?m)^{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"[a-z0-9-]+","name":"dennis","pictureUrl":"http://localhost/images/dennis.png","informationUrl":"http://localhost/dennis","unreadCount":0,"metaData":{"key":"value"},"isPublic":true,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
+
 		{
 			testNo:         6,
 			userId:         createUserIds[5],
-			out:            `(?m)^{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"dennis-1","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         7,
 			userId:         createUserIds[6],
-			out:            `(?m)^{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-2","name":"dennis-2","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         8,
 			userId:         createUserIds[7],
-			out:            `(?m)^{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-3","name":"dennis-3","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         9,
+			userId:         createUserIds[8],
+			out:            `(?m)^{"userId":"custom-user-id-for-delete","name":"dennis","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo:         10,
 			userId:         "not-exist-user-id",
 			out:            ``,
 			httpStatusCode: 404,
@@ -324,7 +345,7 @@ func TestPutUser(t *testing.T) {
 					"name": "Jeremy"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -335,7 +356,7 @@ func TestPutUser(t *testing.T) {
 					"pictureUrl": "http://localhost/images/jeremy.png"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -346,7 +367,7 @@ func TestPutUser(t *testing.T) {
 					"informationUrl": "http://localhost/jeremy"
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -357,11 +378,22 @@ func TestPutUser(t *testing.T) {
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{"key":"value"},"isPublic":false,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 5,
+			userId: "custom-user-id-1",
+			in: `
+				{
+					"isPublic": true
+				}
+			`,
+			out:            `(?m)^{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","unreadCount":0,"metaData":{"key":"value"},"isPublic":true,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo: 6,
 			userId: "custom-user-id-1",
 			in: `
 				{
@@ -372,7 +404,7 @@ func TestPutUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 6,
+			testNo: 7,
 			userId: "custom-user-id-1",
 			in: `
 			`,
@@ -380,7 +412,7 @@ func TestPutUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 7,
+			testNo: 8,
 			userId: "custom-user-id-1",
 			in: `
 				json
@@ -389,7 +421,7 @@ func TestPutUser(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 8,
+			testNo: 9,
 			userId: "not-exist-user-id",
 			in: `
 				{

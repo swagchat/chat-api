@@ -74,6 +74,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 				"r.picture_url, ",
 				"r.information_url, ",
 				"r.meta_data, ",
+				"r.is_public, ",
 				"r.last_message, ",
 				"r.last_message_updated, ",
 				"r.created, ",
@@ -130,7 +131,7 @@ func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult
 func RdbSelectUsers() StoreResult {
 	result := StoreResult{}
 	var users []*models.User
-	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
+	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_public, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
 	_, err := dbMap.Select(&users, query)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting user items.", err)
@@ -160,54 +161,39 @@ func RdbSelectUserIdsByUserIds(userIds []string) StoreResult {
 }
 
 func RdbUpdateUser(user *models.User) StoreResult {
+	trans, err := dbMap.Begin()
 	result := StoreResult{}
-	log.Printf("%+v", user)
-	_, err := dbMap.Update(user)
+	_, err = trans.Update(user)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+		result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
+		if err := trans.Rollback(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
+		}
+		return result
+	}
+
+	if *user.UnreadCount == 0 {
+		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=0 WHERE user_id=:userId;")
+		params := map[string]interface{}{
+			"userId": user.UserId,
+		}
+		_, err := trans.Exec(query, params)
+		if err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while mark all as read.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
+			}
+			return result
+		}
+	}
+
+	if result.ProblemDetail == nil {
+		if err := trans.Commit(); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while commit updating user item.", err)
+		}
 	}
 	result.Data = user
 	return result
-	//trans, err := dbMap.Begin()
-	//result := StoreResult{}
-	//_, err = trans.Update(user)
-	//if err != nil {
-	//	result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
-	//	if err := trans.Rollback(); err != nil {
-	//		log.Println("----------------1")
-	//		result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-	//	}
-	//	return result
-	//}
-	//
-	//if *user.UnreadCount == 0 {
-	//	query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=0 WHERE user_id=:userId;")
-	//	params := map[string]interface{}{
-	//		"userId": user.UserId,
-	//	}
-	//	_, err := trans.Exec(query, params)
-	//	if err != nil {
-	//		log.Println("----------------2")
-	//		result.ProblemDetail = createProblemDetail("An error occurred while mark all as read.", err)
-	//		if err := trans.Rollback(); err != nil {
-	//			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-	//		}
-	//		return result
-	//	}
-	//}
-	//
-	//if result.ProblemDetail == nil {
-	//	log.Println("-------commit")
-	//	if err := trans.Commit(); err != nil {
-	//		log.Println("-------commit fail")
-	//		result.ProblemDetail = createProblemDetail("An error occurred while commit updating user item.", err)
-	//	}
-	//} else {
-	//	log.Println("----------------3")
-	//
-	//}
-	//result.Data = user
-	//return result
 }
 
 func RdbUpdateUserDeleted(userId string) StoreResult {

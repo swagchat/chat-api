@@ -20,6 +20,7 @@ type User struct {
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
 	UnreadCount    *uint64        `json:"unreadCount" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
+	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created" db:"created,notnull"`
 	Modified       int64          `json:"modified" db:"modified,notnull"`
@@ -37,6 +38,7 @@ type RoomForUser struct {
 	PictureUrl         string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl     string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData           utils.JSONText `json:"metaData" db:"meta_data"`
+	IsPublic           *bool          `json:"isPublic,omitempty" db:"is_public"`
 	LastMessage        string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated int64          `json:"lastMessageUpdated" db:"last_message_updated"`
 	Created            int64          `json:"created" db:"created"`
@@ -58,6 +60,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl string         `json:"informationUrl,omitempty"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
+		IsPublic       *bool          `json:"isPublic,omitempty""`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -70,6 +73,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl: u.InformationUrl,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
+		IsPublic:       u.IsPublic,
 		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
@@ -91,6 +95,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		PictureUrl         string         `json:"pictureUrl,omitempty"`
 		InformationUrl     string         `json:"informationUrl,omitempty"`
 		MetaData           utils.JSONText `json:"metaData"`
+		IsPublic           *bool          `json:"isPublic,omitempty""`
 		LastMessage        string         `json:"lastMessage"`
 		LastMessageUpdated string         `json:"lastMessageUpdated"`
 		Created            string         `json:"created"`
@@ -106,6 +111,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		PictureUrl:         rfu.PictureUrl,
 		InformationUrl:     rfu.InformationUrl,
 		MetaData:           rfu.MetaData,
+		IsPublic:           rfu.IsPublic,
 		LastMessage:        rfu.LastMessage,
 		LastMessageUpdated: lmu,
 		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
@@ -158,6 +164,11 @@ func (u *User) BeforeSave() {
 		u.MetaData = []byte("{}")
 	}
 
+	if u.IsPublic == nil {
+		isPublic := false
+		u.IsPublic = &isPublic
+	}
+
 	if u.UnreadCount == nil {
 		unreadCount := uint64(0)
 		u.UnreadCount = &unreadCount
@@ -185,5 +196,8 @@ func (u *User) Put(put *User) {
 	}
 	if put.MetaData != nil {
 		u.MetaData = put.MetaData
+	}
+	if put.IsPublic != nil {
+		u.IsPublic = put.IsPublic
 	}
 }
