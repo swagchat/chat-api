@@ -10,11 +10,11 @@ import (
 )
 
 func SetDeviceMux() {
-	Mux.PostFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(PostDevice))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", ColsHandler(GetDevices))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(GetDevice))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(PutDevice))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", ColsHandler(DeleteDevice))
+	Mux.PostFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(PostDevice))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", colsHandler(GetDevices))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(GetDevice))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(PutDevice))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(DeleteDevice))
 }
 
 func PostDevice(w http.ResponseWriter, r *http.Request) {

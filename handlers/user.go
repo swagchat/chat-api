@@ -6,17 +6,19 @@ import (
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
 	"github.com/go-zoo/bone"
+	"log"
 )
 
 func SetUserMux() {
-	Mux.PostFunc("/users", ColsHandler(PostUser))
-	Mux.GetFunc("/users", ColsHandler(GetUsers))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$", ColsHandler(GetUser))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$", ColsHandler(PutUser))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", ColsHandler(DeleteUser))
+	Mux.PostFunc("/users", colsHandler(aclHandler(PostUser)))
+	Mux.GetFunc("/users", colsHandler(GetUsers))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(GetUser))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$", colsHandler(PutUser))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", colsHandler(DeleteUser))
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Context().Value("role"))
 	var post models.User
 	if err := decodeBody(r, &post); err != nil {
 		respondJsonDecodeError(w, r, "Create user item")

@@ -11,7 +11,7 @@ import (
 )
 
 func SetAssetMux() {
-	Mux.PostFunc("/assets", ColsHandler(PostAsset))
+	Mux.PostFunc("/assets", colsHandler(PostAsset))
 	Mux.GetFunc("/assets/#assetId^[a-z0-9-]$", GetAsset)
 }
 

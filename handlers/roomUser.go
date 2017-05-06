@@ -9,10 +9,10 @@ import (
 )
 
 func SetRoomUserMux() {
-	Mux.PostFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(PostRoomUsers))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(PutRoomUsers))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", ColsHandler(PutRoomUser))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", ColsHandler(DeleteRoomUsers))
+	Mux.PostFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(PostRoomUsers))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(PutRoomUsers))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(PutRoomUser))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(DeleteRoomUsers))
 }
 
 func PostRoomUsers(w http.ResponseWriter, r *http.Request) {

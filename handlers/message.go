@@ -9,8 +9,8 @@ import (
 )
 
 func SetMessageMux() {
-	Mux.PostFunc("/messages", ColsHandler(PostMessages))
-	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", ColsHandler(GetMessage))
+	Mux.PostFunc("/messages", colsHandler(PostMessages))
+	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", colsHandler(GetMessage))
 }
 
 func PostMessages(w http.ResponseWriter, r *http.Request) {

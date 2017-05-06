@@ -15,7 +15,7 @@ import (
 )
 
 func SetAssetAwsSnsMux() {
-	Mux.PostFunc("/assets/aws-sns", ColsHandler(PostAssetAwsSns))
+	Mux.PostFunc("/assets/aws-sns", colsHandler(PostAssetAwsSns))
 }
 
 type AwsSNSSubscribeInput struct {

@@ -21,7 +21,6 @@ import (
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
-	"log"
 )
 
 var (
@@ -93,7 +92,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
 }
 
-func ColsHandler(fn http.HandlerFunc) http.HandlerFunc {
+func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowedMethods, ", "))

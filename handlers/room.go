@@ -10,12 +10,12 @@ import (
 )
 
 func SetRoomMux() {
-	Mux.PostFunc("/rooms", ColsHandler(PostRoom))
-	Mux.GetFunc("/rooms", ColsHandler(GetRooms))
-	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", ColsHandler(GetRoom))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", ColsHandler(PutRoom))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", ColsHandler(DeleteRoom))
-	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", ColsHandler(GetRoomMessages))
+	Mux.PostFunc("/rooms", colsHandler(PostRoom))
+	Mux.GetFunc("/rooms", colsHandler(GetRooms))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(GetRoom))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(PutRoom))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(DeleteRoom))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", colsHandler(GetRoomMessages))
 }
 
 func PostRoom(w http.ResponseWriter, r *http.Request) {
