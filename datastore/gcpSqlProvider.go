@@ -62,6 +62,7 @@ func (provider GcpSqlProvider) Connect() error {
 }
 
 func (provider GcpSqlProvider) Init() {
+	provider.CreateAdminStore()
 	provider.CreateUserStore()
 	provider.CreateRoomStore()
 	provider.CreateRoomUserStore()

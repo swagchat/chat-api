@@ -14,6 +14,10 @@ func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevic
 	return RdbSelectUser(userId, isWithRooms, isWithDevices)
 }
 
+func (provider MysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
+}
+
 func (provider MysqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }

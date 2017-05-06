@@ -14,6 +14,10 @@ func (provider GcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevi
 	return RdbSelectUser(userId, isWithRooms, isWithDevices)
 }
 
+func (provider GcpSqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
+}
+
 func (provider GcpSqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }

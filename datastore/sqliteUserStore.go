@@ -14,6 +14,10 @@ func (provider SqliteProvider) SelectUser(userId string, isWithRooms, isWithDevi
 	return RdbSelectUser(userId, isWithRooms, isWithDevices)
 }
 
+func (provider SqliteProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
+}
+
 func (provider SqliteProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }

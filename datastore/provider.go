@@ -22,6 +22,7 @@ type Provider interface {
 	Connect() error
 	Init()
 	DropDatabase() error
+	AdminStore
 	UserStore
 	RoomStore
 	RoomUserStore

@@ -15,15 +15,27 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/fairway-corp/swagchat-api/datastore"
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
+	"log"
 )
 
-var Mux *bone.Mux
-var Context context.Context
+var (
+	Mux            *bone.Mux
+	Context        context.Context
+	allowedMethods []string = []string{
+		"POST",
+		"GET",
+		"OPTIONS",
+		"PUT",
+		"PATCH",
+		"DELETE",
+	}
+)
 
 func StartServer(ctx context.Context) {
 	Mux = bone.New().Prefix(utils.AppendStrings("/", utils.API_VERSION))
@@ -107,13 +119,37 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNotFound, "", nil)
 }
 
-var allowedMethods []string = []string{
-	"POST",
-	"GET",
-	"OPTIONS",
-	"PUT",
-	"PATCH",
-	"DELETE",
+func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		role := "guest"
+
+		if adminToken := r.Header.Get(utils.HEADER_ADMIN_TOKEN); adminToken != "" {
+			dRes := datastore.GetProvider().SelectLatestAdmin()
+			if dRes.ProblemDetail != nil {
+				// TODO error
+			}
+			if dRes.Data != nil {
+				admin := dRes.Data.(*models.Admin)
+				if adminToken == admin.Token {
+					role = "admin"
+				}
+			}
+		}
+
+		if role != "admin" {
+			authorization := r.Header.Get("Authorization")
+			token := strings.Replace(authorization, "Bearer ", "", 1)
+			userId := r.Header.Get(utils.HEADER_USER_ID)
+			if token != "" && userId != "" {
+				dRes := datastore.GetProvider().SelectUserByUserIdAndAccessToken(userId, token)
+				if dRes.Data != nil {
+					role = "user"
+				}
+			}
+		}
+		ctx := context.WithValue(r.Context(), "role", role)
+		fn(w, r.WithContext(ctx))
+	}
 }
 
 func decodeBody(r *http.Request, v interface{}) error {

@@ -20,6 +20,7 @@ type User struct {
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
 	UnreadCount    *uint64        `json:"unreadCount" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
+	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created" db:"created,notnull"`
 	Modified       int64          `json:"modified" db:"modified,notnull"`
 	Deleted        int64          `json:"-" db:"deleted,notnull"`
@@ -57,6 +58,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl string         `json:"informationUrl,omitempty"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
+		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
 		Rooms          []*RoomForUser `json:"rooms,omitempty"`
@@ -68,6 +70,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl: u.InformationUrl,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
+		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
 		Rooms:          u.Rooms,

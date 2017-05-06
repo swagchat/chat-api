@@ -13,6 +13,10 @@ const (
 	APP_NAME      = "swagchat-api"
 	API_VERSION   = "v0"
 	BUILD_VERSION = "v0.4.0"
+
+	TOKEN_LENGTH       = 32
+	HEADER_ADMIN_TOKEN = "X-SwagChat-Admin-Token"
+	HEADER_USER_ID     = "X-SwagChat-User-Id"
 )
 
 var (

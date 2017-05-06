@@ -7,6 +7,7 @@ type UserStore interface {
 
 	InsertUser(user *models.User) StoreResult
 	SelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult
+	SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult
 	SelectUsers() StoreResult
 	SelectUserIdsByUserIds(userIds []string) StoreResult
 	UpdateUser(user *models.User) StoreResult

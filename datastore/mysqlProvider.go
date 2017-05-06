@@ -68,6 +68,7 @@ func (provider MysqlProvider) Connect() error {
 }
 
 func (provider MysqlProvider) Init() {
+	provider.CreateAdminStore()
 	provider.CreateUserStore()
 	provider.CreateRoomStore()
 	provider.CreateRoomUserStore()

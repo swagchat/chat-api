@@ -7,6 +7,7 @@ import (
 
 var (
 	dbMap                   *gorp.DbMap
+	TABLE_NAME_ADMIN        = utils.Cfg.Datastore.TableNamePrefix + "admin"
 	TABLE_NAME_USER         = utils.Cfg.Datastore.TableNamePrefix + "user"
 	TABLE_NAME_ROOM         = utils.Cfg.Datastore.TableNamePrefix + "room"
 	TABLE_NAME_ROOM_USER    = utils.Cfg.Datastore.TableNamePrefix + "room_user"

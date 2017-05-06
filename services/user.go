@@ -52,7 +52,9 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 		}
 	}
 
-	return dRes.Data.(*models.User), nil
+	user := dRes.Data.(*models.User)
+	user.AccessToken = ""
+	return user, nil
 }
 
 func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
@@ -70,7 +72,9 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	return dRes.Data.(*models.User), nil
+
+	user.AccessToken = ""
+	return user, nil
 }
 
 func DeleteUser(userId string) *models.ProblemDetail {
