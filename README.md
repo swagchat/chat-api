@@ -6,9 +6,9 @@
 
 
 
-# Swagchat-API
+# SwagChat RESTful API
 
-Swagchat is an open source chat components for your webapps.
+SwagChat is an open source chat components for your webapps.
 
 * **Easy to deploy**
 * **Easy to customize**
