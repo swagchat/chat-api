@@ -3,10 +3,11 @@ package handlers
 import (
 	"net/http"
 
+	"log"
+
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
 	"github.com/go-zoo/bone"
-	"log"
 )
 
 func SetUserMux() {
@@ -31,7 +32,6 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setLastModified(w, user.Modified)
 	respond(w, r, http.StatusCreated, "application/json", user)
 }
 
@@ -53,7 +53,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setLastModified(w, user.Modified)
 	respond(w, r, http.StatusOK, "application/json", user)
 }
 
@@ -71,7 +70,6 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setLastModified(w, user.Modified)
 	respond(w, r, http.StatusOK, "application/json", user)
 }
 
