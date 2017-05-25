@@ -59,34 +59,53 @@ You can choose from the followings.
 * 1-on-1 Chat
 * Group Chat
 * Display chat room list
-* Public Chat (In development ...)
-* Typing indicators (In development ...)
-* Read receipts (In development ...)
-* Block User (In development ...)
-* Offline support (In development ...)
-* Search messages (In development ...)
-* Delete messages (In development ...)
 
 ### Message Content Type
 
 * text
 * image
-* emoji (In development ...)
-* sticker (In development ...)
-* video (In development ...)
-* voice (In development ...)
-* location (In development ...)
-* file (In development ...)
 
+## Release Binary
 
-## go testing
+You can download from [here](releases)
+
+**Supported OS**
+
+* Windows (amd64)
+* Linux (amd64)
+* macOS (amd64)
+
+## Quick start
+
+Just run the executable binary.
+
+ex) `./swagchat-api_darwin_amd64`
+
+Not For Production Use!
+
+## Configuration
+
+To override the default configuration options, make a copy of `example.swagchat.yaml` and name it `swagchat.yaml`.
+
+Or you can overwrite it with environment variable, runtime parameter.
+
+You can check the variables that can be set with the help command of the executable binary.
+
+ex) `./swagchat-api_darwin_amd64 -h`
+
+## Development
+
+### go version
+
+1.7 or higher
+
+### go testing
 
 Only http client test, and not completed yet. Test run with datastore sqlite3, storage local.
 
 `go test $(go list ./... | grep -v vendor)`
 
-
-## go profiling
+### go profiling
 
 To view all available profiles, open http://localhost:6060/debug/pprof/ in your browser.
 
