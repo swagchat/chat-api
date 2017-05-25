@@ -67,7 +67,7 @@ You can choose from the followings.
 
 ## Release Binary
 
-You can download from [here](releases)
+You can download from [here](https://github.com/fairway-corp/swagchat-api/releases)
 
 **Supported OS**
 
