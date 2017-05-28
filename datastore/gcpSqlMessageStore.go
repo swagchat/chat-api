@@ -14,8 +14,8 @@ func (provider GcpSqlProvider) SelectMessage(messageId string) StoreResult {
 	return RdbSelectMessage(messageId)
 }
 
-func (provider GcpSqlProvider) SelectMessages(roomId string, limit, offset int) StoreResult {
-	return RdbSelectMessages(roomId, limit, offset)
+func (provider GcpSqlProvider) SelectMessages(roomId string, limit, offset int, order string) StoreResult {
+	return RdbSelectMessages(roomId, limit, offset, order)
 }
 
 func (provider GcpSqlProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {

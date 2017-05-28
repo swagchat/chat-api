@@ -153,15 +153,15 @@ func RdbSelectMessage(messageId string) StoreResult {
 	return result
 }
 
-func RdbSelectMessages(roomId string, limit, offset int) StoreResult {
+func RdbSelectMessages(roomId string, limit, offset int, order string) StoreResult {
 	result := StoreResult{}
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * ",
 		"FROM ", TABLE_NAME_MESSAGE, " ",
 		"WHERE room_id = :roomId ",
 		"AND deleted = 0 ",
-		"ORDER BY created ASC ",
-		"LIMIT  :limit ",
+		"ORDER BY created ", order, " ",
+		"LIMIT :limit ",
 		"OFFSET :offset;")
 	params := map[string]interface{}{
 		"roomId": roomId,

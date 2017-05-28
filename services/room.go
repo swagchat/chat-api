@@ -108,6 +108,7 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 	var err error
 	limit := 10
 	offset := 0
+	order := "ASC"
 	if limitArray, ok := params["limit"]; ok {
 		limit, err = strconv.Atoi(limitArray[0])
 		if err != nil {
@@ -118,7 +119,7 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "limit",
-						Reason: "limit is required, but it's empty.",
+						Reason: "limit is incorrect.",
 					},
 				},
 			}
@@ -134,14 +135,36 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "offset",
-						Reason: "offset is required, but it's empty.",
+						Reason: "offset is incorrect.",
+					},
+				},
+			}
+		}
+	}
+	if orderArray, ok := params["order"]; ok {
+		order := orderArray[0]
+		allowedOrders := []string{
+			"DESC",
+			"desc",
+			"ASC",
+			"asc",
+		}
+		if utils.SearchStringValueInSlice(allowedOrders, order) {
+			return nil, &models.ProblemDetail{
+				Title:     "Request parameter error. (Get room's message list)",
+				Status:    http.StatusBadRequest,
+				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []models.InvalidParam{
+					models.InvalidParam{
+						Name:   "order",
+						Reason: "order is incorrect.",
 					},
 				},
 			}
 		}
 	}
 
-	dRes := datastore.GetProvider().SelectMessages(roomId, limit, offset)
+	dRes := datastore.GetProvider().SelectMessages(roomId, limit, offset, order)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

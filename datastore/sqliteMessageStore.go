@@ -14,8 +14,8 @@ func (provider SqliteProvider) SelectMessage(messageId string) StoreResult {
 	return RdbSelectMessage(messageId)
 }
 
-func (provider SqliteProvider) SelectMessages(roomId string, limit, offset int) StoreResult {
-	return RdbSelectMessages(roomId, limit, offset)
+func (provider SqliteProvider) SelectMessages(roomId string, limit, offset int, order string) StoreResult {
+	return RdbSelectMessages(roomId, limit, offset, order)
 }
 
 func (provider SqliteProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {
