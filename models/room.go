@@ -25,6 +25,7 @@ type Room struct {
 	IsPublic            *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	LastMessage         string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated  int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
+	MessageCount        int64          `json:"messageCount" db:"-"`
 	NotificationTopicId string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
 	Created             int64          `json:"created" db:"created,notnull"`
 	Modified            int64          `json:"modified" db:"modified,notnull"`
@@ -66,6 +67,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		IsPublic            *bool          `json:"isPublic"`
 		LastMessage         string         `json:"lastMessage"`
 		LastMessageUpdated  string         `json:"lastMessageUpdated"`
+		MessageCount        int64          `json:"messageCount"`
 		NotificationTopicId string         `json:"notificationTopicId,omitempty"`
 		Created             string         `json:"created"`
 		Modified            string         `json:"modified"`
@@ -80,6 +82,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		IsPublic:           r.IsPublic,
 		LastMessage:        r.LastMessage,
 		LastMessageUpdated: lmu,
+		MessageCount:       r.MessageCount,
 		Created:            time.Unix(r.Created, 0).In(l).Format(time.RFC3339),
 		Modified:           time.Unix(r.Modified, 0).In(l).Format(time.RFC3339),
 		Users:              r.Users,

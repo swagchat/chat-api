@@ -55,6 +55,12 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		return nil, dRes.ProblemDetail
 	}
 	room.Users = dRes.Data.([]*models.UserForRoom)
+
+	dRes = datastore.GetProvider().SelectCountMessagesByRoomId(roomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	room.MessageCount = dRes.Data.(int64)
 	return room, nil
 }
 
