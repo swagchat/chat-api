@@ -29,7 +29,7 @@ func (provider SqliteProvider) Connect() error {
 }
 
 func (provider SqliteProvider) Init() {
-	provider.CreateAdminStore()
+	provider.CreateApiStore()
 	provider.CreateUserStore()
 	provider.CreateRoomStore()
 	provider.CreateRoomUserStore()

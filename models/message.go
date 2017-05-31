@@ -153,9 +153,9 @@ func (m *Message) BeforeSave() {
 		m.MessageId = utils.CreateUuid()
 	}
 
-	nowDatetime := time.Now().Unix()
+	nowTimestamp := time.Now().Unix()
 	if m.Created == 0 {
-		m.Created = nowDatetime
+		m.Created = nowTimestamp
 	}
-	m.Modified = nowDatetime
+	m.Modified = nowTimestamp
 }

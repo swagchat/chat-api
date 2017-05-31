@@ -122,14 +122,16 @@ func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		role := "guest"
 
-		if adminToken := r.Header.Get(utils.HEADER_ADMIN_TOKEN); adminToken != "" {
-			dRes := datastore.GetProvider().SelectLatestAdmin()
+		apiKey := r.Header.Get(utils.HEADER_API_KEY)
+		apiSecret := r.Header.Get(utils.HEADER_API_SECRET)
+		if apiKey != "" && apiSecret != "" {
+			dRes := datastore.GetProvider().SelectLatestApi("admin")
 			if dRes.ProblemDetail != nil {
 				// TODO error
 			}
 			if dRes.Data != nil {
-				admin := dRes.Data.(*models.Admin)
-				if adminToken == admin.Token {
+				api := dRes.Data.(*models.Api)
+				if apiKey == api.Key && apiSecret == api.Secret {
 					role = "admin"
 				}
 			}

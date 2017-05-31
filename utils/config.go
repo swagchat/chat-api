@@ -14,9 +14,11 @@ const (
 	API_VERSION   = "v0"
 	BUILD_VERSION = "v0.5.0"
 
-	TOKEN_LENGTH       = 32
-	HEADER_ADMIN_TOKEN = "X-SwagChat-Admin-Token"
-	HEADER_USER_ID     = "X-SwagChat-User-Id"
+	KEY_LENGTH        = 32
+	TOKEN_LENGTH      = 32
+	HEADER_API_KEY    = "X-SwagChat-Api-Key"
+	HEADER_API_SECRET = "X-SwagChat-Api-Secret"
+	HEADER_USER_ID    = "X-SwagChat-User-Id"
 )
 
 var (

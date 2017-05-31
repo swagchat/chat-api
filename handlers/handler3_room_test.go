@@ -31,7 +31,7 @@ func TestPostRoom(t *testing.T) {
 					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -43,7 +43,7 @@ func TestPostRoom(t *testing.T) {
 					"isPublic": false
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -55,7 +55,7 @@ func TestPostRoom(t *testing.T) {
 					"isPublic": true
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -67,7 +67,7 @@ func TestPostRoom(t *testing.T) {
 					"pictureUrl": "http://localhost/images/dennis_room.png"
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -80,7 +80,7 @@ func TestPostRoom(t *testing.T) {
 					"informationUrl": "http://localhost/dennis_room"
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -94,7 +94,7 @@ func TestPostRoom(t *testing.T) {
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -106,7 +106,7 @@ func TestPostRoom(t *testing.T) {
 					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -118,7 +118,7 @@ func TestPostRoom(t *testing.T) {
 					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
@@ -207,7 +207,7 @@ func TestGetRooms(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			out:            `(?m)^{"rooms":[{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}],"allCount":8}$`,
+			out:            `(?m)^{"rooms":[{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}],"allCount":8}$`,
 			httpStatusCode: 200,
 		},
 	}
@@ -243,49 +243,49 @@ func TestGetRoom(t *testing.T) {
 		{
 			testNo:         1,
 			roomId:         createRoomIds[0],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         2,
 			roomId:         createRoomIds[1],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         3,
 			roomId:         createRoomIds[2],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         4,
 			roomId:         createRoomIds[3],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         5,
 			roomId:         createRoomIds[4],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         6,
 			roomId:         createRoomIds[5],
-			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         7,
 			roomId:         createRoomIds[6],
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         8,
 			roomId:         createRoomIds[7],
-			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -332,7 +332,7 @@ func TestPutRoom(t *testing.T) {
 					"name": "room name 2"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -343,7 +343,7 @@ func TestPutRoom(t *testing.T) {
 					"isPublic": true
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"isPublic":true,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -354,7 +354,7 @@ func TestPutRoom(t *testing.T) {
 					"isPublic": false
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -365,7 +365,7 @@ func TestPutRoom(t *testing.T) {
 					"pictureUrl": "http://localhost/images/jeremy.png"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -376,7 +376,7 @@ func TestPutRoom(t *testing.T) {
 					"informationUrl": "http://localhost/jeremy"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
@@ -387,7 +387,7 @@ func TestPutRoom(t *testing.T) {
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"isPublic":false,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
