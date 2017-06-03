@@ -48,6 +48,9 @@ func StartServer(ctx context.Context) {
 	SetMessageMux()
 	SetAssetMux()
 	SetDeviceMux()
+	if utils.Cfg.Profiling {
+		SetPprofMux()
+	}
 	if utils.Cfg.Storage.Provider == "awsS3" {
 		SetAssetAwsSnsMux()
 	}
