@@ -53,7 +53,6 @@ func RdbSelectLatestApi(name string) StoreResult {
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_API, " WHERE name=:name AND (expired=0 OR expired>", nowTimestampString, ") ORDER BY created DESC LIMIT 1;")
-	log.Println(query)
 	params := map[string]interface{}{"name": name}
 	if _, err := dbMap.Select(&apis, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting api item.", err)
