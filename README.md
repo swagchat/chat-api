@@ -65,21 +65,16 @@ You can choose from the followings.
 * text
 * image
 
-## Release Binary
-
-You can download from [here](https://github.com/fairway-corp/swagchat-api/releases)
-
-**Supported OS**
-
-* Windows (amd64)
-* Linux (amd64)
-* macOS (amd64)
-
 ## Quick start
 
 Just run the executable binary.
 
-ex) `./swagchat-api_darwin_amd64`
+You can download binary from [here](https://github.com/fairway-corp/swagchat-api/releases)
+
+```
+# In the case of macOS
+./swagchat-api_darwin_amd64
+```
 
 Not For Production Use!
 
@@ -91,7 +86,11 @@ Or you can overwrite it with environment variable, runtime parameter.
 
 You can check the variables that can be set with the help command of the executable binary.
 
-ex) `./swagchat-api_darwin_amd64 -h`
+
+```
+# In the case of macOS
+./swagchat-api_darwin_amd64 -h
+```
 
 ## Development
 
@@ -101,13 +100,33 @@ ex) `./swagchat-api_darwin_amd64 -h`
 
 ### go testing
 
-Only http client test, and not completed yet. Test run with datastore sqlite3, storage local.
+Only http client test, and not completed yet. Test run with datastore is sqlite3 and storage is local.
 
-`go test $(go list ./... | grep -v vendor)`
+```
+go test $(go list ./... | grep -v vendor)
+```
 
-### go profiling
+## Profiling
 
-To view all available profiles, open http://localhost:6060/debug/pprof/ in your browser.
+To display the profile by http request, please set as follows in the setting file.
+
+This is using pprof serves provided by golang.
+
+```
+profiling: on
+```
+
+### Pprof api list
+
+```
+/debug/pprof               pprof portal
+/debug/pprof/profile       CPU profile
+/debug/pprof/goroutine     goroutine profile
+/debug/pprof/heap          heap profile
+/debug/pprof/block         blocking profile
+/debug/pprof/threadcreate  OS thread profile
+```
+
 
 ## License
 
