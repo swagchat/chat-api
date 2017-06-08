@@ -33,3 +33,7 @@ func (provider MysqlProvider) UpdateUser(user *models.User) StoreResult {
 func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
+
+func (provider MysqlProvider) SelectContacts(userId string) StoreResult {
+	return RdbSelectContacts(userId)
+}

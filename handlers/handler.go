@@ -48,6 +48,7 @@ func StartServer(ctx context.Context) {
 	SetMessageMux()
 	SetAssetMux()
 	SetDeviceMux()
+	SetContactMux()
 	if utils.Cfg.Profiling {
 		SetPprofMux()
 	}

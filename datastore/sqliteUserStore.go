@@ -33,3 +33,7 @@ func (provider SqliteProvider) UpdateUser(user *models.User) StoreResult {
 func (provider SqliteProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
+
+func (provider SqliteProvider) SelectContacts(userId string) StoreResult {
+	return RdbSelectContacts(userId)
+}

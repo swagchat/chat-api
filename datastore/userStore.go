@@ -12,4 +12,5 @@ type UserStore interface {
 	SelectUserIdsByUserIds(userIds []string) StoreResult
 	UpdateUser(user *models.User) StoreResult
 	UpdateUserDeleted(userId string) StoreResult
+	SelectContacts(userId string) StoreResult
 }

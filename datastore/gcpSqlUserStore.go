@@ -33,3 +33,7 @@ func (provider GcpSqlProvider) UpdateUser(user *models.User) StoreResult {
 func (provider GcpSqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
+
+func (provider GcpSqlProvider) SelectContacts(userId string) StoreResult {
+	return RdbSelectContacts(userId)
+}
