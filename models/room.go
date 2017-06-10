@@ -9,6 +9,28 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
+type RoomType int
+
+const (
+	ONE_ON_ONE RoomType = iota + 1
+	PRIVATE_ROOM
+	PUBLIC_ROOM
+	ROOM_TYPE_END
+)
+
+func (rt RoomType) String() string {
+	switch rt {
+	case PRIVATE_ROOM:
+		return "PRIVATE_ROOM"
+	case PUBLIC_ROOM:
+		return "PUBLIC_ROOM"
+	case ONE_ON_ONE:
+		return "ONE_ON_ONE"
+	default:
+		return "Unknown"
+	}
+}
+
 type Rooms struct {
 	Rooms    []*Room `json:"rooms" db:"-"`
 	AllCount int64   `json:"allCount" db:"all_count"`
@@ -22,7 +44,7 @@ type Room struct {
 	PictureUrl          string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl      string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData            utils.JSONText `json:"metaData" db:"meta_data"`
-	IsPublic            *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
+	Type                *RoomType      `json:"type,omitempty" db:"type,notnull"`
 	LastMessage         string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated  int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
 	MessageCount        int64          `json:"messageCount" db:"-"`
@@ -64,7 +86,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		PictureUrl          string         `json:"pictureUrl,omitempty"`
 		InformationUrl      string         `json:"informationUrl,omitempty"`
 		MetaData            utils.JSONText `json:"metaData"`
-		IsPublic            *bool          `json:"isPublic"`
+		Type                *RoomType      `json:"type"`
 		LastMessage         string         `json:"lastMessage"`
 		LastMessageUpdated  string         `json:"lastMessageUpdated"`
 		MessageCount        int64          `json:"messageCount"`
@@ -79,7 +101,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		PictureUrl:         r.PictureUrl,
 		InformationUrl:     r.InformationUrl,
 		MetaData:           r.MetaData,
-		IsPublic:           r.IsPublic,
+		Type:               r.Type,
 		LastMessage:        r.LastMessage,
 		LastMessageUpdated: lmu,
 		MessageCount:       r.MessageCount,
@@ -175,6 +197,34 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
+	if r.Type == nil {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "type",
+					Reason: "type is required, but it's empty.",
+				},
+			},
+		}
+	}
+
+	if !(*r.Type > 0 && *r.Type < ROOM_TYPE_END) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "type",
+					Reason: "type is incorrect.",
+				},
+			},
+		}
+	}
+
 	return nil
 }
 
@@ -185,11 +235,6 @@ func (r *Room) BeforeSave() {
 
 	if r.MetaData == nil {
 		r.MetaData = []byte("{}")
-	}
-
-	if r.IsPublic == nil {
-		isPublic := false
-		r.IsPublic = &isPublic
 	}
 
 	nowTimestamp := time.Now().Unix()
@@ -212,7 +257,7 @@ func (r *Room) Put(put *Room) {
 	if put.MetaData != nil {
 		r.MetaData = put.MetaData
 	}
-	if put.IsPublic != nil {
-		r.IsPublic = put.IsPublic
+	if put.Type != nil {
+		r.Type = put.Type
 	}
 }

@@ -38,7 +38,7 @@ type RoomForUser struct {
 	PictureUrl         string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl     string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData           utils.JSONText `json:"metaData" db:"meta_data"`
-	IsPublic           *bool          `json:"isPublic,omitempty" db:"is_public"`
+	Type               *RoomType      `json:"type,omitempty" db:"type"`
 	LastMessage        string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated int64          `json:"lastMessageUpdated" db:"last_message_updated"`
 	Created            int64          `json:"created" db:"created"`
@@ -95,7 +95,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		PictureUrl         string         `json:"pictureUrl,omitempty"`
 		InformationUrl     string         `json:"informationUrl,omitempty"`
 		MetaData           utils.JSONText `json:"metaData"`
-		IsPublic           *bool          `json:"isPublic,omitempty""`
+		Type               *RoomType      `json:"type,omitempty""`
 		LastMessage        string         `json:"lastMessage"`
 		LastMessageUpdated string         `json:"lastMessageUpdated"`
 		Created            string         `json:"created"`
@@ -111,7 +111,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		PictureUrl:         rfu.PictureUrl,
 		InformationUrl:     rfu.InformationUrl,
 		MetaData:           rfu.MetaData,
-		IsPublic:           rfu.IsPublic,
+		Type:               rfu.Type,
 		LastMessage:        rfu.LastMessage,
 		LastMessageUpdated: lmu,
 		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),

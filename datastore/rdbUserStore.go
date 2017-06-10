@@ -74,7 +74,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 				"r.picture_url, ",
 				"r.information_url, ",
 				"r.meta_data, ",
-				"r.is_public, ",
+				"r.type, ",
 				"r.last_message, ",
 				"r.last_message_updated, ",
 				"r.created, ",
