@@ -17,86 +17,23 @@ import (
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
-func PostRoomUsers(roomId string, post *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
-	room, pd := selectRoom(roomId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	if pd := post.IsValid(); pd != nil {
-		return nil, pd
-	}
-
-	post.RemoveDuplicate()
-
-	userIds, pd := getExistUserIds(post.UserIds)
-	if pd != nil {
-		return nil, pd
-	}
-
-	if room.NotificationTopicId == "" {
-		pd = createTopic(room)
-		if pd != nil {
-			return nil, pd
-		}
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	dRes := datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	if dRes.Data != nil {
-		oldRoomUsers := dRes.Data.([]*models.RoomUser)
-		go unsubscribeByRoomUsers(ctx, oldRoomUsers)
-	}
-
-	var zero int64
-	zero = 0
-	newRoomUsers := make([]*models.RoomUser, 0)
-	nowTimestamp := time.Now().Unix()
-	for _, userId := range userIds {
-		newRoomUsers = append(newRoomUsers, &models.RoomUser{
-			RoomId:      roomId,
-			UserId:      userId,
-			UnreadCount: &zero,
-			MetaData:    []byte("{}"),
-			Created:     nowTimestamp,
-			Modified:    nowTimestamp,
-		})
-	}
-	dRes = datastore.GetProvider().DeleteAndInsertRoomUsers(newRoomUsers)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	dRes = datastore.GetProvider().SelectRoomUsersByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnRoomUsers := &models.RoomUsers{
-		RoomUsers: dRes.Data.([]*models.RoomUser),
-	}
-
-	go subscribeByRoomUsers(ctx, newRoomUsers)
-
-	go publishUserJoin(roomId)
-
-	return returnRoomUsers, nil
-}
-
 func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
 	room, pd := selectRoom(roomId)
 	if pd != nil {
 		return nil, pd
 	}
 
-	if pd := put.IsValid(); pd != nil {
+	put.RemoveDuplicate()
+
+	dRes := datastore.GetProvider().SelectUsersForRoom(roomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	room.Users = dRes.Data.([]*models.UserForRoom)
+
+	if pd := put.IsValid("PUT", room); pd != nil {
 		return nil, pd
 	}
-
-	put.RemoveDuplicate()
 
 	userIds, pd := getExistUserIds(put.UserIds)
 	if pd != nil {
@@ -124,7 +61,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 			Modified:    nowTimestamp,
 		})
 	}
-	dRes := datastore.GetProvider().InsertRoomUsers(roomUsers)
+	dRes = datastore.GetProvider().InsertRoomUsers(roomUsers)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -165,17 +102,16 @@ func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail)
 }
 
 func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
-	// Room existence check
-	_, pd := selectRoom(roomId)
+	room, pd := selectRoom(roomId)
 	if pd != nil {
 		return nil, pd
 	}
 
-	if pd := deleteUserIds.IsValid(); pd != nil {
+	deleteUserIds.RemoveDuplicate()
+
+	if pd := deleteUserIds.IsValid("DELETE", room); pd != nil {
 		return nil, pd
 	}
-
-	deleteUserIds.RemoveDuplicate()
 
 	userIds, pd := getExistUserIds(deleteUserIds.UserIds)
 	if pd != nil {

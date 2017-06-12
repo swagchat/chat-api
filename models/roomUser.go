@@ -104,7 +104,7 @@ type RoomUsers struct {
 	RoomUsers []*RoomUser `json:"roomUsers"`
 }
 
-func (rus *RequestRoomUserIds) IsValid() *ProblemDetail {
+func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 	if len(rus.UserIds) == 0 {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room's user list)",
@@ -116,6 +116,44 @@ func (rus *RequestRoomUserIds) IsValid() *ProblemDetail {
 					Reason: "Not set.",
 				},
 			},
+		}
+	}
+
+	if method == "PUT" && *r.Type == ONE_ON_ONE {
+		if !(len(rus.UserIds) == 1 && rus.UserIds[0] != r.UserId) {
+			return &ProblemDetail{
+				Title:     "Request parameter error. (Create room's user list)",
+				Status:    http.StatusBadRequest,
+				ErrorName: ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []InvalidParam{
+					InvalidParam{
+						Name:   "userIds",
+						Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
+					},
+				},
+			}
+		}
+
+		if len(r.Users) == 2 {
+			return &ProblemDetail{
+				Title:     "Request parameter error. (Create room's user list)",
+				Status:    http.StatusBadRequest,
+				ErrorName: ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []InvalidParam{
+					InvalidParam{
+						Name:   "userIds",
+						Reason: "In case of 1-on-1 room type, It can only update once.",
+					},
+				},
+			}
+		}
+	}
+
+	if method == "DELETE" && *r.Type == ONE_ON_ONE {
+		return &ProblemDetail{
+			Title:     "Operation not permitted. (Delete room's user item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_OPERATION_NOT_PERMITTED,
 		}
 	}
 

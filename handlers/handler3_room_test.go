@@ -105,30 +105,55 @@ func TestPostRoom(t *testing.T) {
 			testNo: 7,
 			in: `
 				{
-					"roomId": "custom-room-id",
+					"roomId": "custom-room-id-1",
 					"userId": "custom-user-id-1",
 					"type": 1,
 					"name": "room name 1"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-1","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 8,
 			in: `
 				{
-					"roomId": "custom-room-id-for-delete",
+					"roomId": "custom-room-id-2",
 					"userId": "custom-user-id-1",
-					"type": 1,
-					"name": "room name 1"
+					"type": 2,
+					"name": "room name 2"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-2","userId":"custom-user-id-1","name":"room name 2","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 201,
 		},
 		{
 			testNo: 9,
+			in: `
+				{
+					"roomId": "custom-room-id-3",
+					"userId": "custom-user-id-1",
+					"type": 3,
+					"name": "room name 3"
+				}
+			`,
+			out:            `(?m)^{"roomId":"custom-room-id-3","userId":"custom-user-id-1","name":"room name 3","metaData":{},"type":3,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 10,
+			in: `
+				{
+					"roomId": "custom-room-id-1-for-delete",
+					"userId": "custom-user-id-1",
+					"type": 1
+				}
+			`,
+			out:            `(?m)^{"roomId":"custom-room-id-1-for-delete","userId":"custom-user-id-1","name":"","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 201,
+		},
+		{
+			testNo: 11,
 			in: `
 				{
 					"name": "room name 1"
@@ -138,17 +163,18 @@ func TestPostRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 10,
+			testNo: 12,
 			in: `
 				{
-					"userId": "custom-user-id-1"
+					"userId": "custom-user-id-1",
+					"type": 2
 				}
 			`,
 			out:            `(?m)^{"title":"Request parameter error\. \(Create room item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"name","reason":"name is required, but it's empty\."}\]}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 11,
+			testNo: 13,
 			in: `
 				{
 					"name": "room name 1",
@@ -159,7 +185,7 @@ func TestPostRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 12,
+			testNo: 14,
 			in: `
 				{
 					"name": "room name 1",
@@ -171,7 +197,7 @@ func TestPostRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 13,
+			testNo: 15,
 			in: `
 				{
 					"name": "room name 1",
@@ -183,10 +209,10 @@ func TestPostRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 14,
+			testNo: 16,
 			in: `
 				{
-					"roomId": "custom-room-id",
+					"roomId": "custom-room-id-1",
 					"userId": "custom-user-id-1",
 					"name": "room name 1",
 					"type": 1
@@ -196,14 +222,14 @@ func TestPostRoom(t *testing.T) {
 			httpStatusCode: 500,
 		},
 		{
-			testNo: 15,
+			testNo: 17,
 			in: `
 			`,
 			out:            `(?m)^{"title":"Json parse error. \(Create room item\)","status":400,"errorName":"invalid-json"}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 16,
+			testNo: 18,
 			in: `
 				json
 			`,
@@ -249,7 +275,7 @@ func TestGetRooms(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			out:            `(?m)^{"rooms":[{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":3,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}],"allCount":8}$`,
+			out:            `(?m)^{"rooms":[{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":3,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"[a-z0-9-]+","userId":"custom-user-id-1","name":"room name 1","pictureUrl":"http://localhost/images/dennis_room.png","informationUrl":"http://localhost/dennis_room","metaData":{"key":"value"},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-1","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-2","userId":"custom-user-id-1","name":"room name 2","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-3","userId":"custom-user-id-1","name":"room name 3","metaData":{},"type":3,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"},{"roomId":"custom-room-id-1-for-delete","userId":"custom-user-id-1","name":"","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}],"allCount":10}$`,
 			httpStatusCode: 200,
 		},
 	}
@@ -276,8 +302,8 @@ func TestGetRoom(t *testing.T) {
 	ts := httptest.NewServer(Mux)
 	defer ts.Close()
 
-	if len(createRoomIds) != 8 {
-		t.Fatalf("createRoomIds length error \n[expected]%d\n[result  ]%d", 8, len(createRoomIds))
+	if len(createRoomIds) != 10 {
+		t.Fatalf("createRoomIds length error \n[expected]%d\n[result  ]%d", 10, len(createRoomIds))
 		t.Failed()
 	}
 
@@ -321,17 +347,29 @@ func TestGetRoom(t *testing.T) {
 		{
 			testNo:         7,
 			roomId:         createRoomIds[6],
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-1","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         8,
 			roomId:         createRoomIds[7],
-			out:            `(?m)^{"roomId":"custom-room-id-for-delete","userId":"custom-user-id-1","name":"room name 1","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-2","userId":"custom-user-id-1","name":"room name 2","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         9,
+			roomId:         createRoomIds[8],
+			out:            `(?m)^{"roomId":"custom-room-id-3","userId":"custom-user-id-1","name":"room name 3","metaData":{},"type":3,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo:         10,
+			roomId:         createRoomIds[9],
+			out:            `(?m)^{"roomId":"custom-room-id-1-for-delete","userId":"custom-user-id-1","name":"","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","users":\[{"userId":"custom-user-id-1","name":"Jeremy","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruUnreadCount":0,"ruMetaData":{},"ruCreated":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","ruModified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}\]}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo:         11,
 			roomId:         "not-exist-room-id",
 			out:            ``,
 			httpStatusCode: 404,
@@ -368,70 +406,92 @@ func TestPutRoom(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo: 1,
-			roomId: "custom-room-id",
+			roomId: "custom-room-id-2",
 			in: `
 				{
-					"name": "room name 2"
+					"name": "room name 2 update"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-2","userId":"custom-user-id-1","name":"room name 2 update","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 2,
-			roomId: "custom-room-id",
-			in: `
-				{
-					"type": 2
-				}
-			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
-			httpStatusCode: 200,
-		},
-		{
-			testNo: 3,
-			roomId: "custom-room-id",
+			roomId: "custom-room-id-2",
 			in: `
 				{
 					"pictureUrl": "http://localhost/images/jeremy.png"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-2","userId":"custom-user-id-1","name":"room name 2 update","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
-			testNo: 5,
-			roomId: "custom-room-id",
+			testNo: 3,
+			roomId: "custom-room-id-1",
 			in: `
 				{
 					"informationUrl": "http://localhost/jeremy"
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-1","userId":"custom-user-id-1","name":"room name 1","informationUrl":"http://localhost/jeremy","metaData":{},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
-			testNo: 6,
-			roomId: "custom-room-id",
+			testNo: 4,
+			roomId: "custom-room-id-1",
 			in: `
 				{
 					"metaData": {"key": "value"}
 				}
 			`,
-			out:            `(?m)^{"roomId":"custom-room-id","userId":"custom-user-id-1","name":"room name 2","pictureUrl":"http://localhost/images/jeremy.png","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"roomId":"custom-room-id-1","userId":"custom-user-id-1","name":"room name 1","informationUrl":"http://localhost/jeremy","metaData":{"key":"value"},"type":1,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo: 5,
+			roomId: "custom-room-id-2",
+			in: `
+				{
+					"type": 3
+				}
+			`,
+			out:            `(?m)^{"roomId":"custom-room-id-2","userId":"custom-user-id-1","name":"room name 2 update","pictureUrl":"http://localhost/images/jeremy.png","metaData":{},"type":3,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			httpStatusCode: 200,
+		},
+		{
+			testNo: 6,
+			roomId: "custom-room-id-3",
+			in: `
+				{
+					"type": 2
+				}
+			`,
+			out:            `(?m)^{"roomId":"custom-room-id-3","userId":"custom-user-id-1","name":"room name 3","metaData":{},"type":2,"lastMessage":"","lastMessageUpdated":"","messageCount":0,"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo: 7,
-			roomId: "custom-room-id",
+			roomId: "custom-room-id-1",
+			in: `
+				{
+					"type": 2
+				}
+			`,
+			out:            `(?m)^{"title":"Request parameter error. \(Update room item\)","status":400,"errorName":"invalid-param","invalidParams":\[{"name":"type","reason":"In case of 1-on-1 room type, type can not be changed."}\]}$`,
+			httpStatusCode: 400,
+		},
+		{
+			testNo: 8,
+			roomId: "custom-room-id-1",
 			in: `
 			`,
 			out:            `(?m)^{"title":"Json parse error. \(Update room item\)","status":400,"errorName":"invalid-json"}$`,
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 8,
-			roomId: "custom-room-id",
+			testNo: 9,
+			roomId: "custom-room-id-1",
 			in: `
 				json
 			`,
@@ -439,7 +499,7 @@ func TestPutRoom(t *testing.T) {
 			httpStatusCode: 400,
 		},
 		{
-			testNo: 9,
+			testNo: 10,
 			roomId: "not-exist-room-id",
 			in: `
 				{
@@ -479,7 +539,7 @@ func TestDeleteRoom(t *testing.T) {
 	testTable := []testRecord{
 		{
 			testNo:         1,
-			roomId:         "custom-room-id-for-delete",
+			roomId:         "custom-room-id-1-for-delete",
 			out:            `(?m)^$`,
 			httpStatusCode: 204,
 		},

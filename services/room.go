@@ -70,7 +70,10 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	room.Put(put)
+	if pd := room.Put(put); pd != nil {
+		return nil, pd
+	}
+
 	if pd := room.IsValid(); pd != nil {
 		return nil, pd
 	}

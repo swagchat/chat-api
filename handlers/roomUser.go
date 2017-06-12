@@ -9,27 +9,9 @@ import (
 )
 
 func SetRoomUserMux() {
-	Mux.PostFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(PostRoomUsers))
 	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(PutRoomUsers))
 	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(PutRoomUser))
 	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(DeleteRoomUsers))
-}
-
-func PostRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var post models.RequestRoomUserIds
-	if err := decodeBody(r, &post); err != nil {
-		respondJsonDecodeError(w, r, "Create room's user list")
-		return
-	}
-
-	roomId := bone.GetValue(r, "roomId")
-	roomUsers, pd := services.PostRoomUsers(roomId, &post)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	respond(w, r, http.StatusCreated, "application/json", roomUsers)
 }
 
 func PutRoomUsers(w http.ResponseWriter, r *http.Request) {

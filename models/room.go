@@ -183,20 +183,6 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
-	if r.Name == "" {
-		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "name",
-					Reason: "name is required, but it's empty.",
-				},
-			},
-		}
-	}
-
 	if r.Type == nil {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
@@ -225,6 +211,20 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
+	if *r.Type != ONE_ON_ONE && r.Name == "" {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "name",
+					Reason: "name is required, but it's empty.",
+				},
+			},
+		}
+	}
+
 	return nil
 }
 
@@ -244,7 +244,7 @@ func (r *Room) BeforeSave() {
 	r.Modified = nowTimestamp
 }
 
-func (r *Room) Put(put *Room) {
+func (r *Room) Put(put *Room) *ProblemDetail {
 	if put.Name != "" {
 		r.Name = put.Name
 	}
@@ -258,6 +258,33 @@ func (r *Room) Put(put *Room) {
 		r.MetaData = put.MetaData
 	}
 	if put.Type != nil {
-		r.Type = put.Type
+		if *r.Type == ONE_ON_ONE && *put.Type != ONE_ON_ONE {
+			return &ProblemDetail{
+				Title:     "Request parameter error. (Update room item)",
+				Status:    http.StatusBadRequest,
+				ErrorName: ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []InvalidParam{
+					InvalidParam{
+						Name:   "type",
+						Reason: "In case of 1-on-1 room type, type can not be changed.",
+					},
+				},
+			}
+		} else if *r.Type != ONE_ON_ONE && *put.Type == ONE_ON_ONE {
+			return &ProblemDetail{
+				Title:     "Request parameter error. (Update room item)",
+				Status:    http.StatusBadRequest,
+				ErrorName: ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []InvalidParam{
+					InvalidParam{
+						Name:   "type",
+						Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
+					},
+				},
+			}
+		} else {
+			r.Type = put.Type
+		}
 	}
+	return nil
 }

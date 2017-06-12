@@ -29,7 +29,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-1",
 							"type": "text",
 							"payload": {
@@ -48,7 +48,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-1",
 							"type": "text",
 							"payload": {
@@ -56,7 +56,7 @@ func TestPostMessages(t *testing.T) {
 							}
 						},
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-1",
 							"type": "text",
 							"payload": {
@@ -75,7 +75,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-1",
 							"type": "text",
 							"payload": {
@@ -83,7 +83,7 @@ func TestPostMessages(t *testing.T) {
 							}
 						},
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "text",
 							"payload": {
@@ -102,7 +102,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "image",
 							"payload": {
@@ -123,7 +123,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "not-exist-type",
 							"payload": {}
@@ -140,7 +140,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "text",
 							"payload": {
@@ -148,7 +148,7 @@ func TestPostMessages(t *testing.T) {
 							}
 						},
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "not-exist-user-id",
 							"type": "text",
 							"payload": {
@@ -167,7 +167,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "text",
 							"payload": {}
@@ -184,7 +184,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "image",
 							"payload": {
@@ -203,7 +203,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "image",
 							"payload": {
@@ -222,7 +222,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "not-exist-type"
 						}
@@ -238,7 +238,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "custom-user-id-2",
 							"type": "text"
 						}
@@ -273,7 +273,7 @@ func TestPostMessages(t *testing.T) {
 				{
 					"messages" : [
 						{
-							"roomId": "custom-room-id",
+							"roomId": "custom-room-id-1",
 							"userId": "not-exist-user-id",
 							"type": "text",
 							"payload": {
@@ -345,49 +345,49 @@ func TestGetMessage(t *testing.T) {
 		{
 			testNo:         1,
 			messageId:      createMessageIds[0],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-1","type":"text","payload":{"text":"Welcome to swagchat\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-1","type":"text","payload":{"text":"Welcome to swagchat\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         2,
 			messageId:      createMessageIds[1],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-1","type":"text","payload":{"text":"Hi custom\-room\-id\-1\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-1","type":"text","payload":{"text":"Hi custom-room-id-1\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         3,
 			messageId:      createMessageIds[2],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-1","type":"text","payload":{"text":"How\'s it going\?"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-1","type":"text","payload":{"text":"How\'s it going\?"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         4,
 			messageId:      createMessageIds[3],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-1","type":"text","payload":{"text":"Good\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-1","type":"text","payload":{"text":"Good\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         5,
 			messageId:      createMessageIds[4],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-2","type":"text","payload":{"text":"Welcome to swagchat\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-2","type":"text","payload":{"text":"Welcome to swagchat\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         6,
 			messageId:      createMessageIds[5],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-2","type":"image","payload":{"mime":"image\/png","sourceUrl":"http\:\/\/example.com\/source\.png","thumbnailUrl":"http\:\/\/example.com\/thumbnail\.png"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-2","type":"image","payload":{"mime":"image\/png","sourceUrl":"http\:\/\/example.com\/source\.png","thumbnailUrl":"http\:\/\/example.com\/thumbnail\.png"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         7,
 			messageId:      createMessageIds[6],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-2","type":"not-exist-type","payload":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-2","type":"not-exist-type","payload":{},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{
 			testNo:         8,
 			messageId:      createMessageIds[7],
-			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id","userId":"custom-user-id-2","type":"text","payload":{"text":"Bye\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
+			out:            `(?m)^{"messageId":"[a-z0-9-]+","roomId":"custom-room-id-1","userId":"custom-user-id-2","type":"text","payload":{"text":"Bye\!"},"created":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z","modified":"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})Z"}$`,
 			httpStatusCode: 200,
 		},
 		{

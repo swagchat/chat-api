@@ -1,10 +1,11 @@
 package models
 
 const (
-	ERROR_NAME_INVALID_JSON       = "invalid-json"
-	ERROR_NAME_INVALID_PARAM      = "invalid-param"
-	ERROR_NAME_DATABASE_ERROR     = "database-error"
-	ERROR_NAME_NOTIFICATION_ERROR = "notification-error"
+	ERROR_NAME_INVALID_JSON            = "invalid-json"
+	ERROR_NAME_INVALID_PARAM           = "invalid-param"
+	ERROR_NAME_DATABASE_ERROR          = "database-error"
+	ERROR_NAME_NOTIFICATION_ERROR      = "notification-error"
+	ERROR_NAME_OPERATION_NOT_PERMITTED = "operation-not-permitted"
 )
 
 type ProblemDetail struct {

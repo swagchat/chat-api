@@ -84,14 +84,48 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 				"ru.created AS ru_created, ",
 				"ru.modified AS ru_modified ",
 				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ",
-				"ON ru.room_id = r.room_id ",
-				"WHERE ru.user_id = :userId AND r.deleted = 0 ",
+				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ON ru.room_id=r.room_id ",
+				"WHERE ru.user_id=:userId AND r.deleted=0 ",
 				"ORDER BY r.last_message_updated DESC;")
 			params := map[string]interface{}{"userId": userId}
 			_, err := dbMap.Select(&rooms, query, params)
 			if err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
+			}
+
+			var oneOnOneUsers []*models.OneOnOneUser
+			query = utils.AppendStrings("SELECT ",
+				"r.room_id, ",
+				"u.name, ",
+				"u.picture_url ",
+				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
+				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ON ru.room_id=r.room_id ",
+				"LEFT JOIN ", TABLE_NAME_USER, " AS u ON ru.user_id=u.user_id ",
+				"WHERE r.room_id IN ( ",
+				"SELECT room_id ",
+				"FROM ", TABLE_NAME_ROOM_USER, " ",
+				"WHERE user_id=:userId ",
+				") ",
+				"AND r.deleted=0 AND r.type=1 AND ru.user_id!=:userId ",
+			)
+			params = map[string]interface{}{"userId": userId}
+			_, err = dbMap.Select(&oneOnOneUsers, query, params)
+			if err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
+			}
+
+			for _, room := range rooms {
+				if *room.Type == models.ONE_ON_ONE {
+					room.Name = ""
+					room.PictureUrl = ""
+					for _, oneOnOneUser := range oneOnOneUsers {
+						if room.RoomId == oneOnOneUser.RoomId {
+							room.Name = oneOnOneUser.Name
+							room.PictureUrl = oneOnOneUser.PictureUrl
+							break
+						}
+					}
+				}
 			}
 			user.Rooms = rooms
 		}

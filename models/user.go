@@ -51,6 +51,12 @@ type RoomForUser struct {
 	RuModified    int64          `json:"ruModified" db:"ru_modified"`
 }
 
+type OneOnOneUser struct {
+	RoomId     string `json:"roomId" db:"room_id"`
+	Name       string `json:"name" db:"name"`
+	PictureUrl string `json:"pictureUrl,omitempty" db:"picture_url"`
+}
+
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
@@ -60,7 +66,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl string         `json:"informationUrl,omitempty"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsPublic       *bool          `json:"isPublic,omitempty""`
+		IsPublic       *bool          `json:"isPublic,omitempty"`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -95,7 +101,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		PictureUrl         string         `json:"pictureUrl,omitempty"`
 		InformationUrl     string         `json:"informationUrl,omitempty"`
 		MetaData           utils.JSONText `json:"metaData"`
-		Type               *RoomType      `json:"type,omitempty""`
+		Type               *RoomType      `json:"type,omitempty"`
 		LastMessage        string         `json:"lastMessage"`
 		LastMessageUpdated string         `json:"lastMessageUpdated"`
 		Created            string         `json:"created"`
