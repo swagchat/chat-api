@@ -10,8 +10,8 @@ func (provider MysqlProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
-	return RdbSelectUser(userId, isWithRooms, isWithDevices)
+func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
 func (provider MysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {

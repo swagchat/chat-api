@@ -54,13 +54,14 @@ func RdbInsertUser(user *models.User) StoreResult {
 	return result
 }
 
-func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
+func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
 	result := StoreResult{}
 	var users []*models.User
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND deleted=0;")
 	params := map[string]interface{}{"userId": userId}
 	if _, err := dbMap.Select(&users, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting user item.", err)
+		return result
 	}
 	var user *models.User
 	if len(users) == 1 {
@@ -91,6 +92,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 			_, err := dbMap.Select(&rooms, query, params)
 			if err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
+				return result
 			}
 
 			var oneOnOneUsers []*models.OneOnOneUser
@@ -112,6 +114,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 			_, err = dbMap.Select(&oneOnOneUsers, query, params)
 			if err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
+				return result
 			}
 
 			for _, room := range rooms {
@@ -137,9 +140,16 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
 			_, err := dbMap.Select(&devices, query, params)
 			if err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
+				return result
 			}
 			user.Devices = devices
 		}
+
+		if isWithBlocks {
+			dRes := RdbSelectBlockUsersByUserId(userId)
+			user.Blocks = dRes.Data.([]string)
+		}
+
 		result.Data = user
 	}
 	return result

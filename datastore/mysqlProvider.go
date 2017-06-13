@@ -70,6 +70,7 @@ func (provider MysqlProvider) Connect() error {
 func (provider MysqlProvider) Init() {
 	provider.CreateApiStore()
 	provider.CreateUserStore()
+	provider.CreateBlockUserStore()
 	provider.CreateRoomStore()
 	provider.CreateRoomUserStore()
 	provider.CreateMessageStore()

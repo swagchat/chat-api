@@ -10,8 +10,8 @@ func (provider GcpSqlProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider GcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
-	return RdbSelectUser(userId, isWithRooms, isWithDevices)
+func (provider GcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
 func (provider GcpSqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {

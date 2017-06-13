@@ -64,6 +64,7 @@ func (provider GcpSqlProvider) Connect() error {
 func (provider GcpSqlProvider) Init() {
 	provider.CreateApiStore()
 	provider.CreateUserStore()
+	provider.CreateBlockUserStore()
 	provider.CreateRoomStore()
 	provider.CreateRoomUserStore()
 	provider.CreateMessageStore()

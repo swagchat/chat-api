@@ -24,6 +24,7 @@ type Provider interface {
 	DropDatabase() error
 	ApiStore
 	UserStore
+	BlockUserStore
 	RoomStore
 	RoomUserStore
 	MessageStore

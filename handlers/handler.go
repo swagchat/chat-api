@@ -43,6 +43,7 @@ func StartServer(ctx context.Context) {
 	Mux.GetFunc("/stats", stats_api.Handler)
 	Mux.OptionsFunc("/*", optionsHandler)
 	SetUserMux()
+	SetBlockUserMux()
 	SetRoomMux()
 	SetRoomUserMux()
 	SetMessageMux()

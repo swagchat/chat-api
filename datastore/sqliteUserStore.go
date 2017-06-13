@@ -10,8 +10,8 @@ func (provider SqliteProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider SqliteProvider) SelectUser(userId string, isWithRooms, isWithDevices bool) StoreResult {
-	return RdbSelectUser(userId, isWithRooms, isWithDevices)
+func (provider SqliteProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
 func (provider SqliteProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {

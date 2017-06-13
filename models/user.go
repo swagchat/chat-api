@@ -28,6 +28,7 @@ type User struct {
 
 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices []*Device      `json:"devices,omitempty" db:"-"`
+	Blocks  []string       `json:"blocks,omitempty" db:"-"`
 }
 
 type RoomForUser struct {
@@ -72,6 +73,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Modified       string         `json:"modified"`
 		Rooms          []*RoomForUser `json:"rooms,omitempty"`
 		Devices        []*Device      `json:"devices,omitempty"`
+		Blocks         []string       `json:"blocks,omitempty"`
 	}{
 		UserId:         u.UserId,
 		Name:           u.Name,
@@ -85,6 +87,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
 		Rooms:          u.Rooms,
 		Devices:        u.Devices,
+		Blocks:         u.Blocks,
 	})
 }
 

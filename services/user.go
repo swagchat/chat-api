@@ -42,7 +42,7 @@ func GetUsers() (*models.Users, *models.ProblemDetail) {
 }
 
 func GetUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectUser(userId, true, true)
+	dRes := datastore.GetProvider().SelectUser(userId, true, true, true)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -111,7 +111,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 }
 
 func selectUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectUser(userId, false, false)
+	dRes := datastore.GetProvider().SelectUser(userId, false, false, false)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

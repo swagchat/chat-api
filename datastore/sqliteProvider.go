@@ -31,6 +31,7 @@ func (provider SqliteProvider) Connect() error {
 func (provider SqliteProvider) Init() {
 	provider.CreateApiStore()
 	provider.CreateUserStore()
+	provider.CreateBlockUserStore()
 	provider.CreateRoomStore()
 	provider.CreateRoomUserStore()
 	provider.CreateMessageStore()
