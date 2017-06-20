@@ -21,6 +21,7 @@ type User struct {
 	UnreadCount    *uint64        `json:"unreadCount" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
+	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created" db:"created,notnull"`
 	Modified       int64          `json:"modified" db:"modified,notnull"`
@@ -68,6 +69,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
 		IsPublic       *bool          `json:"isPublic,omitempty"`
+		IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -82,6 +84,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
 		IsPublic:       u.IsPublic,
+		IsCanBlock:     u.IsCanBlock,
 		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
@@ -178,6 +181,11 @@ func (u *User) BeforeSave() {
 		u.IsPublic = &isPublic
 	}
 
+	if u.IsCanBlock == nil {
+		isCanBlock := true
+		u.IsCanBlock = &isCanBlock
+	}
+
 	if u.UnreadCount == nil {
 		unreadCount := uint64(0)
 		u.UnreadCount = &unreadCount
@@ -208,5 +216,8 @@ func (u *User) Put(put *User) {
 	}
 	if put.IsPublic != nil {
 		u.IsPublic = put.IsPublic
+	}
+	if put.IsCanBlock != nil {
+		u.IsCanBlock = put.IsCanBlock
 	}
 }
