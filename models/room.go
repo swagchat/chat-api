@@ -51,6 +51,7 @@ type Room struct {
 	LastMessageUpdated    int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
 	MessageCount          int64          `json:"messageCount" db:"-"`
 	NotificationTopicId   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
+	IsCanLeft             *bool          `json:"isCanLeft,omitempty" db:"is_can_left,notnull"`
 	Created               int64          `json:"created" db:"created,notnull"`
 	Modified              int64          `json:"modified" db:"modified,notnull"`
 	Deleted               int64          `json:"-" db:"deleted,notnull"`
@@ -65,7 +66,7 @@ type UserForRoom struct {
 	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
-	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
+	IsCanLeft      *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	Created        int64          `json:"created" db:"created"`
 	Modified       int64          `json:"modified" db:"modified"`
 
@@ -99,6 +100,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		LastMessageUpdated    string         `json:"lastMessageUpdated"`
 		MessageCount          int64          `json:"messageCount"`
 		NotificationTopicId   string         `json:"notificationTopicId,omitempty"`
+		IsCanLeft             *bool          `json:"isCanLeft,omitempty"`
 		Created               string         `json:"created"`
 		Modified              string         `json:"modified"`
 		Users                 []*UserForRoom `json:"users,omitempty"`
@@ -114,6 +116,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		LastMessage:        r.LastMessage,
 		LastMessageUpdated: lmu,
 		MessageCount:       r.MessageCount,
+		IsCanLeft:          r.IsCanLeft,
 		Created:            time.Unix(r.Created, 0).In(l).Format(time.RFC3339),
 		Modified:           time.Unix(r.Modified, 0).In(l).Format(time.RFC3339),
 		Users:              r.Users,
@@ -128,7 +131,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		PictureUrl     string         `json:"pictureUrl,omitempty"`
 		InformationUrl string         `json:"informationUrl,omitempty"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
+		IsCanLeft      *bool          `json:"isCanBlock,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
 		RuUnreadCount  int64          `json:"ruUnreadCount"`
@@ -141,7 +144,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		PictureUrl:     ufr.PictureUrl,
 		InformationUrl: ufr.InformationUrl,
 		MetaData:       ufr.MetaData,
-		IsCanBlock:     ufr.IsCanBlock,
+		IsCanLeft:      ufr.IsCanLeft,
 		Created:        time.Unix(ufr.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(ufr.Modified, 0).In(l).Format(time.RFC3339),
 		RuUnreadCount:  ufr.RuUnreadCount,
@@ -248,6 +251,11 @@ func (r *Room) BeforeSave() {
 		r.MetaData = []byte("{}")
 	}
 
+	if r.IsCanLeft == nil {
+		isCanBlock := true
+		r.IsCanLeft = &isCanBlock
+	}
+
 	nowTimestamp := time.Now().Unix()
 	if r.Created == 0 {
 		r.Created = nowTimestamp
@@ -267,6 +275,9 @@ func (r *Room) Put(put *Room) *ProblemDetail {
 	}
 	if put.MetaData != nil {
 		r.MetaData = put.MetaData
+	}
+	if put.IsCanLeft != nil {
+		r.IsCanLeft = put.IsCanLeft
 	}
 	if put.Type != nil {
 		if *r.Type == ONE_ON_ONE && *put.Type != ONE_ON_ONE {

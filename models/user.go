@@ -43,6 +43,7 @@ type RoomForUser struct {
 	Type               *RoomType      `json:"type,omitempty" db:"type"`
 	LastMessage        string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated int64          `json:"lastMessageUpdated" db:"last_message_updated"`
+	IsCanLeft          *bool          `json:"isCanLeft,omitempty" db:"is_can_left,notnull"`
 	Created            int64          `json:"created" db:"created"`
 	Modified           int64          `json:"modified" db:"modified"`
 
@@ -110,6 +111,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		Type               *RoomType      `json:"type,omitempty"`
 		LastMessage        string         `json:"lastMessage"`
 		LastMessageUpdated string         `json:"lastMessageUpdated"`
+		IsCanLeft          *bool          `json:"isCanLeft,omitempty"`
 		Created            string         `json:"created"`
 		Modified           string         `json:"modified"`
 		RuUnreadCount      int64          `json:"ruUnreadCount"`
@@ -126,6 +128,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		Type:               rfu.Type,
 		LastMessage:        rfu.LastMessage,
 		LastMessageUpdated: lmu,
+		IsCanLeft:          rfu.IsCanLeft,
 		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
 		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
 		RuUnreadCount:      rfu.RuUnreadCount,

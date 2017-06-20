@@ -78,6 +78,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 				"r.type, ",
 				"r.last_message, ",
 				"r.last_message_updated, ",
+				"r.is_can_left, ",
 				"r.created, ",
 				"r.modified, ",
 				"ru.unread_count AS ru_unread_count, ",
