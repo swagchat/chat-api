@@ -2,6 +2,7 @@ package models
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"encoding/json"
@@ -37,21 +38,22 @@ type Rooms struct {
 }
 
 type Room struct {
-	Id                  uint64         `json:"-" db:"id"`
-	RoomId              string         `json:"roomId" db:"room_id,notnull"`
-	UserId              string         `json:"userId" db:"user_id,notnull"`
-	Name                string         `json:"name" db:"name,notnull"`
-	PictureUrl          string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl      string         `json:"informationUrl,omitempty" db:"information_url"`
-	MetaData            utils.JSONText `json:"metaData" db:"meta_data"`
-	Type                *RoomType      `json:"type,omitempty" db:"type,notnull"`
-	LastMessage         string         `json:"lastMessage" db:"last_message"`
-	LastMessageUpdated  int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
-	MessageCount        int64          `json:"messageCount" db:"-"`
-	NotificationTopicId string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
-	Created             int64          `json:"created" db:"created,notnull"`
-	Modified            int64          `json:"modified" db:"modified,notnull"`
-	Deleted             int64          `json:"-" db:"deleted,notnull"`
+	Id                    uint64         `json:"-" db:"id"`
+	RoomId                string         `json:"roomId" db:"room_id,notnull"`
+	UserId                string         `json:"userId" db:"user_id,notnull"`
+	Name                  string         `json:"name" db:"name,notnull"`
+	PictureUrl            string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationUrl        string         `json:"informationUrl,omitempty" db:"information_url"`
+	MetaData              utils.JSONText `json:"metaData" db:"meta_data"`
+	AvailableMessageTypes string         `json:"availableMessageTypes,omitempty" db:"available_message_types"`
+	Type                  *RoomType      `json:"type,omitempty" db:"type,notnull"`
+	LastMessage           string         `json:"lastMessage" db:"last_message"`
+	LastMessageUpdated    int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
+	MessageCount          int64          `json:"messageCount" db:"-"`
+	NotificationTopicId   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
+	Created               int64          `json:"created" db:"created,notnull"`
+	Modified              int64          `json:"modified" db:"modified,notnull"`
+	Deleted               int64          `json:"-" db:"deleted,notnull"`
 
 	Users []*UserForRoom `json:"users,omitempty" db:"-"`
 }
@@ -79,28 +81,34 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 	if r.LastMessageUpdated != 0 {
 		lmu = time.Unix(r.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
 	}
+	var availableMessageTypesSlice []string
+	if r.AvailableMessageTypes != "" {
+		availableMessageTypesSlice = strings.Split(r.AvailableMessageTypes, ",")
+	}
 	return json.Marshal(&struct {
-		RoomId              string         `json:"roomId"`
-		UserId              string         `json:"userId"`
-		Name                string         `json:"name"`
-		PictureUrl          string         `json:"pictureUrl,omitempty"`
-		InformationUrl      string         `json:"informationUrl,omitempty"`
-		MetaData            utils.JSONText `json:"metaData"`
-		Type                *RoomType      `json:"type"`
-		LastMessage         string         `json:"lastMessage"`
-		LastMessageUpdated  string         `json:"lastMessageUpdated"`
-		MessageCount        int64          `json:"messageCount"`
-		NotificationTopicId string         `json:"notificationTopicId,omitempty"`
-		Created             string         `json:"created"`
-		Modified            string         `json:"modified"`
-		Users               []*UserForRoom `json:"users,omitempty"`
+		RoomId                string         `json:"roomId"`
+		UserId                string         `json:"userId"`
+		Name                  string         `json:"name"`
+		PictureUrl            string         `json:"pictureUrl,omitempty"`
+		InformationUrl        string         `json:"informationUrl,omitempty"`
+		MetaData              utils.JSONText `json:"metaData"`
+		AvailableMessageTypes []string       `json:"availableMessageTypes,omitempty"`
+		Type                  *RoomType      `json:"type"`
+		LastMessage           string         `json:"lastMessage"`
+		LastMessageUpdated    string         `json:"lastMessageUpdated"`
+		MessageCount          int64          `json:"messageCount"`
+		NotificationTopicId   string         `json:"notificationTopicId,omitempty"`
+		Created               string         `json:"created"`
+		Modified              string         `json:"modified"`
+		Users                 []*UserForRoom `json:"users,omitempty"`
 	}{
-		RoomId:             r.RoomId,
-		UserId:             r.UserId,
-		Name:               r.Name,
-		PictureUrl:         r.PictureUrl,
-		InformationUrl:     r.InformationUrl,
-		MetaData:           r.MetaData,
+		RoomId:                r.RoomId,
+		UserId:                r.UserId,
+		Name:                  r.Name,
+		PictureUrl:            r.PictureUrl,
+		InformationUrl:        r.InformationUrl,
+		MetaData:              r.MetaData,
+		AvailableMessageTypes: availableMessageTypesSlice,
 		Type:               r.Type,
 		LastMessage:        r.LastMessage,
 		LastMessageUpdated: lmu,

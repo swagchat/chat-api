@@ -76,7 +76,7 @@ func RdbSelectRoom(roomId string) StoreResult {
 func RdbSelectRooms() StoreResult {
 	result := StoreResult{}
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
+	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
 	_, err := dbMap.Select(&rooms, query)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room items.", err)
