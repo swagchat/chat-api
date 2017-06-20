@@ -9,12 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/fairway-corp/swagchat-api/datastore"
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/notification"
 	"github.com/fairway-corp/swagchat-api/utils"
+	"go.uber.org/zap"
 )
 
 func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
@@ -114,63 +113,9 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 }
 
 func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *models.ProblemDetail) {
-	var err error
-	limit := 10
-	offset := 0
-	order := "ASC"
-	if limitArray, ok := params["limit"]; ok {
-		limit, err = strconv.Atoi(limitArray[0])
-		if err != nil {
-			return nil, &models.ProblemDetail{
-				Title:     "Request parameter error. (Get room's message list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
-				InvalidParams: []models.InvalidParam{
-					models.InvalidParam{
-						Name:   "limit",
-						Reason: "limit is incorrect.",
-					},
-				},
-			}
-		}
-	}
-	if offsetArray, ok := params["offset"]; ok {
-		offset, err = strconv.Atoi(offsetArray[0])
-		if err != nil {
-			return nil, &models.ProblemDetail{
-				Title:     "Request parameter error. (Get room's message list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
-				InvalidParams: []models.InvalidParam{
-					models.InvalidParam{
-						Name:   "offset",
-						Reason: "offset is incorrect.",
-					},
-				},
-			}
-		}
-	}
-	if orderArray, ok := params["order"]; ok {
-		order := orderArray[0]
-		allowedOrders := []string{
-			"DESC",
-			"desc",
-			"ASC",
-			"asc",
-		}
-		if utils.SearchStringValueInSlice(allowedOrders, order) {
-			return nil, &models.ProblemDetail{
-				Title:     "Request parameter error. (Get room's message list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
-				InvalidParams: []models.InvalidParam{
-					models.InvalidParam{
-						Name:   "order",
-						Reason: "order is incorrect.",
-					},
-				},
-			}
-		}
+	limit, offset, order, pd := setPagingParams(params)
+	if pd != nil {
+		return nil, pd
 	}
 
 	dRes := datastore.GetProvider().SelectMessages(roomId, limit, offset, order)
@@ -212,4 +157,66 @@ func unsubscribeByRoomId(ctx context.Context, roomId string) {
 		)
 	}
 	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+}
+
+func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail) {
+	var err error
+	limit := 10
+	offset := 0
+	order := "ASC"
+	if limitArray, ok := params["limit"]; ok {
+		limit, err = strconv.Atoi(limitArray[0])
+		if err != nil {
+			return limit, offset, order, &models.ProblemDetail{
+				Title:     "Request parameter error.",
+				Status:    http.StatusBadRequest,
+				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []models.InvalidParam{
+					models.InvalidParam{
+						Name:   "limit",
+						Reason: "limit is incorrect.",
+					},
+				},
+			}
+		}
+	}
+	if offsetArray, ok := params["offset"]; ok {
+		offset, err = strconv.Atoi(offsetArray[0])
+		if err != nil {
+			return limit, offset, order, &models.ProblemDetail{
+				Title:     "Request parameter error.",
+				Status:    http.StatusBadRequest,
+				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []models.InvalidParam{
+					models.InvalidParam{
+						Name:   "offset",
+						Reason: "offset is incorrect.",
+					},
+				},
+			}
+		}
+	}
+	if orderArray, ok := params["order"]; ok {
+		order := orderArray[0]
+		allowedOrders := []string{
+			"DESC",
+			"desc",
+			"ASC",
+			"asc",
+		}
+		if utils.SearchStringValueInSlice(allowedOrders, order) {
+			return limit, offset, order, &models.ProblemDetail{
+				Title:     "Request parameter error.",
+				Status:    http.StatusBadRequest,
+				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []models.InvalidParam{
+					models.InvalidParam{
+						Name:   "order",
+						Reason: "order is incorrect.",
+					},
+				},
+			}
+		}
+	}
+	return limit, offset, order, nil
 }
