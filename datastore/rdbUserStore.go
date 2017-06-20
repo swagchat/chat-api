@@ -308,7 +308,7 @@ func RdbUpdateUserDeleted(userId string) StoreResult {
 func RdbSelectContacts(userId string) StoreResult {
 	result := StoreResult{}
 	var users []*models.User
-	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_public, created, modified FROM ", TABLE_NAME_USER, " WHERE user_id IN (SELECT user_id FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId)) GROUP BY user_id ORDER BY modified DESC;")
+	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_public, created, modified FROM ", TABLE_NAME_USER, " WHERE user_id IN (SELECT user_id FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id!=:userId AND room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId)) GROUP BY user_id ORDER BY modified DESC;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
