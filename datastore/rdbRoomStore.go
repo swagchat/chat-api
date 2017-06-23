@@ -95,6 +95,7 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 		"u.information_url, ",
 		"u.meta_data, ",
 		"u.is_can_block, ",
+		"u.is_show_users, ",
 		"u.created, ",
 		"u.modified, ",
 		"ru.unread_count AS ru_unread_count, ",

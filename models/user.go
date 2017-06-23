@@ -22,6 +22,7 @@ type User struct {
 	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
+	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
 	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
@@ -63,12 +64,6 @@ type RoomForUser struct {
 	RuModified    int64          `json:"ruModified" db:"ru_modified"`
 }
 
-type OneOnOneUser struct {
-	RoomId     string `json:"roomId" db:"room_id"`
-	Name       string `json:"name" db:"name"`
-	PictureUrl string `json:"pictureUrl,omitempty" db:"picture_url"`
-}
-
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
@@ -79,7 +74,8 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
 		IsPublic       *bool          `json:"isPublic,omitempty"`
-		IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
+		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
+		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -95,6 +91,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		MetaData:       u.MetaData,
 		IsPublic:       u.IsPublic,
 		IsCanBlock:     u.IsCanBlock,
+		IsShowUsers:    u.IsShowUsers,
 		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
