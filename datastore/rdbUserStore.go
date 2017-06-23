@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/fairway-corp/swagchat-api/models"
@@ -101,7 +102,8 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 				"r.room_id, ",
 				"u.user_id, ",
 				"u.name, ",
-				"u.picture_url ",
+				"u.picture_url, ",
+				"u.is_show_users ",
 				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
 				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ON ru.room_id=r.room_id ",
 				"LEFT JOIN ", TABLE_NAME_USER, " AS u ON ru.user_id=u.user_id ",
@@ -305,7 +307,25 @@ func RdbUpdateUserDeleted(userId string) StoreResult {
 func RdbSelectContacts(userId string) StoreResult {
 	result := StoreResult{}
 	var users []*models.User
-	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_public, created, modified FROM ", TABLE_NAME_USER, " WHERE user_id IN (SELECT user_id FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id!=:userId AND room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId)) GROUP BY user_id ORDER BY modified DESC;")
+	query := utils.AppendStrings("SELECT ",
+		"u.user_id, ",
+		"u.name, ",
+		"u.picture_url, ",
+		"u.information_url, ",
+		"u.unread_count, ",
+		"u.meta_data, ",
+		"u.is_public, ",
+		"u.created, ",
+		"u.modified ",
+		"FROM ", TABLE_NAME_USER, " as u ",
+		"WHERE u.user_id IN (",
+		"SELECT ru.user_id FROM ", TABLE_NAME_ROOM_USER, " as ru WHERE ru.user_id!=:userId AND ru.room_id IN (",
+		"SELECT ru.room_id FROM ", TABLE_NAME_ROOM_USER, " as ru ",
+		"LEFT JOIN ", TABLE_NAME_ROOM, " as r ON ru.room_id = r.room_id ",
+		"WHERE ru.user_id=:userId AND r.type!=", strconv.Itoa(int(models.NOTICE_ROOM)),
+		")) ",
+		"AND u.is_show_users=1 ",
+		"GROUP BY u.user_id ORDER BY u.modified DESC")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
