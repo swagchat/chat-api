@@ -28,6 +28,8 @@ func (rt RoomType) String() string {
 		return "PUBLIC_ROOM"
 	case ONE_ON_ONE:
 		return "ONE_ON_ONE"
+	case NOTICE_ROOM:
+		return "NOTICE_ROOM"
 	default:
 		return "Unknown"
 	}
