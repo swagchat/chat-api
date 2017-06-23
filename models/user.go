@@ -34,10 +34,11 @@ type User struct {
 }
 
 type UserMini struct {
-	RoomId     string `json:"roomId" db:"room_id"`
-	UserId     string `json:"userId" db:"user_id"`
-	Name       string `json:"name" db:"name"`
-	PictureUrl string `json:"pictureUrl,omitempty" db:"picture_url"`
+	RoomId      string `json:"roomId" db:"room_id"`
+	UserId      string `json:"userId" db:"user_id"`
+	Name        string `json:"name" db:"name"`
+	PictureUrl  string `json:"pictureUrl,omitempty" db:"picture_url"`
+	IsShowUsers *bool  `json:"isShowUsers,omitempty" db:"is_show_users"`
 }
 
 type RoomForUser struct {
@@ -195,6 +196,11 @@ func (u *User) BeforeSave() {
 	if u.IsCanBlock == nil {
 		isCanBlock := true
 		u.IsCanBlock = &isCanBlock
+	}
+
+	if u.IsShowUsers == nil {
+		isShowUsers := true
+		u.IsShowUsers = &isShowUsers
 	}
 
 	if u.UnreadCount == nil {
