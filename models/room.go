@@ -16,6 +16,7 @@ const (
 	ONE_ON_ONE RoomType = iota + 1
 	PRIVATE_ROOM
 	PUBLIC_ROOM
+	NOTICE_ROOM
 	ROOM_TYPE_END
 )
 
