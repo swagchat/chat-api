@@ -18,18 +18,25 @@ type User struct {
 	Name           string         `json:"name" db:"name,notnull"`
 	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
-	UnreadCount    *uint64        `json:"unreadCount" db:"unread_count,notnull"`
-	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
+	UnreadCount    *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
+	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
-	Created        int64          `json:"created" db:"created,notnull"`
-	Modified       int64          `json:"modified" db:"modified,notnull"`
+	Created        int64          `json:"created,omitempty" db:"created,notnull"`
+	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
 	Deleted        int64          `json:"-" db:"deleted,notnull"`
 
 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices []*Device      `json:"devices,omitempty" db:"-"`
 	Blocks  []string       `json:"blocks,omitempty" db:"-"`
+}
+
+type UserMini struct {
+	RoomId     string `json:"roomId" db:"room_id"`
+	UserId     string `json:"userId" db:"user_id"`
+	Name       string `json:"name" db:"name"`
+	PictureUrl string `json:"pictureUrl,omitempty" db:"picture_url"`
 }
 
 type RoomForUser struct {
@@ -46,6 +53,8 @@ type RoomForUser struct {
 	IsCanLeft          *bool          `json:"isCanLeft,omitempty" db:"is_can_left,notnull"`
 	Created            int64          `json:"created" db:"created"`
 	Modified           int64          `json:"modified" db:"modified"`
+
+	Users []*UserMini `json:"users" db:"-"`
 
 	// from RoomUser
 	RuUnreadCount int64          `json:"ruUnreadCount" db:"ru_unread_count"`
@@ -114,6 +123,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		IsCanLeft          *bool          `json:"isCanLeft,omitempty"`
 		Created            string         `json:"created"`
 		Modified           string         `json:"modified"`
+		Users              []*UserMini    `json:"users"`
 		RuUnreadCount      int64          `json:"ruUnreadCount"`
 		RuMetaData         utils.JSONText `json:"ruMetaData"`
 		RuCreated          string         `json:"ruCreated"`
@@ -131,6 +141,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		IsCanLeft:          rfu.IsCanLeft,
 		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
 		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
+		Users:              rfu.Users,
 		RuUnreadCount:      rfu.RuUnreadCount,
 		RuMetaData:         rfu.RuMetaData,
 		RuCreated:          time.Unix(rfu.RuCreated, 0).In(l).Format(time.RFC3339),

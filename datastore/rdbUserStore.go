@@ -96,9 +96,10 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 				return result
 			}
 
-			var oneOnOneUsers []*models.OneOnOneUser
+			var userMinis []*models.UserMini
 			query = utils.AppendStrings("SELECT ",
 				"r.room_id, ",
+				"u.user_id, ",
 				"u.name, ",
 				"u.picture_url ",
 				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
@@ -109,25 +110,20 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 				"FROM ", TABLE_NAME_ROOM_USER, " ",
 				"WHERE user_id=:userId ",
 				") ",
-				"AND r.deleted=0 AND r.type=1 AND ru.user_id!=:userId ",
+				"ORDER BY ru.room_id",
 			)
 			params = map[string]interface{}{"userId": userId}
-			_, err = dbMap.Select(&oneOnOneUsers, query, params)
+			_, err = dbMap.Select(&userMinis, query, params)
 			if err != nil {
 				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
 				return result
 			}
 
 			for _, room := range rooms {
-				if *room.Type == models.ONE_ON_ONE {
-					room.Name = ""
-					room.PictureUrl = ""
-					for _, oneOnOneUser := range oneOnOneUsers {
-						if room.RoomId == oneOnOneUser.RoomId {
-							room.Name = oneOnOneUser.Name
-							room.PictureUrl = oneOnOneUser.PictureUrl
-							break
-						}
+				room.Users = make([]*models.UserMini, 0)
+				for _, userMini := range userMinis {
+					if room.RoomId == userMini.RoomId {
+						room.Users = append(room.Users, userMini)
 					}
 				}
 			}
