@@ -17,10 +17,9 @@ SwagChat is an open source chat components for your webapps.
 ## Components
 
 * **RESTful API Server (Go) ---> This repository**
-* Realtime Messaging (Go) ---> In development ...
+* [Realtime Messaging (Go)](https://github.com/fairway-corp/swagchat-realtime)
 * [Client SDK (TypeScript & JavaScript)](https://github.com/fairway-corp/swagchat-sdk)
-* UIKit (Typescript - React) ---> In development ...
-
+* [UIKit (Typescript - React)](https://github.com/fairway-corp/react-swagchat)
 
 ## Architecture
 
@@ -69,7 +68,7 @@ You can choose from the followings.
 
 Just run the executable binary.
 
-You can download binary from [here](https://github.com/fairway-corp/swagchat-api/releases)
+You can download binary from [Release page](https://github.com/fairway-corp/swagchat-api/releases)
 
 ```
 # In the case of macOS
@@ -80,7 +79,7 @@ Not For Production Use!
 
 ## Configuration
 
-To override the default configuration options, make a copy of `example.swagchat.yaml` and name it `swagchat.yaml`.
+To override the default configuration options, make a copy of `config/example.swagchat.yaml` and name it `config/swagchat.yaml`.
 
 Or you can overwrite it with environment variable, runtime parameter.
 
