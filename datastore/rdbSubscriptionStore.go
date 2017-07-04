@@ -8,8 +8,7 @@ import (
 )
 
 func RdbCreateSubscriptionStore() {
-	tableMap := dbMap.AddTableWithName(models.Subscription{}, TABLE_NAME_SUBSCRIPTION)
-	tableMap.SetUniqueTogether("room_id", "user_id", "platform")
+	_ = dbMap.AddTableWithName(models.Subscription{}, TABLE_NAME_SUBSCRIPTION)
 	if err := dbMap.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 	}
@@ -45,7 +44,7 @@ func RdbSelectSubscription(roomId, userId string, platform int) StoreResult {
 func RdbSelectSubscriptionsByRoomId(roomId string) StoreResult {
 	result := StoreResult{}
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND deleted=0;")
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND deleted!=0;")
 	params := map[string]interface{}{
 		"roomId": roomId,
 	}
@@ -59,7 +58,7 @@ func RdbSelectSubscriptionsByRoomId(roomId string) StoreResult {
 func RdbSelectSubscriptionsByUserId(userId string) StoreResult {
 	result := StoreResult{}
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND deleted=0;")
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND deleted!=0;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
@@ -88,7 +87,7 @@ func RdbSelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) Stor
 func RdbSelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
 	result := StoreResult{}
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND platform=:platform AND deleted=0;")
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND platform=:platform AND deleted!=0;")
 	params := map[string]interface{}{
 		"userId":   userId,
 		"platform": platform,

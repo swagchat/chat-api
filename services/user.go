@@ -103,8 +103,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		return dRes.ProblemDetail
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, _ := context.WithCancel(context.Background())
 	go unsubscribeByUserId(ctx, userId)
 
 	return nil
