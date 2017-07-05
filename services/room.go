@@ -154,7 +154,7 @@ func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 }
 
 func unsubscribeByRoomId(ctx context.Context, roomId string, wg *sync.WaitGroup) {
-	dRes := datastore.GetProvider().SelectSubscriptionsByRoomId(roomId)
+	dRes := datastore.GetProvider().SelectDeletedSubscriptionsByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

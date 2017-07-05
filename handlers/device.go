@@ -10,30 +10,10 @@ import (
 )
 
 func SetDeviceMux() {
-	Mux.PostFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(PostDevice))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", colsHandler(GetDevices))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(GetDevice))
 	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(PutDevice))
 	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(DeleteDevice))
-}
-
-func PostDevice(w http.ResponseWriter, r *http.Request) {
-	var post models.Device
-	if err := decodeBody(r, &post); err != nil {
-		respondJsonDecodeError(w, r, "Create device item")
-		return
-	}
-
-	post.UserId = bone.GetValue(r, "userId")
-	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	post.Platform = platform
-	device, pd := services.PostDevice(&post)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	respond(w, r, http.StatusCreated, "application/json", device)
 }
 
 func GetDevices(w http.ResponseWriter, r *http.Request) {

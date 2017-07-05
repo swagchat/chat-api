@@ -41,7 +41,7 @@ func RdbSelectSubscription(roomId, userId string, platform int) StoreResult {
 	return result
 }
 
-func RdbSelectSubscriptionsByRoomId(roomId string) StoreResult {
+func RdbSelectDeletedSubscriptionsByRoomId(roomId string) StoreResult {
 	result := StoreResult{}
 	var subscriptions []*models.Subscription
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND deleted!=0;")
@@ -55,7 +55,7 @@ func RdbSelectSubscriptionsByRoomId(roomId string) StoreResult {
 	return result
 }
 
-func RdbSelectSubscriptionsByUserId(userId string) StoreResult {
+func RdbSelectDeletedSubscriptionsByUserId(userId string) StoreResult {
 	result := StoreResult{}
 	var subscriptions []*models.Subscription
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND deleted!=0;")
@@ -69,22 +69,7 @@ func RdbSelectSubscriptionsByUserId(userId string) StoreResult {
 	return result
 }
 
-func RdbSelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) StoreResult {
-	result := StoreResult{}
-	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND platform=:platform AND deleted=0;")
-	params := map[string]interface{}{
-		"roomId":   roomId,
-		"platform": platform,
-	}
-	if _, err := dbMap.Select(&subscriptions, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting subscription items.", err)
-	}
-	result.Data = subscriptions
-	return result
-}
-
-func RdbSelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
+func RdbSelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
 	result := StoreResult{}
 	var subscriptions []*models.Subscription
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND platform=:platform AND deleted!=0;")

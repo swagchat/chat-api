@@ -123,7 +123,7 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 }
 
 func unsubscribeByUserId(ctx context.Context, userId string) {
-	dRes := datastore.GetProvider().SelectSubscriptionsByUserId(userId)
+	dRes := datastore.GetProvider().SelectDeletedSubscriptionsByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

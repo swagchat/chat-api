@@ -14,20 +14,16 @@ func (provider GcpSqlProvider) SelectSubscription(roomId, userId string, platfor
 	return RdbSelectSubscription(roomId, userId, platform)
 }
 
-func (provider GcpSqlProvider) SelectSubscriptionsByRoomId(roomId string) StoreResult {
-	return RdbSelectSubscriptionsByRoomId(roomId)
+func (provider GcpSqlProvider) SelectDeletedSubscriptionsByRoomId(roomId string) StoreResult {
+	return RdbSelectDeletedSubscriptionsByRoomId(roomId)
 }
 
-func (provider GcpSqlProvider) SelectSubscriptionsByUserId(userId string) StoreResult {
-	return RdbSelectSubscriptionsByUserId(userId)
+func (provider GcpSqlProvider) SelectDeletedSubscriptionsByUserId(userId string) StoreResult {
+	return RdbSelectDeletedSubscriptionsByUserId(userId)
 }
 
-func (provider GcpSqlProvider) SelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) StoreResult {
-	return RdbSelectSubscriptionsByRoomIdAndPlatform(roomId, platform)
-}
-
-func (provider GcpSqlProvider) SelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
-	return RdbSelectSubscriptionsByUserIdAndPlatform(userId, platform)
+func (provider GcpSqlProvider) SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
+	return RdbSelectDeletedSubscriptionsByUserIdAndPlatform(userId, platform)
 }
 
 func (provider GcpSqlProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {

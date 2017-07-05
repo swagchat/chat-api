@@ -73,8 +73,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			Text:  utils.AppendStrings("[", room.Name, "]", lastMessage),
 			Badge: 1,
 		}
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
+		ctx, _ := context.WithCancel(context.Background())
 		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, mi)
 		go publishMessage(post)
 	}

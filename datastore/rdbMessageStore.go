@@ -70,9 +70,9 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 		json.Unmarshal(message.Payload, &payloadText)
 		lastMessage = payloadText.Text
 	case "image":
-		lastMessage = "画像を送信しました"
-	case "location":
-		lastMessage = "位置情報を送信しました"
+		lastMessage = "画像を受信しました"
+	default:
+		lastMessage = "メッセージを受信しました"
 	}
 	room.LastMessage = lastMessage
 	room.LastMessageUpdated = time.Now().Unix()

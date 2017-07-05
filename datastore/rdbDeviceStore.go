@@ -76,6 +76,20 @@ func RdbSelectDevicesByUserId(userId string) StoreResult {
 	return result
 }
 
+func RdbSelectDevicesByToken(token string) StoreResult {
+	result := StoreResult{}
+	var devices []*models.Device
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE token=:token;")
+	params := map[string]interface{}{
+		"token": token,
+	}
+	if _, err := dbMap.Select(&devices, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
+	}
+	result.Data = devices
+	return result
+}
+
 func RdbUpdateDevice(device *models.Device) StoreResult {
 	trans, err := dbMap.Begin()
 	result := StoreResult{}

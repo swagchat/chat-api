@@ -22,6 +22,10 @@ func (provider SqliteProvider) SelectDevicesByUserId(userId string) StoreResult 
 	return RdbSelectDevicesByUserId(userId)
 }
 
+func (provider SqliteProvider) SelectDevicesByToken(token string) StoreResult {
+	return RdbSelectDevicesByToken(token)
+}
+
 func (provider SqliteProvider) UpdateDevice(device *models.Device) StoreResult {
 	return RdbUpdateDevice(device)
 }

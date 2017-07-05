@@ -7,9 +7,8 @@ type SubscriptionStore interface {
 
 	InsertSubscription(subscription *models.Subscription) StoreResult
 	SelectSubscription(roomId, userId string, platform int) StoreResult
-	SelectSubscriptionsByRoomId(roomId string) StoreResult
-	SelectSubscriptionsByUserId(userId string) StoreResult
-	SelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) StoreResult
-	SelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult
+	SelectDeletedSubscriptionsByRoomId(roomId string) StoreResult
+	SelectDeletedSubscriptionsByUserId(userId string) StoreResult
+	SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult
 	DeleteSubscription(subscription *models.Subscription) StoreResult
 }
