@@ -101,6 +101,7 @@ type Messaging struct {
 type Notification struct {
 	Provider            string
 	RoomTopicNamePrefix string `yaml:"roomTopicNamePrefix"`
+	DefaultBadgeCount   string `yaml:"defaultBadgeCount"`
 
 	// AWS SNS
 	AwsRegion                string `yaml:"awsRegion"`
@@ -313,6 +314,9 @@ func loadEnvironment() {
 	}
 	if v = os.Getenv("SC_NOTIFICATION_ROOM_TOPIC_NAME_PREFIX"); v != "" {
 		Cfg.Notification.RoomTopicNamePrefix = v
+	}
+	if v = os.Getenv("SC_NOTIFICATION_DEFAULT_BADGE_COUNT"); v != "" {
+		Cfg.Notification.DefaultBadgeCount = v
 	}
 
 	// Notification - AWS SNS

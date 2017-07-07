@@ -42,11 +42,12 @@ type iosPushWrapper struct {
 
 type iosPush struct {
 	Alert            string `json:"alert,omitempty"`
-	Badge            *int64 `json:"badge,omitempty"`
+	Badge            *int   `json:"badge,omitempty"`
 	Sound            string `json:"sound,omitempty"`
 	ContentAvailable *int   `json:"content-available,omitempty"`
 	Category         string `json:"category,omitempty"`
 	ThreadId         string `json:"thread-id,omitempty"`
+	RoomId           string `json:"roomId,omitempty"`
 }
 
 type gcmPushWrapper struct {
@@ -56,7 +57,7 @@ type gcmPushWrapper struct {
 type gcmPush struct {
 	Message string      `json:"message,omitempty"`
 	Custom  interface{} `json:"custom"`
-	Badge   *int64      `json:"badge,omitempty"`
+	Badge   *int        `json:"badge,omitempty"`
 }
 
 func (provider AwsSnsProvider) Init() error {
@@ -212,15 +213,21 @@ func (provider AwsSnsProvider) Unsubscribe(notificationSubscribeId string) Notif
 	return nc
 }
 
-func (provider AwsSnsProvider) Publish(ctx context.Context, notificationTopicId string, messageInfo *MessageInfo) NotificationChannel {
+func (provider AwsSnsProvider) Publish(ctx context.Context, notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	defer close(nc)
 	result := NotificationResult{}
 
 	client := provider.newSnsClient()
+	contentAvailable := 1
 	iosPush := iosPush{
-		Alert: messageInfo.Text,
-		Badge: &messageInfo.Badge,
+		Alert:            messageInfo.Text,
+		ContentAvailable: &contentAvailable,
+		Sound:            "default",
+		RoomId:           roomId,
+	}
+	if &messageInfo.Badge != nil {
+		iosPush.Badge = &messageInfo.Badge
 	}
 
 	wrapper := wrapper{}

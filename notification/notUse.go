@@ -53,7 +53,7 @@ func (provider NotUseProvider) Unsubscribe(notificationSubscribeId string) Notif
 	return notificationChannel
 }
 
-func (provider NotUseProvider) Publish(ctx context.Context, notificationTopicId string, messageInfo *MessageInfo) NotificationChannel {
+func (provider NotUseProvider) Publish(ctx context.Context, notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
