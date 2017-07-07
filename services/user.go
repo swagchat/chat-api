@@ -133,3 +133,15 @@ func unsubscribeByUserId(ctx context.Context, userId string) {
 	}
 	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
 }
+
+func GetUserUnreadCount(userId string) (*models.UserUnreadCount, *models.ProblemDetail) {
+	user, pd := selectUser(userId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	userUnreadCount := &models.UserUnreadCount{
+		UnreadCount: user.UnreadCount,
+	}
+	return userUnreadCount, nil
+}

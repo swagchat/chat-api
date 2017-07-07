@@ -65,6 +65,10 @@ type RoomForUser struct {
 	RuModified    int64          `json:"ruModified" db:"ru_modified"`
 }
 
+type UserUnreadCount struct {
+	UnreadCount *uint64 `json:"unreadCount" db:"unread_count"`
+}
+
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
