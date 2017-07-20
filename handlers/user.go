@@ -16,6 +16,8 @@ func SetUserMux() {
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(GetUser))
 	Mux.PutFunc("/users/#userId^[a-z0-9-]$", colsHandler(PutUser))
 	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", colsHandler(DeleteUser))
+
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", colsHandler(GetUserUnreadCount))
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
@@ -82,4 +84,15 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, r, http.StatusNoContent, "", nil)
+}
+
+func GetUserUnreadCount(w http.ResponseWriter, r *http.Request) {
+	userId := bone.GetValue(r, "userId")
+	userUnreadCount, pd := services.GetUserUnreadCount(userId)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	respond(w, r, http.StatusOK, "application/json", userUnreadCount)
 }

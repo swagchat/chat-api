@@ -13,7 +13,7 @@ import (
 
 type MessageInfo struct {
 	Text  string
-	Badge int64
+	Badge int
 }
 
 type NotificationResult struct {
@@ -30,7 +30,7 @@ type Provider interface {
 	DeleteEndpoint(string) NotificationChannel
 	Subscribe(string, string) NotificationChannel
 	Unsubscribe(string) NotificationChannel
-	Publish(context.Context, string, *MessageInfo) NotificationChannel
+	Publish(context.Context, string, string, *MessageInfo) NotificationChannel
 }
 
 func GetProvider() Provider {

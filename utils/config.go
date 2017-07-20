@@ -101,6 +101,7 @@ type Messaging struct {
 type Notification struct {
 	Provider            string
 	RoomTopicNamePrefix string `yaml:"roomTopicNamePrefix"`
+	DefaultBadgeCount   string `yaml:"defaultBadgeCount"`
 
 	// AWS SNS
 	AwsRegion                string `yaml:"awsRegion"`
@@ -295,9 +296,6 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_MESSAGING_PROVIDER"); v != "" {
 		Cfg.Messaging.Provider = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_ROOM_TOPIC_NAME_PREFIX"); v != "" {
-		Cfg.Notification.RoomTopicNamePrefix = v
-	}
 
 	// Messaging - GCP Pubsub
 	if v = os.Getenv("SC_MESSAGING_GCP_PROJECT_ID"); v != "" {
@@ -314,6 +312,12 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_NOTIFICATION_PROVIDER"); v != "" {
 		Cfg.Notification.Provider = v
 	}
+	if v = os.Getenv("SC_NOTIFICATION_ROOM_TOPIC_NAME_PREFIX"); v != "" {
+		Cfg.Notification.RoomTopicNamePrefix = v
+	}
+	if v = os.Getenv("SC_NOTIFICATION_DEFAULT_BADGE_COUNT"); v != "" {
+		Cfg.Notification.DefaultBadgeCount = v
+	}
 
 	// Notification - AWS SNS
 	if v = os.Getenv("SC_NOTIFICATION_AWS_REGION"); v != "" {
@@ -325,10 +329,10 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_NOTIFICATION_AWS_SECRET_ACCESS_KEY"); v != "" {
 		Cfg.Notification.AwsSecretAccessKey = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_APPLICATION_ARN_IOS"); v != "" {
+	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_IOS"); v != "" {
 		Cfg.Notification.AwsApplicationArnIos = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_APPLICATION_ARN_ANDROID"); v != "" {
+	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_ANDROID"); v != "" {
 		Cfg.Notification.AwsApplicationArnAndroid = v
 	}
 

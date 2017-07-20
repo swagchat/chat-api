@@ -22,6 +22,10 @@ func (provider MysqlProvider) SelectDevicesByUserId(userId string) StoreResult {
 	return RdbSelectDevicesByUserId(userId)
 }
 
+func (provider MysqlProvider) SelectDevicesByToken(token string) StoreResult {
+	return RdbSelectDevicesByToken(token)
+}
+
 func (provider MysqlProvider) UpdateDevice(device *models.Device) StoreResult {
 	return RdbUpdateDevice(device)
 }

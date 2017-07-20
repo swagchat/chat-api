@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"sync"
 
 	"go.uber.org/zap"
 
@@ -13,41 +13,6 @@ import (
 	"github.com/fairway-corp/swagchat-api/notification"
 	"github.com/fairway-corp/swagchat-api/utils"
 )
-
-func PostDevice(post *models.Device) (*models.Device, *models.ProblemDetail) {
-	if pd := post.IsValid(); pd != nil {
-		return nil, pd
-	}
-
-	// User existence check
-	_, pd := selectUser(post.UserId)
-	if pd != nil {
-		return nil, pd
-	}
-
-	if pd := post.IsValid(); pd != nil {
-		return nil, pd
-	}
-
-	nRes := <-notification.GetProvider().CreateEndpoint(post.UserId, post.Platform, post.Token)
-	if nRes.ProblemDetail != nil {
-		return nil, nRes.ProblemDetail
-	}
-	notificationDeviceId := post.Token
-	if nRes.Data != nil {
-		notificationDeviceId = *nRes.Data.(*string)
-	}
-
-	post.NotificationDeviceId = notificationDeviceId
-	dRes := datastore.GetProvider().InsertDevice(post)
-	device := dRes.Data.(*models.Device)
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go subscribeByDevice(ctx, device)
-
-	return device, dRes.ProblemDetail
-}
 
 func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
 	dRes := datastore.GetProvider().SelectDevices(userId)
@@ -77,18 +42,40 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 		return nil, pd
 	}
 
+	isExist := true
 	device, pd := SelectDevice(put.UserId, put.Platform)
-	if pd != nil {
-		return nil, pd
+	if device == nil {
+		isExist = false
 	}
 
-	if device.Token != put.Token {
-		np := notification.GetProvider()
-		nRes := <-np.DeleteEndpoint(device.NotificationDeviceId)
-		if nRes.ProblemDetail != nil {
-			return nil, nRes.ProblemDetail
+	if !isExist || (device.Token != put.Token) {
+		ctx, _ := context.WithCancel(context.Background())
+
+		// When using another user on the same device, delete the notification information
+		// of the olderuser in order to avoid duplication of the device token
+		dRes := datastore.GetProvider().SelectDevicesByToken(put.Token)
+		if dRes.ProblemDetail != nil {
+			return nil, dRes.ProblemDetail
 		}
-		nRes = <-np.CreateEndpoint(put.UserId, put.Platform, put.Token)
+		if dRes.Data != nil {
+			wg := &sync.WaitGroup{}
+			deleteDevices := dRes.Data.([]*models.Device)
+			for _, deleteDevice := range deleteDevices {
+				nRes := <-notification.GetProvider().DeleteEndpoint(deleteDevice.NotificationDeviceId)
+				if nRes.ProblemDetail != nil {
+					return nil, nRes.ProblemDetail
+				}
+				dRes := datastore.GetProvider().DeleteDevice(deleteDevice.UserId, deleteDevice.Platform)
+				if dRes.ProblemDetail != nil {
+					return nil, dRes.ProblemDetail
+				}
+				wg.Add(1)
+				go unsubscribeByDevice(ctx, deleteDevice, wg)
+			}
+			wg.Wait()
+		}
+
+		nRes := <-notification.GetProvider().CreateEndpoint(put.UserId, put.Platform, put.Token)
 		if nRes.ProblemDetail != nil {
 			return nil, nRes.ProblemDetail
 		}
@@ -97,15 +84,29 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 			put.NotificationDeviceId = *nRes.Data.(*string)
 		}
 
-		dRes := datastore.GetProvider().UpdateDevice(put)
-		if dRes.ProblemDetail != nil {
-			return nil, dRes.ProblemDetail
+		if isExist {
+			dRes := datastore.GetProvider().UpdateDevice(put)
+			if dRes.ProblemDetail != nil {
+				return nil, dRes.ProblemDetail
+			}
+			nRes = <-notification.GetProvider().DeleteEndpoint(device.NotificationDeviceId)
+			if nRes.ProblemDetail != nil {
+				return nil, nRes.ProblemDetail
+			}
+			go func() {
+				wg := &sync.WaitGroup{}
+				wg.Add(1)
+				go unsubscribeByDevice(ctx, device, wg)
+				wg.Wait()
+				go subscribeByDevice(ctx, put, nil)
+			}()
+		} else {
+			dRes := datastore.GetProvider().InsertDevice(put)
+			if dRes.ProblemDetail != nil {
+				return nil, dRes.ProblemDetail
+			}
+			go subscribeByDevice(ctx, put, nil)
 		}
-
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		go unsubscribeByDevice(ctx, device)
-		go subscribeByDevice(ctx, put)
 		return put, nil
 	} else {
 		return nil, nil
@@ -135,9 +136,8 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 		return dRes.ProblemDetail
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go unsubscribeByDevice(ctx, device)
+	ctx, _ := context.WithCancel(context.Background())
+	go unsubscribeByDevice(ctx, device, nil)
 
 	return nil
 }
@@ -148,14 +148,12 @@ func SelectDevice(userId string, platform int) (*models.Device, *models.ProblemD
 		return nil, dRes.ProblemDetail
 	}
 	if dRes.Data == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
+		return nil, nil
 	}
 	return dRes.Data.(*models.Device), nil
 }
 
-func subscribeByDevice(ctx context.Context, device *models.Device) {
+func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
 	dRes := datastore.GetProvider().SelectRoomUsersByUserId(device.UserId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
@@ -165,12 +163,15 @@ func subscribeByDevice(ctx context.Context, device *models.Device) {
 		)
 	}
 	if dRes.Data != nil {
-		subscribe(ctx, dRes.Data.([]*models.RoomUser), device)
+		<-subscribe(ctx, dRes.Data.([]*models.RoomUser), device)
+	}
+	if wg != nil {
+		wg.Done()
 	}
 }
 
-func unsubscribeByDevice(ctx context.Context, device *models.Device) {
-	dRes := datastore.GetProvider().SelectSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
+func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
+	dRes := datastore.GetProvider().SelectDeletedSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -178,14 +179,18 @@ func unsubscribeByDevice(ctx context.Context, device *models.Device) {
 			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
 		)
 	}
-	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	<-unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	if wg != nil {
+		wg.Done()
+	}
 }
 
-func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models.Device) {
+func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models.Device) chan bool {
 	np := notification.GetProvider()
 	dp := datastore.GetProvider()
-	doneChan := make(chan bool, 1)
-	pdChan := make(chan *models.ProblemDetail, 1)
+	doneCh := make(chan bool, 1)
+	pdCh := make(chan *models.ProblemDetail, 1)
+	finishCh := make(chan bool, 1)
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
@@ -194,12 +199,15 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 			ru := ctx.Value("roomUser").(*models.RoomUser)
 			dRes := dp.SelectRoom(ru.RoomId)
 			if dRes.ProblemDetail != nil {
-				pdChan <- dRes.ProblemDetail
+				pdCh <- dRes.ProblemDetail
 			} else {
 				room := dRes.Data.(*models.Room)
+				if room.NotificationTopicId == "" {
+					createTopic(room)
+				}
 				nRes := <-np.Subscribe(room.NotificationTopicId, device.NotificationDeviceId)
 				if nRes.ProblemDetail != nil {
-					pdChan <- nRes.ProblemDetail
+					pdCh <- nRes.ProblemDetail
 				} else {
 					if nRes.Data != nil {
 						notificationSubscriptionId := nRes.Data.(*string)
@@ -211,19 +219,20 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 						}
 						dRes := dp.InsertSubscription(subscription)
 						if dRes.ProblemDetail != nil {
-							pdChan <- dRes.ProblemDetail
+							pdCh <- dRes.ProblemDetail
+						} else {
+							doneCh <- true
 						}
 					}
 				}
 			}
-			doneChan <- true
 
 			select {
 			case <-ctx.Done():
 				return
-			case <-doneChan:
+			case <-doneCh:
 				return
-			case pd := <-pdChan:
+			case pd := <-pdCh:
 				pdBytes, _ := json.Marshal(pd)
 				utils.AppLogger.Error("",
 					zap.String("problemDetail", string(pdBytes)),
@@ -234,13 +243,16 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 		})
 	}
 	d.Wait()
+	finishCh <- true
+	return finishCh
 }
 
-func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) {
+func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan bool {
 	np := notification.GetProvider()
 	dp := datastore.GetProvider()
-	doneChan := make(chan bool, 1)
-	pdChan := make(chan *models.ProblemDetail, 1)
+	doneCh := make(chan bool, 1)
+	pdCh := make(chan *models.ProblemDetail, 1)
+	finishCh := make(chan bool, 1)
 
 	d := utils.NewDispatcher(10)
 	for _, subscription := range subscriptions {
@@ -249,20 +261,21 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) {
 			targetSubscription := ctx.Value("subscription").(*models.Subscription)
 			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionId)
 			if nRes.ProblemDetail != nil {
-				pdChan <- nRes.ProblemDetail
+				pdCh <- nRes.ProblemDetail
 			}
-			dRes := dp.DeleteSubscription(subscription)
+			dRes := dp.DeleteSubscription(targetSubscription)
 			if dRes.ProblemDetail != nil {
-				pdChan <- dRes.ProblemDetail
+				pdCh <- dRes.ProblemDetail
+			} else {
+				doneCh <- true
 			}
-			doneChan <- true
 
 			select {
 			case <-ctx.Done():
 				return
-			case <-doneChan:
+			case <-doneCh:
 				return
-			case pd := <-pdChan:
+			case pd := <-pdCh:
 				pdBytes, _ := json.Marshal(pd)
 				utils.AppLogger.Error("",
 					zap.String("problemDetail", string(pdBytes)),
@@ -273,4 +286,6 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) {
 		})
 	}
 	d.Wait()
+	finishCh <- true
+	return finishCh
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"go.uber.org/zap"
 
@@ -70,12 +71,16 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		messageIds = append(messageIds, post.MessageId)
 
 		mi := &notification.MessageInfo{
-			Text:  utils.AppendStrings("[", room.Name, "]", lastMessage),
-			Badge: 1,
+			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
 		}
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, mi)
+		if utils.Cfg.Notification.DefaultBadgeCount != "" {
+			dBadgeCount, err := strconv.Atoi(utils.Cfg.Notification.DefaultBadgeCount)
+			if err == nil {
+				mi.Badge = dBadgeCount
+			}
+		}
+		ctx, _ := context.WithCancel(context.Background())
+		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
 		go publishMessage(post)
 	}
 

@@ -9,6 +9,7 @@ type DeviceStore interface {
 	SelectDevices(userId string) StoreResult
 	SelectDevice(userId string, platform int) StoreResult
 	SelectDevicesByUserId(userId string) StoreResult
+	SelectDevicesByToken(token string) StoreResult
 	UpdateDevice(device *models.Device) StoreResult
 	DeleteDevice(userId string, platform int) StoreResult
 }

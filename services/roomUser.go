@@ -74,8 +74,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 		RoomUsers: dRes.Data.([]*models.RoomUser),
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, _ := context.WithCancel(context.Background())
 	go subscribeByRoomUsers(ctx, roomUsers)
 	go publishUserJoin(roomId)
 
@@ -128,8 +127,7 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		return nil, dRes.ProblemDetail
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, _ := context.WithCancel(context.Background())
 	go unsubscribeByRoomUsers(ctx, dRes.Data.([]*models.RoomUser))
 
 	dRes = datastore.GetProvider().SelectRoomUsersByRoomId(roomId)

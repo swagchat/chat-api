@@ -14,20 +14,16 @@ func (provider MysqlProvider) SelectSubscription(roomId, userId string, platform
 	return RdbSelectSubscription(roomId, userId, platform)
 }
 
-func (provider MysqlProvider) SelectSubscriptionsByRoomId(roomId string) StoreResult {
-	return RdbSelectSubscriptionsByRoomId(roomId)
+func (provider MysqlProvider) SelectDeletedSubscriptionsByRoomId(roomId string) StoreResult {
+	return RdbSelectDeletedSubscriptionsByRoomId(roomId)
 }
 
-func (provider MysqlProvider) SelectSubscriptionsByUserId(userId string) StoreResult {
-	return RdbSelectSubscriptionsByUserId(userId)
+func (provider MysqlProvider) SelectDeletedSubscriptionsByUserId(userId string) StoreResult {
+	return RdbSelectDeletedSubscriptionsByUserId(userId)
 }
 
-func (provider MysqlProvider) SelectSubscriptionsByRoomIdAndPlatform(roomId string, platform int) StoreResult {
-	return RdbSelectSubscriptionsByRoomIdAndPlatform(roomId, platform)
-}
-
-func (provider MysqlProvider) SelectSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
-	return RdbSelectSubscriptionsByUserIdAndPlatform(userId, platform)
+func (provider MysqlProvider) SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
+	return RdbSelectDeletedSubscriptionsByUserIdAndPlatform(userId, platform)
 }
 
 func (provider MysqlProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {

@@ -22,6 +22,10 @@ func (provider GcpSqlProvider) SelectDevicesByUserId(userId string) StoreResult 
 	return RdbSelectDevicesByUserId(userId)
 }
 
+func (provider GcpSqlProvider) SelectDevicesByToken(token string) StoreResult {
+	return RdbSelectDevicesByToken(token)
+}
+
 func (provider GcpSqlProvider) UpdateDevice(device *models.Device) StoreResult {
 	return RdbUpdateDevice(device)
 }

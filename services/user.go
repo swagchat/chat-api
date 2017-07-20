@@ -103,8 +103,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		return dRes.ProblemDetail
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, _ := context.WithCancel(context.Background())
 	go unsubscribeByUserId(ctx, userId)
 
 	return nil
@@ -124,7 +123,7 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 }
 
 func unsubscribeByUserId(ctx context.Context, userId string) {
-	dRes := datastore.GetProvider().SelectSubscriptionsByUserId(userId)
+	dRes := datastore.GetProvider().SelectDeletedSubscriptionsByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -133,4 +132,16 @@ func unsubscribeByUserId(ctx context.Context, userId string) {
 		)
 	}
 	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+}
+
+func GetUserUnreadCount(userId string) (*models.UserUnreadCount, *models.ProblemDetail) {
+	user, pd := selectUser(userId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	userUnreadCount := &models.UserUnreadCount{
+		UnreadCount: user.UnreadCount,
+	}
+	return userUnreadCount, nil
 }

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/fairway-corp/swagchat-api/datastore"
@@ -98,16 +99,21 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 		}
 	}
 
-	room.NotificationTopicId = ""
 	room.Deleted = time.Now().Unix()
 	dRes := datastore.GetProvider().UpdateRoomDeleted(roomId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go unsubscribeByRoomId(ctx, roomId)
+	ctx, _ := context.WithCancel(context.Background())
+	go func() {
+		wg := &sync.WaitGroup{}
+		wg.Add(1)
+		go unsubscribeByRoomId(ctx, roomId, wg)
+		wg.Wait()
+		room.NotificationTopicId = ""
+		datastore.GetProvider().UpdateRoom(room)
+	}()
 
 	return nil
 }
@@ -147,8 +153,8 @@ func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 	return dRes.Data.(*models.Room), nil
 }
 
-func unsubscribeByRoomId(ctx context.Context, roomId string) {
-	dRes := datastore.GetProvider().SelectSubscriptionsByRoomId(roomId)
+func unsubscribeByRoomId(ctx context.Context, roomId string, wg *sync.WaitGroup) {
+	dRes := datastore.GetProvider().SelectDeletedSubscriptionsByRoomId(roomId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -156,7 +162,10 @@ func unsubscribeByRoomId(ctx context.Context, roomId string) {
 			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
 		)
 	}
-	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	<-unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	if wg != nil {
+		wg.Done()
+	}
 }
 
 func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail) {
