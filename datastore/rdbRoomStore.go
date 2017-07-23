@@ -35,6 +35,7 @@ func RdbInsertRoom(room *models.Room) StoreResult {
 
 	var zero int64
 	zero = 0
+	roomUsers := make([]*models.RoomUser, 0)
 	roomUser := &models.RoomUser{
 		RoomId:      room.RoomId,
 		UserId:      room.UserId,
@@ -43,12 +44,26 @@ func RdbInsertRoom(room *models.Room) StoreResult {
 		Created:     room.Created,
 		Modified:    room.Modified,
 	}
-	if err = trans.Insert(roomUser); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-		if err = trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
+	roomUsers = append(roomUsers, roomUser)
+	for _, userId := range room.RequestRoomUserIds.UserIds {
+		roomUsers = append(roomUsers, &models.RoomUser{
+			RoomId:      room.RoomId,
+			UserId:      userId,
+			UnreadCount: &zero,
+			MetaData:    []byte("{}"),
+			Created:     room.Created,
+			Modified:    room.Modified,
+		})
+	}
+
+	for _, roomUser := range roomUsers {
+		if err := trans.Insert(roomUser); err != nil {
+			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
+			if err := trans.Rollback(); err != nil {
+				result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
+			}
+			return result
 		}
-		return result
 	}
 
 	if result.ProblemDetail == nil {
@@ -100,7 +115,8 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 		"u.modified, ",
 		"ru.unread_count AS ru_unread_count, ",
 		"ru.meta_data AS ru_meta_data, ",
-		"ru.created AS ru_created ",
+		"ru.created AS ru_created, ",
+		"ru.modified AS ru_modified ",
 		"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
 		"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
 		"ON ru.user_id = u.user_id ",

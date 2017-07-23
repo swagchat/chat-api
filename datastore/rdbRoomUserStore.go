@@ -96,6 +96,24 @@ func RdbSelectRoomUser(roomId, userId string) StoreResult {
 	return result
 }
 
+func RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
+	result := StoreResult{}
+	var roomUsers []*models.RoomUser
+	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM, " WHERE type=:type AND user_id=:myUserId) AND user_id=:opponentUserId;")
+	params := map[string]interface{}{
+		"type":           models.ONE_ON_ONE,
+		"myUserId":       myUserId,
+		"opponentUserId": opponentUserId,
+	}
+	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
+	}
+	if len(roomUsers) == 1 {
+		result.Data = roomUsers[0]
+	}
+	return result
+}
+
 func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser

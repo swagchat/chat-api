@@ -18,6 +18,10 @@ func (provider GcpSqlProvider) SelectRoomUser(roomId, userId string) StoreResult
 	return RdbSelectRoomUser(roomId, userId)
 }
 
+func (provider GcpSqlProvider) SelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
+	return RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId)
+}
+
 func (provider GcpSqlProvider) SelectRoomUsersByRoomId(roomId string) StoreResult {
 	return RdbSelectRoomUsersByRoomId(roomId)
 }

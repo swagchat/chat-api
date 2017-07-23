@@ -41,9 +41,16 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 	}
 
 	if room.NotificationTopicId == "" {
-		pd = createTopic(room)
+		notificationTopicId, pd := createTopic(room.RoomId)
 		if pd != nil {
 			return nil, pd
+		}
+
+		room.NotificationTopicId = notificationTopicId
+		room.Modified = time.Now().Unix()
+		dRes := datastore.GetProvider().UpdateRoom(room)
+		if dRes.ProblemDetail != nil {
+			return nil, dRes.ProblemDetail
 		}
 	}
 
@@ -293,22 +300,12 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 	return
 }
 
-func createTopic(room *models.Room) *models.ProblemDetail {
-	nRes := <-notification.GetProvider().CreateTopic(room.RoomId)
+func createTopic(roomId string) (string, *models.ProblemDetail) {
+	nRes := <-notification.GetProvider().CreateTopic(roomId)
 	if nRes.ProblemDetail != nil {
-		return nRes.ProblemDetail
+		return "", nRes.ProblemDetail
 	}
-
-	if nRes.Data != nil {
-		room.NotificationTopicId = *nRes.Data.(*string)
-		room.Modified = time.Now().Unix()
-		dRes := datastore.GetProvider().UpdateRoom(room)
-		if dRes.ProblemDetail != nil {
-			return dRes.ProblemDetail
-		}
-	}
-
-	return nil
+	return *nRes.Data.(*string), nil
 }
 
 func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) {

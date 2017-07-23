@@ -22,12 +22,55 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 	post.BeforeSave()
+	post.RequestRoomUserIds.RemoveDuplicate()
+
+	if *post.Type == models.ONE_ON_ONE {
+		dRes := datastore.GetProvider().SelectRoomUserOfOneOnOne(post.UserId, post.RequestRoomUserIds.UserIds[0])
+		if dRes.ProblemDetail != nil {
+			return nil, dRes.ProblemDetail
+		}
+		if dRes.Data != nil {
+			return nil, &models.ProblemDetail{
+				Status: http.StatusConflict,
+			}
+		}
+	}
+
+	if pd := post.RequestRoomUserIds.IsValid("POST", post); pd != nil {
+		return nil, pd
+	}
+
+	if post.RequestRoomUserIds.UserIds != nil {
+		notificationTopicId, pd := createTopic(post.RoomId)
+		if pd != nil {
+			return nil, pd
+		}
+		post.NotificationTopicId = notificationTopicId
+	}
 
 	dRes := datastore.GetProvider().InsertRoom(post)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	return dRes.Data.(*models.Room), nil
+	room := dRes.Data.(*models.Room)
+
+	dRes = datastore.GetProvider().SelectUsersForRoom(room.RoomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	room.Users = dRes.Data.([]*models.UserForRoom)
+
+	dRes = datastore.GetProvider().SelectRoomUsersByRoomId(room.RoomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	roomUsers := dRes.Data.([]*models.RoomUser)
+
+	ctx, _ := context.WithCancel(context.Background())
+	go subscribeByRoomUsers(ctx, roomUsers)
+	go publishUserJoin(room.RoomId)
+
+	return room, nil
 }
 
 func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {

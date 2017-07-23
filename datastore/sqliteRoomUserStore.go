@@ -18,6 +18,10 @@ func (provider SqliteProvider) SelectRoomUser(roomId, userId string) StoreResult
 	return RdbSelectRoomUser(roomId, userId)
 }
 
+func (provider SqliteProvider) SelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
+	return RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId)
+}
+
 func (provider SqliteProvider) SelectRoomUsersByRoomId(roomId string) StoreResult {
 	return RdbSelectRoomUsersByRoomId(roomId)
 }
