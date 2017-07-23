@@ -18,6 +18,10 @@ func (provider MysqlProvider) SelectRoomUser(roomId, userId string) StoreResult 
 	return RdbSelectRoomUser(roomId, userId)
 }
 
+func (provider MysqlProvider) SelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
+	return RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId)
+}
+
 func (provider MysqlProvider) SelectRoomUsersByRoomId(roomId string) StoreResult {
 	return RdbSelectRoomUsersByRoomId(roomId)
 }

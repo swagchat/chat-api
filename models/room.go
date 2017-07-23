@@ -22,12 +22,12 @@ const (
 
 func (rt RoomType) String() string {
 	switch rt {
+	case ONE_ON_ONE:
+		return "ONE_ON_ONE"
 	case PRIVATE_ROOM:
 		return "PRIVATE_ROOM"
 	case PUBLIC_ROOM:
 		return "PUBLIC_ROOM"
-	case ONE_ON_ONE:
-		return "ONE_ON_ONE"
 	case NOTICE_ROOM:
 		return "NOTICE_ROOM"
 	default:
@@ -61,6 +61,7 @@ type Room struct {
 	Deleted               int64          `json:"-" db:"deleted,notnull"`
 
 	Users []*UserForRoom `json:"users,omitempty" db:"-"`
+	RequestRoomUserIds
 }
 
 type UserForRoom struct {
@@ -192,7 +193,7 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
-	if r.UserId != "" && !utils.IsValidId(r.UserId) {
+	if !utils.IsValidId(r.UserId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
 			Status:    http.StatusBadRequest,

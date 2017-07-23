@@ -97,7 +97,7 @@ type ResponseRoomUser struct {
 }
 
 type RequestRoomUserIds struct {
-	UserIds []string `json:"userIds,omitempty"`
+	UserIds []string `json:"userIds,omitempty" db:"-"`
 }
 
 type RoomUsers struct {
@@ -119,8 +119,8 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if method == "PUT" && *r.Type == ONE_ON_ONE {
-		if !(len(rus.UserIds) == 1 && rus.UserIds[0] != r.UserId) {
+	for _, userId := range rus.UserIds {
+		if userId == r.UserId {
 			return &ProblemDetail{
 				Title:     "Request parameter error. (Create room's user list)",
 				Status:    http.StatusBadRequest,
@@ -133,7 +133,25 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 				},
 			}
 		}
+	}
 
+	if method == "POST" && *r.Type == ONE_ON_ONE {
+		if len(rus.UserIds) == 2 {
+			return &ProblemDetail{
+				Title:     "Request parameter error. (Create room's user list)",
+				Status:    http.StatusBadRequest,
+				ErrorName: ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []InvalidParam{
+					InvalidParam{
+						Name:   "userIds",
+						Reason: "In case of 1-on-1 room type, It can only update once.",
+					},
+				},
+			}
+		}
+	}
+
+	if method == "PUT" && *r.Type == ONE_ON_ONE {
 		if len(r.Users) == 2 {
 			return &ProblemDetail{
 				Title:     "Request parameter error. (Create room's user list)",

@@ -34,6 +34,10 @@ var (
 		"PATCH",
 		"DELETE",
 	}
+	NoBodyStatusCodes []int = []int{
+		http.StatusNotFound,
+		http.StatusConflict,
+	}
 )
 
 func StartServer(ctx context.Context) {
@@ -177,8 +181,10 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 		w.Header().Set("Content-Type", contentType)
 	}
 	w.WriteHeader(status)
-	if status == http.StatusNotFound {
-		data = nil
+	for _, v := range NoBodyStatusCodes {
+		if status == v {
+			data = nil
+		}
 	}
 	if data != nil {
 		encodeBody(w, r, data)

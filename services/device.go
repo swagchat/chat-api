@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -203,7 +204,17 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 			} else {
 				room := dRes.Data.(*models.Room)
 				if room.NotificationTopicId == "" {
-					createTopic(room)
+					notificationTopicId, pd := createTopic(room.RoomId)
+					if pd != nil {
+						pdCh <- pd
+					}
+
+					room.NotificationTopicId = notificationTopicId
+					room.Modified = time.Now().Unix()
+					dRes := datastore.GetProvider().UpdateRoom(room)
+					if dRes.ProblemDetail != nil {
+						pdCh <- dRes.ProblemDetail
+					}
 				}
 				nRes := <-np.Subscribe(room.NotificationTopicId, device.NotificationDeviceId)
 				if nRes.ProblemDetail != nil {
