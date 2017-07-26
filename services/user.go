@@ -53,6 +53,17 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 	}
 
 	user := dRes.Data.(*models.User)
+	unreadCountRooms := make([]*models.RoomForUser, 0)
+	notUnreadCountRooms := make([]*models.RoomForUser, 0)
+	for _, roomForUser := range user.Rooms {
+		if roomForUser.RuUnreadCount > 0 {
+			unreadCountRooms = append(unreadCountRooms, roomForUser)
+		} else {
+			notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
+		}
+	}
+	mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
+	user.Rooms = mergeRooms
 	user.AccessToken = ""
 	return user, nil
 }
