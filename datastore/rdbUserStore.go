@@ -325,6 +325,7 @@ func RdbSelectContacts(userId string) StoreResult {
 		"WHERE ru.user_id=:userId AND r.type!=", strconv.Itoa(int(models.NOTICE_ROOM)),
 		")) ",
 		"AND u.is_show_users=1 ",
+		"AND u.deleted=0 ",
 		"GROUP BY u.user_id ORDER BY u.modified DESC")
 	params := map[string]interface{}{
 		"userId": userId,
