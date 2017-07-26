@@ -305,7 +305,11 @@ func createTopic(roomId string) (string, *models.ProblemDetail) {
 	if nRes.ProblemDetail != nil {
 		return "", nRes.ProblemDetail
 	}
-	return *nRes.Data.(*string), nil
+	if nRes.Data == nil {
+		return "", nil
+	} else {
+		return *nRes.Data.(*string), nil
+	}
 }
 
 func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) {
