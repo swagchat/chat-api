@@ -119,18 +119,20 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	for _, userId := range rus.UserIds {
-		if userId == r.UserId {
-			return &ProblemDetail{
-				Title:     "Request parameter error. (Create room's user list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
-				InvalidParams: []InvalidParam{
-					InvalidParam{
-						Name:   "userIds",
-						Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
+	if *r.Type == ONE_ON_ONE {
+		for _, userId := range rus.UserIds {
+			if userId == r.UserId {
+				return &ProblemDetail{
+					Title:     "Request parameter error. (Create room's user list)",
+					Status:    http.StatusBadRequest,
+					ErrorName: ERROR_NAME_INVALID_PARAM,
+					InvalidParams: []InvalidParam{
+						InvalidParam{
+							Name:   "userIds",
+							Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
+						},
 					},
-				},
+				}
 			}
 		}
 	}
