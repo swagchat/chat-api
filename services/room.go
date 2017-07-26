@@ -126,7 +126,14 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
-	return dRes.Data.(*models.Room), nil
+	room = dRes.Data.(*models.Room)
+
+	dRes = datastore.GetProvider().SelectUsersForRoom(room.RoomId)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	room.Users = dRes.Data.([]*models.UserForRoom)
+	return room, nil
 }
 
 func DeleteRoom(roomId string) *models.ProblemDetail {
