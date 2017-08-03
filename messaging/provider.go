@@ -27,6 +27,8 @@ func GetMessagingProvider() Provider {
 			scope:          "pubsub.PubsubScope",
 			jwtPath:        utils.Cfg.Messaging.GcpJwtPath,
 		}
+	case "nsq":
+		provider = &NsqProvider{}
 	default:
 		utils.AppLogger.Error("",
 			zap.String("msg", "utils.Cfg.ApiServer.Messaging is incorrect"),

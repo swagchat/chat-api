@@ -33,6 +33,11 @@ func init() {
 	)
 
 	AppLogger.Info("",
+		zap.String("configName", "Messaging.RealtimeQue"),
+		zap.String("configValue", fmt.Sprintf("%#v", Cfg.Messaging.RealtimeQue)),
+	)
+
+	AppLogger.Info("",
 		zap.String("configName", "Notification"),
 		zap.String("configValue", fmt.Sprintf("%#v", Cfg.Notification)),
 	)
