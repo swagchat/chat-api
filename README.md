@@ -66,7 +66,7 @@ You can choose from the followings.
 
 ## Quick start
 
-Just run the executable binary.
+# Just run the executable binary
 
 You can download binary from [Release page](https://github.com/fairway-corp/swagchat-api/releases)
 
@@ -75,7 +75,14 @@ You can download binary from [Release page](https://github.com/fairway-corp/swag
 ./swagchat-api_darwin_amd64
 ```
 
-Not For Production Use!
+### docker
+
+```
+docker pull swagchat/api
+docker run swagchat/api
+```
+
+[Docker repository](https://hub.docker.com/r/swagchat/api/)
 
 ## Configuration
 
