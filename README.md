@@ -66,7 +66,7 @@ You can choose from the followings.
 
 ## Quick start
 
-# Just run the executable binary
+### Just run the executable binary
 
 You can download binary from [Release page](https://github.com/fairway-corp/swagchat-api/releases)
 
