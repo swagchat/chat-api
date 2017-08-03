@@ -163,6 +163,10 @@
 			"Rev": "c9c7427a2a70d2eb3bafa0ab2dc163e45f143317"
 		},
 		{
+			"ImportPath": "github.com/golang/snappy",
+			"Rev": "553a641470496b2327abcac10b36396bd98e45c9"
+		},
+		{
 			"ImportPath": "github.com/google/go-github/github",
 			"Rev": "e8d46665e050742f457a58088b1e6b794b2ae966"
 		},
@@ -187,6 +191,11 @@
 			"ImportPath": "github.com/mattn/go-sqlite3",
 			"Comment": "v1.2.0-72-gb2e4645",
 			"Rev": "b2e464529e88db676302aa63a4ce36711633950e"
+		},
+		{
+			"ImportPath": "github.com/nsqio/go-nsq",
+			"Comment": "v1.0.6-12-gb2d0b44",
+			"Rev": "b2d0b4429f2082bc44babe089418d8da16d71e8a"
 		},
 		{
 			"ImportPath": "github.com/pkg/errors",

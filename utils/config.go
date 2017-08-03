@@ -61,7 +61,7 @@ type Storage struct {
 	// AWS S3
 	AwsRegion          string `yaml:"awsRegion"`
 	AwsAccessKeyId     string `yaml:"awsAccessKeyId"`
-	AwsSecretAccessKey string `yaml:"AwsSecretAccessKey"`
+	AwsSecretAccessKey string `yaml:"awsSecretAccessKey"`
 }
 
 type Datastore struct {
@@ -96,6 +96,13 @@ type Messaging struct {
 	// GCP Pubsub
 	GcpProjectId string `yaml:"gcpProjectId"`
 	GcpJwtPath   string `yaml:"gcpJwtPath"`
+
+	RealtimeQue *RealtimeQue `yaml:"realtimeQue"`
+}
+
+type RealtimeQue struct {
+	Endpoint string
+	Topic    string
 }
 
 type Notification struct {
@@ -140,7 +147,9 @@ func loadDefaultSettings() {
 		UseSSL:     "off",
 	}
 
+	realtimeQue := &RealtimeQue{}
 	messaging := &Messaging{}
+	messaging.RealtimeQue = realtimeQue
 
 	notification := &Notification{}
 
@@ -306,6 +315,14 @@ func loadEnvironment() {
 	}
 	if v = os.Getenv("SC_MESSAGING_THUMBNAIL_TOPIC"); v != "" {
 		Cfg.Messaging.ThumbnailTopic = v
+	}
+
+	// Messaging - Realtime Que
+	if v = os.Getenv("SC_MESSAGING_REALTIME_QUE_ENDPOINT"); v != "" {
+		Cfg.Messaging.RealtimeQue.Endpoint = v
+	}
+	if v = os.Getenv("SC_MESSAGING_REALTIME_QUE_TOPIC"); v != "" {
+		Cfg.Messaging.RealtimeQue.Topic = v
 	}
 
 	// Notification
