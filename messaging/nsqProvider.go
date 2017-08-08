@@ -19,7 +19,8 @@ func (provider NsqProvider) Init() error {
 
 func (provider NsqProvider) PublishMessage(mi *MessagingInfo) error {
 	if utils.Cfg.RealtimeServer.Endpoint != "" {
-		input, err := json.Marshal(mi.Message)
+		rawIn := json.RawMessage(mi.Message)
+		input, err := rawIn.MarshalJSON()
 		resp, err := http.Post(utils.AppendStrings(utils.Cfg.Messaging.RealtimeQue.Endpoint, "/pub?topic=", utils.Cfg.Messaging.RealtimeQue.Topic), "application/json", bytes.NewBuffer(input))
 		if err != nil {
 			return err
