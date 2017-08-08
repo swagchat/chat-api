@@ -422,6 +422,10 @@ func parseFlag() {
 	flag.StringVar(&Cfg.Messaging.GcpProjectId, "messaging.gcpProjectId", Cfg.Messaging.GcpProjectId, "")
 	flag.StringVar(&Cfg.Messaging.GcpJwtPath, "messaging.gcpJwtPath", Cfg.Messaging.GcpJwtPath, "")
 
+	// Messaging - Realtime Que
+	flag.StringVar(&Cfg.Messaging.RealtimeQue.Endpoint, "messaging.realtimeQue.endpoint", Cfg.Messaging.RealtimeQue.Endpoint, "")
+	flag.StringVar(&Cfg.Messaging.RealtimeQue.Topic, "messaging.realtimeQue.topic", Cfg.Messaging.RealtimeQue.Topic, "")
+
 	// Notification
 	flag.StringVar(&Cfg.Notification.Provider, "notification.provider", Cfg.Notification.Provider, "")
 	flag.StringVar(&Cfg.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", Cfg.Notification.RoomTopicNamePrefix, "")

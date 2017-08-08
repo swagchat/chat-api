@@ -19,7 +19,8 @@ func (provider NotUseProvider) Init() error {
 
 func (provider NotUseProvider) PublishMessage(mi *MessagingInfo) error {
 	if utils.Cfg.RealtimeServer.Endpoint != "" {
-		input, err := json.Marshal(mi.Message)
+		rawIn := json.RawMessage(mi.Message)
+		input, err := rawIn.MarshalJSON()
 		resp, err := http.Post(utils.AppendStrings(utils.Cfg.RealtimeServer.Endpoint, "/message"), "application/json", bytes.NewBuffer(input))
 		if err != nil {
 			return err
