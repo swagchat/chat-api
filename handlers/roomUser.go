@@ -5,13 +5,14 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
+	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetRoomUserMux() {
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(PutRoomUsers))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(PutRoomUser))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(DeleteRoomUsers))
+	Mux.PutFunc(utils.AppendStrings("/", utils.API_VERSION, "/rooms/#roomId^[a-z0-9-]$/users"), colsHandler(PutRoomUsers))
+	Mux.PutFunc(utils.AppendStrings("/", utils.API_VERSION, "/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$"), colsHandler(PutRoomUser))
+	Mux.DeleteFunc(utils.AppendStrings("/", utils.API_VERSION, "/rooms/#roomId^[a-z0-9-]$/users"), colsHandler(DeleteRoomUsers))
 }
 
 func PutRoomUsers(w http.ResponseWriter, r *http.Request) {

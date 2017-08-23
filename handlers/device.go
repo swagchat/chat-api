@@ -6,14 +6,15 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
+	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetDeviceMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", colsHandler(GetDevices))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(GetDevice))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(PutDevice))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(DeleteDevice))
+	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices"), colsHandler(GetDevices))
+	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(GetDevice))
+	Mux.PutFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(PutDevice))
+	Mux.DeleteFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(DeleteDevice))
 }
 
 func GetDevices(w http.ResponseWriter, r *http.Request) {

@@ -5,13 +5,14 @@ import (
 
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/services"
+	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetBlockUserMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(GetBlockUsers))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(PutBlockUsers))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(DeleteBlockUsers))
+	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/blocks"), colsHandler(GetBlockUsers))
+	Mux.PutFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/blocks"), colsHandler(PutBlockUsers))
+	Mux.DeleteFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/blocks"), colsHandler(DeleteBlockUsers))
 }
 
 func GetBlockUsers(w http.ResponseWriter, r *http.Request) {

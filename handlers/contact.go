@@ -4,11 +4,12 @@ import (
 	"net/http"
 
 	"github.com/fairway-corp/swagchat-api/services"
+	"github.com/fairway-corp/swagchat-api/utils"
 	"github.com/go-zoo/bone"
 )
 
 func SetContactMux() {
-	Mux.GetFunc("/contacts/#userId^[a-z0-9-]$", colsHandler(aclHandler(GetContacts)))
+	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/contacts/#userId^[a-z0-9-]$"), colsHandler(aclHandler(GetContacts)))
 }
 
 func GetContacts(w http.ResponseWriter, r *http.Request) {

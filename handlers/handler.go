@@ -41,11 +41,13 @@ var (
 )
 
 func StartServer(ctx context.Context) {
-	Mux = bone.New().Prefix(utils.AppendStrings("/", utils.API_VERSION))
+	Mux = bone.New()
 	Mux.GetFunc("", indexHandler)
 	Mux.GetFunc("/", indexHandler)
+	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION), indexHandler)
+	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/"), indexHandler)
 	Mux.GetFunc("/stats", stats_api.Handler)
-	Mux.OptionsFunc("/*", optionsHandler)
+	Mux.OptionsFunc(utils.AppendStrings("/", utils.API_VERSION, "/*"), optionsHandler)
 	SetUserMux()
 	SetBlockUserMux()
 	SetRoomMux()
