@@ -26,7 +26,7 @@ type MysqlProvider struct {
 	masterPort        string
 	maxIdleConnection string
 	maxOpenConnection string
-	useSSL            string
+	useSSL            bool
 }
 
 func (provider MysqlProvider) Connect() error {
@@ -99,9 +99,9 @@ func (provider MysqlProvider) DropDatabase() error {
 	return nil
 }
 
-func mysqlSetupConnection(conType, driverName, database, datasource string, maxIdle int, maxOpen int, useSSL string, trace bool) (*gorp.DbMap, error) {
+func mysqlSetupConnection(conType, driverName, database, datasource string, maxIdle int, maxOpen int, useSSL, trace bool) (*gorp.DbMap, error) {
 	var err error
-	if useSSL == "on" {
+	if useSSL {
 		rootCertPool := x509.NewCertPool()
 		pem, err := ioutil.ReadFile(utils.Cfg.Datastore.ServerCaPath)
 		if err != nil {

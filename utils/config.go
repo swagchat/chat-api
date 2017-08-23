@@ -3,7 +3,6 @@ package utils
 import (
 	"flag"
 	"io/ioutil"
-	"log"
 	"os"
 
 	yaml "gopkg.in/yaml.v2"
@@ -27,16 +26,15 @@ var (
 )
 
 type Config struct {
-	Version        string
-	Port           string
-	Profiling      bool
-	ErrorLogging   bool `yaml:"errorLogging"`
-	Logging        *Logging
-	Storage        *Storage
-	Datastore      *Datastore
-	Messaging      *Messaging
-	Notification   *Notification
-	RealtimeServer *RealtimeServer `yaml:"realtimeServer"`
+	Version      string
+	Port         string
+	Profiling    bool
+	ErrorLogging bool `yaml:"errorLogging"`
+	Logging      *Logging
+	Storage      *Storage
+	Datastore    *Datastore
+	Rtm          *Rtm
+	Notification *Notification
 }
 
 type Logging struct {
@@ -44,15 +42,17 @@ type Logging struct {
 }
 
 type Storage struct {
-	Provider           string
-	UploadBucket       string `yaml:"uploadBucket"`
-	UploadDirectory    string `yaml:"uploadDirectory"`
-	ThumbnailBucket    string `yaml:"thumbnailBucket"`
-	ThumbnailDirectory string `yaml:"thumbnailDirectory"`
+	Provider string
 
 	// Local
 	BaseUrl   string `yaml:"baseUrl"`
 	LocalPath string `yaml:"localPath"`
+
+	// GCP Storage, AWS S3
+	UploadBucket       string `yaml:"uploadBucket"`
+	UploadDirectory    string `yaml:"uploadDirectory"`
+	ThumbnailBucket    string `yaml:"thumbnailBucket"`
+	ThumbnailDirectory string `yaml:"thumbnailDirectory"`
 
 	// GCP Storage
 	GcpProjectId string `yaml:"gcpProjectId"`
@@ -79,7 +79,7 @@ type Datastore struct {
 	MasterPort        string `yaml:"masterPort"`
 	MaxIdleConnection string `yaml:"maxIdleConnection"`
 	MaxOpenConnection string `yaml:"maxOpenConnection"`
-	UseSSL            string `yaml:"useSSL"`     // "on" or "off"
+	UseSSL            bool   `yaml:"useSSL"`
 	ServerName        string `yaml:"serverName"` // For GcpSQL, set SqlInstanceId.
 	ServerCaPath      string `yaml:"serverCaPath"`
 	ClientCertPath    string `yaml:"clientCertPath"`
@@ -89,20 +89,11 @@ type Datastore struct {
 	GcpProjectId string `yaml:"gcpProjectId"`
 }
 
-type Messaging struct {
+type Rtm struct {
 	Provider       string
-	ThumbnailTopic string `yaml:"thumbnailTopic"`
-
-	// GCP Pubsub
-	GcpProjectId string `yaml:"gcpProjectId"`
-	GcpJwtPath   string `yaml:"gcpJwtPath"`
-
-	RealtimeQue *RealtimeQue `yaml:"realtimeQue"`
-}
-
-type RealtimeQue struct {
-	Endpoint string
-	Topic    string
+	DirectEndpoint string `yaml:"directEndpoint"`
+	QueEndpoint    string `yaml:"queEndpoint"`
+	QueTopic       string `yaml:"queTopic"`
 }
 
 type Notification struct {
@@ -118,12 +109,7 @@ type Notification struct {
 	AwsApplicationArnAndroid string `yaml:"awsApplicationArnAndroid"`
 }
 
-type RealtimeServer struct {
-	Endpoint string
-}
-
 func setupConfig() {
-	log.SetFlags(log.Llongfile)
 	loadDefaultSettings()
 	loadYaml()
 	loadEnvironment()
@@ -131,42 +117,45 @@ func setupConfig() {
 }
 
 func loadDefaultSettings() {
+	port := "9000"
+
 	logging := &Logging{
 		Level: "development",
 	}
 
 	storage := &Storage{
 		Provider:  "local",
-		BaseUrl:   "http://localhost:9000/v0/assets",
+		BaseUrl:   AppendStrings("http://localhost:", port, "/v0/assets"),
 		LocalPath: "data/assets",
 	}
 
 	datastore := &Datastore{
-		Provider:   "sqlite",
-		SqlitePath: "/tmp/swagchat.db",
-		UseSSL:     "off",
+		Provider:          "sqlite",
+		SqlitePath:        "/tmp/swagchat.db",
+		UseSSL:            false,
+		MaxIdleConnection: "10",
+		MaxOpenConnection: "10",
 	}
 
-	realtimeQue := &RealtimeQue{}
-	messaging := &Messaging{}
-	messaging.RealtimeQue = realtimeQue
+	rtm := &Rtm{
+		Provider:       "",
+		DirectEndpoint: "",
+		QueEndpoint:    "",
+		QueTopic:       "",
+	}
 
 	notification := &Notification{}
 
-	realtimeServer := &RealtimeServer{
-		Endpoint: "",
-	}
-
 	Cfg = &Config{
-		Port:           "9000",
-		Profiling:      false,
-		ErrorLogging:   false,
-		Logging:        logging,
-		Storage:        storage,
-		Datastore:      datastore,
-		Messaging:      messaging,
-		Notification:   notification,
-		RealtimeServer: realtimeServer,
+		Version:      "0",
+		Port:         port,
+		Profiling:    false,
+		ErrorLogging: false,
+		Logging:      logging,
+		Storage:      storage,
+		Datastore:    datastore,
+		Rtm:          rtm,
+		Notification: notification,
 	}
 }
 
@@ -182,16 +171,16 @@ func loadEnvironment() {
 		Cfg.Port = v
 	}
 	if v = os.Getenv("SC_PROFILING"); v != "" {
-		if v == "on" {
+		if v == "true" {
 			Cfg.Profiling = true
-		} else {
+		} else if v == "false" {
 			Cfg.Profiling = false
 		}
 	}
 	if v = os.Getenv("SC_ERROR_LOGGING"); v != "" {
-		if v == "on" {
+		if v == "true" {
 			Cfg.ErrorLogging = true
-		} else {
+		} else if v == "false" {
 			Cfg.ErrorLogging = false
 		}
 	}
@@ -205,6 +194,16 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_STORAGE_PROVIDER"); v != "" {
 		Cfg.Storage.Provider = v
 	}
+
+	// Storage - Local
+	if v = os.Getenv("SC_STORAGE_BASE_URL"); v != "" {
+		Cfg.Storage.BaseUrl = v
+	}
+	if v = os.Getenv("SC_STORAGE_LOCAL_PATH"); v != "" {
+		Cfg.Storage.LocalPath = v
+	}
+
+	// Storage - GCP Storage, AWS S3
 	if v = os.Getenv("SC_STORAGE_UPLOAD_BUCKET"); v != "" {
 		Cfg.Storage.UploadBucket = v
 	}
@@ -216,14 +215,6 @@ func loadEnvironment() {
 	}
 	if v = os.Getenv("SC_STORAGE_THUMBNAIL_DIRECTORY"); v != "" {
 		Cfg.Storage.ThumbnailDirectory = v
-	}
-
-	// Storage - Local
-	if v = os.Getenv("SC_STORAGE_BASE_URL"); v != "" {
-		Cfg.Storage.BaseUrl = v
-	}
-	if v = os.Getenv("SC_STORAGE_LOCAL_PATH"); v != "" {
-		Cfg.Storage.LocalPath = v
 	}
 
 	// Storage - GCP Storage
@@ -281,7 +272,11 @@ func loadEnvironment() {
 		Cfg.Datastore.MaxOpenConnection = v
 	}
 	if v = os.Getenv("SC_DATASTORE_USE_SSL"); v != "" {
-		Cfg.Datastore.UseSSL = v
+		if v == "true" {
+			Cfg.Datastore.UseSSL = true
+		} else if v == "false" {
+			Cfg.Datastore.UseSSL = false
+		}
 	}
 	if v = os.Getenv("SC_DATASTORE_SERVER_NAME"); v != "" {
 		Cfg.Datastore.ServerName = v
@@ -301,28 +296,18 @@ func loadEnvironment() {
 		Cfg.Datastore.GcpProjectId = v
 	}
 
-	// Messaging
-	if v = os.Getenv("SC_MESSAGING_PROVIDER"); v != "" {
-		Cfg.Messaging.Provider = v
+	// Rtm
+	if v = os.Getenv("SC_RTM_PROVIDER"); v != "" {
+		Cfg.Rtm.Provider = v
 	}
-
-	// Messaging - GCP Pubsub
-	if v = os.Getenv("SC_MESSAGING_GCP_PROJECT_ID"); v != "" {
-		Cfg.Messaging.GcpProjectId = v
+	if v = os.Getenv("SC_RTM_DIRECT_ENDPOINT"); v != "" {
+		Cfg.Rtm.DirectEndpoint = v
 	}
-	if v = os.Getenv("SC_MESSAGING_GCP_JWT_PATH"); v != "" {
-		Cfg.Messaging.GcpJwtPath = v
+	if v = os.Getenv("SC_RTM_QUE_ENDPOINT"); v != "" {
+		Cfg.Rtm.QueEndpoint = v
 	}
-	if v = os.Getenv("SC_MESSAGING_THUMBNAIL_TOPIC"); v != "" {
-		Cfg.Messaging.ThumbnailTopic = v
-	}
-
-	// Messaging - Realtime Que
-	if v = os.Getenv("SC_MESSAGING_REALTIME_QUE_ENDPOINT"); v != "" {
-		Cfg.Messaging.RealtimeQue.Endpoint = v
-	}
-	if v = os.Getenv("SC_MESSAGING_REALTIME_QUE_TOPIC"); v != "" {
-		Cfg.Messaging.RealtimeQue.Topic = v
+	if v = os.Getenv("SC_RTM_QUE_TOPIC"); v != "" {
+		Cfg.Rtm.QueTopic = v
 	}
 
 	// Notification
@@ -352,11 +337,6 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_ANDROID"); v != "" {
 		Cfg.Notification.AwsApplicationArnAndroid = v
 	}
-
-	// Realtime Server
-	if v = os.Getenv("SC_REALTIME_SERVER_ENDPOINT"); v != "" {
-		Cfg.RealtimeServer.Endpoint = v
-	}
 }
 
 func parseFlag() {
@@ -364,8 +344,12 @@ func parseFlag() {
 	flag.BoolVar(&IsShowVersion, "version", false, "show version")
 
 	flag.StringVar(&Cfg.Port, "port", Cfg.Port, "")
-	flag.BoolVar(&Cfg.Profiling, "profiling", Cfg.Profiling, "")
-	flag.BoolVar(&Cfg.ErrorLogging, "errorLogging", Cfg.ErrorLogging, "")
+
+	var profiling string
+	flag.StringVar(&profiling, "profiling", "", "")
+
+	var errorLogging string
+	flag.StringVar(&errorLogging, "errorLogging", "", "false")
 
 	// Logging
 	flag.StringVar(&Cfg.Logging.Level, "logging.level", Cfg.Logging.Level, "")
@@ -405,7 +389,8 @@ func parseFlag() {
 	flag.StringVar(&Cfg.Datastore.MasterPort, "datastore.masterPort", Cfg.Datastore.MasterPort, "")
 	flag.StringVar(&Cfg.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", Cfg.Datastore.MaxIdleConnection, "")
 	flag.StringVar(&Cfg.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", Cfg.Datastore.MaxOpenConnection, "")
-	flag.StringVar(&Cfg.Datastore.UseSSL, "datastore.useSSL", Cfg.Datastore.UseSSL, "")
+	var datastoreUseSSL string
+	flag.StringVar(&datastoreUseSSL, "datastore.useSSL", "", "")
 	flag.StringVar(&Cfg.Datastore.ServerName, "datastore.serverName", Cfg.Datastore.ServerName, "")
 	flag.StringVar(&Cfg.Datastore.ServerCaPath, "datastore.serverCaPath", Cfg.Datastore.ServerCaPath, "")
 	flag.StringVar(&Cfg.Datastore.ClientCertPath, "datastore.clientCertPath", Cfg.Datastore.ClientCertPath, "")
@@ -414,17 +399,11 @@ func parseFlag() {
 	// Datastore -GCP SQL
 	flag.StringVar(&Cfg.Datastore.GcpProjectId, "datastore.gcpProjectId", Cfg.Datastore.GcpProjectId, "")
 
-	// Messaging
-	flag.StringVar(&Cfg.Messaging.Provider, "messaging.provider", Cfg.Messaging.Provider, "")
-	flag.StringVar(&Cfg.Messaging.ThumbnailTopic, "messaging.thumbnailTopic", Cfg.Messaging.ThumbnailTopic, "")
-
-	// Messaging - GCP Pubsub
-	flag.StringVar(&Cfg.Messaging.GcpProjectId, "messaging.gcpProjectId", Cfg.Messaging.GcpProjectId, "")
-	flag.StringVar(&Cfg.Messaging.GcpJwtPath, "messaging.gcpJwtPath", Cfg.Messaging.GcpJwtPath, "")
-
-	// Messaging - Realtime Que
-	flag.StringVar(&Cfg.Messaging.RealtimeQue.Endpoint, "messaging.realtimeQue.endpoint", Cfg.Messaging.RealtimeQue.Endpoint, "")
-	flag.StringVar(&Cfg.Messaging.RealtimeQue.Topic, "messaging.realtimeQue.topic", Cfg.Messaging.RealtimeQue.Topic, "")
+	// Rtm
+	flag.StringVar(&Cfg.Rtm.Provider, "realtimeMessaging.provider", Cfg.Rtm.Provider, "")
+	flag.StringVar(&Cfg.Rtm.DirectEndpoint, "realtimeMessaging.directEndpoint", Cfg.Rtm.DirectEndpoint, "")
+	flag.StringVar(&Cfg.Rtm.QueEndpoint, "realtimeMessaging.queEndpoint", Cfg.Rtm.QueEndpoint, "")
+	flag.StringVar(&Cfg.Rtm.QueTopic, "realtimeMessaging.queTopic", Cfg.Rtm.QueTopic, "")
 
 	// Notification
 	flag.StringVar(&Cfg.Notification.Provider, "notification.provider", Cfg.Notification.Provider, "")
@@ -436,9 +415,23 @@ func parseFlag() {
 	flag.StringVar(&Cfg.Notification.AwsSecretAccessKey, "notification.awsSecretAccessKey", Cfg.Notification.AwsSecretAccessKey, "")
 	flag.StringVar(&Cfg.Notification.AwsApplicationArnIos, "notification.awsApplicationArnIos", Cfg.Notification.AwsApplicationArnIos, "")
 	flag.StringVar(&Cfg.Notification.AwsApplicationArnAndroid, "notification.awsApplicationArnAndroid", Cfg.Notification.AwsApplicationArnAndroid, "")
-
-	// Realtime Server
-	flag.StringVar(&Cfg.RealtimeServer.Endpoint, "realtimeServer.endpoint", Cfg.RealtimeServer.Endpoint, "")
-
 	flag.Parse()
+
+	if profiling == "true" {
+		Cfg.Profiling = true
+	} else if profiling == "false" {
+		Cfg.Profiling = false
+	}
+
+	if errorLogging == "true" {
+		Cfg.ErrorLogging = true
+	} else if errorLogging == "false" {
+		Cfg.ErrorLogging = false
+	}
+
+	if datastoreUseSSL == "true" {
+		Cfg.Datastore.UseSSL = true
+	} else if datastoreUseSSL == "false" {
+		Cfg.Datastore.UseSSL = false
+	}
 }

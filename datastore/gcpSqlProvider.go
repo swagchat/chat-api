@@ -24,7 +24,7 @@ type GcpSqlProvider struct {
 	masterPort        string
 	maxIdleConnection string
 	maxOpenConnection string
-	useSSL            string
+	useSSL            bool
 }
 
 func (provider GcpSqlProvider) Connect() error {
@@ -93,9 +93,9 @@ func (provider GcpSqlProvider) DropDatabase() error {
 	return nil
 }
 
-func googleCloudSqlSetupConnection(conType string, driverName string, database string, datasource string, maxIdle int, maxOpen int, useSSL string, trace bool) (*gorp.DbMap, error) {
+func googleCloudSqlSetupConnection(conType string, driverName string, database string, datasource string, maxIdle int, maxOpen int, useSSL, trace bool) (*gorp.DbMap, error) {
 	var err error
-	if useSSL == "on" {
+	if useSSL {
 		rootCertPool := x509.NewCertPool()
 		pem, err := ioutil.ReadFile(utils.Cfg.Datastore.ServerCaPath)
 		if err != nil {
