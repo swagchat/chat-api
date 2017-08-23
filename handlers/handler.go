@@ -67,7 +67,7 @@ func StartServer(ctx context.Context) {
 	go run(ctx)
 
 	utils.AppLogger.Info("",
-		zap.String("msg", "Swagchat API Start!"),
+		zap.String("msg", "swagchat Chat API Start!"),
 		zap.String("port", utils.Cfg.Port),
 	)
 	if err := gracedown.ListenAndServe(utils.AppendStrings(":", utils.Cfg.Port), Mux); err != nil {
@@ -76,7 +76,7 @@ func StartServer(ctx context.Context) {
 		)
 	}
 	utils.AppLogger.Info("",
-		zap.String("msg", "Swagchat API Shutdown finish!"),
+		zap.String("msg", "swagchat Chat API Shutdown finish!"),
 	)
 }
 
@@ -90,7 +90,7 @@ func run(ctx context.Context) {
 		case s := <-signalChan:
 			if s == syscall.SIGTERM || s == syscall.SIGINT {
 				utils.AppLogger.Info("",
-					zap.String("msg", "Swagchat API Shutdown start!"),
+					zap.String("msg", "swagchat Chat API Shutdown start!"),
 					zap.String("signal", s.String()),
 				)
 				gracedown.Close()
@@ -100,7 +100,7 @@ func run(ctx context.Context) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("Swagchat API version ", utils.API_VERSION))
+	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("swagchat Chat API version ", utils.API_VERSION))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
