@@ -4,6 +4,7 @@
   "repository": "https://github.com/fairway-corp/swagchat-chat-api",
   "logo": "https://www.herokucdn.com/deploy/button.svg",
   "env": {
+    "SC_STORAGE_LOCAL_PATH": "/app/dummy-data/storage",
     "SC_DATASTORE_TABLE_NAME_PREFIX": "sc_",
     "SC_DATASTORE_SQLITE_PATH": "/app/dummy-data/datastore/swagchat.db"
   },
