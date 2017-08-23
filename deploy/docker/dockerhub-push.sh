@@ -6,7 +6,7 @@ if [ $# != 0 ] && [ $# != 3 ]; then
 fi
 
 user=swagchat
-image=api
+image=chat-api
 tag=latest
 if [ "$1" != "" ]; then
 	user=$1
