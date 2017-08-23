@@ -11,9 +11,9 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fairway-corp/swagchat-api/datastore"
-	"github.com/fairway-corp/swagchat-api/messaging"
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/notification"
+	"github.com/fairway-corp/swagchat-api/rtm"
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
@@ -176,23 +176,26 @@ func publishUserJoin(roomId string) {
 	buf := new(bytes.Buffer)
 	buf.Write(b)
 
-	if utils.Cfg.RealtimeServer.Endpoint != "" {
-		message := &models.Message{
-			RoomId:    roomId,
-			EventName: "userJoin",
-			Payload:   utils.JSONText(buf.String()),
-		}
-		bytes, _ := json.Marshal(message)
-		mi := &messaging.MessagingInfo{
-			Message: string(bytes),
-		}
-		err := messaging.GetMessagingProvider().PublishMessage(mi)
-		if err != nil {
-			utils.AppLogger.Error("",
-				zap.String("msg", "Publish error. (Add room's user list)"),
-				zap.String("detail", err.Error()),
-			)
-		}
+	message := &models.Message{
+		RoomId:    roomId,
+		EventName: "userJoin",
+		Payload:   utils.JSONText(buf.String()),
+	}
+	bytes, err := json.Marshal(message)
+	if err != nil {
+		utils.AppLogger.Error("",
+			zap.String("msg", err.Error()),
+		)
+	}
+	mi := &rtm.MessagingInfo{
+		Message: string(bytes),
+	}
+	err = rtm.GetMessagingProvider().PublishMessage(mi)
+	if err != nil {
+		utils.AppLogger.Error("",
+			zap.String("msg", "Publish error. (Add room's user list)"),
+			zap.String("detail", err.Error()),
+		)
 	}
 }
 

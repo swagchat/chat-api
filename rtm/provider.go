@@ -1,4 +1,4 @@
-package messaging
+package rtm
 
 import (
 	"os"
@@ -18,20 +18,16 @@ type Provider interface {
 
 func GetMessagingProvider() Provider {
 	var provider Provider
-	switch utils.Cfg.Messaging.Provider {
+	switch utils.Cfg.Rtm.Provider {
 	case "":
 		provider = &NotUseProvider{}
-	case "gcpPubSub":
-		provider = &GcpPubSubProvider{
-			thumbnailTopic: utils.Cfg.Messaging.ThumbnailTopic,
-			scope:          "pubsub.PubsubScope",
-			jwtPath:        utils.Cfg.Messaging.GcpJwtPath,
-		}
+	case "direct":
+		provider = &DirectProvider{}
 	case "nsq":
 		provider = &NsqProvider{}
 	default:
 		utils.AppLogger.Error("",
-			zap.String("msg", "utils.Cfg.ApiServer.Messaging is incorrect"),
+			zap.String("msg", "utils.Cfg.Rtm.Provider is incorrect"),
 		)
 		os.Exit(0)
 	}

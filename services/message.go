@@ -9,9 +9,9 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/fairway-corp/swagchat-api/datastore"
-	"github.com/fairway-corp/swagchat-api/messaging"
 	"github.com/fairway-corp/swagchat-api/models"
 	"github.com/fairway-corp/swagchat-api/notification"
+	"github.com/fairway-corp/swagchat-api/rtm"
 	"github.com/fairway-corp/swagchat-api/utils"
 )
 
@@ -126,10 +126,10 @@ func publishMessage(m *models.Message) {
 			zap.String("msg", err.Error()),
 		)
 	}
-	mi := &messaging.MessagingInfo{
+	mi := &rtm.MessagingInfo{
 		Message: string(bytes),
 	}
-	err = messaging.GetMessagingProvider().PublishMessage(mi)
+	err = rtm.GetMessagingProvider().PublishMessage(mi)
 	if err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
