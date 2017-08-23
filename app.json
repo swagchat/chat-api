@@ -1,0 +1,7 @@
+{
+  "name": "swagchat Chat API",
+  "description": "Open source chat components - swagchat Chat API",
+  "repository": "https://github.com/fairway-corp/swagchat-chat-api",
+  "logo": "https://www.herokucdn.com/deploy/button.svg",
+  "keywords": ["golang", "chat", "messaging", "rest-api", "api"]
+}
