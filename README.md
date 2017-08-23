@@ -81,8 +81,12 @@ You can download binary from [Release page](https://github.com/fairway-corp/swag
 docker pull swagchat/chat-api
 docker run swagchat/chat-api
 ```
+[Docker repository](https://hub.docker.com/r/swagchat/chat-api/)
 
-[Docker repository](https://hub.docker.com/r/swagchat/api/)
+### heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+
 
 ## Configuration
 
