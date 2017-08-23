@@ -167,6 +167,9 @@ func loadYaml() {
 func loadEnvironment() {
 	var v string
 
+	if v = os.Getenv("PORT"); v != "" {
+		Cfg.Port = v
+	}
 	if v = os.Getenv("SC_PORT"); v != "" {
 		Cfg.Port = v
 	}
