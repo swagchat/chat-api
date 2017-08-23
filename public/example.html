@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>React SwagChat Example.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" type="text/css" media="all">
+    <link rel="stylesheet" href="../dist/react-swagchat.min.css">
+  </head>
+  <body>
+    <div id="swagchat" />
+    <script src="../dist/react-swagchat.min.js"></script>
+    <script>
+      renderTemplateGeneral({
+        renderDomId: 'swagchat',
+        roomListTitle: 'Room List',
+        noRoomListText: 'No rooms.',
+        noRoomListImage: 'https://unpkg.com/react-swagchat@0.8.7/dist/img/sad.png',
+        noAvatarImages: ['https://unpkg.com/react-swagchat/dist/img/normal.png', 'https://unpkg.com/react-swagchat/dist/img/smile.png'],
+        noMessageText: 'No messages.',
+        noMessageImage: 'https://unpkg.com/react-swagchat@0.8.7/dist/img/sad.png',
+        inputMessagePlaceholderText: ' Input text...',
+        roomSettingTitle: 'Room Settings',
+        roomMembersTitle: 'Members',
+        selectContactTitle: 'Select Contacts',
+        noContactListText: 'No Contacts',
+        noContactListImage: 'https://unpkg.com/react-swagchat@0.8.7/dist/img/sad.png',
+        apiKey: '',
+        apiEndpoint: '///v0',
+        realtimeEndpoint: 'wss:///v0',
+        userId: '00581ea9-3547-4c81-930c-a3ed042e4b21',
+        userAccessToken: 'ACCESS_TOKEN',
+        roomListRoutePath: '/',
+        messageRoutePath: '/messages',
+        roomSettingRoutePath: '/roomSetting',
+        selectContactRoutePath: '/selectContact',
+      });
+    </script>
+  </body>
+</html>

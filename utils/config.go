@@ -125,7 +125,7 @@ func loadDefaultSettings() {
 
 	storage := &Storage{
 		Provider:  "local",
-		BaseUrl:   AppendStrings("http://localhost:", port, "/v0/assets"),
+		BaseUrl:   AppendStrings("/", API_VERSION, "/assets"),
 		LocalPath: "data/assets",
 	}
 
