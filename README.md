@@ -78,8 +78,8 @@ You can download binary from [Release page](https://github.com/fairway-corp/swag
 ### docker
 
 ```
-docker pull swagchat/api
-docker run swagchat/api
+docker pull swagchat/chat-api
+docker run swagchat/chat-api
 ```
 
 [Docker repository](https://hub.docker.com/r/swagchat/api/)
