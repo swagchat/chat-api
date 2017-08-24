@@ -4,9 +4,18 @@
   "repository": "https://github.com/fairway-corp/swagchat-chat-api",
   "logo": "https://www.herokucdn.com/deploy/button.svg",
   "env": {
-    "SC_STORAGE_LOCAL_PATH": "/app/dummy-data/storage",
-    "SC_DATASTORE_TABLE_NAME_PREFIX": "sc_",
-    "SC_DATASTORE_SQLITE_PATH": "/app/dummy-data/datastore/swagchat.db"
+    "SC_STORAGE_LOCAL_PATH": {
+      "description": "Please specify the storage location of the file uploaded by the user.",
+      "value": "/app/dummy-data/storage"
+    },
+    "SC_DATASTORE_TABLE_NAME_PREFIX": {
+      "description": "Please specify the database table prefix.",
+      "value": "sc_"
+    },
+    "SC_DATASTORE_SQLITE_PATH": {
+      "description": "Please specify the storage location of SQLite's database file",
+      "value": "/app/dummy-data/datastore/swagchat.db"
+    }
   },
   "keywords": ["golang", "chat", "messaging", "rest-api", "api"]
 }
