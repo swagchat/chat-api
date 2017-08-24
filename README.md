@@ -6,7 +6,7 @@
 
 
 
-# SwagChat RESTful API
+# swaghat Chat API
 
 swagchat is an open source chat components for your webapps.
 
@@ -16,7 +16,7 @@ swagchat is an open source chat components for your webapps.
 
 ## Components
 
-* **Chat API Server (Go) ---> This repository**
+* **Chat API (Go)**
 * [RTM API (Real Time Messaging) (Go)](https://github.com/fairway-corp/swagchat-rtm-api)
 * [Client SDK (TypeScript & JavaScript)](https://github.com/fairway-corp/swagchat-sdk)
 * [UIKit (Typescript - React)](https://github.com/fairway-corp/react-swagchat)
