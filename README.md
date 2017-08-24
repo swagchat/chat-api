@@ -1,6 +1,6 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/fairway-corp/swagchat-api)
-[![CircleCI](https://circleci.com/gh/fairway-corp/swagchat-api.svg?style=shield&circle-token=06b2dbd153b46662683bb01168a3d13891922252)](https://circleci.com/gh/fairway-corp/swagchat-api)
+[![CircleCI](https://circleci.com/gh/fairway-corp/swagchat-chat-api/tree/master.svg?style=svg)](https://circleci.com/gh/fairway-corp/swagchat-chat-api/tree/master)
 [![Issue Count](https://lima.codeclimate.com/github/fairway-corp/swagchat-api/badges/issue_count.svg)](https://lima.codeclimate.com/github/fairway-corp/swagchat-api)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fairway-corp/swagchat-api)](https://goreportcard.com/report/github.com/fairway-corp/swagchat-api)
 
@@ -8,7 +8,7 @@
 
 # SwagChat RESTful API
 
-SwagChat is an open source chat components for your webapps.
+swagchat is an open source chat components for your webapps.
 
 * **Easy to deploy**
 * **Easy to customize**
@@ -16,8 +16,8 @@ SwagChat is an open source chat components for your webapps.
 
 ## Components
 
-* **RESTful API Server (Go) ---> This repository**
-* [Realtime Messaging (Go)](https://github.com/fairway-corp/swagchat-realtime)
+* **Chat API Server (Go) ---> This repository**
+* [RTM API (Real Time Messaging) (Go)](https://github.com/fairway-corp/swagchat-rtm-api)
 * [Client SDK (TypeScript & JavaScript)](https://github.com/fairway-corp/swagchat-sdk)
 * [UIKit (Typescript - React)](https://github.com/fairway-corp/react-swagchat)
 
