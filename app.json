@@ -15,6 +15,18 @@
     "SC_DATASTORE_SQLITE_PATH": {
       "description": "Please specify the storage location of SQLite's database file",
       "value": "/app/dummy-data/datastore/swagchat.db"
+    },
+    "SC_REACT_RTM_PROTOCOL": {
+      "description": "Please specify protocol of RTM API",
+      "value": "wss"
+    },
+    "SC_REACT_RTM_HOST": {
+      "description": "Please specify hostname of RTM API",
+      "value": ""
+    },
+    "SC_REACT_RTM_PATH": {
+      "description": "Please specify path of RTM API",
+      "value": "v0"
     }
   },
   "keywords": ["golang", "chat", "messaging", "rest-api", "api"]

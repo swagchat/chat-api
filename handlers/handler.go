@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -43,7 +42,7 @@ var (
 
 func StartServer(ctx context.Context) {
 	Mux = bone.New()
-	Mux.GetFunc("/", defaultHandler)
+	Mux.GetFunc("/", messengerHtmlHandler)
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	Mux.GetFunc("/stats", stats_api.Handler)
 	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION), indexHandler)
@@ -98,11 +97,6 @@ func run(ctx context.Context) {
 			}
 		}
 	}
-}
-
-func defaultHandler(rw http.ResponseWriter, req *http.Request) {
-	file, _ := ioutil.ReadFile("static/index.html")
-	rw.Write(file)
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
