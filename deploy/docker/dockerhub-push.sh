@@ -35,7 +35,7 @@ fi
 mv $GOPATH/src/github.com/fairway-corp/swagchat-api/swagchat-api swagchat-api
 
 echo -e "\033[36m----------> Building docker image [$user/$image:$tag]\033[0m"
-docker build -t $user/$image:$tag -f ./Dockerfile-Dev .
+docker build -t $user/$image:$tag .
 if [ $? -gt 0 ]; then
 	echo -e "\033[35mFailed!\033[0m"
 	exit 1
