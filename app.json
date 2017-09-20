@@ -4,6 +4,10 @@
   "repository": "https://github.com/fairway-corp/swagchat-chat-api",
   "logo": "https://www.herokucdn.com/deploy/button.svg",
   "env": {
+    "SC_EXAMPLE_PAGE": {
+      "description": "It must be set to true to display the example page.",
+      "value": "true"
+    },
     "SC_STORAGE_LOCAL_PATH": {
       "description": "Please specify the storage location of the file uploaded by the user.",
       "value": "/app/example-data/storage"

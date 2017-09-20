@@ -11,7 +11,7 @@ import (
 const (
 	APP_NAME      = "swagchat-api"
 	API_VERSION   = "v0"
-	BUILD_VERSION = "v0.8.6"
+	BUILD_VERSION = "v0.8.7"
 
 	KEY_LENGTH        = 32
 	TOKEN_LENGTH      = 32
@@ -29,6 +29,7 @@ type Config struct {
 	Version      string
 	Port         string
 	Profiling    bool
+	ExamplePage  bool `yaml:"examplePage"`
 	ErrorLogging bool `yaml:"errorLogging"`
 	Logging      *Logging
 	Storage      *Storage
@@ -150,6 +151,7 @@ func loadDefaultSettings() {
 		Version:      "0",
 		Port:         port,
 		Profiling:    false,
+		ExamplePage:  false,
 		ErrorLogging: false,
 		Logging:      logging,
 		Storage:      storage,
@@ -178,6 +180,13 @@ func loadEnvironment() {
 			Cfg.Profiling = true
 		} else if v == "false" {
 			Cfg.Profiling = false
+		}
+	}
+	if v = os.Getenv("SC_EXAPLE_PAGE"); v != "" {
+		if v == "true" {
+			Cfg.ExamplePage = true
+		} else if v == "false" {
+			Cfg.ExamplePage = false
 		}
 	}
 	if v = os.Getenv("SC_ERROR_LOGGING"); v != "" {
@@ -351,6 +360,9 @@ func parseFlag() {
 	var profiling string
 	flag.StringVar(&profiling, "profiling", "", "")
 
+	var examplePage string
+	flag.StringVar(&examplePage, "examplePage", "", "false")
+
 	var errorLogging string
 	flag.StringVar(&errorLogging, "errorLogging", "", "false")
 
@@ -424,6 +436,12 @@ func parseFlag() {
 		Cfg.Profiling = true
 	} else if profiling == "false" {
 		Cfg.Profiling = false
+	}
+
+	if examplePage == "true" {
+		Cfg.ExamplePage = true
+	} else if examplePage == "false" {
+		Cfg.ExamplePage = false
 	}
 
 	if errorLogging == "true" {

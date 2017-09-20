@@ -42,7 +42,9 @@ var (
 
 func StartServer(ctx context.Context) {
 	Mux = bone.New()
-	Mux.GetFunc("/", messengerHtmlHandler)
+	if utils.Cfg.ExamplePage {
+		Mux.GetFunc("/", messengerHtmlHandler)
+	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	Mux.GetFunc("/stats", stats_api.Handler)
 	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION), indexHandler)
