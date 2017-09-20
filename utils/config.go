@@ -182,7 +182,7 @@ func loadEnvironment() {
 			Cfg.Profiling = false
 		}
 	}
-	if v = os.Getenv("SC_EXAPLE_PAGE"); v != "" {
+	if v = os.Getenv("SC_EXAMPLE_PAGE"); v != "" {
 		if v == "true" {
 			Cfg.ExamplePage = true
 		} else if v == "false" {
