@@ -1,6 +1,6 @@
 package datastore
 
-import "github.com/fairway-corp/swagchat-api/models"
+import "github.com/swagchat/chat-api/models"
 
 type DeviceStore interface {
 	CreateDeviceStore()

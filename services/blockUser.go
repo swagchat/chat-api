@@ -3,8 +3,8 @@ package services
 import (
 	"time"
 
-	"github.com/fairway-corp/swagchat-api/datastore"
-	"github.com/fairway-corp/swagchat-api/models"
+	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/models"
 )
 
 func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {

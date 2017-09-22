@@ -11,8 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/fairway-corp/swagchat-api/models"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/utils"
 )
 
 type AwsS3StorageProvider struct {

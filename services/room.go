@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fairway-corp/swagchat-api/datastore"
-	"github.com/fairway-corp/swagchat-api/models"
-	"github.com/fairway-corp/swagchat-api/notification"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap"
 )
 

@@ -15,9 +15,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/fairway-corp/swagchat-api/datastore"
-	"github.com/fairway-corp/swagchat-api/models"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/utils"
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"

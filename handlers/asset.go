@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fairway-corp/swagchat-api/models"
-	"github.com/fairway-corp/swagchat-api/storage"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/storage"
+	"github.com/swagchat/chat-api/utils"
 	"github.com/go-zoo/bone"
 )
 

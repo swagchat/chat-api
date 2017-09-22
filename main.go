@@ -6,10 +6,10 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
-	"github.com/fairway-corp/swagchat-api/datastore"
-	"github.com/fairway-corp/swagchat-api/handlers"
-	"github.com/fairway-corp/swagchat-api/storage"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/handlers"
+	"github.com/swagchat/chat-api/storage"
+	"github.com/swagchat/chat-api/utils"
 	latest "github.com/tcnksm/go-latest"
 	"go.uber.org/zap"
 )

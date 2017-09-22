@@ -7,7 +7,7 @@ import (
 
 	"encoding/json"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 type RoomType int

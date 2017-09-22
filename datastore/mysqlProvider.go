@@ -12,7 +12,7 @@ import (
 
 	gorp "gopkg.in/gorp.v2"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 	"github.com/go-sql-driver/mysql"
 )
 

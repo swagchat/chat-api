@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 type RoomUser struct {

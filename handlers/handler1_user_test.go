@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 var createUserIds []string

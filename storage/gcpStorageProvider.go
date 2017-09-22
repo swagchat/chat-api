@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/fairway-corp/swagchat-api/models"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap"
 
 	"golang.org/x/oauth2"

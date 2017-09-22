@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 type BlockUser struct {

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func TestGetUsers2(t *testing.T) {

@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 	gorp "gopkg.in/gorp.v2"
 )
 

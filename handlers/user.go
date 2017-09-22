@@ -5,9 +5,9 @@ import (
 
 	"log"
 
-	"github.com/fairway-corp/swagchat-api/models"
-	"github.com/fairway-corp/swagchat-api/services"
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 	"github.com/go-zoo/bone"
 )
 

@@ -3,7 +3,7 @@ package rtm
 import (
 	"os"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap"
 )
 

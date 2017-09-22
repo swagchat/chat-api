@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/fairway-corp/swagchat-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 var messengerHtmlData []byte
