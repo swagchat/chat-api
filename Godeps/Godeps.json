@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/fairway-corp/swagchat-api",
+	"ImportPath": "github.com/swagchat/chat-api",
 	"GoVersion": "go1.7",
 	"GodepVersion": "v79",
 	"Deps": [
