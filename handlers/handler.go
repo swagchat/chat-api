@@ -15,12 +15,12 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
+	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/utils"
 )
 
 var (
@@ -42,7 +42,7 @@ var (
 
 func StartServer(ctx context.Context) {
 	Mux = bone.New()
-	if utils.Cfg.ExamplePage {
+	if utils.Cfg.DemoPage {
 		Mux.GetFunc("/", messengerHtmlHandler)
 	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

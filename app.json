@@ -4,8 +4,8 @@
   "repository": "https://github.com/swagchat/chat-api",
   "logo": "https://www.herokucdn.com/deploy/button.svg",
   "env": {
-    "SC_EXAMPLE_PAGE": {
-      "description": "It must be set to true to display the example page.",
+    "SC_DEMO_PAGE": {
+      "description": "It must be set to true to display the demo page.",
       "value": "true"
     },
     "SC_STORAGE_LOCAL_PATH": {

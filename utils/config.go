@@ -29,7 +29,7 @@ type Config struct {
 	Version      string
 	Port         string
 	Profiling    bool
-	ExamplePage  bool `yaml:"examplePage"`
+	DemoPage     bool `yaml:"demoPage"`
 	ErrorLogging bool `yaml:"errorLogging"`
 	Logging      *Logging
 	Storage      *Storage
@@ -153,7 +153,7 @@ func loadDefaultSettings() {
 		Version:      "0",
 		Port:         port,
 		Profiling:    false,
-		ExamplePage:  false,
+		DemoPage:     false,
 		ErrorLogging: false,
 		Logging:      logging,
 		Storage:      storage,
@@ -184,11 +184,11 @@ func loadEnvironment() {
 			Cfg.Profiling = false
 		}
 	}
-	if v = os.Getenv("SC_EXAMPLE_PAGE"); v != "" {
+	if v = os.Getenv("SC_DEMO_PAGE"); v != "" {
 		if v == "true" {
-			Cfg.ExamplePage = true
+			Cfg.DemoPage = true
 		} else if v == "false" {
-			Cfg.ExamplePage = false
+			Cfg.DemoPage = false
 		}
 	}
 	if v = os.Getenv("SC_ERROR_LOGGING"); v != "" {
@@ -368,8 +368,8 @@ func parseFlag() {
 	var profiling string
 	flag.StringVar(&profiling, "profiling", "", "")
 
-	var examplePage string
-	flag.StringVar(&examplePage, "examplePage", "", "false")
+	var demoPage string
+	flag.StringVar(&demoPage, "demoPage", "", "false")
 
 	var errorLogging string
 	flag.StringVar(&errorLogging, "errorLogging", "", "false")
@@ -448,10 +448,10 @@ func parseFlag() {
 		Cfg.Profiling = false
 	}
 
-	if examplePage == "true" {
-		Cfg.ExamplePage = true
-	} else if examplePage == "false" {
-		Cfg.ExamplePage = false
+	if demoPage == "true" {
+		Cfg.DemoPage = true
+	} else if demoPage == "false" {
+		Cfg.DemoPage = false
 	}
 
 	if errorLogging == "true" {
