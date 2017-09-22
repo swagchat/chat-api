@@ -51,7 +51,6 @@ You can download binary from [Release page](https://github.com/swagchat/chat-api
 ### docker
 
 ```
-docker pull swagchat/chat-api
 docker run swagchat/chat-api
 ```
 [Docker repository](https://hub.docker.com/r/swagchat/chat-api/)
