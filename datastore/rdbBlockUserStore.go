@@ -8,16 +8,18 @@ import (
 )
 
 func RdbCreateBlockUserStore() {
-	tableMap := dbMap.AddTableWithName(models.BlockUser{}, TABLE_NAME_BLOCK_USER)
+	master := RdbStoreInstance().Master()
+	tableMap := master.AddTableWithName(models.BlockUser{}, TABLE_NAME_BLOCK_USER)
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
-	if err := dbMap.CreateTablesIfNotExists(); err != nil {
+	if err := master.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 	}
 }
 
 func RdbInsertBlockUsers(blockUsers []*models.BlockUser) StoreResult {
+	master := RdbStoreInstance().Master()
 	result := StoreResult{}
-	trans, err := dbMap.Begin()
+	trans, err := master.Begin()
 	for _, blockUser := range blockUsers {
 		res := RdbSelectBlockUser(blockUser.UserId, blockUser.BlockUserId)
 		if res.ProblemDetail != nil {
@@ -47,6 +49,7 @@ func RdbInsertBlockUsers(blockUsers []*models.BlockUser) StoreResult {
 }
 
 func RdbSelectBlockUser(userId, blockUserId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var blockUsers []*models.BlockUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId AND block_user_id=:blockUserId;")
@@ -54,7 +57,7 @@ func RdbSelectBlockUser(userId, blockUserId string) StoreResult {
 		"userId":      userId,
 		"blockUserId": blockUserId,
 	}
-	if _, err := dbMap.Select(&blockUsers, query, params); err != nil {
+	if _, err := slave.Select(&blockUsers, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting block user item.", err)
 	}
 	if len(blockUsers) == 1 {
@@ -64,13 +67,14 @@ func RdbSelectBlockUser(userId, blockUserId string) StoreResult {
 }
 
 func RdbSelectBlockUsersByUserId(userId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var blockUsers []string
 	query := utils.AppendStrings("SELECT block_user_id FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	if _, err := dbMap.Select(&blockUsers, query, params); err != nil {
+	if _, err := slave.Select(&blockUsers, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting block user items.", err)
 	}
 	result.Data = blockUsers
@@ -78,12 +82,13 @@ func RdbSelectBlockUsersByUserId(userId string) StoreResult {
 }
 
 func RdbDeleteBlockUser(userId string, blockUserIds []string) StoreResult {
+	master := RdbStoreInstance().Master()
 	result := StoreResult{}
 	var blockUserIdsQuery string
 	blockUserIdsQuery, params := utils.MakePrepareForInExpression(blockUserIds)
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId AND block_user_id IN (", blockUserIdsQuery, ");")
 	params["userId"] = userId
-	_, err := dbMap.Exec(query, params)
+	_, err := master.Exec(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while deleting block user ids.", err)
 	}

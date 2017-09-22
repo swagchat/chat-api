@@ -1,13 +1,13 @@
 package datastore
 
-func (provider MysqlProvider) CreateApiStore() {
+func (p *mysqlProvider) CreateApiStore() {
 	RdbCreateApiStore()
 }
 
-func (provider MysqlProvider) InsertApi(name string) StoreResult {
+func (p *mysqlProvider) InsertApi(name string) StoreResult {
 	return RdbInsertApi(name)
 }
 
-func (provider MysqlProvider) SelectLatestApi(name string) StoreResult {
+func (p *mysqlProvider) SelectLatestApi(name string) StoreResult {
 	return RdbSelectLatestApi(name)
 }

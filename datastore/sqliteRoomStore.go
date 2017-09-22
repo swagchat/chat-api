@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider SqliteProvider) CreateRoomStore() {
+func (p *sqliteProvider) CreateRoomStore() {
 	RdbCreateRoomStore()
 }
 
-func (provider SqliteProvider) InsertRoom(room *models.Room) StoreResult {
+func (p *sqliteProvider) InsertRoom(room *models.Room) StoreResult {
 	return RdbInsertRoom(room)
 }
 
-func (provider SqliteProvider) SelectRoom(roomId string) StoreResult {
+func (p *sqliteProvider) SelectRoom(roomId string) StoreResult {
 	return RdbSelectRoom(roomId)
 }
 
-func (provider SqliteProvider) SelectRooms() StoreResult {
+func (p *sqliteProvider) SelectRooms() StoreResult {
 	return RdbSelectRooms()
 }
 
-func (provider SqliteProvider) SelectUsersForRoom(roomId string) StoreResult {
+func (p *sqliteProvider) SelectUsersForRoom(roomId string) StoreResult {
 	return RdbSelectUsersForRoom(roomId)
 }
 
-func (provider SqliteProvider) SelectCountRooms() StoreResult {
+func (p *sqliteProvider) SelectCountRooms() StoreResult {
 	return RdbSelectCountRooms()
 }
 
-func (provider SqliteProvider) UpdateRoom(room *models.Room) StoreResult {
+func (p *sqliteProvider) UpdateRoom(room *models.Room) StoreResult {
 	return RdbUpdateRoom(room)
 }
 
-func (provider SqliteProvider) UpdateRoomDeleted(roomId string) StoreResult {
+func (p *sqliteProvider) UpdateRoomDeleted(roomId string) StoreResult {
 	return RdbUpdateRoomDeleted(roomId)
 }

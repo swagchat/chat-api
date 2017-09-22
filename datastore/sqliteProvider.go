@@ -9,38 +9,41 @@ import (
 	gorp "gopkg.in/gorp.v2"
 )
 
-type SqliteProvider struct {
+type sqliteProvider struct {
 	sqlitePath string
 }
 
-func (provider SqliteProvider) Connect() error {
-	if dbMap == nil {
-		if provider.sqlitePath == "" {
+func (p *sqliteProvider) Connect() error {
+	rs := RdbStoreInstance()
+	if rs.Master() == nil {
+		if p.sqlitePath == "" {
 			return errors.New("not key sqlitePath")
 		} else {
-			db, err := sql.Open("sqlite3", provider.sqlitePath)
+			db, err := sql.Open("sqlite3", p.sqlitePath)
 			if err != nil {
-				return err
+				fatal(err)
 			}
-			dbMap = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
+			var master *gorp.DbMap
+			master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
+			rs.SetMaster(master)
 		}
 	}
 	return nil
 }
 
-func (provider SqliteProvider) Init() {
-	provider.CreateApiStore()
-	provider.CreateUserStore()
-	provider.CreateBlockUserStore()
-	provider.CreateRoomStore()
-	provider.CreateRoomUserStore()
-	provider.CreateMessageStore()
-	provider.CreateDeviceStore()
-	provider.CreateSubscriptionStore()
+func (p *sqliteProvider) Init() {
+	p.CreateApiStore()
+	p.CreateUserStore()
+	p.CreateBlockUserStore()
+	p.CreateRoomStore()
+	p.CreateRoomUserStore()
+	p.CreateMessageStore()
+	p.CreateDeviceStore()
+	p.CreateSubscriptionStore()
 }
 
-func (provider SqliteProvider) DropDatabase() error {
-	if err := os.Remove(provider.sqlitePath); err != nil {
+func (p *sqliteProvider) DropDatabase() error {
+	if err := os.Remove(p.sqlitePath); err != nil {
 		return err
 	}
 	return nil

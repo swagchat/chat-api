@@ -78,6 +78,8 @@ type Datastore struct {
 	Database          string
 	MasterHost        string `yaml:"masterHost"`
 	MasterPort        string `yaml:"masterPort"`
+	SlaveHost         string `yaml:"slaveHost"`
+	SlavePort         string `yaml:"slavePort"`
 	MaxIdleConnection string `yaml:"maxIdleConnection"`
 	MaxOpenConnection string `yaml:"maxOpenConnection"`
 	UseSSL            bool   `yaml:"useSSL"`
@@ -277,6 +279,12 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_DATASTORE_MASTER_PORT"); v != "" {
 		Cfg.Datastore.MasterPort = v
 	}
+	if v = os.Getenv("SC_DATASTORE_SLAVE_HOST"); v != "" {
+		Cfg.Datastore.SlaveHost = v
+	}
+	if v = os.Getenv("SC_DATASTORE_SLAVE_PORT"); v != "" {
+		Cfg.Datastore.SlavePort = v
+	}
 	if v = os.Getenv("SC_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
 		Cfg.Datastore.MaxIdleConnection = v
 	}
@@ -402,6 +410,8 @@ func parseFlag() {
 	flag.StringVar(&Cfg.Datastore.Database, "datastore.database", Cfg.Datastore.Database, "")
 	flag.StringVar(&Cfg.Datastore.MasterHost, "datastore.masterHost", Cfg.Datastore.MasterHost, "")
 	flag.StringVar(&Cfg.Datastore.MasterPort, "datastore.masterPort", Cfg.Datastore.MasterPort, "")
+	flag.StringVar(&Cfg.Datastore.SlaveHost, "datastore.slaveHost", Cfg.Datastore.SlaveHost, "")
+	flag.StringVar(&Cfg.Datastore.SlavePort, "datastore.slavePort", Cfg.Datastore.SlavePort, "")
 	flag.StringVar(&Cfg.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", Cfg.Datastore.MaxIdleConnection, "")
 	flag.StringVar(&Cfg.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", Cfg.Datastore.MaxOpenConnection, "")
 	var datastoreUseSSL string

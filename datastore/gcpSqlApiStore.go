@@ -1,13 +1,13 @@
 package datastore
 
-func (provider GcpSqlProvider) CreateApiStore() {
+func (p *gcpSqlProvider) CreateApiStore() {
 	RdbCreateApiStore()
 }
 
-func (provider GcpSqlProvider) InsertApi(name string) StoreResult {
+func (p *gcpSqlProvider) InsertApi(name string) StoreResult {
 	return RdbInsertApi(name)
 }
 
-func (provider GcpSqlProvider) SelectLatestApi(name string) StoreResult {
+func (p *gcpSqlProvider) SelectLatestApi(name string) StoreResult {
 	return RdbSelectLatestApi(name)
 }

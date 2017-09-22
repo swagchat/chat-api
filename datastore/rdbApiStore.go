@@ -11,14 +11,15 @@ import (
 )
 
 func RdbCreateApiStore() {
-	tableMap := dbMap.AddTableWithName(models.Api{}, TABLE_NAME_API)
+	master := RdbStoreInstance().Master()
+	tableMap := master.AddTableWithName(models.Api{}, TABLE_NAME_API)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "key" {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := dbMap.CreateTablesIfNotExists(); err != nil {
+	if err := master.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 		return
 	}
@@ -32,6 +33,7 @@ func RdbCreateApiStore() {
 }
 
 func RdbInsertApi(name string) StoreResult {
+	master := RdbStoreInstance().Master()
 	result := StoreResult{}
 	api := &models.Api{
 		Name:    name,
@@ -40,7 +42,7 @@ func RdbInsertApi(name string) StoreResult {
 		Created: time.Now().Unix(),
 		Expired: 0,
 	}
-	if err := dbMap.Insert(api); err != nil {
+	if err := master.Insert(api); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating api item.", err)
 	}
 	result.Data = api
@@ -48,13 +50,14 @@ func RdbInsertApi(name string) StoreResult {
 }
 
 func RdbSelectLatestApi(name string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var apis []*models.Api
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_API, " WHERE name=:name AND (expired=0 OR expired>", nowTimestampString, ") ORDER BY created DESC LIMIT 1;")
 	params := map[string]interface{}{"name": name}
-	if _, err := dbMap.Select(&apis, query, params); err != nil {
+	if _, err := slave.Select(&apis, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting api item.", err)
 	}
 	if len(apis) > 0 {

@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider SqliteProvider) CreateDeviceStore() {
+func (p *sqliteProvider) CreateDeviceStore() {
 	RdbCreateDeviceStore()
 }
 
-func (provider SqliteProvider) InsertDevice(device *models.Device) StoreResult {
+func (p *sqliteProvider) InsertDevice(device *models.Device) StoreResult {
 	return RdbInsertDevice(device)
 }
 
-func (provider SqliteProvider) SelectDevices(userId string) StoreResult {
+func (p *sqliteProvider) SelectDevices(userId string) StoreResult {
 	return RdbSelectDevices(userId)
 }
 
-func (provider SqliteProvider) SelectDevice(userId string, platform int) StoreResult {
+func (p *sqliteProvider) SelectDevice(userId string, platform int) StoreResult {
 	return RdbSelectDevice(userId, platform)
 }
 
-func (provider SqliteProvider) SelectDevicesByUserId(userId string) StoreResult {
+func (p *sqliteProvider) SelectDevicesByUserId(userId string) StoreResult {
 	return RdbSelectDevicesByUserId(userId)
 }
 
-func (provider SqliteProvider) SelectDevicesByToken(token string) StoreResult {
+func (p *sqliteProvider) SelectDevicesByToken(token string) StoreResult {
 	return RdbSelectDevicesByToken(token)
 }
 
-func (provider SqliteProvider) UpdateDevice(device *models.Device) StoreResult {
+func (p *sqliteProvider) UpdateDevice(device *models.Device) StoreResult {
 	return RdbUpdateDevice(device)
 }
 
-func (provider SqliteProvider) DeleteDevice(userId string, platform int) StoreResult {
+func (p *sqliteProvider) DeleteDevice(userId string, platform int) StoreResult {
 	return RdbDeleteDevice(userId, platform)
 }

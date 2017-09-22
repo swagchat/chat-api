@@ -2,26 +2,26 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider MysqlProvider) CreateMessageStore() {
+func (p *mysqlProvider) CreateMessageStore() {
 	RdbCreateMessageStore()
 }
 
-func (provider MysqlProvider) InsertMessage(message *models.Message) StoreResult {
+func (p *mysqlProvider) InsertMessage(message *models.Message) StoreResult {
 	return RdbInsertMessage(message)
 }
 
-func (provider MysqlProvider) SelectMessage(messageId string) StoreResult {
+func (p *mysqlProvider) SelectMessage(messageId string) StoreResult {
 	return RdbSelectMessage(messageId)
 }
 
-func (provider MysqlProvider) SelectMessages(roomId string, limit, offset int, order string) StoreResult {
+func (p *mysqlProvider) SelectMessages(roomId string, limit, offset int, order string) StoreResult {
 	return RdbSelectMessages(roomId, limit, offset, order)
 }
 
-func (provider MysqlProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {
+func (p *mysqlProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {
 	return RdbSelectCountMessagesByRoomId(roomId)
 }
 
-func (provider MysqlProvider) UpdateMessage(message *models.Message) StoreResult {
+func (p *mysqlProvider) UpdateMessage(message *models.Message) StoreResult {
 	return RdbUpdateMessage(message)
 }

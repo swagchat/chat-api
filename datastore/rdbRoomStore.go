@@ -9,22 +9,24 @@ import (
 )
 
 func RdbCreateRoomStore() {
-	tableMap := dbMap.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
+	master := RdbStoreInstance().Master()
+	tableMap := master.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "room_id" {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := dbMap.CreateTablesIfNotExists(); err != nil {
+	if err := master.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 	}
 }
 
 func RdbInsertRoom(room *models.Room) StoreResult {
-	trans, err := dbMap.Begin()
+	master := RdbStoreInstance().Master()
+	trans, err := master.Begin()
 	result := StoreResult{}
-	if err = dbMap.Insert(room); err != nil {
+	if err = master.Insert(room); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating room item.", err)
 		if err = trans.Rollback(); err != nil {
 			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room item.", err)
@@ -75,11 +77,12 @@ func RdbInsertRoom(room *models.Room) StoreResult {
 }
 
 func RdbSelectRoom(roomId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
 	params := map[string]interface{}{"roomId": roomId}
-	if _, err := dbMap.Select(&rooms, query, params); err != nil {
+	if _, err := slave.Select(&rooms, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
 	}
 	if len(rooms) == 1 {
@@ -89,10 +92,11 @@ func RdbSelectRoom(roomId string) StoreResult {
 }
 
 func RdbSelectRooms() StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
-	_, err := dbMap.Select(&rooms, query)
+	_, err := slave.Select(&rooms, query)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room items.", err)
 	}
@@ -101,6 +105,7 @@ func RdbSelectRooms() StoreResult {
 }
 
 func RdbSelectUsersForRoom(roomId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var users []*models.UserForRoom
 	query := utils.AppendStrings("SELECT ",
@@ -123,7 +128,7 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 		"WHERE ru.room_id = :roomId AND u.deleted = 0 ",
 		"ORDER BY u.created;")
 	params := map[string]interface{}{"roomId": roomId}
-	_, err := dbMap.Select(&users, query, params)
+	_, err := slave.Select(&users, query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room's users.", err)
 	}
@@ -132,10 +137,11 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 }
 
 func RdbSelectCountRooms() StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
-	count, err := dbMap.SelectInt(query)
+	count, err := slave.SelectInt(query)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room count.", err)
 	}
@@ -144,8 +150,9 @@ func RdbSelectCountRooms() StoreResult {
 }
 
 func RdbUpdateRoom(room *models.Room) StoreResult {
+	master := RdbStoreInstance().Master()
 	result := StoreResult{}
-	_, err := dbMap.Update(room)
+	_, err := master.Update(room)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
 	}
@@ -154,7 +161,8 @@ func RdbUpdateRoom(room *models.Room) StoreResult {
 }
 
 func RdbUpdateRoomDeleted(roomId string) StoreResult {
-	trans, err := dbMap.Begin()
+	master := RdbStoreInstance().Master()
+	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{

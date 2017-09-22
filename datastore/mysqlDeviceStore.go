@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider MysqlProvider) CreateDeviceStore() {
+func (p *mysqlProvider) CreateDeviceStore() {
 	RdbCreateDeviceStore()
 }
 
-func (provider MysqlProvider) InsertDevice(device *models.Device) StoreResult {
+func (p *mysqlProvider) InsertDevice(device *models.Device) StoreResult {
 	return RdbInsertDevice(device)
 }
 
-func (provider MysqlProvider) SelectDevices(userId string) StoreResult {
+func (p *mysqlProvider) SelectDevices(userId string) StoreResult {
 	return RdbSelectDevices(userId)
 }
 
-func (provider MysqlProvider) SelectDevice(userId string, platform int) StoreResult {
+func (p *mysqlProvider) SelectDevice(userId string, platform int) StoreResult {
 	return RdbSelectDevice(userId, platform)
 }
 
-func (provider MysqlProvider) SelectDevicesByUserId(userId string) StoreResult {
+func (p *mysqlProvider) SelectDevicesByUserId(userId string) StoreResult {
 	return RdbSelectDevicesByUserId(userId)
 }
 
-func (provider MysqlProvider) SelectDevicesByToken(token string) StoreResult {
+func (p *mysqlProvider) SelectDevicesByToken(token string) StoreResult {
 	return RdbSelectDevicesByToken(token)
 }
 
-func (provider MysqlProvider) UpdateDevice(device *models.Device) StoreResult {
+func (p *mysqlProvider) UpdateDevice(device *models.Device) StoreResult {
 	return RdbUpdateDevice(device)
 }
 
-func (provider MysqlProvider) DeleteDevice(userId string, platform int) StoreResult {
+func (p *mysqlProvider) DeleteDevice(userId string, platform int) StoreResult {
 	return RdbDeleteDevice(userId, platform)
 }

@@ -2,38 +2,38 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider GcpSqlProvider) CreateUserStore() {
+func (p *gcpSqlProvider) CreateUserStore() {
 	RdbCreateUserStore()
 }
 
-func (provider GcpSqlProvider) InsertUser(user *models.User) StoreResult {
+func (p *gcpSqlProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider GcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+func (p *gcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
 	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
-func (provider GcpSqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+func (p *gcpSqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
 	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
 }
 
-func (provider GcpSqlProvider) SelectUsers() StoreResult {
+func (p *gcpSqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider GcpSqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
+func (p *gcpSqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (provider GcpSqlProvider) UpdateUser(user *models.User) StoreResult {
+func (p *gcpSqlProvider) UpdateUser(user *models.User) StoreResult {
 	return RdbUpdateUser(user)
 }
 
-func (provider GcpSqlProvider) UpdateUserDeleted(userId string) StoreResult {
+func (p *gcpSqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
 
-func (provider GcpSqlProvider) SelectContacts(userId string) StoreResult {
+func (p *gcpSqlProvider) SelectContacts(userId string) StoreResult {
 	return RdbSelectContacts(userId)
 }

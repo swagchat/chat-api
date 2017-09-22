@@ -16,44 +16,133 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-type GcpSqlProvider struct {
+type gcpSqlProvider struct {
 	user              string
 	password          string
 	database          string
 	masterHost        string
 	masterPort        string
+	slaveHost         string
+	slavePort         string
 	maxIdleConnection string
 	maxOpenConnection string
 	useSSL            bool
+	trace             bool
 }
 
-func (provider GcpSqlProvider) Connect() error {
-	if dbMap == nil {
-		datasource := fmt.Sprintf(
+func (p *gcpSqlProvider) Connect() error {
+	rs := RdbStoreInstance()
+	if rs.Master() == nil {
+		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
-			provider.user,
-			provider.password,
-			provider.masterHost,
-			provider.masterPort,
-			provider.database)
-		maxIdleConnection, err := strconv.Atoi(provider.maxIdleConnection)
+			p.user,
+			p.password,
+			p.masterHost,
+			p.masterPort,
+			p.database)
+		db, err := p.openDb(ds, p.useSSL)
 		if err != nil {
-			return err
-		}
-		maxOpenConnection, err := strconv.Atoi(provider.maxOpenConnection)
-		if err != nil {
-			return err
+			fatal(err)
 		}
 
-		dbMap, err = googleCloudSqlSetupConnection(
-			"master",
-			"mysql",
-			provider.database,
-			datasource,
-			maxIdleConnection,
-			maxOpenConnection,
-			provider.useSSL,
-			false)
+		mic, err := strconv.Atoi(p.maxIdleConnection)
+		if err == nil {
+			db.SetMaxIdleConns(mic)
+		}
+		moc, err := strconv.Atoi(p.maxOpenConnection)
+		if err == nil {
+			db.SetMaxOpenConns(moc)
+		}
+
+		var master *gorp.DbMap
+		master = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
+		if p.trace {
+			master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+		}
+
+		rs.SetMaster(master)
+	}
+	if p.slaveHost != "" && p.slavePort != "" && rs.Slave() == nil {
+		ds := fmt.Sprintf(
+			"%s:%s@tcp(%s:%s)/%s",
+			p.user,
+			p.password,
+			p.slaveHost,
+			p.slavePort,
+			p.database)
+		db, err := p.openDb(ds, p.useSSL)
+		if err != nil {
+			fatal(err)
+		}
+
+		mic, err := strconv.Atoi(p.maxIdleConnection)
+		if err == nil {
+			db.SetMaxIdleConns(mic)
+		}
+		moc, err := strconv.Atoi(p.maxOpenConnection)
+		if err == nil {
+			db.SetMaxOpenConns(moc)
+		}
+
+		db.SetMaxIdleConns(mic)
+		db.SetMaxOpenConns(moc)
+
+		var slave *gorp.DbMap
+		slave = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
+		if p.trace {
+			slave.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+		}
+
+		rs.SetSlave(slave)
+	}
+	return nil
+}
+
+func (p *gcpSqlProvider) Init() {
+	p.CreateApiStore()
+	p.CreateUserStore()
+	p.CreateBlockUserStore()
+	p.CreateRoomStore()
+	p.CreateRoomUserStore()
+	p.CreateMessageStore()
+	p.CreateDeviceStore()
+	p.CreateSubscriptionStore()
+}
+
+func (p *gcpSqlProvider) DropDatabase() error {
+	rs := RdbStoreInstance()
+	if rs.Master() != nil {
+		ds := fmt.Sprintf(
+			"%s:%s@tcp(%s:%s)/%s",
+			p.user,
+			p.password,
+			p.masterHost,
+			p.masterPort,
+			p.database)
+		db, err := p.openDb(ds, p.useSSL)
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+		_, err = db.Exec(utils.AppendStrings("DROP DATABASE ", p.database))
+		if err != nil {
+			return err
+		}
+	}
+	if p.slaveHost != "" && p.slavePort != "" && rs.Slave() == nil {
+		ds := fmt.Sprintf(
+			"%s:%s@tcp(%s:%s)/%s",
+			p.user,
+			p.password,
+			p.slaveHost,
+			p.slavePort,
+			p.database)
+		db, err := p.openDb(ds, p.useSSL)
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+		_, err = db.Exec(utils.AppendStrings("DROP DATABASE ", p.database))
 		if err != nil {
 			return err
 		}
@@ -61,39 +150,7 @@ func (provider GcpSqlProvider) Connect() error {
 	return nil
 }
 
-func (provider GcpSqlProvider) Init() {
-	provider.CreateApiStore()
-	provider.CreateUserStore()
-	provider.CreateBlockUserStore()
-	provider.CreateRoomStore()
-	provider.CreateRoomUserStore()
-	provider.CreateMessageStore()
-	provider.CreateDeviceStore()
-	provider.CreateSubscriptionStore()
-}
-
-func (provider GcpSqlProvider) DropDatabase() error {
-	datasource := fmt.Sprintf(
-		"%s:%s@tcp(%s:%s)/%s",
-		provider.user,
-		provider.password,
-		provider.masterHost,
-		provider.masterPort,
-		provider.database)
-	db, err := sql.Open("mysql", datasource)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	_, err = db.Exec(utils.AppendStrings("DROP DATABASE ", provider.database))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func googleCloudSqlSetupConnection(conType string, driverName string, database string, datasource string, maxIdle int, maxOpen int, useSSL, trace bool) (*gorp.DbMap, error) {
+func (p *gcpSqlProvider) openDb(dataSource string, useSSL bool) (*sql.DB, error) {
 	var err error
 	if useSSL {
 		rootCertPool := x509.NewCertPool()
@@ -116,9 +173,9 @@ func googleCloudSqlSetupConnection(conType string, driverName string, database s
 			ServerName:         utils.AppendStrings(utils.Cfg.Datastore.GcpProjectId, ":", utils.Cfg.Datastore.ServerName),
 			InsecureSkipVerify: false,
 		})
-		datasource = utils.AppendStrings(datasource, "?tls=config")
+		dataSource = utils.AppendStrings(dataSource, "?tls=config")
 	}
-	db, err := sql.Open(driverName, datasource)
+	db, err := sql.Open("mysql", dataSource)
 	if err != nil {
 		return nil, err
 	}
@@ -127,16 +184,5 @@ func googleCloudSqlSetupConnection(conType string, driverName string, database s
 	if err != nil {
 		return nil, err
 	}
-
-	db.SetMaxIdleConns(maxIdle)
-	db.SetMaxOpenConns(maxOpen)
-
-	var dbmap *gorp.DbMap
-
-	dbmap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
-	if trace {
-		dbmap.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
-	}
-
-	return dbmap, nil
+	return db, nil
 }

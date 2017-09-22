@@ -11,14 +11,15 @@ import (
 )
 
 func RdbCreateMessageStore() {
-	tableMap := dbMap.AddTableWithName(models.Message{}, TABLE_NAME_MESSAGE)
+	master := RdbStoreInstance().Master()
+	tableMap := master.AddTableWithName(models.Message{}, TABLE_NAME_MESSAGE)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "message_id" {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := dbMap.CreateTablesIfNotExists(); err != nil {
+	if err := master.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 	}
 
@@ -27,7 +28,7 @@ func RdbCreateMessageStore() {
 		addIndexQuery = utils.AppendStrings("CREATE INDEX room_id_deleted_created ON ", TABLE_NAME_MESSAGE, "(room_id, deleted, created)")
 	} else {
 		addIndexQuery = utils.AppendStrings("ALTER TABLE ", TABLE_NAME_MESSAGE, " ADD INDEX room_id_deleted_created (room_id, deleted, created)")
-		_, err := dbMap.Exec(addIndexQuery)
+		_, err := master.Exec(addIndexQuery)
 		if err != nil {
 			errMessage := err.Error()
 			if strings.Index(errMessage, "Duplicate key name") < 0 {
@@ -38,7 +39,8 @@ func RdbCreateMessageStore() {
 }
 
 func RdbInsertMessage(message *models.Message) StoreResult {
-	trans, err := dbMap.Begin()
+	master := RdbStoreInstance().Master()
+	trans, err := master.Begin()
 	result := StoreResult{}
 	if err = trans.Insert(message); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating message item.", err)
@@ -140,11 +142,12 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 }
 
 func RdbSelectMessage(messageId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_MESSAGE, " WHERE message_id=:messageId;")
 	params := map[string]interface{}{"messageId": messageId}
-	if _, err := dbMap.Select(&messages, query, params); err != nil {
+	if _, err := slave.Select(&messages, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting message item.", err)
 	}
 	if len(messages) == 1 {
@@ -154,6 +157,7 @@ func RdbSelectMessage(messageId string) StoreResult {
 }
 
 func RdbSelectMessages(roomId string, limit, offset int, order string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * ",
@@ -168,7 +172,7 @@ func RdbSelectMessages(roomId string, limit, offset int, order string) StoreResu
 		"limit":  limit,
 		"offset": offset,
 	}
-	_, err := dbMap.Select(&messages, query, params)
+	_, err := slave.Select(&messages, query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting message items.", err)
 	}
@@ -177,6 +181,7 @@ func RdbSelectMessages(roomId string, limit, offset int, order string) StoreResu
 }
 
 func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_MESSAGE, " ",
@@ -185,7 +190,7 @@ func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
 	params := map[string]interface{}{
 		"roomId": roomId,
 	}
-	count, err := dbMap.SelectInt(query, params)
+	count, err := slave.SelectInt(query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting message count.", err)
 	}
@@ -194,8 +199,9 @@ func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
 }
 
 func RdbUpdateMessage(message *models.Message) StoreResult {
+	master := RdbStoreInstance().Master()
 	result := StoreResult{}
-	_, err := dbMap.Update(message)
+	_, err := master.Update(message)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while updating message item.", err)
 	}

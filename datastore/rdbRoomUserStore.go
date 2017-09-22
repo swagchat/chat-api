@@ -9,15 +9,17 @@ import (
 )
 
 func RdbCreateRoomUserStore() {
-	tableMap := dbMap.AddTableWithName(models.RoomUser{}, TABLE_NAME_ROOM_USER)
+	master := RdbStoreInstance().Master()
+	tableMap := master.AddTableWithName(models.RoomUser{}, TABLE_NAME_ROOM_USER)
 	tableMap.SetUniqueTogether("room_id", "user_id")
-	if err := dbMap.CreateTablesIfNotExists(); err != nil {
+	if err := master.CreateTablesIfNotExists(); err != nil {
 		log.Println(err)
 	}
 }
 
 func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
-	trans, err := dbMap.Begin()
+	master := RdbStoreInstance().Master()
+	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
@@ -49,8 +51,9 @@ func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
 }
 
 func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
+	master := RdbStoreInstance().Master()
 	result := StoreResult{}
-	trans, err := dbMap.Begin()
+	trans, err := master.Begin()
 	for _, roomUser := range roomUsers {
 		res := RdbSelectRoomUser(roomUser.RoomId, roomUser.UserId)
 		if res.ProblemDetail != nil {
@@ -80,6 +83,7 @@ func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
 }
 
 func RdbSelectRoomUser(roomId, userId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id=:userId;")
@@ -87,7 +91,7 @@ func RdbSelectRoomUser(roomId, userId string) StoreResult {
 		"roomId": roomId,
 		"userId": userId,
 	}
-	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+	if _, err := slave.Select(&roomUsers, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
 	}
 	if len(roomUsers) == 1 {
@@ -97,6 +101,7 @@ func RdbSelectRoomUser(roomId, userId string) StoreResult {
 }
 
 func RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM, " WHERE type=:type AND user_id=:myUserId) AND user_id=:opponentUserId;")
@@ -105,7 +110,7 @@ func RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
 		"myUserId":       myUserId,
 		"opponentUserId": opponentUserId,
 	}
-	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+	if _, err := slave.Select(&roomUsers, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user item.", err)
 	}
 	if len(roomUsers) == 1 {
@@ -115,13 +120,14 @@ func RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
 }
 
 func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT room_id, user_id, unread_count, meta_data, created, modified FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{
 		"roomId": roomId,
 	}
-	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+	if _, err := slave.Select(&roomUsers, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user items.", err)
 	}
 	result.Data = roomUsers
@@ -129,13 +135,14 @@ func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
 }
 
 func RdbSelectRoomUsersByUserId(userId string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	if _, err := dbMap.Select(&roomUsers, query, params); err != nil {
+	if _, err := slave.Select(&roomUsers, query, params); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user items.", err)
 	}
 	result.Data = roomUsers
@@ -143,6 +150,7 @@ func RdbSelectRoomUsersByUserId(userId string) StoreResult {
 }
 
 func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
+	slave := RdbStoreInstance().Slave()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	var userIdsQuery string
@@ -168,7 +176,7 @@ func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) Stor
 	if userIds != nil {
 		query = utils.AppendStrings(query, " user_id IN (", userIdsQuery, ")")
 	}
-	_, err := dbMap.Select(&roomUsers, query, params)
+	_, err := slave.Select(&roomUsers, query, params)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting room's user ids.", err)
 	}
@@ -177,7 +185,8 @@ func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) Stor
 }
 
 func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
-	trans, err := dbMap.Begin()
+	master := RdbStoreInstance().Master()
+	trans, err := master.Begin()
 	result := StoreResult{}
 	updateQuery := ""
 	params := map[string]interface{}{
@@ -236,7 +245,8 @@ func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
 }
 
 func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
-	trans, err := dbMap.Begin()
+	master := RdbStoreInstance().Master()
+	trans, err := master.Begin()
 	result := StoreResult{}
 	var query string
 	var params map[string]interface{}

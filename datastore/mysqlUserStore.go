@@ -2,38 +2,38 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider MysqlProvider) CreateUserStore() {
+func (p *mysqlProvider) CreateUserStore() {
 	RdbCreateUserStore()
 }
 
-func (provider MysqlProvider) InsertUser(user *models.User) StoreResult {
+func (p *mysqlProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider MysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+func (p *mysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
 	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
-func (provider MysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+func (p *mysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
 	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
 }
 
-func (provider MysqlProvider) SelectUsers() StoreResult {
+func (p *mysqlProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider MysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
+func (p *mysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (provider MysqlProvider) UpdateUser(user *models.User) StoreResult {
+func (p *mysqlProvider) UpdateUser(user *models.User) StoreResult {
 	return RdbUpdateUser(user)
 }
 
-func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreResult {
+func (p *mysqlProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
 
-func (provider MysqlProvider) SelectContacts(userId string) StoreResult {
+func (p *mysqlProvider) SelectContacts(userId string) StoreResult {
 	return RdbSelectContacts(userId)
 }

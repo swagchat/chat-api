@@ -2,38 +2,38 @@ package datastore
 
 import "github.com/fairway-corp/swagchat-api/models"
 
-func (provider SqliteProvider) CreateUserStore() {
+func (p *sqliteProvider) CreateUserStore() {
 	RdbCreateUserStore()
 }
 
-func (provider SqliteProvider) InsertUser(user *models.User) StoreResult {
+func (p *sqliteProvider) InsertUser(user *models.User) StoreResult {
 	return RdbInsertUser(user)
 }
 
-func (provider SqliteProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+func (p *sqliteProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
 	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
-func (provider SqliteProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+func (p *sqliteProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
 	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
 }
 
-func (provider SqliteProvider) SelectUsers() StoreResult {
+func (p *sqliteProvider) SelectUsers() StoreResult {
 	return RdbSelectUsers()
 }
 
-func (provider SqliteProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
+func (p *sqliteProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (provider SqliteProvider) UpdateUser(user *models.User) StoreResult {
+func (p *sqliteProvider) UpdateUser(user *models.User) StoreResult {
 	return RdbUpdateUser(user)
 }
 
-func (provider SqliteProvider) UpdateUserDeleted(userId string) StoreResult {
+func (p *sqliteProvider) UpdateUserDeleted(userId string) StoreResult {
 	return RdbUpdateUserDeleted(userId)
 }
 
-func (provider SqliteProvider) SelectContacts(userId string) StoreResult {
+func (p *sqliteProvider) SelectContacts(userId string) StoreResult {
 	return RdbSelectContacts(userId)
 }

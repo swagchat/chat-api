@@ -36,30 +36,36 @@ func GetProvider() Provider {
 	var provider Provider
 	switch utils.Cfg.Datastore.Provider {
 	case "sqlite":
-		provider = &SqliteProvider{
+		provider = &sqliteProvider{
 			sqlitePath: utils.Cfg.Datastore.SqlitePath,
 		}
 	case "mysql":
-		provider = &MysqlProvider{
+		provider = &mysqlProvider{
 			user:              utils.Cfg.Datastore.User,
 			password:          utils.Cfg.Datastore.Password,
 			database:          utils.Cfg.Datastore.Database,
 			masterHost:        utils.Cfg.Datastore.MasterHost,
 			masterPort:        utils.Cfg.Datastore.MasterPort,
+			slaveHost:         utils.Cfg.Datastore.SlaveHost,
+			slavePort:         utils.Cfg.Datastore.SlavePort,
 			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
 			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
 			useSSL:            utils.Cfg.Datastore.UseSSL,
+			trace:             false,
 		}
 	case "gcpSql":
-		provider = &GcpSqlProvider{
+		provider = &gcpSqlProvider{
 			user:              utils.Cfg.Datastore.User,
 			password:          utils.Cfg.Datastore.Password,
 			database:          utils.Cfg.Datastore.Database,
 			masterHost:        utils.Cfg.Datastore.MasterHost,
 			masterPort:        utils.Cfg.Datastore.MasterPort,
+			slaveHost:         utils.Cfg.Datastore.SlaveHost,
+			slavePort:         utils.Cfg.Datastore.SlavePort,
 			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
 			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
 			useSSL:            utils.Cfg.Datastore.UseSSL,
+			trace:             false,
 		}
 	default:
 		utils.AppLogger.Error("",
@@ -81,4 +87,11 @@ func createProblemDetail(title string, err error) *models.ProblemDetail {
 		Detail:    err.Error(),
 		Error:     errors.Wrap(err, title),
 	}
+}
+
+func fatal(err error) {
+	utils.AppLogger.Error("",
+		zap.String("msg", err.Error()),
+	)
+	os.Exit(0)
 }
