@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# != 0 ] && [ $# != 3 ]; then
-	echo -e "\033[35mInvalid arguments. ex) ./dockerhub-push.sh swagchat api latest\033[0m"
+	echo -e "\033[35mInvalid arguments. ex) ./dockerhub-push.sh swagchat chat-api latest\033[0m"
 	exit 1
 fi
 
