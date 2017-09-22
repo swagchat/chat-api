@@ -1,10 +1,5 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
-[![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/fairway-corp/swagchat-api)
-[![CircleCI](https://circleci.com/gh/fairway-corp/swagchat-chat-api/tree/master.svg?style=svg)](https://circleci.com/gh/fairway-corp/swagchat-chat-api/tree/master)
-[![Issue Count](https://lima.codeclimate.com/github/fairway-corp/swagchat-api/badges/issue_count.svg)](https://lima.codeclimate.com/github/fairway-corp/swagchat-api)
-[![Go Report Card](https://goreportcard.com/badge/github.com/fairway-corp/swagchat-api)](https://goreportcard.com/report/github.com/fairway-corp/swagchat-api)
-
-
+[![Go Report Card](https://goreportcard.com/badge/github.com/swagchat/chat-api)](https://goreportcard.com/report/github.com/swagchat/chat-api)
 
 # swaghat Chat API
 
@@ -17,20 +12,14 @@ swagchat is an open source chat components for your webapps.
 
 ##### Related repositories
 
-* [RTM API (Real Time Messaging API)](https://github.com/fairway-corp/swagchat-rtm-api)
+* [RTM API (Real Time Messaging API)](https://github.com/swagchat/rtm-api)
 * [SDK (TypeScript & JavaScript)](https://github.com/swagchat/swagchat-sdk-js)
 * [UIKit (A set of React components)](https://github.com/swagchat/react-swagchat)
 
 
 ## API Reference
 
-### SWAGGER HUB
-
-[https://app.swaggerhub.com/api/fairway-corp/swagchat-api](https://app.swaggerhub.com/api/fairway-corp/swagchat-api)
-
-### Apiary
-
-[http://docs.swagchat.apiary.io](http://docs.swagchat.apiary.io)
+Currently writing in OAI 3
 
 ## Datastore
 
@@ -52,7 +41,7 @@ You can choose from the followings.
 
 ### Just run the executable binary
 
-You can download binary from [Release page](https://github.com/fairway-corp/swagchat-api/releases)
+You can download binary from [Release page](https://github.com/swagchat/chat-api/releases)
 
 ```
 # In the case of macOS
