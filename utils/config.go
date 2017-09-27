@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"strings"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -76,20 +78,19 @@ type Datastore struct {
 	User              string
 	Password          string
 	Database          string
-	MasterHost        string `yaml:"masterHost"`
-	MasterPort        string `yaml:"masterPort"`
-	SlaveHost         string `yaml:"slaveHost"`
-	SlavePort         string `yaml:"slavePort"`
 	MaxIdleConnection string `yaml:"maxIdleConnection"`
 	MaxOpenConnection string `yaml:"maxOpenConnection"`
-	UseSSL            bool   `yaml:"useSSL"`
-	ServerName        string `yaml:"serverName"` // For GcpSQL, set SqlInstanceId.
-	ServerCaPath      string `yaml:"serverCaPath"`
-	ClientCertPath    string `yaml:"clientCertPath"`
-	ClientKeyPath     string `yaml:"clientKeyPath"`
+	Master            *ServerInfo
+	Replicas          []*ServerInfo
+}
 
-	// GCP SQL
-	GcpProjectId string `yaml:"gcpProjectId"`
+type ServerInfo struct {
+	Host           string
+	Port           string
+	ServerName     string `yaml:"serverName"`
+	ServerCaPath   string `yaml:"serverCaPath"`
+	ClientCertPath string `yaml:"clientCertPath"`
+	ClientKeyPath  string `yaml:"clientKeyPath"`
 }
 
 type Rtm struct {
@@ -135,7 +136,6 @@ func loadDefaultSettings() {
 	datastore := &Datastore{
 		Provider:          "sqlite",
 		SqlitePath:        "/tmp/swagchat.db",
-		UseSSL:            false,
 		MaxIdleConnection: "10",
 		MaxOpenConnection: "10",
 	}
@@ -273,47 +273,79 @@ func loadEnvironment() {
 	if v = os.Getenv("SC_DATASTORE_DATABASE"); v != "" {
 		Cfg.Datastore.Database = v
 	}
-	if v = os.Getenv("SC_DATASTORE_MASTER_HOST"); v != "" {
-		Cfg.Datastore.MasterHost = v
-	}
-	if v = os.Getenv("SC_DATASTORE_MASTER_PORT"); v != "" {
-		Cfg.Datastore.MasterPort = v
-	}
-	if v = os.Getenv("SC_DATASTORE_SLAVE_HOST"); v != "" {
-		Cfg.Datastore.SlaveHost = v
-	}
-	if v = os.Getenv("SC_DATASTORE_SLAVE_PORT"); v != "" {
-		Cfg.Datastore.SlavePort = v
-	}
 	if v = os.Getenv("SC_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
 		Cfg.Datastore.MaxIdleConnection = v
 	}
 	if v = os.Getenv("SC_DATASTORE_MAX_OPEN_CONNECTION"); v != "" {
 		Cfg.Datastore.MaxOpenConnection = v
 	}
-	if v = os.Getenv("SC_DATASTORE_USE_SSL"); v != "" {
-		if v == "true" {
-			Cfg.Datastore.UseSSL = true
-		} else if v == "false" {
-			Cfg.Datastore.UseSSL = false
+
+	var master *ServerInfo
+	mHost := os.Getenv("SC_DATASTORE_MASTER_HOST")
+	mPort := os.Getenv("SC_DATASTORE_MASTER_PORT")
+	if mHost != "" && mPort != "" {
+		master = &ServerInfo{}
+		master.Host = mHost
+		master.Port = mPort
+		Cfg.Datastore.Master = master
+		mServerName := os.Getenv("SC_DATASTORE_MASTER_SERVER_NAME")
+		mServerCaPath := os.Getenv("SC_DATASTORE_MASTER_SERVER_CA_PATH")
+		mClientCertPath := os.Getenv("SC_DATASTORE_MASTER_CLIENT_CERT_PATH")
+		mClientKeyPath := os.Getenv("SC_DATASTORE_MASTER_CLIENT_KEY_PATH")
+		if mServerName != "" && mServerCaPath != "" && mClientCertPath != "" && mClientKeyPath != "" {
+			master.ServerName = mServerName
+			master.ServerCaPath = mServerCaPath
+			master.ClientCertPath = mClientCertPath
+			master.ClientKeyPath = mClientKeyPath
 		}
 	}
-	if v = os.Getenv("SC_DATASTORE_SERVER_NAME"); v != "" {
-		Cfg.Datastore.ServerName = v
-	}
-	if v = os.Getenv("SC_DATASTORE_SERVER_CA_PATH"); v != "" {
-		Cfg.Datastore.ServerCaPath = v
-	}
-	if v = os.Getenv("SC_DATASTORE_CLIENT_CERT_PATH"); v != "" {
-		Cfg.Datastore.ClientCertPath = v
-	}
-	if v = os.Getenv("SC_DATASTORE_CLIENT_KEY_PATH"); v != "" {
-		Cfg.Datastore.ClientKeyPath = v
-	}
 
-	// Datastore - GCP SQL
-	if v = os.Getenv("SC_DATASTORE_GCP_PROJECT_ID"); v != "" {
-		Cfg.Datastore.GcpProjectId = v
+	var (
+		rHosts          []string
+		rPorts          []string
+		rServerName     []string
+		rServerCaPath   []string
+		rClientCertPath []string
+		rClientKeyPath  []string
+	)
+	if v = os.Getenv("SC_DATASTORE_REPLICA_HOSTS"); v != "" {
+		rHosts = strings.Split(v, ",")
+	}
+	if v = os.Getenv("SC_DATASTORE_REPLICA_PORTS"); v != "" {
+		rPorts = strings.Split(v, ",")
+	}
+	if v = os.Getenv("SC_DATASTORE_REPLICA_SERVER_NAMES"); v != "" {
+		rServerName = strings.Split(v, ",")
+	}
+	if v = os.Getenv("SC_DATASTORE_REPLICA_SERVER_CA_PATHS"); v != "" {
+		rServerCaPath = strings.Split(v, ",")
+	}
+	if v = os.Getenv("SC_DATASTORE_REPLICA_CLIENT_CERT_PATHS"); v != "" {
+		rClientCertPath = strings.Split(v, ",")
+	}
+	if v = os.Getenv("SC_DATASTORE_REPLICA_CLIENT_KEY_PATHS"); v != "" {
+		rClientKeyPath = strings.Split(v, ",")
+	}
+	if rHosts != nil && len(rHosts) != 0 && rPorts != nil && len(rPorts) != 0 && len(rHosts) == len(rPorts) {
+		replicas := []*ServerInfo{}
+		for i := 0; i < len(rHosts); i++ {
+			replica := &ServerInfo{
+				Host: rHosts[i],
+				Port: rPorts[i],
+			}
+			replicas = append(replicas, replica)
+		}
+		Cfg.Datastore.Replicas = replicas
+
+		if rServerName != nil && len(rServerName) != 0 && rServerCaPath != nil && len(rServerCaPath) != 0 && rClientCertPath != nil && len(rClientCertPath) != 0 && rClientKeyPath != nil && len(rClientKeyPath) != 0 &&
+			(len(rHosts) == len(rServerName) && len(rHosts) == len(rServerCaPath) && len(rHosts) == len(rClientCertPath) && len(rHosts) == len(rClientKeyPath)) {
+			for i := 0; i < len(rHosts); i++ {
+				Cfg.Datastore.Replicas[i].ServerName = rServerName[i]
+				Cfg.Datastore.Replicas[i].ServerCaPath = rServerCaPath[i]
+				Cfg.Datastore.Replicas[i].ClientCertPath = rClientCertPath[i]
+				Cfg.Datastore.Replicas[i].ClientKeyPath = rClientKeyPath[i]
+			}
+		}
 	}
 
 	// Rtm
@@ -408,21 +440,96 @@ func parseFlag() {
 	flag.StringVar(&Cfg.Datastore.User, "datastore.user", Cfg.Datastore.User, "")
 	flag.StringVar(&Cfg.Datastore.Password, "datastore.password", Cfg.Datastore.Password, "")
 	flag.StringVar(&Cfg.Datastore.Database, "datastore.database", Cfg.Datastore.Database, "")
-	flag.StringVar(&Cfg.Datastore.MasterHost, "datastore.masterHost", Cfg.Datastore.MasterHost, "")
-	flag.StringVar(&Cfg.Datastore.MasterPort, "datastore.masterPort", Cfg.Datastore.MasterPort, "")
-	flag.StringVar(&Cfg.Datastore.SlaveHost, "datastore.slaveHost", Cfg.Datastore.SlaveHost, "")
-	flag.StringVar(&Cfg.Datastore.SlavePort, "datastore.slavePort", Cfg.Datastore.SlavePort, "")
 	flag.StringVar(&Cfg.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", Cfg.Datastore.MaxIdleConnection, "")
 	flag.StringVar(&Cfg.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", Cfg.Datastore.MaxOpenConnection, "")
-	var datastoreUseSSL string
-	flag.StringVar(&datastoreUseSSL, "datastore.useSSL", "", "")
-	flag.StringVar(&Cfg.Datastore.ServerName, "datastore.serverName", Cfg.Datastore.ServerName, "")
-	flag.StringVar(&Cfg.Datastore.ServerCaPath, "datastore.serverCaPath", Cfg.Datastore.ServerCaPath, "")
-	flag.StringVar(&Cfg.Datastore.ClientCertPath, "datastore.clientCertPath", Cfg.Datastore.ClientCertPath, "")
-	flag.StringVar(&Cfg.Datastore.ClientKeyPath, "datastore.clientKeyPath", Cfg.Datastore.ClientKeyPath, "")
 
-	// Datastore -GCP SQL
-	flag.StringVar(&Cfg.Datastore.GcpProjectId, "datastore.gcpProjectId", Cfg.Datastore.GcpProjectId, "")
+	var (
+		mHostStr           string
+		mPortsStr          string
+		mServerNameStr     string
+		mServerCaPathStr   string
+		mClientCertPathStr string
+		mClientKeyPathStr  string
+	)
+	flag.StringVar(&mHostStr, "datastore.masterHost", mHostStr, "")
+	flag.StringVar(&mPortsStr, "datastore.masterPort", mPortsStr, "")
+	if mHostStr != "" && mPortsStr != "" {
+		Cfg.Datastore.Master = &ServerInfo{
+			Host: mHostStr,
+			Port: mPortsStr,
+		}
+		flag.StringVar(&mServerNameStr, "datastore.masterServerName", mServerNameStr, "")
+		flag.StringVar(&mServerCaPathStr, "datastore.masterServerCaPath", mServerCaPathStr, "")
+		flag.StringVar(&mClientCertPathStr, "datastore.masterClientCertPath", mClientCertPathStr, "")
+		flag.StringVar(&mClientKeyPathStr, "datastore.masterClientKeyPath", mClientKeyPathStr, "")
+		if mServerNameStr != "" && mServerCaPathStr != "" && mClientCertPathStr != "" && mClientKeyPathStr != "" {
+			Cfg.Datastore.Master.ServerName = mServerNameStr
+			Cfg.Datastore.Master.ServerCaPath = mServerCaPathStr
+			Cfg.Datastore.Master.ClientCertPath = mClientCertPathStr
+			Cfg.Datastore.Master.ClientKeyPath = mClientKeyPathStr
+		}
+	}
+
+	var (
+		rHostsStr           string
+		rPortsStr           string
+		rServerNamesStr     string
+		rServerCaPathsStr   string
+		rClientCertPathsStr string
+		rClientKeyPathsStr  string
+		rHosts              []string
+		rPorts              []string
+		rServerNames        []string
+		rServerCaPaths      []string
+		rClientCertPaths    []string
+		rClientKeyPaths     []string
+	)
+	flag.StringVar(&rHostsStr, "datastore.replicaHosts", rHostsStr, "")
+	flag.StringVar(&rPortsStr, "datastore.replicaPorts", rPortsStr, "")
+	flag.StringVar(&rServerNamesStr, "datastore.replicaServerNames", rServerNamesStr, "")
+	flag.StringVar(&rServerCaPathsStr, "datastore.replicaServerCaPaths", rServerCaPathsStr, "")
+	flag.StringVar(&rClientCertPathsStr, "datastore.replicaClientCertPaths", rClientCertPathsStr, "")
+	flag.StringVar(&rClientKeyPathsStr, "datastore.replicaClientKeyPaths", rClientKeyPathsStr, "")
+
+	if rHostsStr != "" {
+		rHosts = strings.Split(rHostsStr, ",")
+	}
+	if rPortsStr != "" {
+		rPorts = strings.Split(rPortsStr, ",")
+	}
+	if rServerNamesStr != "" {
+		rServerNames = strings.Split(rServerNamesStr, ",")
+	}
+	if rServerCaPathsStr != "" {
+		rServerCaPaths = strings.Split(rServerCaPathsStr, ",")
+	}
+	if rClientCertPathsStr != "" {
+		rClientCertPaths = strings.Split(rClientCertPathsStr, ",")
+	}
+	if rClientKeyPathsStr != "" {
+		rClientKeyPaths = strings.Split(rClientKeyPathsStr, ",")
+	}
+	if rHosts != nil && len(rHosts) != 0 && rPorts != nil && len(rPorts) != 0 && len(rHosts) == len(rPorts) {
+		replicas := []*ServerInfo{}
+		for i := 0; i < len(rHosts); i++ {
+			replica := &ServerInfo{
+				Host: rHosts[i],
+				Port: rPorts[i],
+			}
+			replicas = append(replicas, replica)
+		}
+		Cfg.Datastore.Replicas = replicas
+
+		if rServerNames != nil && len(rServerNames) != 0 && rServerCaPaths != nil && len(rServerCaPaths) != 0 && rClientCertPaths != nil && len(rClientCertPaths) != 0 && rClientKeyPaths != nil && len(rClientKeyPaths) != 0 &&
+			(len(rHosts) == len(rServerNames) && len(rHosts) == len(rServerCaPaths) && len(rHosts) == len(rClientCertPaths) && len(rHosts) == len(rClientKeyPaths)) {
+			for i := 0; i < len(rHosts); i++ {
+				Cfg.Datastore.Replicas[i].ServerName = rServerNames[i]
+				Cfg.Datastore.Replicas[i].ServerCaPath = rServerCaPaths[i]
+				Cfg.Datastore.Replicas[i].ClientCertPath = rClientCertPaths[i]
+				Cfg.Datastore.Replicas[i].ClientKeyPath = rClientKeyPaths[i]
+			}
+		}
+	}
 
 	// Rtm
 	flag.StringVar(&Cfg.Rtm.Provider, "realtimeMessaging.provider", Cfg.Rtm.Provider, "")
@@ -458,11 +565,5 @@ func parseFlag() {
 		Cfg.ErrorLogging = true
 	} else if errorLogging == "false" {
 		Cfg.ErrorLogging = false
-	}
-
-	if datastoreUseSSL == "true" {
-		Cfg.Datastore.UseSSL = true
-	} else if datastoreUseSSL == "false" {
-		Cfg.Datastore.UseSSL = false
 	}
 }

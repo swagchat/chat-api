@@ -9,7 +9,7 @@ import (
 )
 
 func RdbCreateRoomUserStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.RoomUser{}, TABLE_NAME_ROOM_USER)
 	tableMap.SetUniqueTogether("room_id", "user_id")
 	if err := master.CreateTablesIfNotExists(); err != nil {
@@ -18,7 +18,7 @@ func RdbCreateRoomUserStore() {
 }
 
 func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
@@ -51,7 +51,7 @@ func RdbDeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
 }
 
 func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	trans, err := master.Begin()
 	for _, roomUser := range roomUsers {
@@ -83,7 +83,7 @@ func RdbInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
 }
 
 func RdbSelectRoomUser(roomId, userId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id=:userId;")
@@ -101,7 +101,7 @@ func RdbSelectRoomUser(roomId, userId string) StoreResult {
 }
 
 func RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM, " WHERE type=:type AND user_id=:myUserId) AND user_id=:opponentUserId;")
@@ -120,7 +120,7 @@ func RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
 }
 
 func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT room_id, user_id, unread_count, meta_data, created, modified FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
@@ -135,7 +135,7 @@ func RdbSelectRoomUsersByRoomId(roomId string) StoreResult {
 }
 
 func RdbSelectRoomUsersByUserId(userId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
@@ -150,7 +150,7 @@ func RdbSelectRoomUsersByUserId(userId string) StoreResult {
 }
 
 func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var roomUsers []*models.RoomUser
 	var userIdsQuery string
@@ -185,7 +185,7 @@ func RdbSelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) Stor
 }
 
 func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	updateQuery := ""
@@ -245,7 +245,7 @@ func RdbUpdateRoomUser(roomUser *models.RoomUser) StoreResult {
 }
 
 func RdbDeleteRoomUser(roomId string, userIds []string) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	var query string

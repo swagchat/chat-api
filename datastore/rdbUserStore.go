@@ -10,7 +10,7 @@ import (
 )
 
 func RdbCreateUserStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.User{}, TABLE_NAME_USER)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -24,7 +24,7 @@ func RdbCreateUserStore() {
 }
 
 func RdbInsertUser(user *models.User) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	trans, err := master.Begin()
 	user.AccessToken = utils.GenerateToken(utils.TOKEN_LENGTH)
@@ -58,7 +58,7 @@ func RdbInsertUser(user *models.User) StoreResult {
 }
 
 func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.User
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND deleted=0;")
@@ -158,7 +158,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 }
 
 func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.User
 	query := utils.AppendStrings("SELECT id FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND access_token=:accessToken AND deleted=0;")
@@ -176,7 +176,7 @@ func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult
 }
 
 func RdbSelectUsers() StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.User
 	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_public, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
@@ -189,7 +189,7 @@ func RdbSelectUsers() StoreResult {
 }
 
 func RdbSelectUserIdsByUserIds(userIds []string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.User
 	userIdsQuery, params := utils.MakePrepareForInExpression(userIds)
@@ -210,7 +210,7 @@ func RdbSelectUserIdsByUserIds(userIds []string) StoreResult {
 }
 
 func RdbUpdateUser(user *models.User) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	_, err = trans.Update(user)
@@ -247,7 +247,7 @@ func RdbUpdateUser(user *models.User) StoreResult {
 }
 
 func RdbUpdateUserDeleted(userId string) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
@@ -313,7 +313,7 @@ func RdbUpdateUserDeleted(userId string) StoreResult {
 }
 
 func RdbSelectContacts(userId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.User
 	query := utils.AppendStrings("SELECT ",

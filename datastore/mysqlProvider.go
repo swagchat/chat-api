@@ -12,35 +12,33 @@ import (
 
 	gorp "gopkg.in/gorp.v2"
 
-	"github.com/swagchat/chat-api/utils"
 	"github.com/go-sql-driver/mysql"
+	"github.com/swagchat/chat-api/utils"
 )
 
 type mysqlProvider struct {
 	user              string
 	password          string
 	database          string
-	masterHost        string
-	masterPort        string
-	slaveHost         string
-	slavePort         string
+	masterSi          *utils.ServerInfo
+	replicaSis        []*utils.ServerInfo
 	maxIdleConnection string
 	maxOpenConnection string
-	useSSL            bool
-	trace             bool
+
+	trace bool
 }
 
 func (p *mysqlProvider) Connect() error {
 	rs := RdbStoreInstance()
-	if rs.Master() == nil {
+	if rs.master() == nil {
 		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
 			p.user,
 			p.password,
-			p.masterHost,
-			p.masterPort,
+			p.masterSi.Host,
+			p.masterSi.Port,
 			p.database)
-		db, err := p.openDb(ds, p.useSSL)
+		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
 			fatal(err)
 		}
@@ -60,40 +58,43 @@ func (p *mysqlProvider) Connect() error {
 			master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
 		}
 
-		rs.SetMaster(master)
+		rs.setMaster(master)
 	}
-	if p.slaveHost != "" && p.slavePort != "" && rs.Slave() == nil {
-		ds := fmt.Sprintf(
-			"%s:%s@tcp(%s:%s)/%s",
-			p.user,
-			p.password,
-			p.slaveHost,
-			p.slavePort,
-			p.database)
-		db, err := p.openDb(ds, p.useSSL)
-		if err != nil {
-			fatal(err)
-		}
 
-		mic, err := strconv.Atoi(p.maxIdleConnection)
-		if err == nil {
+	for _, replicaSi := range p.replicaSis {
+		if replicaSi.Host != "" && replicaSi.Port != "" && rs.replica() == nil {
+			ds := fmt.Sprintf(
+				"%s:%s@tcp(%s:%s)/%s",
+				p.user,
+				p.password,
+				replicaSi.Host,
+				replicaSi.Port,
+				p.database)
+			db, err := p.openDb(ds, replicaSi)
+			if err != nil {
+				fatal(err)
+			}
+
+			mic, err := strconv.Atoi(p.maxIdleConnection)
+			if err == nil {
+				db.SetMaxIdleConns(mic)
+			}
+			moc, err := strconv.Atoi(p.maxOpenConnection)
+			if err == nil {
+				db.SetMaxOpenConns(moc)
+			}
+
 			db.SetMaxIdleConns(mic)
-		}
-		moc, err := strconv.Atoi(p.maxOpenConnection)
-		if err == nil {
 			db.SetMaxOpenConns(moc)
+
+			var slave *gorp.DbMap
+			slave = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
+			if p.trace {
+				slave.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+			}
+
+			rs.setReplica(slave)
 		}
-
-		db.SetMaxIdleConns(mic)
-		db.SetMaxOpenConns(moc)
-
-		var slave *gorp.DbMap
-		slave = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
-		if p.trace {
-			slave.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
-		}
-
-		rs.SetSlave(slave)
 	}
 	return nil
 }
@@ -111,33 +112,15 @@ func (p *mysqlProvider) Init() {
 
 func (p *mysqlProvider) DropDatabase() error {
 	rs := RdbStoreInstance()
-	if rs.Master() != nil {
+	if rs.master() != nil {
 		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
 			p.user,
 			p.password,
-			p.masterHost,
-			p.masterPort,
+			p.masterSi.Host,
+			p.masterSi.Port,
 			p.database)
-		db, err := p.openDb(ds, p.useSSL)
-		if err != nil {
-			return err
-		}
-		defer db.Close()
-		_, err = db.Exec(utils.AppendStrings("DROP DATABASE ", p.database))
-		if err != nil {
-			return err
-		}
-	}
-	if p.slaveHost != "" && p.slavePort != "" && rs.Slave() == nil {
-		ds := fmt.Sprintf(
-			"%s:%s@tcp(%s:%s)/%s",
-			p.user,
-			p.password,
-			p.slaveHost,
-			p.slavePort,
-			p.database)
-		db, err := p.openDb(ds, p.useSSL)
+		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
 			return err
 		}
@@ -150,11 +133,11 @@ func (p *mysqlProvider) DropDatabase() error {
 	return nil
 }
 
-func (p *mysqlProvider) openDb(dataSource string, useSSL bool) (*sql.DB, error) {
+func (p *mysqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB, error) {
 	var err error
-	if useSSL {
+	if si.ServerName != "" && si.ServerCaPath != "" && si.ClientCertPath != "" && si.ClientKeyPath != "" {
 		rootCertPool := x509.NewCertPool()
-		pem, err := ioutil.ReadFile(utils.Cfg.Datastore.ServerCaPath)
+		pem, err := ioutil.ReadFile(si.ServerCaPath)
 		if err != nil {
 			return nil, err
 		}
@@ -162,7 +145,7 @@ func (p *mysqlProvider) openDb(dataSource string, useSSL bool) (*sql.DB, error) 
 			return nil, err
 		}
 		clientCert := make([]tls.Certificate, 0, 1)
-		certs, err := tls.LoadX509KeyPair(utils.Cfg.Datastore.ClientCertPath, utils.Cfg.Datastore.ClientKeyPath)
+		certs, err := tls.LoadX509KeyPair(si.ClientCertPath, si.ClientKeyPath)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +153,7 @@ func (p *mysqlProvider) openDb(dataSource string, useSSL bool) (*sql.DB, error) 
 		mysql.RegisterTLSConfig("config", &tls.Config{
 			RootCAs:            rootCertPool,
 			Certificates:       clientCert,
-			ServerName:         utils.Cfg.Datastore.ServerName,
+			ServerName:         si.ServerName,
 			InsecureSkipVerify: false,
 		})
 		dataSource = utils.AppendStrings(dataSource, "?tls=config")

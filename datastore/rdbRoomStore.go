@@ -9,7 +9,7 @@ import (
 )
 
 func RdbCreateRoomStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -23,7 +23,7 @@ func RdbCreateRoomStore() {
 }
 
 func RdbInsertRoom(room *models.Room) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	if err = master.Insert(room); err != nil {
@@ -77,7 +77,7 @@ func RdbInsertRoom(room *models.Room) StoreResult {
 }
 
 func RdbSelectRoom(roomId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
@@ -92,7 +92,7 @@ func RdbSelectRoom(roomId string) StoreResult {
 }
 
 func RdbSelectRooms() StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
@@ -105,7 +105,7 @@ func RdbSelectRooms() StoreResult {
 }
 
 func RdbSelectUsersForRoom(roomId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.UserForRoom
 	query := utils.AppendStrings("SELECT ",
@@ -137,7 +137,7 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 }
 
 func RdbSelectCountRooms() StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
@@ -150,7 +150,7 @@ func RdbSelectCountRooms() StoreResult {
 }
 
 func RdbUpdateRoom(room *models.Room) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	_, err := master.Update(room)
 	if err != nil {
@@ -161,7 +161,7 @@ func RdbUpdateRoom(room *models.Room) StoreResult {
 }
 
 func RdbUpdateRoomDeleted(roomId string) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")

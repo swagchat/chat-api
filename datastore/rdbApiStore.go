@@ -11,7 +11,7 @@ import (
 )
 
 func RdbCreateApiStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.Api{}, TABLE_NAME_API)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -33,7 +33,7 @@ func RdbCreateApiStore() {
 }
 
 func RdbInsertApi(name string) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	api := &models.Api{
 		Name:    name,
@@ -50,7 +50,7 @@ func RdbInsertApi(name string) StoreResult {
 }
 
 func RdbSelectLatestApi(name string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var apis []*models.Api
 	nowTimestamp := time.Now().Unix()

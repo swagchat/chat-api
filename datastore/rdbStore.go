@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"sync/atomic"
+
 	"github.com/swagchat/chat-api/utils"
 	gorp "gopkg.in/gorp.v2"
 )
@@ -18,8 +20,9 @@ var (
 )
 
 type rdbStore struct {
-	master *gorp.DbMap
-	slave  *gorp.DbMap
+	masterDbMap    *gorp.DbMap
+	replicaDbMaps  []*gorp.DbMap
+	replicaCounter int64
 }
 
 func RdbStoreInstance() *rdbStore {
@@ -29,21 +32,22 @@ func RdbStoreInstance() *rdbStore {
 	return rdbStoreInstance
 }
 
-func (rs *rdbStore) Master() *gorp.DbMap {
-	return rs.master
+func (rs *rdbStore) master() *gorp.DbMap {
+	return rs.masterDbMap
 }
 
-func (rs *rdbStore) SetMaster(m *gorp.DbMap) {
-	rs.master = m
+func (rs *rdbStore) setMaster(m *gorp.DbMap) {
+	rs.masterDbMap = m
 }
 
-func (rs *rdbStore) Slave() *gorp.DbMap {
-	if rs.slave == nil {
-		return rs.master
+func (rs *rdbStore) replica() *gorp.DbMap {
+	if rs.replicaDbMaps == nil {
+		return rs.masterDbMap
 	}
-	return rs.slave
+	replicaCounter := atomic.AddInt64(&rs.replicaCounter, 1) % int64(len(rs.replicaDbMaps))
+	return rs.replicaDbMaps[replicaCounter]
 }
 
-func (rs *rdbStore) SetSlave(s *gorp.DbMap) {
-	rs.slave = s
+func (rs *rdbStore) setReplica(r *gorp.DbMap) {
+	rs.replicaDbMaps = append(rs.replicaDbMaps, r)
 }

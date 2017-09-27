@@ -15,7 +15,7 @@ type sqliteProvider struct {
 
 func (p *sqliteProvider) Connect() error {
 	rs := RdbStoreInstance()
-	if rs.Master() == nil {
+	if rs.master() == nil {
 		if p.sqlitePath == "" {
 			return errors.New("not key sqlitePath")
 		} else {
@@ -25,7 +25,7 @@ func (p *sqliteProvider) Connect() error {
 			}
 			var master *gorp.DbMap
 			master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-			rs.SetMaster(master)
+			rs.setMaster(master)
 		}
 	}
 	return nil

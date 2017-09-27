@@ -6,9 +6,9 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/pkg/errors"
 )
 
 type StoreResult struct {
@@ -44,13 +44,10 @@ func GetProvider() Provider {
 			user:              utils.Cfg.Datastore.User,
 			password:          utils.Cfg.Datastore.Password,
 			database:          utils.Cfg.Datastore.Database,
-			masterHost:        utils.Cfg.Datastore.MasterHost,
-			masterPort:        utils.Cfg.Datastore.MasterPort,
-			slaveHost:         utils.Cfg.Datastore.SlaveHost,
-			slavePort:         utils.Cfg.Datastore.SlavePort,
+			masterSi:          utils.Cfg.Datastore.Master,
+			replicaSis:        utils.Cfg.Datastore.Replicas,
 			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
 			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
-			useSSL:            utils.Cfg.Datastore.UseSSL,
 			trace:             false,
 		}
 	case "gcpSql":
@@ -58,14 +55,11 @@ func GetProvider() Provider {
 			user:              utils.Cfg.Datastore.User,
 			password:          utils.Cfg.Datastore.Password,
 			database:          utils.Cfg.Datastore.Database,
-			masterHost:        utils.Cfg.Datastore.MasterHost,
-			masterPort:        utils.Cfg.Datastore.MasterPort,
-			slaveHost:         utils.Cfg.Datastore.SlaveHost,
-			slavePort:         utils.Cfg.Datastore.SlavePort,
+			masterSi:          utils.Cfg.Datastore.Master,
+			replicaSis:        utils.Cfg.Datastore.Replicas,
 			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
 			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
-			useSSL:            utils.Cfg.Datastore.UseSSL,
-			trace:             false,
+			trace:             true,
 		}
 	default:
 		utils.AppLogger.Error("",

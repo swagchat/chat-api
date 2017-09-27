@@ -8,7 +8,7 @@ import (
 )
 
 func RdbCreateBlockUserStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.BlockUser{}, TABLE_NAME_BLOCK_USER)
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
 	if err := master.CreateTablesIfNotExists(); err != nil {
@@ -17,7 +17,7 @@ func RdbCreateBlockUserStore() {
 }
 
 func RdbInsertBlockUsers(blockUsers []*models.BlockUser) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	trans, err := master.Begin()
 	for _, blockUser := range blockUsers {
@@ -49,7 +49,7 @@ func RdbInsertBlockUsers(blockUsers []*models.BlockUser) StoreResult {
 }
 
 func RdbSelectBlockUser(userId, blockUserId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var blockUsers []*models.BlockUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId AND block_user_id=:blockUserId;")
@@ -67,7 +67,7 @@ func RdbSelectBlockUser(userId, blockUserId string) StoreResult {
 }
 
 func RdbSelectBlockUsersByUserId(userId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var blockUsers []string
 	query := utils.AppendStrings("SELECT block_user_id FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId;")
@@ -82,7 +82,7 @@ func RdbSelectBlockUsersByUserId(userId string) StoreResult {
 }
 
 func RdbDeleteBlockUser(userId string, blockUserIds []string) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	var blockUserIdsQuery string
 	blockUserIdsQuery, params := utils.MakePrepareForInExpression(blockUserIds)

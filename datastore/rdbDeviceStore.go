@@ -9,7 +9,7 @@ import (
 )
 
 func RdbCreateDeviceStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.Device{}, TABLE_NAME_DEVICE)
 	tableMap.SetUniqueTogether("user_id", "platform")
 	for _, columnMap := range tableMap.Columns {
@@ -23,7 +23,7 @@ func RdbCreateDeviceStore() {
 }
 
 func RdbInsertDevice(device *models.Device) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	if err := master.Insert(device); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating device item.", err)
@@ -33,7 +33,7 @@ func RdbInsertDevice(device *models.Device) StoreResult {
 }
 
 func RdbSelectDevices(userId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
@@ -49,7 +49,7 @@ func RdbSelectDevices(userId string) StoreResult {
 }
 
 func RdbSelectDevice(userId string, platform int) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
@@ -67,7 +67,7 @@ func RdbSelectDevice(userId string, platform int) StoreResult {
 }
 
 func RdbSelectDevicesByUserId(userId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
@@ -82,7 +82,7 @@ func RdbSelectDevicesByUserId(userId string) StoreResult {
 }
 
 func RdbSelectDevicesByToken(token string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE token=:token;")
@@ -97,7 +97,7 @@ func RdbSelectDevicesByToken(token string) StoreResult {
 }
 
 func RdbUpdateDevice(device *models.Device) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
@@ -140,7 +140,7 @@ func RdbUpdateDevice(device *models.Device) StoreResult {
 }
 
 func RdbDeleteDevice(userId string, platform int) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")

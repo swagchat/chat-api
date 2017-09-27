@@ -11,7 +11,7 @@ import (
 )
 
 func RdbCreateMessageStore() {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	tableMap := master.AddTableWithName(models.Message{}, TABLE_NAME_MESSAGE)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -39,7 +39,7 @@ func RdbCreateMessageStore() {
 }
 
 func RdbInsertMessage(message *models.Message) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
 	result := StoreResult{}
 	if err = trans.Insert(message); err != nil {
@@ -142,7 +142,7 @@ func RdbInsertMessage(message *models.Message) StoreResult {
 }
 
 func RdbSelectMessage(messageId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_MESSAGE, " WHERE message_id=:messageId;")
@@ -157,7 +157,7 @@ func RdbSelectMessage(messageId string) StoreResult {
 }
 
 func RdbSelectMessages(roomId string, limit, offset int, order string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * ",
@@ -181,7 +181,7 @@ func RdbSelectMessages(roomId string, limit, offset int, order string) StoreResu
 }
 
 func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
-	slave := RdbStoreInstance().Slave()
+	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_MESSAGE, " ",
@@ -199,7 +199,7 @@ func RdbSelectCountMessagesByRoomId(roomId string) StoreResult {
 }
 
 func RdbUpdateMessage(message *models.Message) StoreResult {
-	master := RdbStoreInstance().Master()
+	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	_, err := master.Update(message)
 	if err != nil {
