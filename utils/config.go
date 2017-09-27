@@ -13,7 +13,7 @@ import (
 const (
 	APP_NAME      = "swagchat-api"
 	API_VERSION   = "v0"
-	BUILD_VERSION = "v0.9.0"
+	BUILD_VERSION = "v0.9.1"
 
 	KEY_LENGTH        = 32
 	TOKEN_LENGTH      = 32
