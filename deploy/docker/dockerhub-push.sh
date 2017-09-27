@@ -18,15 +18,17 @@ if [ "$3" != "" ]; then
 	tag=$3
 fi
 
-echo -e "\033[36m----------> Building docker image [$user/alpine-gobuild]\033[0m"
-docker build -t $user/alpine-gobuild -f ./Dockerfile-GoBuild .
-if [ $? -gt 0 ]; then
-	echo -e "\033[35mFailed!\033[0m"
-	exit 1
+if [[ "$(docker images -q alpine-gobuild 2> /dev/null)" == "" ]]; then
+	echo -e "\033[36m----------> Building docker image [alpine-gobuild]\033[0m"
+	docker build -t alpine-gobuild -f ./Dockerfile-GoBuild .
+	if [ $? -gt 0 ]; then
+		echo -e "\033[35mFailed!\033[0m"
+		exit 1
+	fi
 fi
 
 echo -e "\033[36m----------> Building go binary for alpine linux [swagchat-chat-api]\033[0m"
-docker run -i -v $GOPATH/src/github.com/swagchat/chat-api:/go/src/github.com/swagchat/chat-api -w /go/src/github.com/swagchat/chat-api $user/alpine-gobuild go build
+docker run -i -v $GOPATH/src/github.com/swagchat/chat-api:/go/src/github.com/swagchat/chat-api -w /go/src/github.com/swagchat/chat-api alpine-gobuild go build
 if [ $? -gt 0 ]; then
 	echo -e "\033[35mFailed!\033[0m"
 	exit 1
