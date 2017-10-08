@@ -71,7 +71,8 @@ type UserForRoom struct {
 	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
-	IsCanLeft      *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
+	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
+	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
 	Created        int64          `json:"created" db:"created"`
 	Modified       int64          `json:"modified" db:"modified"`
@@ -139,7 +140,8 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		PictureUrl     string         `json:"pictureUrl,omitempty"`
 		InformationUrl string         `json:"informationUrl,omitempty"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsCanLeft      *bool          `json:"isCanBlock,omitempty"`
+		IsBot          *bool          `json:"isBot,omitempty"`
+		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
 		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -153,7 +155,8 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		PictureUrl:     ufr.PictureUrl,
 		InformationUrl: ufr.InformationUrl,
 		MetaData:       ufr.MetaData,
-		IsCanLeft:      ufr.IsCanLeft,
+		IsBot:          ufr.IsBot,
+		IsCanBlock:     ufr.IsCanBlock,
 		IsShowUsers:    ufr.IsShowUsers,
 		Created:        time.Unix(ufr.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(ufr.Modified, 0).In(l).Format(time.RFC3339),

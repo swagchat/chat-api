@@ -3,11 +3,14 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"go.uber.org/zap"
 
+	"github.com/swagchat/chat-api/bots"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
@@ -16,6 +19,7 @@ import (
 )
 
 func PostMessage(posts *models.Messages) *models.ResponseMessages {
+	log.Println("============= PostMessage ==============")
 	messageIds := make([]string, 0)
 	errors := make([]*models.ProblemDetail, 0)
 	var lastMessage string
@@ -36,7 +40,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			continue
 		}
 
-		_, pd = selectUser(post.UserId)
+		user, pd := selectUser(post.UserId)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -53,11 +57,13 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		}
 
 		if pd := post.IsValid(); pd != nil {
+			log.Printf("%#v\n", pd)
 			errors = append(errors, pd)
 			continue
 		}
 
 		post.BeforeSave()
+		log.Printf("%#v\n", post)
 		dRes := datastore.GetProvider().InsertMessage(post)
 		if dRes.ProblemDetail != nil {
 			errors = append(errors, dRes.ProblemDetail)
@@ -69,6 +75,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			lastMessage = dRes.Data.(string)
 		}
 		messageIds = append(messageIds, post.MessageId)
+		log.Printf("%#v\n", post)
 
 		mi := &notification.MessageInfo{
 			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
@@ -82,6 +89,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		ctx, _ := context.WithCancel(context.Background())
 		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
 		go publishMessage(post)
+		go postMessageToBotService(*user.IsBot, post)
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -134,5 +142,61 @@ func publishMessage(m *models.Message) {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)
+	}
+}
+
+func postMessageToBotService(isBot bool, m *models.Message) {
+	dRes := datastore.GetProvider().SelectUsersForRoom(m.RoomId)
+	if dRes.ProblemDetail != nil {
+		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
+		utils.AppLogger.Error("",
+			zap.String("problemDetail", string(pdBytes)),
+			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
+		)
+	}
+	if dRes.Data != nil {
+		userForRooms := dRes.Data.([]*models.UserForRoom)
+		for _, u := range userForRooms {
+			if !isBot && *u.IsBot && m.UserId != u.UserId {
+				dRes := datastore.GetProvider().SelectBot(u.UserId)
+				if dRes.ProblemDetail != nil {
+					pdBytes, _ := json.Marshal(dRes.ProblemDetail)
+					utils.AppLogger.Error("",
+						zap.String("problemDetail", string(pdBytes)),
+						zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
+					)
+				}
+				b := dRes.Data.(*models.Bot)
+
+				var cm models.CognitiveMap
+				log.Printf("%#v\n", string(b.Cognitive))
+				json.Unmarshal(b.Cognitive, &cm)
+				log.Printf("%#v\n", cm)
+				log.Printf("%#v\n", cm.Text)
+
+				var p bots.Provider
+				var cred utils.JSONText
+				switch m.Type {
+				case "text":
+					p = bots.GetProvider(cm.Text.Name)
+					cred = cm.Text.Credencial
+				case "image":
+					p = bots.GetProvider(cm.Image.Name)
+					cred = cm.Image.Credencial
+				default:
+					p = bots.GetProvider(cm.Text.Name)
+					cred = cm.Text.Credencial
+				}
+				res := p.Post(m, b, cred)
+				if res.ProblemDetail != nil {
+					pdBytes, _ := json.Marshal(dRes.ProblemDetail)
+					utils.AppLogger.Error("",
+						zap.String("problemDetail", string(pdBytes)),
+						zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
+					)
+				}
+				PostMessage(res.Messages)
+			}
+		}
 	}
 }

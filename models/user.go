@@ -20,6 +20,7 @@ type User struct {
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
 	UnreadCount    *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
@@ -78,6 +79,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl string         `json:"informationUrl,omitempty"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
+		IsBot          *bool          `json:"isBot,omitempty"`
 		IsPublic       *bool          `json:"isPublic,omitempty"`
 		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
 		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
@@ -94,6 +96,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl: u.InformationUrl,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
+		IsBot:          u.IsBot,
 		IsPublic:       u.IsPublic,
 		IsCanBlock:     u.IsCanBlock,
 		IsShowUsers:    u.IsShowUsers,
@@ -166,6 +169,20 @@ func (u *User) IsValid() *ProblemDetail {
 		}
 	}
 
+	if len(u.UserId) > 36 {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create user item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userId",
+					Reason: "userId is invalid. A string up to 36 symbols long.",
+				},
+			},
+		}
+	}
+
 	if u.Name == "" {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create user item)",
@@ -190,6 +207,11 @@ func (u *User) BeforeSave() {
 
 	if u.MetaData == nil {
 		u.MetaData = []byte("{}")
+	}
+
+	if u.IsBot == nil {
+		isBot := false
+		u.IsBot = &isBot
 	}
 
 	if u.IsPublic == nil {
@@ -234,6 +256,9 @@ func (u *User) Put(put *User) {
 	}
 	if put.MetaData != nil {
 		u.MetaData = put.MetaData
+	}
+	if put.IsBot != nil {
+		u.IsBot = put.IsBot
 	}
 	if put.IsPublic != nil {
 		u.IsPublic = put.IsPublic

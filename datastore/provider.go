@@ -16,20 +16,21 @@ type StoreResult struct {
 	ProblemDetail *models.ProblemDetail
 }
 
-type StoreChannel chan StoreResult
+//type StoreChannel chan StoreResult
 
 type Provider interface {
 	Connect() error
 	Init()
 	DropDatabase() error
 	ApiStore
-	UserStore
 	BlockUserStore
+	BotStore
+	DeviceStore
+	MessageStore
 	RoomStore
 	RoomUserStore
-	MessageStore
-	DeviceStore
 	SubscriptionStore
+	UserStore
 }
 
 func GetProvider() Provider {

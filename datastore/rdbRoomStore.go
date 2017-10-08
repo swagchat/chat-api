@@ -114,6 +114,7 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 		"u.picture_url, ",
 		"u.information_url, ",
 		"u.meta_data, ",
+		"u.is_bot, ",
 		"u.is_can_block, ",
 		"u.is_show_users, ",
 		"u.created, ",
