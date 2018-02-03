@@ -44,24 +44,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/google/go-github"
-  packages = ["github"]
-  revision = "e48060a28fac52d0f1cb758bc8b87c07bac4a87d"
-  version = "v15.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/google/go-querystring"
-  packages = ["query"]
-  revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/go-version"
-  packages = ["."]
-  revision = "4fe82ae3040f80a03d04d2cccb5606a626b8e1ee"
-
-[[projects]]
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "0b12d6b5"
@@ -97,12 +79,6 @@
   version = "v0.3.0"
 
 [[projects]]
-  name = "github.com/tcnksm/go-latest"
-  packages = ["."]
-  revision = "86500ab1363a867dafe16905b5b85293a0d838eb"
-  version = "0.1.1"
-
-[[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
   revision = "8474b86a5a6f79c443ce4b2992817ff32cf208b8"
@@ -123,7 +99,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","html","html/atom"]
+  packages = ["context","context/ctxhttp"]
   revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
 
 [[projects]]
@@ -159,6 +135,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5febc599bd47e676e3e05990f15a55fd10a504139e45a3d780b366a83848ad6d"
+  inputs-digest = "7d9d309649a5ff22449ac0b2b58c3081899a7e24cc932498b89f373e8e4e7e76"
   solver-name = "gps-cdcl"
   solver-version = 1
