@@ -20,6 +20,17 @@ const (
 	ROOM_TYPE_END
 )
 
+type SpeechMode int
+
+const (
+	SPEECH_MODE_WAKEUP_WEB_TO_WEB SpeechMode = iota + 1
+	SPEECH_MODE_WAKEUP_WEB_TO_CLOUD
+	SPEECH_MODE_WAKEUP_CLOUD_TO_CLOUD
+	SPEECH_MODE_ALWAYS
+	SPEECH_MODE_MANUAL
+	SPEECH_MODE_END
+)
+
 func (rt RoomType) String() string {
 	switch rt {
 	case ONE_ON_ONE:
@@ -56,6 +67,7 @@ type Room struct {
 	NotificationTopicId   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
 	IsCanLeft             *bool          `json:"isCanLeft,omitempty" db:"is_can_left,notnull"`
 	IsShowUsers           *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
+	SpeechMode            *SpeechMode    `json:"speechMode,omitempty" db:"speech_mode,notnull"`
 	Created               int64          `json:"created" db:"created,notnull"`
 	Modified              int64          `json:"modified" db:"modified,notnull"`
 	Deleted               int64          `json:"-" db:"deleted,notnull"`
@@ -108,6 +120,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		NotificationTopicId   string         `json:"notificationTopicId,omitempty"`
 		IsCanLeft             *bool          `json:"isCanLeft,omitempty"`
 		IsShowUsers           *bool          `json:"isShowUsers,omitempty"`
+		SpeechMode            *SpeechMode    `json:"speechMode,omitempty"`
 		Created               string         `json:"created"`
 		Modified              string         `json:"modified"`
 		Users                 []*UserForRoom `json:"users,omitempty"`
@@ -125,6 +138,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		MessageCount:       r.MessageCount,
 		IsCanLeft:          r.IsCanLeft,
 		IsShowUsers:        r.IsShowUsers,
+		SpeechMode:         r.SpeechMode,
 		Created:            time.Unix(r.Created, 0).In(l).Format(time.RFC3339),
 		Modified:           time.Unix(r.Modified, 0).In(l).Format(time.RFC3339),
 		Users:              r.Users,
@@ -244,6 +258,20 @@ func (r *Room) IsValid() *ProblemDetail {
 				InvalidParam{
 					Name:   "name",
 					Reason: "name is required, but it's empty.",
+				},
+			},
+		}
+	}
+
+	if !(r.SpeechMode != nil && *r.SpeechMode > 0 && *r.SpeechMode < SPEECH_MODE_END) {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "speechMode",
+					Reason: "speechMode is incorrect.",
 				},
 			},
 		}
