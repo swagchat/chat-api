@@ -29,6 +29,7 @@ type Provider interface {
 	RoomUserStore
 	MessageStore
 	DeviceStore
+	SettingStore
 	SubscriptionStore
 }
 

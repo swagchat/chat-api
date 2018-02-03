@@ -16,6 +16,7 @@ var (
 	TABLE_NAME_ROOM_USER              = utils.Cfg.Datastore.TableNamePrefix + "room_user"
 	TABLE_NAME_MESSAGE                = utils.Cfg.Datastore.TableNamePrefix + "message"
 	TABLE_NAME_DEVICE                 = utils.Cfg.Datastore.TableNamePrefix + "device"
+	TABLE_NAME_SETTING                = utils.Cfg.Datastore.TableNamePrefix + "setting"
 	TABLE_NAME_SUBSCRIPTION           = utils.Cfg.Datastore.TableNamePrefix + "subscription"
 )
 

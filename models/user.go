@@ -23,6 +23,7 @@ type User struct {
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
+	Lang           string         `json:"lang,omitempty" db:"lang,notnull"`
 	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
@@ -81,6 +82,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		IsPublic       *bool          `json:"isPublic,omitempty"`
 		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
 		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
+		Lang           string         `json:"lang,omitempty"`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -97,6 +99,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		IsPublic:       u.IsPublic,
 		IsCanBlock:     u.IsCanBlock,
 		IsShowUsers:    u.IsShowUsers,
+		Lang:           u.Lang,
 		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),

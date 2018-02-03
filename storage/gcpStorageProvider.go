@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,7 +10,6 @@ import (
 	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap"
 
-	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
 	storage "google.golang.org/api/storage/v1"
@@ -38,20 +38,15 @@ func (provider GcpStorageProvider) Init() error {
 		if err != nil {
 			return err
 		}
-		client := conf.Client(oauth2.NoContext)
+
+		ctx := context.Background()
+		client := conf.Client(ctx)
 
 		service, err := storage.New(client)
 		if err != nil {
 			return err
 		}
 		gcpStorageService = service
-
-		if _, err := gcpStorageService.Buckets.Get(provider.uploadBucket).Do(); err != nil {
-			return err
-		}
-		if _, err := gcpStorageService.Buckets.Insert(provider.projectId, &storage.Bucket{Name: provider.uploadBucket}).Do(); err != nil {
-			return err
-		}
 	}
 	return nil
 }
