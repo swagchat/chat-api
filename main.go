@@ -21,8 +21,8 @@ func main() {
 	}
 
 	githubTag := &latest.GithubTag{
-		Owner:      "fairway-corp",
-		Repository: "swagchat-api",
+		Owner:      "swagchat",
+		Repository: "chat-api",
 	}
 	res, _ := latest.Check(githubTag, utils.BUILD_VERSION)
 	if res != nil && res.Outdated {

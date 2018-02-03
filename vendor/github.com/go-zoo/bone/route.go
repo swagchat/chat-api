@@ -14,13 +14,9 @@ import (
 )
 
 const (
-	//PARAM value store in Atts if the route have parameters
 	PARAM = 2
-	//SUB value store in Atts if the route is a sub router
-	SUB = 4
-	//WC value store in Atts if the route have wildcard
-	WC = 8
-	//REGEX value store in Atts if the route contains regex
+	SUB   = 4
+	WC    = 8
 	REGEX = 16
 )
 

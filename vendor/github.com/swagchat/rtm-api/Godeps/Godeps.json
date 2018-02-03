@@ -1,0 +1,35 @@
+{
+	"ImportPath": "github.com/swagchat/rtm-api",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/fukata/golang-stats-api-handler",
+			"Comment": "v1.0.0-1-gab9f90f",
+			"Rev": "ab9f90f16caab828afda479fd34bfbbbba2efcee"
+		},
+		{
+			"ImportPath": "github.com/go-zoo/bone",
+			"Comment": "1.2-18-g11ae278",
+			"Rev": "11ae278a93c8268a0f98758aa915def5dfca3254"
+		},
+		{
+			"ImportPath": "github.com/golang/snappy",
+			"Rev": "553a641470496b2327abcac10b36396bd98e45c9"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Comment": "v1.2.0-6-ga69d9f6",
+			"Rev": "a69d9f6de432e2c6b296a947d8a5ee88f68522cf"
+		},
+		{
+			"ImportPath": "github.com/nsqio/go-nsq",
+			"Comment": "v1.0.6-12-gb2d0b44",
+			"Rev": "b2d0b4429f2082bc44babe089418d8da16d71e8a"
+		},
+		{
+			"ImportPath": "github.com/shogo82148/go-gracedown",
+			"Rev": "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
+		}
+	]
+}

@@ -39,6 +39,7 @@ func (p *sqliteProvider) Init() {
 	p.CreateRoomUserStore()
 	p.CreateMessageStore()
 	p.CreateDeviceStore()
+	p.CreateSettingStore()
 	p.CreateSubscriptionStore()
 }
 
