@@ -10,7 +10,6 @@ import (
 	"github.com/swagchat/chat-api/handlers"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
-	latest "github.com/tcnksm/go-latest"
 	"go.uber.org/zap"
 )
 
@@ -18,15 +17,6 @@ func main() {
 	if utils.IsShowVersion {
 		fmt.Printf("API Version %s\nBuild Version %s\n", utils.API_VERSION, utils.BUILD_VERSION)
 		return
-	}
-
-	githubTag := &latest.GithubTag{
-		Owner:      "fairway-corp",
-		Repository: "swagchat-api",
-	}
-	res, _ := latest.Check(githubTag, utils.BUILD_VERSION)
-	if res != nil && res.Outdated {
-		fmt.Printf("!---------------------------------------------------------------!\n! Build version %s is out of date, you can upgrade to %s !\n!---------------------------------------------------------------!\n", utils.BUILD_VERSION, res.Current)
 	}
 
 	if utils.Cfg.Profiling {

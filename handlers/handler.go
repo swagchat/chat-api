@@ -43,21 +43,22 @@ var (
 func StartServer(ctx context.Context) {
 	Mux = bone.New()
 	if utils.Cfg.DemoPage {
-		Mux.GetFunc("/", messengerHtmlHandler)
+		Mux.GetFunc("/", messengerHTMLHandler)
 	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	Mux.GetFunc("/stats", stats_api.Handler)
 	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION), indexHandler)
 	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/"), indexHandler)
 	Mux.OptionsFunc(utils.AppendStrings("/", utils.API_VERSION, "/*"), optionsHandler)
-	SetUserMux()
+	SetAssetMux()
 	SetBlockUserMux()
+	SetContactMux()
+	SetDeviceMux()
+	SetMessageMux()
 	SetRoomMux()
 	SetRoomUserMux()
-	SetMessageMux()
-	SetAssetMux()
-	SetDeviceMux()
-	SetContactMux()
+	SetSettingMux()
+	SetUserMux()
 	if utils.Cfg.Profiling {
 		SetPprofMux()
 	}

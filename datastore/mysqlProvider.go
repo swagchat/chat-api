@@ -107,6 +107,7 @@ func (p *mysqlProvider) Init() {
 	p.CreateRoomUserStore()
 	p.CreateMessageStore()
 	p.CreateDeviceStore()
+	p.CreateSettingStore()
 	p.CreateSubscriptionStore()
 }
 
