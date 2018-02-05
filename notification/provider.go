@@ -34,16 +34,18 @@ type Provider interface {
 }
 
 func GetProvider() Provider {
+	cfg := utils.GetConfig()
+
 	var provider Provider
-	switch utils.Cfg.Notification.Provider {
+	switch cfg.Notification.Provider {
 	case "awsSns":
 		provider = &AwsSnsProvider{
-			region:                utils.Cfg.Notification.AwsRegion,
-			accessKeyId:           utils.Cfg.Notification.AwsAccessKeyId,
-			secretAccessKey:       utils.Cfg.Notification.AwsSecretAccessKey,
-			roomTopicNamePrefix:   utils.Cfg.Notification.RoomTopicNamePrefix,
-			applicationArnIos:     utils.Cfg.Notification.AwsApplicationArnIos,
-			applicationArnAndroid: utils.Cfg.Notification.AwsApplicationArnAndroid,
+			region:                cfg.Notification.AwsRegion,
+			accessKeyId:           cfg.Notification.AwsAccessKeyId,
+			secretAccessKey:       cfg.Notification.AwsSecretAccessKey,
+			roomTopicNamePrefix:   cfg.Notification.RoomTopicNamePrefix,
+			applicationArnIos:     cfg.Notification.AwsApplicationArnIos,
+			applicationArnAndroid: cfg.Notification.AwsApplicationArnAndroid,
 		}
 	default:
 		provider = &NotUseProvider{}

@@ -5,19 +5,19 @@ import (
 
 	"log"
 
+	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/go-zoo/bone"
 )
 
 func SetUserMux() {
-	Mux.PostFunc(utils.AppendStrings("/", utils.API_VERSION, "/users"), colsHandler(aclHandler(PostUser)))
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users"), colsHandler(GetUsers))
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$"), colsHandler(GetUser))
-	Mux.PutFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$"), colsHandler(PutUser))
-	Mux.DeleteFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$"), colsHandler(DeleteUser))
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/unreadCount"), colsHandler(GetUserUnreadCount))
+	Mux.PostFunc(utils.AppendStrings("/", utils.APIVersion, "/users"), colsHandler(aclHandler(PostUser)))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/users"), colsHandler(GetUsers))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$"), colsHandler(GetUser))
+	Mux.PutFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$"), colsHandler(PutUser))
+	Mux.DeleteFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$"), colsHandler(DeleteUser))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/unreadCount"), colsHandler(GetUserUnreadCount))
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {

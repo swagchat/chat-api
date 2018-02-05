@@ -80,7 +80,7 @@ func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
 
 		client := provider.newSnsClient()
 		params := &sns.CreateTopicInput{
-			Name: aws.String(utils.AppendStrings(utils.Cfg.Notification.RoomTopicNamePrefix, roomId)),
+			Name: aws.String(utils.AppendStrings(utils.GetConfig().Notification.RoomTopicNamePrefix, roomId)),
 		}
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
@@ -115,6 +115,8 @@ func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) Notificat
 }
 
 func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
+	cfg := utils.GetConfig()
+
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
@@ -123,9 +125,9 @@ func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, devic
 		var platformApplicationArn string
 		switch platform {
 		case models.PLATFORM_IOS:
-			platformApplicationArn = utils.Cfg.Notification.AwsApplicationArnIos
+			platformApplicationArn = cfg.Notification.AwsApplicationArnIos
 		case models.PLATFORM_ANDROID:
-			platformApplicationArn = utils.Cfg.Notification.AwsApplicationArnAndroid
+			platformApplicationArn = cfg.Notification.AwsApplicationArnAndroid
 		default:
 			// TODO new error
 			platformApplicationArn = ""

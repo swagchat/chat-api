@@ -3,13 +3,13 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/go-zoo/bone"
 )
 
 func SetContactMux() {
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/contacts/#userId^[a-z0-9-]$"), colsHandler(aclHandler(GetContacts)))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/contacts/#userId^[a-z0-9-]$"), colsHandler(aclHandler(GetContacts)))
 }
 
 func GetContacts(w http.ResponseWriter, r *http.Request) {

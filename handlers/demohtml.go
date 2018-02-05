@@ -42,7 +42,7 @@ func messengerHTMLHandler(rw http.ResponseWriter, req *http.Request) {
 
 		chatEndpoint := os.Getenv("SC_REACT_CHAT_ENDPOINT")
 		if chatEndpoint == "" {
-			chatEndpoint = utils.AppendStrings("/", utils.API_VERSION)
+			chatEndpoint = utils.AppendStrings("/", utils.APIVersion)
 		}
 		tmpExHTML = strings.Replace(tmpExHTML, "SC_REACT_CHAT_ENDPOINT", chatEndpoint, 1)
 

@@ -35,37 +35,39 @@ type Provider interface {
 }
 
 func GetProvider() Provider {
+	cfg := utils.GetConfig()
+
 	var provider Provider
-	switch utils.Cfg.Datastore.Provider {
+	switch cfg.Datastore.Provider {
 	case "sqlite":
 		provider = &sqliteProvider{
-			sqlitePath: utils.Cfg.Datastore.SqlitePath,
+			sqlitePath: cfg.Datastore.SqlitePath,
 		}
 	case "mysql":
 		provider = &mysqlProvider{
-			user:              utils.Cfg.Datastore.User,
-			password:          utils.Cfg.Datastore.Password,
-			database:          utils.Cfg.Datastore.Database,
-			masterSi:          utils.Cfg.Datastore.Master,
-			replicaSis:        utils.Cfg.Datastore.Replicas,
-			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
-			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
+			user:              cfg.Datastore.User,
+			password:          cfg.Datastore.Password,
+			database:          cfg.Datastore.Database,
+			masterSi:          cfg.Datastore.Master,
+			replicaSis:        cfg.Datastore.Replicas,
+			maxIdleConnection: cfg.Datastore.MaxIdleConnection,
+			maxOpenConnection: cfg.Datastore.MaxOpenConnection,
 			trace:             false,
 		}
 	case "gcpSql":
 		provider = &gcpSqlProvider{
-			user:              utils.Cfg.Datastore.User,
-			password:          utils.Cfg.Datastore.Password,
-			database:          utils.Cfg.Datastore.Database,
-			masterSi:          utils.Cfg.Datastore.Master,
-			replicaSis:        utils.Cfg.Datastore.Replicas,
-			maxIdleConnection: utils.Cfg.Datastore.MaxIdleConnection,
-			maxOpenConnection: utils.Cfg.Datastore.MaxOpenConnection,
+			user:              cfg.Datastore.User,
+			password:          cfg.Datastore.Password,
+			database:          cfg.Datastore.Database,
+			masterSi:          cfg.Datastore.Master,
+			replicaSis:        cfg.Datastore.Replicas,
+			maxIdleConnection: cfg.Datastore.MaxIdleConnection,
+			maxOpenConnection: cfg.Datastore.MaxOpenConnection,
 			trace:             true,
 		}
 	default:
 		utils.AppLogger.Error("",
-			zap.String("msg", "utils.Cfg.ApiServer.Datastore is incorrect"),
+			zap.String("msg", "cfg.ApiServer.Datastore is incorrect"),
 		)
 		os.Exit(0)
 	}

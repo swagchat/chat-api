@@ -14,12 +14,20 @@ import (
 )
 
 func main() {
+	c := utils.GetConfig()
+
+	c.LoadYaml()
+	c.LoadEnvironment()
+	c.ParseFlag()
+
+	utils.SetupLogger()
+
 	if utils.IsShowVersion {
-		fmt.Printf("API Version %s\nBuild Version %s\n", utils.API_VERSION, utils.BUILD_VERSION)
+		fmt.Printf("API Version %s\nBuild Version %s\n", utils.APIVersion, utils.BuildVersion)
 		return
 	}
 
-	if utils.Cfg.Profiling {
+	if utils.GetConfig().Profiling {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)
 		}()

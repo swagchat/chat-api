@@ -4,17 +4,17 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/go-zoo/bone"
 )
 
 func SetDeviceMux() {
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices"), colsHandler(GetDevices))
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(GetDevice))
-	Mux.PutFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(PutDevice))
-	Mux.DeleteFunc(utils.AppendStrings("/", utils.API_VERSION, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(DeleteDevice))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/devices"), colsHandler(GetDevices))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(GetDevice))
+	Mux.PutFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(PutDevice))
+	Mux.DeleteFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$"), colsHandler(DeleteDevice))
 }
 
 func GetDevices(w http.ResponseWriter, r *http.Request) {

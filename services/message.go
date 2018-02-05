@@ -80,8 +80,9 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		mi := &notification.MessageInfo{
 			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
 		}
-		if utils.Cfg.Notification.DefaultBadgeCount != "" {
-			dBadgeCount, err := strconv.Atoi(utils.Cfg.Notification.DefaultBadgeCount)
+		cfg := utils.GetConfig()
+		if cfg.Notification.DefaultBadgeCount != "" {
+			dBadgeCount, err := strconv.Atoi(cfg.Notification.DefaultBadgeCount)
 			if err == nil {
 				mi.Badge = dBadgeCount
 			}

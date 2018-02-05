@@ -22,33 +22,35 @@ type Provider interface {
 }
 
 func GetProvider() Provider {
+	cfg := utils.GetConfig()
+
 	var provider Provider
-	switch utils.Cfg.Storage.Provider {
+	switch cfg.Storage.Provider {
 	case "local":
 		provider = &LocalStorageProvider{
-			baseUrl:   utils.Cfg.Storage.BaseUrl,
-			localPath: utils.Cfg.Storage.LocalPath,
+			baseUrl:   cfg.Storage.BaseUrl,
+			localPath: cfg.Storage.LocalPath,
 		}
 	case "gcpStorage":
 		provider = &GcpStorageProvider{
-			projectId:          utils.Cfg.Storage.GcpProjectId,
-			jwtPath:            utils.Cfg.Storage.GcpJwtPath,
+			projectId:          cfg.Storage.GcpProjectId,
+			jwtPath:            cfg.Storage.GcpJwtPath,
 			scope:              "https://www.googleapis.com/auth/devstorage.full_control",
-			uploadBucket:       utils.Cfg.Storage.UploadBucket,
-			uploadDirectory:    utils.Cfg.Storage.UploadDirectory,
-			thumbnailBucket:    utils.Cfg.Storage.ThumbnailBucket,
-			thumbnailDirectory: utils.Cfg.Storage.ThumbnailDirectory,
+			uploadBucket:       cfg.Storage.UploadBucket,
+			uploadDirectory:    cfg.Storage.UploadDirectory,
+			thumbnailBucket:    cfg.Storage.ThumbnailBucket,
+			thumbnailDirectory: cfg.Storage.ThumbnailDirectory,
 		}
 	case "awsS3":
 		provider = &AwsS3StorageProvider{
-			accessKeyId:        utils.Cfg.Storage.AwsAccessKeyId,
-			secretAccessKey:    utils.Cfg.Storage.AwsSecretAccessKey,
-			region:             utils.Cfg.Storage.AwsRegion,
+			accessKeyId:        cfg.Storage.AwsAccessKeyId,
+			secretAccessKey:    cfg.Storage.AwsSecretAccessKey,
+			region:             cfg.Storage.AwsRegion,
 			acl:                "public-read",
-			uploadBucket:       utils.Cfg.Storage.UploadBucket,
-			uploadDirectory:    utils.Cfg.Storage.UploadDirectory,
-			thumbnailBucket:    utils.Cfg.Storage.ThumbnailBucket,
-			thumbnailDirectory: utils.Cfg.Storage.ThumbnailDirectory,
+			uploadBucket:       cfg.Storage.UploadBucket,
+			uploadDirectory:    cfg.Storage.UploadDirectory,
+			thumbnailBucket:    cfg.Storage.ThumbnailBucket,
+			thumbnailDirectory: cfg.Storage.ThumbnailDirectory,
 		}
 	default:
 		utils.AppLogger.Error("",

@@ -24,7 +24,7 @@ func RdbCreateMessageStore() {
 	}
 
 	var addIndexQuery string
-	if utils.Cfg.Datastore.Provider == "sqlite" {
+	if utils.GetConfig().Datastore.Provider == "sqlite" {
 		addIndexQuery = utils.AppendStrings("CREATE INDEX room_id_deleted_created ON ", TABLE_NAME_MESSAGE, "(room_id, deleted, created)")
 	} else {
 		addIndexQuery = utils.AppendStrings("ALTER TABLE ", TABLE_NAME_MESSAGE, " ADD INDEX room_id_deleted_created (room_id, deleted, created)")

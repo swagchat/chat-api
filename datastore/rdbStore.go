@@ -9,16 +9,16 @@ import (
 
 var (
 	rdbStoreInstance        *rdbStore = nil
-	TABLE_NAME_API                    = utils.Cfg.Datastore.TableNamePrefix + "api"
-	TABLE_NAME_BLOCK_USER             = utils.Cfg.Datastore.TableNamePrefix + "block_user"
-	TABLE_NAME_BOT                    = utils.Cfg.Datastore.TableNamePrefix + "bot"
-	TABLE_NAME_DEVICE                 = utils.Cfg.Datastore.TableNamePrefix + "device"
-	TABLE_NAME_MESSAGE                = utils.Cfg.Datastore.TableNamePrefix + "message"
-	TABLE_NAME_ROOM                   = utils.Cfg.Datastore.TableNamePrefix + "room"
-	TABLE_NAME_ROOM_USER              = utils.Cfg.Datastore.TableNamePrefix + "room_user"
-	TABLE_NAME_SETTING                = utils.Cfg.Datastore.TableNamePrefix + "setting"
-	TABLE_NAME_SUBSCRIPTION           = utils.Cfg.Datastore.TableNamePrefix + "subscription"
-	TABLE_NAME_USER                   = utils.Cfg.Datastore.TableNamePrefix + "user"
+	TABLE_NAME_API                    = utils.GetConfig().Datastore.TableNamePrefix + "api"
+	TABLE_NAME_BLOCK_USER             = utils.GetConfig().Datastore.TableNamePrefix + "block_user"
+	TABLE_NAME_BOT                    = utils.GetConfig().Datastore.TableNamePrefix + "bot"
+	TABLE_NAME_DEVICE                 = utils.GetConfig().Datastore.TableNamePrefix + "device"
+	TABLE_NAME_MESSAGE                = utils.GetConfig().Datastore.TableNamePrefix + "message"
+	TABLE_NAME_ROOM                   = utils.GetConfig().Datastore.TableNamePrefix + "room"
+	TABLE_NAME_ROOM_USER              = utils.GetConfig().Datastore.TableNamePrefix + "room_user"
+	TABLE_NAME_SETTING                = utils.GetConfig().Datastore.TableNamePrefix + "setting"
+	TABLE_NAME_SUBSCRIPTION           = utils.GetConfig().Datastore.TableNamePrefix + "subscription"
+	TABLE_NAME_USER                   = utils.GetConfig().Datastore.TableNamePrefix + "user"
 )
 
 type rdbStore struct {

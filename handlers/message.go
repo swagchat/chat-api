@@ -3,15 +3,15 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/go-zoo/bone"
 )
 
 func SetMessageMux() {
-	Mux.PostFunc(utils.AppendStrings("/", utils.API_VERSION, "/messages"), colsHandler(PostMessages))
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/messages/#messageId^[a-z0-9-]$"), colsHandler(GetMessage))
+	Mux.PostFunc(utils.AppendStrings("/", utils.APIVersion, "/messages"), colsHandler(PostMessages))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/messages/#messageId^[a-z0-9-]$"), colsHandler(GetMessage))
 }
 
 func PostMessages(w http.ResponseWriter, r *http.Request) {

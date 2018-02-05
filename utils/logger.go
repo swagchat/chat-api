@@ -6,15 +6,18 @@ import (
 	"go.uber.org/zap"
 )
 
+// AppLogger is global application logger
 var AppLogger *zap.Logger
 
-func setupLogger() {
+func SetupLogger() {
+	c := GetConfig()
+
 	if AppLogger == nil {
 		var err error
 		var logger *zap.Logger
-		if Cfg.Logging.Level == "production" {
+		if c.Logging.Level == "production" {
 			logger, err = zap.NewProduction()
-		} else if Cfg.Logging.Level == "development" {
+		} else if c.Logging.Level == "development" {
 			logger, err = zap.NewDevelopment()
 		} else {
 			os.Exit(0)
@@ -23,9 +26,9 @@ func setupLogger() {
 			os.Exit(0)
 		}
 		AppLogger = logger.WithOptions(zap.Fields(
-			zap.String("appName", APP_NAME),
-			zap.String("apiVersion", API_VERSION),
-			zap.String("buildVersion", BUILD_VERSION),
+			zap.String("appName", AppName),
+			zap.String("apiVersion", APIVersion),
+			zap.String("buildVersion", BuildVersion),
 		))
 	}
 }

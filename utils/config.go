@@ -3,6 +3,7 @@ package utils
 import (
 	"flag"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"strings"
@@ -11,25 +12,28 @@ import (
 )
 
 const (
-	APP_NAME      = "swagchat-api"
-	API_VERSION   = "v0"
-	BUILD_VERSION = "v0.9.1"
+	// AppName is Application name
+	AppName = "swagchat-api"
+	// APIVersion is API version
+	APIVersion = "v0"
+	// BuildVersion is API build version
+	BuildVersion = "v0.9.1"
 
-	KEY_LENGTH        = 32
-	TOKEN_LENGTH      = 32
-	HEADER_API_KEY    = "X-SwagChat-Api-Key"
-	HEADER_API_SECRET = "X-SwagChat-Api-Secret"
-	HEADER_USER_ID    = "X-SwagChat-User-Id"
+	KeyLength       = 32
+	TokenLength     = 32
+	HeaderAPIKey    = "X-SwagChat-Api-Key"
+	HeaderAPISecret = "X-SwagChat-Api-Secret"
+	HeaderUserId    = "X-SwagChat-User-Id"
 )
 
 var (
-	Cfg           *Config
+	cfg           *config = NewConfig()
 	IsShowVersion bool
 )
 
-type Config struct {
+type config struct {
 	Version      string
-	Port         string
+	HttpPort     string `yaml:"httpPort"`
 	Profiling    bool
 	DemoPage     bool `yaml:"demoPage"`
 	ErrorLogging bool `yaml:"errorLogging"`
@@ -113,15 +117,8 @@ type Notification struct {
 	AwsApplicationArnAndroid string `yaml:"awsApplicationArnAndroid"`
 }
 
-func setupConfig() {
-	loadDefaultSettings()
-	loadYaml()
-	loadEnvironment()
-	parseFlag()
-}
-
-func loadDefaultSettings() {
-	port := "9000"
+func NewConfig() *config {
+	log.SetFlags(log.Llongfile)
 
 	logging := &Logging{
 		Level: "development",
@@ -129,7 +126,7 @@ func loadDefaultSettings() {
 
 	storage := &Storage{
 		Provider:  "local",
-		BaseUrl:   AppendStrings("/", API_VERSION, "/assets"),
+		BaseUrl:   AppendStrings("/", APIVersion, "/assets"),
 		LocalPath: "data/assets",
 	}
 
@@ -149,9 +146,9 @@ func loadDefaultSettings() {
 
 	notification := &Notification{}
 
-	Cfg = &Config{
+	c := &config{
 		Version:      "0",
-		Port:         port,
+		HttpPort:     "8000",
 		Profiling:    false,
 		DemoPage:     false,
 		ErrorLogging: false,
@@ -161,123 +158,129 @@ func loadDefaultSettings() {
 		Rtm:          rtm,
 		Notification: notification,
 	}
+
+	return c
 }
 
-func loadYaml() {
-	buf, _ := ioutil.ReadFile("config/swagchat.yaml")
-	yaml.Unmarshal(buf, Cfg)
+func GetConfig() *config {
+	return cfg
 }
 
-func loadEnvironment() {
+func (c *config) LoadYaml() {
+	buf, _ := ioutil.ReadFile("config/app.yaml")
+	yaml.Unmarshal(buf, c)
+}
+
+func (c *config) LoadEnvironment() {
 	var v string
 
-	if v = os.Getenv("PORT"); v != "" {
-		Cfg.Port = v
+	if v = os.Getenv("HTTP_PORT"); v != "" {
+		c.HttpPort = v
 	}
 	if v = os.Getenv("SC_PORT"); v != "" {
-		Cfg.Port = v
+		c.HttpPort = v
 	}
 	if v = os.Getenv("SC_PROFILING"); v != "" {
 		if v == "true" {
-			Cfg.Profiling = true
+			c.Profiling = true
 		} else if v == "false" {
-			Cfg.Profiling = false
+			c.Profiling = false
 		}
 	}
 	if v = os.Getenv("SC_DEMO_PAGE"); v != "" {
 		if v == "true" {
-			Cfg.DemoPage = true
+			c.DemoPage = true
 		} else if v == "false" {
-			Cfg.DemoPage = false
+			c.DemoPage = false
 		}
 	}
 	if v = os.Getenv("SC_ERROR_LOGGING"); v != "" {
 		if v == "true" {
-			Cfg.ErrorLogging = true
+			c.ErrorLogging = true
 		} else if v == "false" {
-			Cfg.ErrorLogging = false
+			c.ErrorLogging = false
 		}
 	}
 
 	// Logging
 	if v = os.Getenv("SC_LOGGING_LEVEL"); v != "" {
-		Cfg.Logging.Level = v
+		c.Logging.Level = v
 	}
 
 	// Storage
 	if v = os.Getenv("SC_STORAGE_PROVIDER"); v != "" {
-		Cfg.Storage.Provider = v
+		c.Storage.Provider = v
 	}
 
 	// Storage - Local
 	if v = os.Getenv("SC_STORAGE_BASE_URL"); v != "" {
-		Cfg.Storage.BaseUrl = v
+		c.Storage.BaseUrl = v
 	}
 	if v = os.Getenv("SC_STORAGE_LOCAL_PATH"); v != "" {
-		Cfg.Storage.LocalPath = v
+		c.Storage.LocalPath = v
 	}
 
 	// Storage - GCP Storage, AWS S3
 	if v = os.Getenv("SC_STORAGE_UPLOAD_BUCKET"); v != "" {
-		Cfg.Storage.UploadBucket = v
+		c.Storage.UploadBucket = v
 	}
 	if v = os.Getenv("SC_STORAGE_UPLOAD_DIRECTORY"); v != "" {
-		Cfg.Storage.UploadDirectory = v
+		c.Storage.UploadDirectory = v
 	}
 	if v = os.Getenv("SC_STORAGE_THUMBNAIL_BUCKET"); v != "" {
-		Cfg.Storage.ThumbnailBucket = v
+		c.Storage.ThumbnailBucket = v
 	}
 	if v = os.Getenv("SC_STORAGE_THUMBNAIL_DIRECTORY"); v != "" {
-		Cfg.Storage.ThumbnailDirectory = v
+		c.Storage.ThumbnailDirectory = v
 	}
 
 	// Storage - GCP Storage
 	if v = os.Getenv("SC_STORAGE_GCP_PROJECT_ID"); v != "" {
-		Cfg.Storage.GcpProjectId = v
+		c.Storage.GcpProjectId = v
 	}
 	if v = os.Getenv("SC_STORAGE_GCP_JWT_PATH"); v != "" {
-		Cfg.Storage.GcpJwtPath = v
+		c.Storage.GcpJwtPath = v
 	}
 
 	// Storage - AWS S3
 	if v = os.Getenv("SC_STORAGE_AWS_REGION"); v != "" {
-		Cfg.Storage.AwsRegion = v
+		c.Storage.AwsRegion = v
 	}
 	if v = os.Getenv("SC_STORAGE_AWS_ACCESS_KEY_ID"); v != "" {
-		Cfg.Storage.AwsAccessKeyId = v
+		c.Storage.AwsAccessKeyId = v
 	}
 	if v = os.Getenv("SC_STORAGE_AWS_SECRET_ACCESS_KEY"); v != "" {
-		Cfg.Storage.AwsSecretAccessKey = v
+		c.Storage.AwsSecretAccessKey = v
 	}
 
 	// Datastore
 	if v = os.Getenv("SC_DATASTORE_PROVIDER"); v != "" {
-		Cfg.Datastore.Provider = v
+		c.Datastore.Provider = v
 	}
 	if v = os.Getenv("SC_DATASTORE_TABLE_NAME_PREFIX"); v != "" {
-		Cfg.Datastore.TableNamePrefix = v
+		c.Datastore.TableNamePrefix = v
 	}
 
 	// Datastore - SQLite
 	if v = os.Getenv("SC_DATASTORE_SQLITE_PATH"); v != "" {
-		Cfg.Datastore.SqlitePath = v
+		c.Datastore.SqlitePath = v
 	}
 
 	// Datastore - MySQL, GCP SQL
 	if v = os.Getenv("SC_DATASTORE_USER"); v != "" {
-		Cfg.Datastore.User = v
+		c.Datastore.User = v
 	}
 	if v = os.Getenv("SC_DATASTORE_PASSWORD"); v != "" {
-		Cfg.Datastore.Password = v
+		c.Datastore.Password = v
 	}
 	if v = os.Getenv("SC_DATASTORE_DATABASE"); v != "" {
-		Cfg.Datastore.Database = v
+		c.Datastore.Database = v
 	}
 	if v = os.Getenv("SC_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
-		Cfg.Datastore.MaxIdleConnection = v
+		c.Datastore.MaxIdleConnection = v
 	}
 	if v = os.Getenv("SC_DATASTORE_MAX_OPEN_CONNECTION"); v != "" {
-		Cfg.Datastore.MaxOpenConnection = v
+		c.Datastore.MaxOpenConnection = v
 	}
 
 	var master *ServerInfo
@@ -287,7 +290,7 @@ func loadEnvironment() {
 		master = &ServerInfo{}
 		master.Host = mHost
 		master.Port = mPort
-		Cfg.Datastore.Master = master
+		c.Datastore.Master = master
 		mServerName := os.Getenv("SC_DATASTORE_MASTER_SERVER_NAME")
 		mServerCaPath := os.Getenv("SC_DATASTORE_MASTER_SERVER_CA_PATH")
 		mClientCertPath := os.Getenv("SC_DATASTORE_MASTER_CLIENT_CERT_PATH")
@@ -335,67 +338,67 @@ func loadEnvironment() {
 			}
 			replicas = append(replicas, replica)
 		}
-		Cfg.Datastore.Replicas = replicas
+		c.Datastore.Replicas = replicas
 
 		if rServerName != nil && len(rServerName) != 0 && rServerCaPath != nil && len(rServerCaPath) != 0 && rClientCertPath != nil && len(rClientCertPath) != 0 && rClientKeyPath != nil && len(rClientKeyPath) != 0 &&
 			(len(rHosts) == len(rServerName) && len(rHosts) == len(rServerCaPath) && len(rHosts) == len(rClientCertPath) && len(rHosts) == len(rClientKeyPath)) {
 			for i := 0; i < len(rHosts); i++ {
-				Cfg.Datastore.Replicas[i].ServerName = rServerName[i]
-				Cfg.Datastore.Replicas[i].ServerCaPath = rServerCaPath[i]
-				Cfg.Datastore.Replicas[i].ClientCertPath = rClientCertPath[i]
-				Cfg.Datastore.Replicas[i].ClientKeyPath = rClientKeyPath[i]
+				c.Datastore.Replicas[i].ServerName = rServerName[i]
+				c.Datastore.Replicas[i].ServerCaPath = rServerCaPath[i]
+				c.Datastore.Replicas[i].ClientCertPath = rClientCertPath[i]
+				c.Datastore.Replicas[i].ClientKeyPath = rClientKeyPath[i]
 			}
 		}
 	}
 
 	// Rtm
 	if v = os.Getenv("SC_RTM_PROVIDER"); v != "" {
-		Cfg.Rtm.Provider = v
+		c.Rtm.Provider = v
 	}
 	if v = os.Getenv("SC_RTM_DIRECT_ENDPOINT"); v != "" {
-		Cfg.Rtm.DirectEndpoint = v
+		c.Rtm.DirectEndpoint = v
 	}
 	if v = os.Getenv("SC_RTM_QUE_ENDPOINT"); v != "" {
-		Cfg.Rtm.QueEndpoint = v
+		c.Rtm.QueEndpoint = v
 	}
 	if v = os.Getenv("SC_RTM_QUE_TOPIC"); v != "" {
-		Cfg.Rtm.QueTopic = v
+		c.Rtm.QueTopic = v
 	}
 
 	// Notification
 	if v = os.Getenv("SC_NOTIFICATION_PROVIDER"); v != "" {
-		Cfg.Notification.Provider = v
+		c.Notification.Provider = v
 	}
 	if v = os.Getenv("SC_NOTIFICATION_ROOM_TOPIC_NAME_PREFIX"); v != "" {
-		Cfg.Notification.RoomTopicNamePrefix = v
+		c.Notification.RoomTopicNamePrefix = v
 	}
 	if v = os.Getenv("SC_NOTIFICATION_DEFAULT_BADGE_COUNT"); v != "" {
-		Cfg.Notification.DefaultBadgeCount = v
+		c.Notification.DefaultBadgeCount = v
 	}
 
 	// Notification - AWS SNS
 	if v = os.Getenv("SC_NOTIFICATION_AWS_REGION"); v != "" {
-		Cfg.Notification.AwsRegion = v
+		c.Notification.AwsRegion = v
 	}
 	if v = os.Getenv("SC_NOTIFICATION_AWS_ACCESS_KEY_ID"); v != "" {
-		Cfg.Notification.AwsAccessKeyId = v
+		c.Notification.AwsAccessKeyId = v
 	}
 	if v = os.Getenv("SC_NOTIFICATION_AWS_SECRET_ACCESS_KEY"); v != "" {
-		Cfg.Notification.AwsSecretAccessKey = v
+		c.Notification.AwsSecretAccessKey = v
 	}
 	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_IOS"); v != "" {
-		Cfg.Notification.AwsApplicationArnIos = v
+		c.Notification.AwsApplicationArnIos = v
 	}
 	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_ANDROID"); v != "" {
-		Cfg.Notification.AwsApplicationArnAndroid = v
+		c.Notification.AwsApplicationArnAndroid = v
 	}
 }
 
-func parseFlag() {
+func (c *config) ParseFlag() {
 	flag.BoolVar(&IsShowVersion, "v", false, "")
 	flag.BoolVar(&IsShowVersion, "version", false, "show version")
 
-	flag.StringVar(&Cfg.Port, "port", Cfg.Port, "")
+	flag.StringVar(&c.HttpPort, "httpPort", c.HttpPort, "")
 
 	var profiling string
 	flag.StringVar(&profiling, "profiling", "", "")
@@ -407,41 +410,41 @@ func parseFlag() {
 	flag.StringVar(&errorLogging, "errorLogging", "", "false")
 
 	// Logging
-	flag.StringVar(&Cfg.Logging.Level, "logging.level", Cfg.Logging.Level, "")
+	flag.StringVar(&c.Logging.Level, "logging.level", c.Logging.Level, "")
 
 	// Storage
-	flag.StringVar(&Cfg.Storage.Provider, "storage.provider", Cfg.Storage.Provider, "")
-	flag.StringVar(&Cfg.Storage.UploadBucket, "storage.uploadBucket", Cfg.Storage.UploadBucket, "")
-	flag.StringVar(&Cfg.Storage.UploadDirectory, "storage.uploadDirectory", Cfg.Storage.UploadDirectory, "")
-	flag.StringVar(&Cfg.Storage.ThumbnailBucket, "storage.thumbnailBucket", Cfg.Storage.ThumbnailBucket, "")
-	flag.StringVar(&Cfg.Storage.ThumbnailDirectory, "storage.thumbnailDirectory", Cfg.Storage.ThumbnailDirectory, "")
+	flag.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
+	flag.StringVar(&c.Storage.UploadBucket, "storage.uploadBucket", c.Storage.UploadBucket, "")
+	flag.StringVar(&c.Storage.UploadDirectory, "storage.uploadDirectory", c.Storage.UploadDirectory, "")
+	flag.StringVar(&c.Storage.ThumbnailBucket, "storage.thumbnailBucket", c.Storage.ThumbnailBucket, "")
+	flag.StringVar(&c.Storage.ThumbnailDirectory, "storage.thumbnailDirectory", c.Storage.ThumbnailDirectory, "")
 
 	// Storage - Local
-	flag.StringVar(&Cfg.Storage.BaseUrl, "storage.baseUrl", Cfg.Storage.BaseUrl, "")
-	flag.StringVar(&Cfg.Storage.LocalPath, "storage.localPath", Cfg.Storage.LocalPath, "")
+	flag.StringVar(&c.Storage.BaseUrl, "storage.baseUrl", c.Storage.BaseUrl, "")
+	flag.StringVar(&c.Storage.LocalPath, "storage.localPath", c.Storage.LocalPath, "")
 
 	// Storage - GCP Storage
-	flag.StringVar(&Cfg.Storage.GcpProjectId, "storage.gcpProjectId", Cfg.Storage.GcpProjectId, "")
-	flag.StringVar(&Cfg.Storage.GcpJwtPath, "storage.gcpJwtPath", Cfg.Storage.GcpJwtPath, "")
+	flag.StringVar(&c.Storage.GcpProjectId, "storage.gcpProjectId", c.Storage.GcpProjectId, "")
+	flag.StringVar(&c.Storage.GcpJwtPath, "storage.gcpJwtPath", c.Storage.GcpJwtPath, "")
 
 	// Storage - AWS S3
-	flag.StringVar(&Cfg.Storage.AwsRegion, "storage.awsRegion", Cfg.Storage.AwsRegion, "")
-	flag.StringVar(&Cfg.Storage.AwsAccessKeyId, "storage.awsAccessKeyId", Cfg.Storage.AwsAccessKeyId, "")
-	flag.StringVar(&Cfg.Storage.AwsSecretAccessKey, "storage.awsSecretAccessKey", Cfg.Storage.AwsSecretAccessKey, "")
+	flag.StringVar(&c.Storage.AwsRegion, "storage.awsRegion", c.Storage.AwsRegion, "")
+	flag.StringVar(&c.Storage.AwsAccessKeyId, "storage.awsAccessKeyId", c.Storage.AwsAccessKeyId, "")
+	flag.StringVar(&c.Storage.AwsSecretAccessKey, "storage.awsSecretAccessKey", c.Storage.AwsSecretAccessKey, "")
 
 	// Datastore
-	flag.StringVar(&Cfg.Datastore.Provider, "datastore.provider", Cfg.Datastore.Provider, "")
-	flag.StringVar(&Cfg.Datastore.TableNamePrefix, "datastore.tableNamePrefix", Cfg.Datastore.TableNamePrefix, "")
+	flag.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
+	flag.StringVar(&c.Datastore.TableNamePrefix, "datastore.tableNamePrefix", c.Datastore.TableNamePrefix, "")
 
 	// Datastore - SQLite
-	flag.StringVar(&Cfg.Datastore.SqlitePath, "datastore.sqlitePath", Cfg.Datastore.SqlitePath, "")
+	flag.StringVar(&c.Datastore.SqlitePath, "datastore.sqlitePath", c.Datastore.SqlitePath, "")
 
 	// Datastore - MySQL, GCP SQL
-	flag.StringVar(&Cfg.Datastore.User, "datastore.user", Cfg.Datastore.User, "")
-	flag.StringVar(&Cfg.Datastore.Password, "datastore.password", Cfg.Datastore.Password, "")
-	flag.StringVar(&Cfg.Datastore.Database, "datastore.database", Cfg.Datastore.Database, "")
-	flag.StringVar(&Cfg.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", Cfg.Datastore.MaxIdleConnection, "")
-	flag.StringVar(&Cfg.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", Cfg.Datastore.MaxOpenConnection, "")
+	flag.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")
+	flag.StringVar(&c.Datastore.Password, "datastore.password", c.Datastore.Password, "")
+	flag.StringVar(&c.Datastore.Database, "datastore.database", c.Datastore.Database, "")
+	flag.StringVar(&c.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", c.Datastore.MaxIdleConnection, "")
+	flag.StringVar(&c.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", c.Datastore.MaxOpenConnection, "")
 
 	var (
 		mHostStr           string
@@ -454,7 +457,7 @@ func parseFlag() {
 	flag.StringVar(&mHostStr, "datastore.masterHost", mHostStr, "")
 	flag.StringVar(&mPortsStr, "datastore.masterPort", mPortsStr, "")
 	if mHostStr != "" && mPortsStr != "" {
-		Cfg.Datastore.Master = &ServerInfo{
+		c.Datastore.Master = &ServerInfo{
 			Host: mHostStr,
 			Port: mPortsStr,
 		}
@@ -463,10 +466,10 @@ func parseFlag() {
 		flag.StringVar(&mClientCertPathStr, "datastore.masterClientCertPath", mClientCertPathStr, "")
 		flag.StringVar(&mClientKeyPathStr, "datastore.masterClientKeyPath", mClientKeyPathStr, "")
 		if mServerNameStr != "" && mServerCaPathStr != "" && mClientCertPathStr != "" && mClientKeyPathStr != "" {
-			Cfg.Datastore.Master.ServerName = mServerNameStr
-			Cfg.Datastore.Master.ServerCaPath = mServerCaPathStr
-			Cfg.Datastore.Master.ClientCertPath = mClientCertPathStr
-			Cfg.Datastore.Master.ClientKeyPath = mClientKeyPathStr
+			c.Datastore.Master.ServerName = mServerNameStr
+			c.Datastore.Master.ServerCaPath = mServerCaPathStr
+			c.Datastore.Master.ClientCertPath = mClientCertPathStr
+			c.Datastore.Master.ClientKeyPath = mClientKeyPathStr
 		}
 	}
 
@@ -518,52 +521,52 @@ func parseFlag() {
 			}
 			replicas = append(replicas, replica)
 		}
-		Cfg.Datastore.Replicas = replicas
+		c.Datastore.Replicas = replicas
 
 		if rServerNames != nil && len(rServerNames) != 0 && rServerCaPaths != nil && len(rServerCaPaths) != 0 && rClientCertPaths != nil && len(rClientCertPaths) != 0 && rClientKeyPaths != nil && len(rClientKeyPaths) != 0 &&
 			(len(rHosts) == len(rServerNames) && len(rHosts) == len(rServerCaPaths) && len(rHosts) == len(rClientCertPaths) && len(rHosts) == len(rClientKeyPaths)) {
 			for i := 0; i < len(rHosts); i++ {
-				Cfg.Datastore.Replicas[i].ServerName = rServerNames[i]
-				Cfg.Datastore.Replicas[i].ServerCaPath = rServerCaPaths[i]
-				Cfg.Datastore.Replicas[i].ClientCertPath = rClientCertPaths[i]
-				Cfg.Datastore.Replicas[i].ClientKeyPath = rClientKeyPaths[i]
+				c.Datastore.Replicas[i].ServerName = rServerNames[i]
+				c.Datastore.Replicas[i].ServerCaPath = rServerCaPaths[i]
+				c.Datastore.Replicas[i].ClientCertPath = rClientCertPaths[i]
+				c.Datastore.Replicas[i].ClientKeyPath = rClientKeyPaths[i]
 			}
 		}
 	}
 
 	// Rtm
-	flag.StringVar(&Cfg.Rtm.Provider, "realtimeMessaging.provider", Cfg.Rtm.Provider, "")
-	flag.StringVar(&Cfg.Rtm.DirectEndpoint, "realtimeMessaging.directEndpoint", Cfg.Rtm.DirectEndpoint, "")
-	flag.StringVar(&Cfg.Rtm.QueEndpoint, "realtimeMessaging.queEndpoint", Cfg.Rtm.QueEndpoint, "")
-	flag.StringVar(&Cfg.Rtm.QueTopic, "realtimeMessaging.queTopic", Cfg.Rtm.QueTopic, "")
+	flag.StringVar(&c.Rtm.Provider, "realtimeMessaging.provider", c.Rtm.Provider, "")
+	flag.StringVar(&c.Rtm.DirectEndpoint, "realtimeMessaging.directEndpoint", c.Rtm.DirectEndpoint, "")
+	flag.StringVar(&c.Rtm.QueEndpoint, "realtimeMessaging.queEndpoint", c.Rtm.QueEndpoint, "")
+	flag.StringVar(&c.Rtm.QueTopic, "realtimeMessaging.queTopic", c.Rtm.QueTopic, "")
 
 	// Notification
-	flag.StringVar(&Cfg.Notification.Provider, "notification.provider", Cfg.Notification.Provider, "")
-	flag.StringVar(&Cfg.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", Cfg.Notification.RoomTopicNamePrefix, "")
+	flag.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")
+	flag.StringVar(&c.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", c.Notification.RoomTopicNamePrefix, "")
 
 	// Notification - AWS SNS
-	flag.StringVar(&Cfg.Notification.AwsRegion, "notification.awsRegion", Cfg.Notification.AwsRegion, "")
-	flag.StringVar(&Cfg.Notification.AwsAccessKeyId, "notification.awsAccessKeyId", Cfg.Notification.AwsAccessKeyId, "")
-	flag.StringVar(&Cfg.Notification.AwsSecretAccessKey, "notification.awsSecretAccessKey", Cfg.Notification.AwsSecretAccessKey, "")
-	flag.StringVar(&Cfg.Notification.AwsApplicationArnIos, "notification.awsApplicationArnIos", Cfg.Notification.AwsApplicationArnIos, "")
-	flag.StringVar(&Cfg.Notification.AwsApplicationArnAndroid, "notification.awsApplicationArnAndroid", Cfg.Notification.AwsApplicationArnAndroid, "")
+	flag.StringVar(&c.Notification.AwsRegion, "notification.awsRegion", c.Notification.AwsRegion, "")
+	flag.StringVar(&c.Notification.AwsAccessKeyId, "notification.awsAccessKeyId", c.Notification.AwsAccessKeyId, "")
+	flag.StringVar(&c.Notification.AwsSecretAccessKey, "notification.awsSecretAccessKey", c.Notification.AwsSecretAccessKey, "")
+	flag.StringVar(&c.Notification.AwsApplicationArnIos, "notification.awsApplicationArnIos", c.Notification.AwsApplicationArnIos, "")
+	flag.StringVar(&c.Notification.AwsApplicationArnAndroid, "notification.awsApplicationArnAndroid", c.Notification.AwsApplicationArnAndroid, "")
 	flag.Parse()
 
 	if profiling == "true" {
-		Cfg.Profiling = true
+		c.Profiling = true
 	} else if profiling == "false" {
-		Cfg.Profiling = false
+		c.Profiling = false
 	}
 
 	if demoPage == "true" {
-		Cfg.DemoPage = true
+		c.DemoPage = true
 	} else if demoPage == "false" {
-		Cfg.DemoPage = false
+		c.DemoPage = false
 	}
 
 	if errorLogging == "true" {
-		Cfg.ErrorLogging = true
+		c.ErrorLogging = true
 	} else if errorLogging == "false" {
-		Cfg.ErrorLogging = false
+		c.ErrorLogging = false
 	}
 }

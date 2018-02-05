@@ -42,14 +42,14 @@ var (
 
 func StartServer(ctx context.Context) {
 	Mux = bone.New()
-	if utils.Cfg.DemoPage {
+	if utils.GetConfig().DemoPage {
 		Mux.GetFunc("/", messengerHTMLHandler)
 	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	Mux.GetFunc("/stats", stats_api.Handler)
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION), indexHandler)
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/"), indexHandler)
-	Mux.OptionsFunc(utils.AppendStrings("/", utils.API_VERSION, "/*"), optionsHandler)
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion), indexHandler)
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/"), indexHandler)
+	Mux.OptionsFunc(utils.AppendStrings("/", utils.APIVersion, "/*"), optionsHandler)
 	SetAssetMux()
 	SetBlockUserMux()
 	SetContactMux()
@@ -59,10 +59,13 @@ func StartServer(ctx context.Context) {
 	SetRoomUserMux()
 	SetSettingMux()
 	SetUserMux()
-	if utils.Cfg.Profiling {
+
+	cfg := utils.GetConfig()
+
+	if cfg.Profiling {
 		SetPprofMux()
 	}
-	if utils.Cfg.Storage.Provider == "awsS3" {
+	if cfg.Storage.Provider == "awsS3" {
 		SetAssetAwsSnsMux()
 	}
 	Mux.NotFoundFunc(notFoundHandler)
@@ -71,9 +74,9 @@ func StartServer(ctx context.Context) {
 
 	utils.AppLogger.Info("",
 		zap.String("msg", "swagchat Chat API Start!"),
-		zap.String("port", utils.Cfg.Port),
+		zap.String("port", cfg.HttpPort),
 	)
-	if err := gracedown.ListenAndServe(utils.AppendStrings(":", utils.Cfg.Port), Mux); err != nil {
+	if err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux); err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)
@@ -103,7 +106,7 @@ func run(ctx context.Context) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("swagchat Chat API version ", utils.API_VERSION))
+	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("swagchat Chat API version ", utils.APIVersion))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
@@ -136,8 +139,8 @@ func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		role := "guest"
 
-		apiKey := r.Header.Get(utils.HEADER_API_KEY)
-		apiSecret := r.Header.Get(utils.HEADER_API_SECRET)
+		apiKey := r.Header.Get(utils.HeaderAPIKey)
+		apiSecret := r.Header.Get(utils.HeaderAPISecret)
 		if apiKey != "" && apiSecret != "" {
 			dRes := datastore.GetProvider().SelectLatestApi("admin")
 			if dRes.ProblemDetail != nil {
@@ -154,7 +157,7 @@ func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
 		if role != "admin" {
 			authorization := r.Header.Get("Authorization")
 			token := strings.Replace(authorization, "Bearer ", "", 1)
-			userId := r.Header.Get(utils.HEADER_USER_ID)
+			userId := r.Header.Get(utils.HeaderUserId)
 			if token != "" && userId != "" {
 				dRes := datastore.GetProvider().SelectUserByUserIdAndAccessToken(userId, token)
 				if dRes.Data != nil {
@@ -197,7 +200,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 }
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	if utils.Cfg.ErrorLogging {
+	if utils.GetConfig().ErrorLogging {
 		problemDetailBytes, _ := json.Marshal(problemDetail)
 		utils.AppLogger.Error("",
 			zap.String("problemDetail", string(problemDetailBytes)),

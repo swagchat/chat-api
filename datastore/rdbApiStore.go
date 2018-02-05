@@ -38,7 +38,7 @@ func RdbInsertApi(name string) StoreResult {
 	api := &models.Api{
 		Name:    name,
 		Key:     utils.CreateApiKey(),
-		Secret:  utils.GenerateToken(utils.TOKEN_LENGTH),
+		Secret:  utils.GenerateToken(utils.TokenLength),
 		Created: time.Now().Unix(),
 		Expired: 0,
 	}

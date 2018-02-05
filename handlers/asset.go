@@ -4,15 +4,15 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/go-zoo/bone"
 )
 
 func SetAssetMux() {
-	Mux.PostFunc(utils.AppendStrings("/", utils.API_VERSION, "/assets"), colsHandler(PostAsset))
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/assets/#assetId^[a-z0-9-]$"), GetAsset)
+	Mux.PostFunc(utils.AppendStrings("/", utils.APIVersion, "/assets"), colsHandler(PostAsset))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/assets/#assetId^[a-z0-9-]$"), GetAsset)
 }
 
 func PostAsset(w http.ResponseWriter, r *http.Request) {

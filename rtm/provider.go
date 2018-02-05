@@ -17,8 +17,10 @@ type Provider interface {
 }
 
 func GetMessagingProvider() Provider {
+	cfg := utils.GetConfig()
+
 	var provider Provider
-	switch utils.Cfg.Rtm.Provider {
+	switch cfg.Rtm.Provider {
 	case "":
 		provider = &NotUseProvider{}
 	case "direct":

@@ -15,7 +15,7 @@ import (
 )
 
 func SetAssetAwsSnsMux() {
-	Mux.PostFunc(utils.AppendStrings("/", utils.API_VERSION, "/assets/aws-sns"), colsHandler(PostAssetAwsSns))
+	Mux.PostFunc(utils.AppendStrings("/", utils.APIVersion, "/assets/aws-sns"), colsHandler(PostAssetAwsSns))
 }
 
 type AwsSNSSubscribeInput struct {
@@ -65,10 +65,10 @@ func PostAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("%#v", input)
 	if input.Type == "SubscriptionConfirmation" {
-
+		cfg := utils.GetConfig()
 		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(utils.Cfg.Storage.AwsRegion),
-			Credentials: credentials.NewStaticCredentials(utils.Cfg.Storage.AwsAccessKeyId, utils.Cfg.Storage.AwsSecretAccessKey, ""),
+			Region:      aws.String(cfg.Storage.AwsRegion),
+			Credentials: credentials.NewStaticCredentials(cfg.Storage.AwsAccessKeyId, cfg.Storage.AwsSecretAccessKey, ""),
 		})
 		cli := sns.New(sess)
 

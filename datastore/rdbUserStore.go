@@ -27,7 +27,7 @@ func RdbInsertUser(user *models.User) StoreResult {
 	master := RdbStoreInstance().master()
 	result := StoreResult{}
 	trans, err := master.Begin()
-	user.AccessToken = utils.GenerateToken(utils.TOKEN_LENGTH)
+	user.AccessToken = utils.GenerateToken(utils.TokenLength)
 	if err = trans.Insert(user); err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
 		if err := trans.Rollback(); err != nil {
