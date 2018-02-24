@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -28,8 +29,13 @@ func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
 }
 
 func GetDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
-	user, pd := SelectDevice(userId, platform)
-	return user, pd
+	devide, pd := SelectDevice(userId, platform)
+	if devide == nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusNotFound,
+		}
+	}
+	return devide, pd
 }
 
 func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
