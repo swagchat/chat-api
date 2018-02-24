@@ -1,10 +1,10 @@
 #################################################
-#             swagchat settings                 #
+#             Chat API settings                 #
 #################################################
-version: "0"
-port: 9000
+httpPort: 8101
 profiling: false
-errorLogging: false
+errorLogging: true
+demoPage: true
 
 #################### Logging ####################
 logging:
@@ -13,7 +13,7 @@ logging:
 #################### Storage ####################
 storage:
   provider: local
-  baseurl: http://localhost:9000/v0/assets
+  baseurl: http://localhost:8101/v0/assets
   path: data/assets
 
 #################### Datastore ##################
