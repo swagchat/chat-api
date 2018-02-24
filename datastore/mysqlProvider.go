@@ -103,6 +103,7 @@ func (p *mysqlProvider) Init() {
 	p.CreateApiStore()
 	p.CreateUserStore()
 	p.CreateBlockUserStore()
+	p.CreateBotStore()
 	p.CreateRoomStore()
 	p.CreateRoomUserStore()
 	p.CreateMessageStore()
