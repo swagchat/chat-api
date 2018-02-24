@@ -24,7 +24,7 @@ type User struct {
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
-	Lang           string         `json:"lang,omitempty" db:"lang,notnull"`
+	Lang           string         `json:"lang,	omitempty" db:"lang,notnull"`
 	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
@@ -76,15 +76,15 @@ func (u *User) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		UserId         string         `json:"userId"`
 		Name           string         `json:"name"`
-		PictureUrl     string         `json:"pictureUrl,omitempty"`
-		InformationUrl string         `json:"informationUrl,omitempty"`
+		PictureUrl     string         `json:"pictureUrl"`
+		InformationUrl string         `json:"informationUrl"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsBot          *bool          `json:"isBot,omitempty"`
-		IsPublic       *bool          `json:"isPublic,omitempty"`
-		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
-		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
-		Lang           string         `json:"lang,omitempty"`
+		IsBot          *bool          `json:"isBot"`
+		IsPublic       *bool          `json:"isPublic"`
+		IsCanBlock     *bool          `json:"isCanBlock"`
+		IsShowUsers    *bool          `json:"isShowUsers"`
+		Lang           string         `json:"lang"`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
@@ -268,5 +268,11 @@ func (u *User) Put(put *User) {
 	}
 	if put.IsCanBlock != nil {
 		u.IsCanBlock = put.IsCanBlock
+	}
+	if put.IsShowUsers != nil {
+		u.IsShowUsers = put.IsShowUsers
+	}
+	if put.Lang != "" {
+		u.Lang = put.Lang
 	}
 }
