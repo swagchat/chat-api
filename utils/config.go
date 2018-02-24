@@ -149,7 +149,7 @@ func NewConfig() *config {
 
 	c := &config{
 		Version:      "0",
-		HttpPort:     "8000",
+		HttpPort:     "8101",
 		Profiling:    false,
 		DemoPage:     false,
 		ErrorLogging: false,
