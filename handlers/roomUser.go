@@ -6,13 +6,12 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func SetRoomUserMux() {
-	Mux.PutFunc(utils.AppendStrings("/", utils.APIVersion, "/rooms/#roomId^[a-z0-9-]$/users"), colsHandler(PutRoomUsers))
-	Mux.PutFunc(utils.AppendStrings("/", utils.APIVersion, "/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$"), colsHandler(PutRoomUser))
-	Mux.DeleteFunc(utils.AppendStrings("/", utils.APIVersion, "/rooms/#roomId^[a-z0-9-]$/users"), colsHandler(DeleteRoomUsers))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(PutRoomUsers))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(PutRoomUser))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(DeleteRoomUsers))
 }
 
 func PutRoomUsers(w http.ResponseWriter, r *http.Request) {

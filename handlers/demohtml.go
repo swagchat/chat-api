@@ -17,14 +17,15 @@ var baseMessengerHTMLData = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css" type="text/css" media="all">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" type="text/css" media="all">
-    <link rel="stylesheet" href="http://localhost:9000/static/react-swagchat.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/react-swagchat@0.10.3/dist/react-swagchat.min.css">
   </head>
   <body>
     <div id="swagchat" />
-    <script src="http://localhost:9000/static/react-swagchat.min.js"></script>
+    <script src="https://unpkg.com/react-swagchat@0.10.3/dist/react-swagchat.min.js"></script>
     <script>
       Swag.renderMessenger({
         userId: '00581ea9-3547-4c81-930c-a3ed042e4b21',
+        //userId: 'd18b8a24-7bd5-4580-b54c-26a60d0e097e',
         apiEndpoint: 'SC_REACT_CHAT_ENDPOINT',
         rtmProtocol: 'SC_REACT_RTM_PROTOCOL',
         rtmHost: 'SC_REACT_RTM_HOST',

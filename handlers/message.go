@@ -6,12 +6,11 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func SetMessageMux() {
-	Mux.PostFunc(utils.AppendStrings("/", utils.APIVersion, "/messages"), colsHandler(PostMessages))
-	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/messages/#messageId^[a-z0-9-]$"), colsHandler(GetMessage))
+	Mux.PostFunc("/messages", colsHandler(PostMessages))
+	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", colsHandler(GetMessage))
 }
 
 func PostMessages(w http.ResponseWriter, r *http.Request) {

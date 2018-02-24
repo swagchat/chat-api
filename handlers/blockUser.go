@@ -6,13 +6,12 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func SetBlockUserMux() {
-	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/blocks"), colsHandler(GetBlockUsers))
-	Mux.PutFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/blocks"), colsHandler(PutBlockUsers))
-	Mux.DeleteFunc(utils.AppendStrings("/", utils.APIVersion, "/users/#userId^[a-z0-9-]$/blocks"), colsHandler(DeleteBlockUsers))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(GetBlockUsers))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(PutBlockUsers))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(DeleteBlockUsers))
 }
 
 func GetBlockUsers(w http.ResponseWriter, r *http.Request) {

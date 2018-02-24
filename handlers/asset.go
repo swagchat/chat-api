@@ -11,8 +11,8 @@ import (
 )
 
 func SetAssetMux() {
-	Mux.PostFunc(utils.AppendStrings("/", utils.APIVersion, "/assets"), colsHandler(PostAsset))
-	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/assets/#assetId^[a-z0-9-]$"), GetAsset)
+	Mux.PostFunc("/assets", colsHandler(PostAsset))
+	Mux.GetFunc("/assets/#assetId^[a-z0-9-]$", GetAsset)
 }
 
 func PostAsset(w http.ResponseWriter, r *http.Request) {
