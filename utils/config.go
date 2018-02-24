@@ -127,7 +127,7 @@ func NewConfig() *config {
 
 	storage := &Storage{
 		Provider:  "local",
-		BaseUrl:   AppendStrings("/", APIVersion, "/assets"),
+		BaseUrl:   "/assets",
 		LocalPath: "data/assets",
 	}
 

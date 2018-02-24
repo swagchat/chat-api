@@ -2,13 +2,14 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 )
 
 func IsUrl(checkUrl string) error {
 	urlStruct, err := url.Parse(checkUrl)
 	if err != nil {
-		return errors.New(AppendStrings("url parse error. ", err.Error()))
+		return errors.New(fmt.Sprintf("url parse error. %s", err.Error()))
 	}
 	schemes := []string{"http", "https"}
 	for _, scheme := range schemes {
