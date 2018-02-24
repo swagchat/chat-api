@@ -2,6 +2,7 @@ package utils
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,7 +14,7 @@ import (
 
 const (
 	// AppName is Application name
-	AppName = "swagchat-api"
+	AppName = "chat-api"
 	// APIVersion is API version
 	APIVersion = "v0"
 	// BuildVersion is API build version
@@ -158,6 +159,11 @@ func NewConfig() *config {
 		Rtm:          rtm,
 		Notification: notification,
 	}
+
+	c.LoadYaml()
+	c.LoadEnvironment()
+	c.ParseFlag()
+	c.PrintConfig()
 
 	return c
 }
@@ -569,4 +575,8 @@ func (c *config) ParseFlag() {
 	} else if errorLogging == "false" {
 		c.ErrorLogging = false
 	}
+}
+
+func (c *config) PrintConfig() {
+	fmt.Printf("%+v\n", c)
 }

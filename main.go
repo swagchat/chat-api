@@ -14,12 +14,6 @@ import (
 )
 
 func main() {
-	c := utils.GetConfig()
-
-	c.LoadYaml()
-	c.LoadEnvironment()
-	c.ParseFlag()
-
 	utils.SetupLogger()
 
 	if utils.IsShowVersion {

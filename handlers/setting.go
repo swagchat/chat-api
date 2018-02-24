@@ -4,11 +4,11 @@ import (
 	"net/http"
 
 	"github.com/swagchat/chat-api/services"
-	"github.com/swagchat/rtm-api/utils"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func SetSettingMux() {
-	Mux.GetFunc(utils.AppendStrings("/", utils.API_VERSION, "/setting"), colsHandler(GetSetting))
+	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/setting"), colsHandler(GetSetting))
 }
 
 func GetSetting(w http.ResponseWriter, r *http.Request) {
