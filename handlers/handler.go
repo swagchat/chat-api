@@ -47,9 +47,8 @@ func StartServer(ctx context.Context) {
 	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	Mux.GetFunc("/stats", stats_api.Handler)
-	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion), indexHandler)
-	Mux.GetFunc(utils.AppendStrings("/", utils.APIVersion, "/"), indexHandler)
-	Mux.OptionsFunc(utils.AppendStrings("/", utils.APIVersion, "/*"), optionsHandler)
+	Mux.GetFunc("/", indexHandler)
+	Mux.OptionsFunc("/*", optionsHandler)
 	SetAssetMux()
 	SetBlockUserMux()
 	SetContactMux()
