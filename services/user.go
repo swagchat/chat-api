@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -16,13 +17,27 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func PostUser(post *models.User) (*models.User, *models.ProblemDetail) {
-	if pd := post.IsValid(); pd != nil {
+func PostUser(post *models.User, sub, preferredUsername string) (*models.User, *models.ProblemDetail) {
+	log.Println("sub=", sub)
+	log.Println("preferredUsername=", preferredUsername)
+
+	if pd := post.IsValid(sub, preferredUsername); pd != nil {
 		return nil, pd
 	}
 
-	post.BeforeSave()
-	dRes := datastore.GetProvider().InsertUser(post)
+	post.BeforeSave(sub, preferredUsername)
+
+	dRes := datastore.GetProvider().SelectUser(post.UserId, true, true, true)
+	if dRes.ProblemDetail != nil {
+		return nil, dRes.ProblemDetail
+	}
+	if dRes.Data != nil {
+		return nil, &models.ProblemDetail{
+			Status: http.StatusConflict,
+		}
+	}
+
+	dRes = datastore.GetProvider().InsertUser(post)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -68,17 +83,17 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 	return user, nil
 }
 
-func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
+func PutUser(put *models.User, sub, preferredUsername string) (*models.User, *models.ProblemDetail) {
 	user, pd := selectUser(put.UserId)
 	if pd != nil {
 		return nil, pd
 	}
 
 	user.Put(put)
-	if pd := user.IsValid(); pd != nil {
+	if pd := user.IsValid(sub, preferredUsername); pd != nil {
 		return nil, pd
 	}
-	user.BeforeSave()
+	user.BeforeSave(sub, preferredUsername)
 	dRes := datastore.GetProvider().UpdateUser(user)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail

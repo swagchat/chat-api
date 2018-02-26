@@ -157,7 +157,21 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (u *User) IsValid() *ProblemDetail {
+func (u *User) IsValid(sub, preferredUsername string) *ProblemDetail {
+	if sub != "" && u.UserId != sub {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create user item)",
+			Status:    http.StatusUnauthorized,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userId",
+					Reason: "You do not have permission to create a user with the specified userId",
+				},
+			},
+		}
+	}
+
 	if u.UserId != "" && !utils.IsValidId(u.UserId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create user item)",
@@ -200,10 +214,32 @@ func (u *User) IsValid() *ProblemDetail {
 		}
 	}
 
+	if preferredUsername != "" && u.Name != preferredUsername {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create user item)",
+			Status:    http.StatusUnauthorized,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "name",
+					Reason: "You do not have permission to create a user with the specified name",
+				},
+			},
+		}
+	}
+
 	return nil
 }
 
-func (u *User) BeforeSave() {
+func (u *User) BeforeSave(sub, preferredUsername string) {
+	if sub != "" {
+		u.UserId = sub
+	}
+
+	if preferredUsername != "" {
+		u.Name = preferredUsername
+	}
+
 	if u.UserId == "" {
 		u.UserId = utils.CreateUuid()
 	}

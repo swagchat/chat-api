@@ -27,7 +27,10 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, pd := services.PostUser(&post)
+	sub := r.Header.Get("X-Sub")
+	preferredUsername := r.Header.Get("X-Preferred-Username")
+
+	user, pd := services.PostUser(&post, sub, preferredUsername)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -65,7 +68,10 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.UserId = bone.GetValue(r, "userId")
-	user, pd := services.PutUser(&put)
+	sub := r.Header.Get("X-Sub")
+	preferredUsername := r.Header.Get("X-Preferred-Username")
+
+	user, pd := services.PutUser(&put, sub, preferredUsername)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
