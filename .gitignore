@@ -4,3 +4,7 @@ data
 .idea
 .DS_Store
 static
+chat-api-bot
+debug
+config/app.yaml
+dockerhub-nopush.sh

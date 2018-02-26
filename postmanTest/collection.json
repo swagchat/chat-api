@@ -1,0 +1,1282 @@
+{
+	"info": {
+		"name": "[swagchat][test]chat-api",
+		"_postman_id": "bcec8999-6826-d645-c9b8-211dcdf7af7d",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "SET_ENVIRONMENT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4939670e-45aa-48f7-be50-995df67a0a66",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"swagchat Chat API version v0\");",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "c4141845-ecce-47ab-91a0-3837db9e3800",
+						"type": "text/javascript",
+						"exec": [
+							"const userSchema = {",
+							"    \"required\": [\"userId\", \"created\", \"modified\"],",
+							"    \"properties\": {",
+							"        \"userId\": {",
+							"            \"type\": \"string\",",
+							"            \"minLength\": 1,",
+							"            \"maxLength\": 255",
+							"        },",
+							"        \"name\": {",
+							"            \"type\": \"string\",",
+							"            \"minLength\": 1,",
+							"            \"maxLength\": 50",
+							"        },",
+							"        \"pictureUrl\": {",
+							"            \"type\": \"string\",",
+							"            \"minLength\": 0,",
+							"            \"maxLength\": 255",
+							"        },",
+							"        \"informationUrl\": {",
+							"            \"type\": \"string\",",
+							"            \"minLength\": 0,",
+							"            \"maxLength\": 255",
+							"        },",
+							"        \"unreadCount\": {",
+							"            \"type\": \"integer\",",
+							"            \"minimum\": 0,",
+							"            \"maximum\": 1000000",
+							"        },",
+							"        \"metaData\": {",
+							"            \"type\": \"object\",",
+							"        },",
+							"        \"isBot\": {",
+							"            \"type\": \"boolean\",",
+							"        },",
+							"        \"isPublic\": {",
+							"            \"type\": \"boolean\",",
+							"        },",
+							"        \"isCanBlock\": {",
+							"            \"type\": \"boolean\",",
+							"        },",
+							"        \"isShowUsers\": {",
+							"            \"type\": \"boolean\",",
+							"        },",
+							"        \"lang\": {",
+							"            \"type\": \"string\",",
+							"        },",
+							"        \"created\": {",
+							"            \"type\": \"string\",",
+							"        },",
+							"        \"modified\": {",
+							"            \"type\": \"string\",",
+							"        },",
+							"    }",
+							"};",
+							"postman.setEnvironmentVariable(\"userSchema\", JSON.stringify(userSchema));",
+							"",
+							"const usersSchema = {",
+							"    \"required\": [\"users\"],",
+							"    \"properties\": {",
+							"        \"users\": {",
+							"            \"type\": \"array\",",
+							"            \"items\": {",
+							"                \"type\": \"object\",",
+							"                \"properties\": userSchema.properties,",
+							"            }",
+							"        },",
+							"        \"allCount\": {",
+							"            \"type\": \"integer\"",
+							"        }",
+							"    }",
+							"};",
+							"postman.setEnvironmentVariable(\"usersSchema\", JSON.stringify(usersSchema));",
+							"",
+							"const userUnreadCountSchema = {",
+							"    \"required\": [\"unreadCount\"],",
+							"    \"properties\": {",
+							"        \"unreadCount\": {",
+							"            \"type\": \"integer\",",
+							"            \"minimum\": 0,",
+							"            \"maximum\": 1000000",
+							"        },",
+							"    }",
+							"};",
+							"postman.setEnvironmentVariable(\"userUnreadCountSchema\", JSON.stringify(userUnreadCountSchema));",
+							"",
+							"const deviceSchema = {",
+							"    \"required\": [\"userId\"],",
+							"    \"properties\": {",
+							"        \"userId\": {",
+							"            \"type\": \"string\",",
+							"            \"minLength\": 1,",
+							"            \"maxLength\": 50",
+							"        },",
+							"        \"platform\": {",
+							"            \"type\": \"integer\",",
+							"            \"minLength\": 1,",
+							"            \"maxLength\": 3",
+							"        },",
+							"        \"token\": {",
+							"            \"type\": \"string\"",
+							"        },",
+							"        \"notificationDeviceId\": {",
+							"            \"type\": \"string\"",
+							"        }",
+							"    }",
+							"};",
+							"postman.setEnvironmentVariable(\"deviceSchema\", JSON.stringify(deviceSchema));",
+							"",
+							"const devicesSchema = {",
+							"    \"required\": [\"devices\"],",
+							"    \"properties\": {",
+							"        \"devices\": {",
+							"            \"type\": \"array\",",
+							"            \"items\": {",
+							"                \"type\": \"object\",",
+							"                \"properties\": deviceSchema.properties,",
+							"            }",
+							"        },",
+							"        \"allCount\": {",
+							"            \"type\": \"integer\"",
+							"        }",
+							"    }",
+							"};",
+							"postman.setEnvironmentVariable(\"devicesSchema\", JSON.stringify(devicesSchema));",
+							"",
+							"const blockUsersSchema = {",
+							"    \"required\": [\"blockUsers\"],",
+							"    \"properties\": {",
+							"        \"blockUsers\": {",
+							"            \"type\": \"array\",",
+							"            \"items\": {",
+							"                \"type\": \"string\",",
+							"            }",
+							"        },",
+							"        \"allCount\": {",
+							"            \"type\": \"integer\"",
+							"        }",
+							"    }",
+							"};",
+							"postman.setEnvironmentVariable(\"blockUsersSchema\", JSON.stringify(blockUsersSchema));",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}",
+					"host": [
+						"{{apiEndpoint}}"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "POST_USER_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "aa954414-4cf1-48bf-9c8e-018b70cbefe8",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const userSchemaString = pm.environment.get(\"userSchema\");",
+							"const userSchema = JSON.parse(userSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+							"});",
+							"",
+							"const randomUserName = pm.environment.get(\"randomUserName\");",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.name).to.eql(randomUserName);",
+							"    pm.expect(res.pictureUrl).to.eql(\"\");",
+							"    pm.expect(res.informationUrl).to.eql(\"\");",
+							"    pm.expect(res.unreadCount).to.eql(0);",
+							"    pm.expect(res.isBot).to.eql(false);",
+							"    pm.expect(res.isPublic).to.eql(false);",
+							"    pm.expect(res.isCanBlock).to.eql(true);",
+							"    pm.expect(res.isShowUsers).to.eql(true);",
+							"    pm.expect(res.lang).to.eql(\"\");",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "5a1d3d2d-9766-4d25-aa23-4060310f1348",
+						"type": "text/javascript",
+						"exec": [
+							"var randomUserName = \"\";",
+							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+							"var len = 8;",
+							"for (var i = 0; i < len; i++){",
+							"  randomUserName += char[Math.floor(Math.random()*len)];",
+							"}",
+							"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"{{randomUserName}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users"
+					]
+				},
+				"description": "Only set name."
+			},
+			"response": []
+		},
+		{
+			"name": "POST_USER_0002",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7151fe4c-304e-4d60-86dd-ac7f8b131dfb",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const userSchemaString = pm.environment.get(\"userSchema\");",
+							"const userSchema = JSON.parse(userSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+							"});",
+							"",
+							"const randomUserId = pm.environment.get(\"randomUserId\");",
+							"const randomUserName = pm.environment.get(\"randomUserName\");",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.userId).to.eql(randomUserId);",
+							"    pm.expect(res.name).to.eql(randomUserName);",
+							"    pm.expect(res.pictureUrl).to.eql(\"\");",
+							"    pm.expect(res.informationUrl).to.eql(\"\");",
+							"    pm.expect(res.unreadCount).to.eql(0);",
+							"    pm.expect(res.isBot).to.eql(false);",
+							"    pm.expect(res.isPublic).to.eql(false);",
+							"    pm.expect(res.isCanBlock).to.eql(true);",
+							"    pm.expect(res.isShowUsers).to.eql(true);",
+							"    pm.expect(res.lang).to.eql(\"\");",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "90b1c18e-bba7-4f08-930f-edd2bf8fa414",
+						"type": "text/javascript",
+						"exec": [
+							"var randomUserName = \"\";",
+							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+							"var len = 8;",
+							"for (var i = 0; i < len; i++){",
+							"  randomUserName += char[Math.floor(Math.random()*len)];",
+							"}",
+							"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);",
+							"",
+							"var randomUserId = \"\";",
+							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+							"var len = 20;",
+							"for (var i = 0; i < len; i++){",
+							"  randomUserId += char[Math.floor(Math.random()*len)];",
+							"}",
+							"",
+							"postman.setEnvironmentVariable(\"randomUserId\", randomUserId);",
+							"",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"userID\": \"{{randomUserId}}\",\n\t\"name\": \"{{randomUserName}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users"
+					]
+				},
+				"description": "Set userID."
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USERS_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "42d270b0-7b9c-4ac0-86a9-dd9810134514",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const usersSchemaString = pm.environment.get(\"usersSchema\");",
+							"const usersSchema = JSON.parse(usersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users"
+					]
+				},
+				"description": "No params"
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USER_0001",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e89c6bea-6124-4114-a0f1-4d293bea5662",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "6fc0f140-ae82-4afc-b2c0-f3ee92cdf62e",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const userSchemaString = pm.environment.get(\"userSchema\");",
+							"const userSchema = JSON.parse(userSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+							"});",
+							"",
+							"const randomUserId = pm.environment.get(\"randomUserId\");",
+							"const randomUserName = pm.environment.get(\"randomUserName\");",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.userId).to.eql(randomUserId);",
+							"    pm.expect(res.name).to.eql(randomUserName);",
+							"    pm.expect(res.pictureUrl).to.eql(\"\");",
+							"    pm.expect(res.informationUrl).to.eql(\"\");",
+							"    pm.expect(res.unreadCount).to.eql(0);",
+							"    pm.expect(res.isBot).to.eql(false);",
+							"    pm.expect(res.isPublic).to.eql(false);",
+							"    pm.expect(res.isCanBlock).to.eql(true);",
+							"    pm.expect(res.isShowUsers).to.eql(true);",
+							"    pm.expect(res.lang).to.eql(\"\");",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"disabled": true
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USER_UNREADCOUNT_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "90223a63-c8db-4b69-b32c-c8670e4d0255",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const userUnreadCountSchemaString = pm.environment.get(\"userUnreadCountSchema\");",
+							"const userUnreadCountSchema = JSON.parse(userUnreadCountSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, userUnreadCountSchema)).to.be.true;",
+							"});",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.unreadCount).to.eql(0);",
+							"});",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/unreadCount",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"unreadCount"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "PUT_USER_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e59f4f3d-c62b-44bd-85c1-298585064a80",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const userSchemaString = pm.environment.get(\"userSchema\");",
+							"const userSchema = JSON.parse(userSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+							"});",
+							"",
+							"const randomUserId = pm.environment.get(\"randomUserId\");",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.userId).to.eql(randomUserId);",
+							"    pm.expect(res.name).to.eql(\"update-name\");",
+							"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/update-picture.png\");",
+							"    pm.expect(res.informationUrl).to.eql(\"http://example.com/update-information.html\");",
+							"    pm.expect(res.unreadCount).to.eql(10);",
+							"    pm.expect(res.metaData).to.eql({\"key\": \"value\"});",
+							"    pm.expect(res.isBot).to.eql(true);",
+							"    pm.expect(res.isPublic).to.eql(true);",
+							"    pm.expect(res.isCanBlock).to.eql(false);",
+							"    pm.expect(res.isShowUsers).to.eql(false);",
+							"    pm.expect(res.lang).to.eql(\"en\");",
+							"});",
+							"",
+							"",
+							"",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "72635527-1df0-4852-ac85-1fd4bf485fb2",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"update-name\",\n\t\"pictureUrl\": \"http://example.com/update-picture.png\",\n\t\"informationUrl\": \"http://example.com/update-information.html\",\n\t\"unreadCount\": 10,\n\t\"metaData\": {\"key\": \"value\"},\n\t\"isBot\": true,\n\t\"isPublic\": true,\n\t\"isCanBlock\": false,\n    \"isShowUsers\": false,\n    \"lang\": \"en\"\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USER_DEVICES_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "34b8fa27-7f2d-4b22-99b9-d320fde62bba",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const devicesSchemaString = pm.environment.get(\"devicesSchema\");",
+							"const devicesSchema = JSON.parse(devicesSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, devicesSchema)).to.be.true;",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"devices"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USER_DEVICE_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d68184e8-b2ff-4bb1-b6d7-f2ee6b0c3ace",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"devices",
+						"1"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "PUT_USER_DEVICE_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e18564bd-0b20-4da1-872d-80bf14d1605a",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const deviceSchemaString = pm.environment.get(\"deviceSchema\");",
+							"const deviceSchema = JSON.parse(deviceSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, deviceSchema)).to.be.true;",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "a9e28c13-204d-45bf-9196-86cdf797917f",
+						"type": "text/javascript",
+						"exec": [
+							"var randomDeviceToken = \"\";",
+							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+							"var len = 20;",
+							"for (var i = 0; i < len; i++){",
+							"  randomDeviceToken += char[Math.floor(Math.random()*len)];",
+							"}",
+							"postman.setEnvironmentVariable(\"randomDeviceToken\", randomDeviceToken);",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"token\": \"{{randomDeviceToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"devices",
+						"1"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "PUT_USER_DEVICE_0002",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b9938a1b-0c9e-4e8e-9393-c51db3773b98",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 304\", function () {",
+							"    pm.response.to.have.status(304);",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"token\": \"{{randomDeviceToken}}\"\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"devices",
+						"1"
+					]
+				},
+				"description": "Not modified"
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_USER_DEVICE_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "eddb59d7-1e85-40b6-843e-b5ffa951fb70",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"devices",
+						"1"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USER_BLOCKS_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "280d77f4-ad71-43ad-9d30-efaa34bd87cb",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
+							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
+							"});",
+							"pm.test('Data is valid', function() {",
+							"    console.log(res.blockUsers);",
+							"    pm.expect(res.blockUsers.length).to.eql(0);",
+							"});",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userIds\": [\"73217b00-eb91-4a7f-ba51-532e4f98ed55\"]\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"blocks"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "PUT_USER_BLOCKS_0001",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "7f823d01-0de5-4aea-8ecf-a0f466388f19",
+						"type": "text/javascript",
+						"exec": [
+							"const addBlockUserCount = 4;",
+							"const apiEndpoint = pm.environment.get(\"apiEndpoint\");",
+							"const randomUserId = pm.environment.get(\"randomUserId\");",
+							"",
+							"let addBlockUserIds = [];",
+							"pm.sendRequest(apiEndpoint + \"/users\", function (err, response) {",
+							"    let users = response.json();",
+							"    let i = 0;",
+							"    for (let user of users.users) {",
+							"        if (user.userId !== randomUserId) {",
+							"            addBlockUserIds.push(user.userId);",
+							"            i++;",
+							"        }",
+							"        if (i >= addBlockUserCount) {",
+							"            break;",
+							"        }",
+							"    }",
+							"    pm.environment.set(\"addBlockUserIds\", JSON.stringify(addBlockUserIds));",
+							"});",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "d5b6c746-0e59-408a-a8c3-36314a36e8c3",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
+							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
+							"});",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(4);",
+							"});",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userIds\": {{addBlockUserIds}}\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"blocks"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_USER_BLOCKS_0001",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "ca6a5f0b-eb0b-4a7a-a8a8-a8005ba041f7",
+						"type": "text/javascript",
+						"exec": [
+							"const deleteBlockUserCount = 1;",
+							"const apiEndpoint = pm.environment.get(\"apiEndpoint\");",
+							"const randomUserId = pm.environment.get(\"randomUserId\");",
+							"",
+							"let deleteBlockUserIds = [];",
+							"pm.sendRequest(apiEndpoint + \"/users\", function (err, response) {",
+							"    let users = response.json();",
+							"    let i = 0;",
+							"    for (let user of users.users) {",
+							"        if (user.userId !== randomUserId) {",
+							"            deleteBlockUserIds.push(user.userId);",
+							"            i++;",
+							"        }",
+							"        if (i >= deleteBlockUserCount) {",
+							"            break;",
+							"        }",
+							"    }",
+							"    pm.environment.set(\"deleteBlockUserIds\", JSON.stringify(deleteBlockUserIds));",
+							"});",
+							"",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "255b527a-d79e-45a3-b05c-68683639b27e",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
+							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
+							"});",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(3);",
+							"});",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userIds\": {{deleteBlockUserIds}}\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"blocks"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USER_BLOCKS_0002",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "9f5d2245-1e6f-47f4-946c-2a5e36386a78",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"",
+							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
+							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
+							"});",
+							"pm.test('Data is valid', function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(3);",
+							"});",
+							"",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userIds\": [\"73217b00-eb91-4a7f-ba51-532e4f98ed55\"]\n}"
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}",
+						"blocks"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_USER_0001",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "86c6adab-d2e1-479e-8c27-890c197faed4",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							""
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "72635527-1df0-4852-ac85-1fd4bf485fb2",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users",
+						"{{randomUserId}}"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE_ENVIRONMENT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4939670e-45aa-48f7-be50-995df67a0a66",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Body matches string\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"swagchat Chat API version v0\");",
+							"});"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "e6ac8f67-3821-44ce-93a7-cd130ec89252",
+						"type": "text/javascript",
+						"exec": [
+							"pm.environment.unset(\"randomUserName\");",
+							"pm.environment.unset(\"randomUserId\");",
+							"pm.environment.unset(\"randomDeviceToken\");",
+							"pm.environment.unset(\"addBlockUserIds\");",
+							"pm.environment.unset(\"deleteBlockUserIds\");",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}",
+					"host": [
+						"{{apiEndpoint}}"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
