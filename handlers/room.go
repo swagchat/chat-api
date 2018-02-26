@@ -25,7 +25,9 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, pd := services.PostRoom(&post)
+	sub := r.Header.Get("X-Sub")
+
+	room, pd := services.PostRoom(&post, sub)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -64,7 +66,9 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.RoomId = bone.GetValue(r, "roomId")
-	room, pd := services.PutRoom(&put)
+	sub := r.Header.Get("X-Sub")
+
+	room, pd := services.PutRoom(&put, sub)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

@@ -17,8 +17,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
-	if pd := post.IsValid(); pd != nil {
+func PostRoom(post *models.Room, sub string) (*models.Room, *models.ProblemDetail) {
+	if pd := post.IsValid(sub); pd != nil {
 		return nil, pd
 	}
 	post.BeforeSave()
@@ -107,7 +107,7 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 	return room, nil
 }
 
-func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
+func PutRoom(put *models.Room, sub string) (*models.Room, *models.ProblemDetail) {
 	room, pd := selectRoom(put.RoomId)
 	if pd != nil {
 		return nil, pd
@@ -117,7 +117,7 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	if pd := room.IsValid(); pd != nil {
+	if pd := room.IsValid(sub); pd != nil {
 		return nil, pd
 	}
 	room.BeforeSave()

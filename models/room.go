@@ -23,7 +23,8 @@ const (
 type SpeechMode int
 
 const (
-	SPEECH_MODE_WAKEUP_WEB_TO_WEB SpeechMode = iota + 1
+	SPEECH_MODE_NONE SpeechMode = iota + 1
+	SPEECH_MODE_WAKEUP_WEB_TO_WEB
 	SPEECH_MODE_WAKEUP_WEB_TO_CLOUD
 	SPEECH_MODE_WAKEUP_CLOUD_TO_CLOUD
 	SPEECH_MODE_ALWAYS
@@ -181,7 +182,21 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *Room) IsValid() *ProblemDetail {
+func (r *Room) IsValid(sub string) *ProblemDetail {
+	if sub != "" && r.UserId != sub {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusUnauthorized,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userId",
+					Reason: "You do not have permission to create a room with the specified userId",
+				},
+			},
+		}
+	}
+
 	if r.RoomId != "" && !utils.IsValidId(r.RoomId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
@@ -266,7 +281,21 @@ func (r *Room) IsValid() *ProblemDetail {
 		}
 	}
 
-	if !(r.SpeechMode != nil && *r.SpeechMode > 0 && *r.SpeechMode < SPEECH_MODE_END) {
+	if r.UserIds == nil {
+		return &ProblemDetail{
+			Title:     "Request parameter error. (Create room item)",
+			Status:    http.StatusBadRequest,
+			ErrorName: ERROR_NAME_INVALID_PARAM,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "userIds",
+					Reason: "userIds is empty.",
+				},
+			},
+		}
+	}
+
+	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SPEECH_MODE_END) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
 			Status:    http.StatusBadRequest,
@@ -300,6 +329,11 @@ func (r *Room) BeforeSave() {
 	if r.IsShowUsers == nil {
 		isShowUsers := true
 		r.IsShowUsers = &isShowUsers
+	}
+
+	if r.SpeechMode == nil {
+		speechMode := SpeechMode(SPEECH_MODE_NONE)
+		r.SpeechMode = &speechMode
 	}
 
 	nowTimestamp := time.Now().Unix()
