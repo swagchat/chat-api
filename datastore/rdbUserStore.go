@@ -179,7 +179,7 @@ func RdbSelectUsers() StoreResult {
 	slave := RdbStoreInstance().replica()
 	result := StoreResult{}
 	var users []*models.User
-	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_public, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
+	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_bot, is_public, is_can_block, is_show_users, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
 	_, err := slave.Select(&users, query)
 	if err != nil {
 		result.ProblemDetail = createProblemDetail("An error occurred while getting user items.", err)
