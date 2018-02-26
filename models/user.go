@@ -73,6 +73,27 @@ type UserUnreadCount struct {
 
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
+
+	isBot := false
+	if u.IsBot != nil {
+		isBot = true
+	}
+
+	isPublic := false
+	if u.IsPublic != nil {
+		isPublic = true
+	}
+
+	isCanBlock := false
+	if u.IsCanBlock != nil {
+		isCanBlock = true
+	}
+
+	isShowUsers := false
+	if u.IsShowUsers != nil {
+		isShowUsers = true
+	}
+
 	return json.Marshal(&struct {
 		UserId         string         `json:"userId"`
 		Name           string         `json:"name"`
@@ -80,10 +101,10 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl string         `json:"informationUrl"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsBot          *bool          `json:"isBot"`
-		IsPublic       *bool          `json:"isPublic"`
-		IsCanBlock     *bool          `json:"isCanBlock"`
-		IsShowUsers    *bool          `json:"isShowUsers"`
+		IsBot          bool           `json:"isBot"`
+		IsPublic       bool           `json:"isPublic"`
+		IsCanBlock     bool           `json:"isCanBlock"`
+		IsShowUsers    bool           `json:"isShowUsers"`
 		Lang           string         `json:"lang"`
 		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
@@ -98,10 +119,10 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl: u.InformationUrl,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
-		IsBot:          u.IsBot,
-		IsPublic:       u.IsPublic,
-		IsCanBlock:     u.IsCanBlock,
-		IsShowUsers:    u.IsShowUsers,
+		IsBot:          isBot,
+		IsPublic:       isPublic,
+		IsCanBlock:     isCanBlock,
+		IsShowUsers:    isShowUsers,
 		Lang:           u.Lang,
 		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
