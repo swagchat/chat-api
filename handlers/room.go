@@ -12,10 +12,25 @@ import (
 func SetRoomMux() {
 	Mux.PostFunc("/rooms", colsHandler(PostRoom))
 	Mux.GetFunc("/rooms", colsHandler(GetRooms))
-	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(GetRoom))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(PutRoom))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(DeleteRoom))
-	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", colsHandler(GetRoomMessages))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(GetRoom)))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(PutRoom)))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(DeleteRoom)))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", colsHandler(roomAuthHandler(GetRoomMessages)))
+}
+
+func roomAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		roomID := bone.GetValue(r, "roomId")
+		sub := r.Header.Get("X-Sub")
+		if roomID != "" && sub != "" {
+			pd := services.RoomAuth(roomID, sub)
+			if pd != nil {
+				respondErr(w, r, pd.Status, pd)
+				return
+			}
+		}
+		fn(w, r)
+	}
 }
 
 func PostRoom(w http.ResponseWriter, r *http.Request) {
@@ -66,9 +81,8 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.RoomId = bone.GetValue(r, "roomId")
-	sub := r.Header.Get("X-Sub")
 
-	room, pd := services.PutRoom(&put, sub)
+	room, pd := services.PutRoom(&put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

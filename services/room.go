@@ -107,7 +107,7 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 	return room, nil
 }
 
-func PutRoom(put *models.Room, sub string) (*models.Room, *models.ProblemDetail) {
+func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 	room, pd := selectRoom(put.RoomId)
 	if pd != nil {
 		return nil, pd
@@ -117,7 +117,7 @@ func PutRoom(put *models.Room, sub string) (*models.Room, *models.ProblemDetail)
 		return nil, pd
 	}
 
-	if pd := room.IsValid(sub); pd != nil {
+	if pd := room.IsValid(""); pd != nil {
 		return nil, pd
 	}
 	room.BeforeSave()
@@ -278,4 +278,30 @@ func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail
 		}
 	}
 	return limit, offset, order, nil
+}
+
+func RoomAuth(roomId, sub string) *models.ProblemDetail {
+	dRes := datastore.GetProvider().SelectUsersForRoom(roomId)
+	if dRes.ProblemDetail != nil {
+		return dRes.ProblemDetail
+	}
+	users := dRes.Data.([]*models.UserForRoom)
+	isAuthorized := false
+	for _, user := range users {
+		if user.UserId == sub {
+			isAuthorized = true
+			break
+		}
+	}
+
+	if !isAuthorized {
+		return &models.ProblemDetail{
+			Title:     "Request parameter error. (Get room messages)",
+			Status:    http.StatusUnauthorized,
+			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
+			Detail:    "You do not have permission to the room messages with the specified userId",
+		}
+	}
+
+	return nil
 }

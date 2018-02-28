@@ -6,6 +6,7 @@ const (
 	ERROR_NAME_DATABASE_ERROR          = "database-error"
 	ERROR_NAME_NOTIFICATION_ERROR      = "notification-error"
 	ERROR_NAME_OPERATION_NOT_PERMITTED = "operation-not-permitted"
+	ERROR_NAME_UNAUTHORIZED            = "unauthorized"
 )
 
 type ProblemDetail struct {
