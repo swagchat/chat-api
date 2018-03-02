@@ -9,9 +9,9 @@ import (
 )
 
 func SetBlockUserMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(GetBlockUsers))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(PutBlockUsers))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(DeleteBlockUsers))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(GetBlockUsers)))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(PutBlockUsers)))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(DeleteBlockUsers)))
 }
 
 func GetBlockUsers(w http.ResponseWriter, r *http.Request) {

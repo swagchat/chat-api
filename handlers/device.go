@@ -10,10 +10,10 @@ import (
 )
 
 func SetDeviceMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", colsHandler(GetDevices))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(GetDevice))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(PutDevice))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(DeleteDevice))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", colsHandler(userAuthHandler(GetDevices)))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(userAuthHandler(GetDevice)))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(userAuthHandler(PutDevice)))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(userAuthHandler(DeleteDevice)))
 }
 
 func GetDevices(w http.ResponseWriter, r *http.Request) {

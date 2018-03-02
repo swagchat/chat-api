@@ -296,10 +296,9 @@ func RoomAuth(roomId, sub string) *models.ProblemDetail {
 
 	if !isAuthorized {
 		return &models.ProblemDetail{
-			Title:     "Request parameter error. (Get room messages)",
+			Title:     "You do not have permission",
 			Status:    http.StatusUnauthorized,
 			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
-			Detail:    "You do not have permission to the room messages with the specified userId",
 		}
 	}
 

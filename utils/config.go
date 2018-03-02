@@ -38,11 +38,16 @@ type config struct {
 	Profiling    bool
 	DemoPage     bool `yaml:"demoPage"`
 	ErrorLogging bool `yaml:"errorLogging"`
+	Auth         *Auth
 	Logging      *Logging
 	Storage      *Storage
 	Datastore    *Datastore
 	Rtm          *Rtm
 	Notification *Notification
+}
+
+type Auth struct {
+	DefaultUsernameJWTClaimName string `yaml:"defaultUsernameJWTClaimName"`
 }
 
 type Logging struct {
@@ -121,6 +126,10 @@ type Notification struct {
 func NewConfig() *config {
 	log.SetFlags(log.Llongfile)
 
+	auth := &Auth{
+		DefaultUsernameJWTClaimName: "preferred_username",
+	}
+
 	logging := &Logging{
 		Level: "development",
 	}
@@ -153,6 +162,7 @@ func NewConfig() *config {
 		Profiling:    false,
 		DemoPage:     false,
 		ErrorLogging: false,
+		Auth:         auth,
 		Logging:      logging,
 		Storage:      storage,
 		Datastore:    datastore,
@@ -206,6 +216,11 @@ func (c *config) LoadEnvironment() {
 		} else if v == "false" {
 			c.ErrorLogging = false
 		}
+	}
+
+	// Auth
+	if v = os.Getenv("SC_AUTH_DEFAULT_USERNAME_JWT_CLAIM_NAME"); v != "" {
+		c.Auth.DefaultUsernameJWTClaimName = v
 	}
 
 	// Logging
@@ -414,6 +429,9 @@ func (c *config) ParseFlag() {
 
 	var errorLogging string
 	flag.StringVar(&errorLogging, "errorLogging", "", "false")
+
+	// Auth
+	flag.StringVar(&c.Auth.DefaultUsernameJWTClaimName, "auth.defaultUsernameJWTClaimName", c.Auth.DefaultUsernameJWTClaimName, "")
 
 	// Logging
 	flag.StringVar(&c.Logging.Level, "logging.level", c.Logging.Level, "")

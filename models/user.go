@@ -25,7 +25,6 @@ type User struct {
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
 	Lang           string         `json:"lang,	omitempty" db:"lang,notnull"`
-	AccessToken    string         `json:"accessToken,omitempty" db:"access_token"`
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
 	Deleted        int64          `json:"-" db:"deleted,notnull"`
@@ -106,12 +105,11 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		IsCanBlock     bool           `json:"isCanBlock"`
 		IsShowUsers    bool           `json:"isShowUsers"`
 		Lang           string         `json:"lang"`
-		AccessToken    string         `json:"accessToken,omitempty"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
-		Rooms          []*RoomForUser `json:"rooms,omitempty"`
-		Devices        []*Device      `json:"devices,omitempty"`
-		Blocks         []string       `json:"blocks,omitempty"`
+		Rooms          []*RoomForUser `json:"rooms"`
+		Devices        []*Device      `json:"devices"`
+		Blocks         []string       `json:"blocks"`
 	}{
 		UserId:         u.UserId,
 		Name:           u.Name,
@@ -124,7 +122,6 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		IsCanBlock:     isCanBlock,
 		IsShowUsers:    isShowUsers,
 		Lang:           u.Lang,
-		AccessToken:    u.AccessToken,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
 		Rooms:          u.Rooms,
@@ -178,18 +175,13 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (u *User) IsValid(sub, preferredUsername string) *ProblemDetail {
-	if sub != "" && u.UserId != sub {
+func (u *User) IsValid(jwt *JWT) *ProblemDetail {
+	if jwt.Sub != "" && u.UserId != jwt.Sub {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create user item)",
 			Status:    http.StatusUnauthorized,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "userId",
-					Reason: "You do not have permission to create a user with the specified userId",
-				},
-			},
+			ErrorName: ERROR_NAME_UNAUTHORIZED,
+			Detail:    "You do not have permission to create a user with the specified userId",
 		}
 	}
 
@@ -235,30 +227,12 @@ func (u *User) IsValid(sub, preferredUsername string) *ProblemDetail {
 		}
 	}
 
-	if preferredUsername != "" && u.Name != preferredUsername {
-		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusUnauthorized,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "name",
-					Reason: "You do not have permission to create a user with the specified name",
-				},
-			},
-		}
-	}
-
 	return nil
 }
 
-func (u *User) BeforeSave(sub, preferredUsername string) {
-	if sub != "" {
-		u.UserId = sub
-	}
-
-	if preferredUsername != "" {
-		u.Name = preferredUsername
+func (u *User) BeforeSave(jwt *JWT) {
+	if jwt.Sub != "" {
+		u.UserId = jwt.Sub
 	}
 
 	if u.UserId == "" {

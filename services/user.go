@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"go.uber.org/zap"
@@ -17,15 +16,12 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func PostUser(post *models.User, sub, preferredUsername string) (*models.User, *models.ProblemDetail) {
-	log.Println("sub=", sub)
-	log.Println("preferredUsername=", preferredUsername)
-
-	if pd := post.IsValid(sub, preferredUsername); pd != nil {
+func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.ProblemDetail) {
+	if pd := post.IsValid(jwt); pd != nil {
 		return nil, pd
 	}
 
-	post.BeforeSave(sub, preferredUsername)
+	post.BeforeSave(jwt)
 
 	dRes := datastore.GetProvider().SelectUser(post.UserId, true, true, true)
 	if dRes.ProblemDetail != nil {
@@ -68,38 +64,45 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 	}
 
 	user := dRes.Data.(*models.User)
-	unreadCountRooms := make([]*models.RoomForUser, 0)
-	notUnreadCountRooms := make([]*models.RoomForUser, 0)
-	for _, roomForUser := range user.Rooms {
-		if roomForUser.RuUnreadCount > 0 {
-			unreadCountRooms = append(unreadCountRooms, roomForUser)
-		} else {
-			notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
-		}
-	}
-	mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
-	user.Rooms = mergeRooms
-	user.AccessToken = ""
+	// unreadCountRooms := make([]*models.RoomForUser, 0)
+	// notUnreadCountRooms := make([]*models.RoomForUser, 0)
+	// for _, roomForUser := range user.Rooms {
+	// 	if roomForUser.RuUnreadCount > 0 {
+	// 		unreadCountRooms = append(unreadCountRooms, roomForUser)
+	// 	} else {
+	// 		notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
+	// 	}
+	// }
+	// mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
+	// user.Rooms = mergeRooms
 	return user, nil
 }
 
-func PutUser(put *models.User, sub, preferredUsername string) (*models.User, *models.ProblemDetail) {
+func GetProfile(userId string) (*models.User, *models.ProblemDetail) {
+	user, pd := selectUser(userId)
+	if pd != nil {
+		return nil, pd
+	}
+
+	return user, nil
+}
+
+func PutUser(put *models.User, jwt *models.JWT) (*models.User, *models.ProblemDetail) {
 	user, pd := selectUser(put.UserId)
 	if pd != nil {
 		return nil, pd
 	}
 
 	user.Put(put)
-	if pd := user.IsValid(sub, preferredUsername); pd != nil {
+	if pd := user.IsValid(jwt); pd != nil {
 		return nil, pd
 	}
-	user.BeforeSave(sub, preferredUsername)
+	user.BeforeSave(jwt)
 	dRes := datastore.GetProvider().UpdateUser(user)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	user.AccessToken = ""
 	return user, nil
 }
 
@@ -170,4 +173,41 @@ func GetUserUnreadCount(userId string) (*models.UserUnreadCount, *models.Problem
 		UnreadCount: user.UnreadCount,
 	}
 	return userUnreadCount, nil
+}
+
+func UserAuth(userId, sub string) *models.ProblemDetail {
+	if userId != sub {
+		return &models.ProblemDetail{
+			Title:     "You do not have permission",
+			Status:    http.StatusUnauthorized,
+			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
+		}
+	}
+
+	return nil
+}
+
+func ContactsAuth(userId, sub string) *models.ProblemDetail {
+	contacts, pd := GetContacts(sub)
+	if pd != nil {
+		return pd
+	}
+
+	isAuthorized := false
+	for _, contact := range contacts.Users {
+		if contact.UserId == userId {
+			isAuthorized = true
+			break
+		}
+	}
+
+	if !isAuthorized {
+		return &models.ProblemDetail{
+			Title:     "You do not have permission",
+			Status:    http.StatusUnauthorized,
+			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
+		}
+	}
+
+	return nil
 }
