@@ -17,11 +17,10 @@ import (
 )
 
 func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.ProblemDetail) {
-	if pd := post.IsValid(jwt); pd != nil {
+	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
-
-	post.BeforeSave(jwt)
+	post.BeforePost(jwt)
 
 	dRes := datastore.GetProvider().SelectUser(post.UserId, true, true, true)
 	if dRes.ProblemDetail != nil {
@@ -87,17 +86,17 @@ func GetProfile(userId string) (*models.User, *models.ProblemDetail) {
 	return user, nil
 }
 
-func PutUser(put *models.User, jwt *models.JWT) (*models.User, *models.ProblemDetail) {
+func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 	user, pd := selectUser(put.UserId)
 	if pd != nil {
 		return nil, pd
 	}
 
-	user.Put(put)
-	if pd := user.IsValid(jwt); pd != nil {
+	if pd := user.IsValidPut(); pd != nil {
 		return nil, pd
 	}
-	user.BeforeSave(jwt)
+
+	user.BeforePut(put)
 	dRes := datastore.GetProvider().UpdateUser(user)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail

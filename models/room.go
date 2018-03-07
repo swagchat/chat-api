@@ -182,21 +182,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (r *Room) IsValid(sub string) *ProblemDetail {
-	if sub != "" && r.UserId != sub {
-		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusUnauthorized,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "userId",
-					Reason: "You do not have permission to create a room with the specified userId",
-				},
-			},
-		}
-	}
-
+func (r *Room) IsValidPost() *ProblemDetail {
 	if r.RoomId != "" && !utils.IsValidId(r.RoomId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
@@ -267,20 +253,6 @@ func (r *Room) IsValid(sub string) *ProblemDetail {
 		}
 	}
 
-	if *r.Type != ONE_ON_ONE && r.Name == "" {
-		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "name",
-					Reason: "name is required, but it's empty.",
-				},
-			},
-		}
-	}
-
 	if r.UserIds == nil {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room item)",
@@ -312,7 +284,11 @@ func (r *Room) IsValid(sub string) *ProblemDetail {
 	return nil
 }
 
-func (r *Room) BeforeSave() {
+func (r *Room) IsValidPut() *ProblemDetail {
+	return nil
+}
+
+func (r *Room) BeforePost() {
 	if r.RoomId == "" {
 		r.RoomId = utils.CreateUuid()
 	}
@@ -337,13 +313,12 @@ func (r *Room) BeforeSave() {
 	}
 
 	nowTimestamp := time.Now().Unix()
-	if r.Created == 0 {
-		r.Created = nowTimestamp
-	}
+	r.LastMessageUpdated = nowTimestamp
+	r.Created = nowTimestamp
 	r.Modified = nowTimestamp
 }
 
-func (r *Room) Put(put *Room) *ProblemDetail {
+func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.Name != "" {
 		r.Name = put.Name
 	}

@@ -17,11 +17,11 @@ import (
 	"go.uber.org/zap"
 )
 
-func PostRoom(post *models.Room, sub string) (*models.Room, *models.ProblemDetail) {
-	if pd := post.IsValid(sub); pd != nil {
+func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
+	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
-	post.BeforeSave()
+	post.BeforePost()
 	post.RequestRoomUserIds.RemoveDuplicate()
 
 	if *post.Type == models.ONE_ON_ONE {
@@ -113,14 +113,13 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	if pd := room.Put(put); pd != nil {
+	if pd := room.IsValidPut(); pd != nil {
 		return nil, pd
 	}
 
-	if pd := room.IsValid(""); pd != nil {
+	if pd := room.BeforePut(put); pd != nil {
 		return nil, pd
 	}
-	room.BeforeSave()
 
 	dRes := datastore.GetProvider().UpdateRoom(room)
 	if dRes.ProblemDetail != nil {

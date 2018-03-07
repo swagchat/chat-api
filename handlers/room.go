@@ -40,9 +40,7 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sub := r.Header.Get("X-Sub")
-
-	room, pd := services.PostRoom(&post, sub)
+	room, pd := services.PostRoom(&post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

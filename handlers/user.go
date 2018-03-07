@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 
-	"log"
-
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
@@ -14,7 +12,7 @@ func SetUserMux() {
 	Mux.PostFunc("/users", colsHandler(aclHandler(PostUser)))
 	Mux.GetFunc("/users", colsHandler(GetUsers))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(GetUser)))
-	Mux.GetFunc("/profile/#userId^[a-z0-9-]$", colsHandler(contactsAuthHandler(GetProfile)))
+	Mux.GetFunc("/profiles/#userId^[a-z0-9-]$", colsHandler(contactsAuthHandler(GetProfile)))
 	Mux.PutFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(PutUser)))
 	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(DeleteUser)))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", colsHandler(userAuthHandler(GetUserUnreadCount)))
@@ -51,7 +49,6 @@ func contactsAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
 }
 
 func PostUser(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Context().Value("role"))
 	var post models.User
 	if err := decodeBody(r, &post); err != nil {
 		respondJsonDecodeError(w, r, "Create user item")
@@ -111,11 +108,8 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.UserId = bone.GetValue(r, "userId")
-	jwt := &models.JWT{
-		Sub: r.Header.Get("X-Sub"),
-	}
 
-	user, pd := services.PutUser(&put, jwt)
+	user, pd := services.PutUser(&put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

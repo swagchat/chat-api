@@ -24,7 +24,7 @@ type User struct {
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
-	Lang           string         `json:"lang,	omitempty" db:"lang,notnull"`
+	Lang           string         `json:"lang,omitempty" db:"lang,notnull"`
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
 	Deleted        int64          `json:"-" db:"deleted,notnull"`
@@ -75,22 +75,22 @@ func (u *User) MarshalJSON() ([]byte, error) {
 
 	isBot := false
 	if u.IsBot != nil {
-		isBot = true
+		isBot = *u.IsBot
 	}
 
 	isPublic := false
 	if u.IsPublic != nil {
-		isPublic = true
+		isPublic = *u.IsPublic
 	}
 
 	isCanBlock := false
 	if u.IsCanBlock != nil {
-		isCanBlock = true
+		isCanBlock = *u.IsCanBlock
 	}
 
 	isShowUsers := false
 	if u.IsShowUsers != nil {
-		isShowUsers = true
+		isShowUsers = *u.IsShowUsers
 	}
 
 	return json.Marshal(&struct {
@@ -175,16 +175,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (u *User) IsValid(jwt *JWT) *ProblemDetail {
-	if jwt.Sub != "" && u.UserId != jwt.Sub {
-		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusUnauthorized,
-			ErrorName: ERROR_NAME_UNAUTHORIZED,
-			Detail:    "You do not have permission to create a user with the specified userId",
-		}
-	}
-
+func (u *User) IsValidPost() *ProblemDetail {
 	if u.UserId != "" && !utils.IsValidId(u.UserId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create user item)",
@@ -230,7 +221,11 @@ func (u *User) IsValid(jwt *JWT) *ProblemDetail {
 	return nil
 }
 
-func (u *User) BeforeSave(jwt *JWT) {
+func (u *User) IsValidPut() *ProblemDetail {
+	return nil
+}
+
+func (u *User) BeforePost(jwt *JWT) {
 	if jwt.Sub != "" {
 		u.UserId = jwt.Sub
 	}
@@ -249,7 +244,7 @@ func (u *User) BeforeSave(jwt *JWT) {
 	}
 
 	if u.IsPublic == nil {
-		isPublic := false
+		isPublic := true
 		u.IsPublic = &isPublic
 	}
 
@@ -268,14 +263,15 @@ func (u *User) BeforeSave(jwt *JWT) {
 		u.UnreadCount = &unreadCount
 	}
 
+	u.Rooms = make([]*RoomForUser, 0)
+	u.Devices = make([]*Device, 0)
+	u.Blocks = make([]string, 0)
 	nowTimestamp := time.Now().Unix()
-	if u.Created == 0 {
-		u.Created = nowTimestamp
-	}
+	u.Created = nowTimestamp
 	u.Modified = nowTimestamp
 }
 
-func (u *User) Put(put *User) {
+func (u *User) BeforePut(put *User) {
 	if put.Name != "" {
 		u.Name = put.Name
 	}
