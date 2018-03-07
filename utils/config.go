@@ -2,7 +2,6 @@ package utils
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -173,7 +172,6 @@ func NewConfig() *config {
 	c.LoadYaml()
 	c.LoadEnvironment()
 	c.ParseFlag()
-	c.PrintConfig()
 
 	return c
 }
@@ -593,8 +591,4 @@ func (c *config) ParseFlag() {
 	} else if errorLogging == "false" {
 		c.ErrorLogging = false
 	}
-}
-
-func (c *config) PrintConfig() {
-	fmt.Printf("%+v\n", c)
 }

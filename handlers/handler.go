@@ -71,9 +71,11 @@ func StartServer(ctx context.Context) {
 
 	go run(ctx)
 
+	sb := utils.NewStringBuilder()
+	s := sb.PrintStruct("config", cfg)
 	utils.AppLogger.Info("",
 		zap.String("msg", "swagchat Chat API Start!"),
-		zap.String("port", cfg.HttpPort),
+		zap.String("config", s),
 	)
 	if err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux); err != nil {
 		utils.AppLogger.Error("",
@@ -119,10 +121,6 @@ func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
 	origin := r.Header.Get("Origin")
-	utils.AppLogger.Info("",
-		zap.String("msg", "call optionHandler"),
-		zap.String("origin", origin),
-	)
 	if origin != "" {
 		w.Header().Set("Access-Control-Allow-Origin", origin)
 	}
