@@ -112,20 +112,22 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowedMethods, ", "))
-		w.Header().Set("Access-Control-Expose-Headers", "Location")
+		optionsHandler(w, r)
 		fn(w, r)
 	}
 }
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
-	origin := r.Header.Get("Origin")
-	if origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	rHeaders := make([]string, 0, len(r.Header))
+	for k, v := range r.Header {
+		rHeaders = append(rHeaders, k)
+		if k == "Access-Control-Request-Headers" {
+			rHeaders = append(rHeaders, strings.Join(v, ", "))
+		}
 	}
 	w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowedMethods, ", "))
-	w.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
+	w.Header().Set("Access-Control-Allow-Headers", strings.Join(rHeaders, ", "))
 }
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
