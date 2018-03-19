@@ -101,6 +101,7 @@ func (p *gcpSqlProvider) Connect() error {
 
 func (p *gcpSqlProvider) Init() {
 	p.CreateApiStore()
+	p.CreateAssetStore()
 	p.CreateUserStore()
 	p.CreateBlockUserStore()
 	p.CreateBotStore()

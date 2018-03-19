@@ -101,6 +101,7 @@ func (p *mysqlProvider) Connect() error {
 
 func (p *mysqlProvider) Init() {
 	p.CreateApiStore()
+	p.CreateAssetStore()
 	p.CreateUserStore()
 	p.CreateBlockUserStore()
 	p.CreateBotStore()

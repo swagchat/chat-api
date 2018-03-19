@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 
@@ -40,8 +39,8 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 		}
 	}
 
-	filePath := utils.AppendStrings(provider.localPath, "/", assetInfo.FileName)
-	err = ioutil.WriteFile(filePath, data, 0644)
+	filepath := fmt.Sprintf("%s/%s", utils.GetConfig().Storage.LocalPath, assetInfo.Filename)
+	err = ioutil.WriteFile(filepath, data, 0644)
 	if err != nil {
 		return "", &models.ProblemDetail{
 			Title:     "Writing asset data failed. (Local Storage)",
@@ -50,18 +49,17 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 			Detail:    err.Error(),
 		}
 	}
-	sourceUrl := utils.AppendStrings(provider.baseUrl, "/", assetInfo.FileName)
-	log.Println("sourceUrl:", sourceUrl)
-	return sourceUrl, nil
+
+	return assetInfo.Filename, nil
 }
 
 func (provider LocalStorageProvider) Get(assetInfo *AssetInfo) ([]byte, *models.ProblemDetail) {
-	file, err := os.Open(fmt.Sprintf("%s/%s", provider.localPath, assetInfo.FileName))
+	file, err := os.Open(fmt.Sprintf("%s/%s", provider.localPath, assetInfo.Filename))
 	defer file.Close()
 	if err != nil {
 		return nil, &models.ProblemDetail{
 			Title:     "Opening asset data failed. (Local Storage)",
-			Status:    http.StatusInternalServerError,
+			Status:    http.StatusNotFound,
 			ErrorName: "storage-error",
 			Detail:    err.Error(),
 		}

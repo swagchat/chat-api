@@ -74,7 +74,7 @@ func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models
 	}
 
 	data := bytes.NewReader(byteData)
-	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.FileName)
+	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.Filename)
 	putObjectResp, err := awsS3Client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(provider.uploadBucket),
 		Key:    aws.String(filePath),

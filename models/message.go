@@ -65,6 +65,7 @@ type PayloadText struct {
 
 type PayloadImage struct {
 	Mime         string `json:"mime"`
+	Filename     string `json:"filename"`
 	SourceUrl    string `json:"sourceUrl"`
 	ThumbnailUrl string `json:"thumbnailUrl"`
 }
@@ -130,7 +131,7 @@ func (m *Message) IsValid() *ProblemDetail {
 	if m.Type == MESSAGE_TYPE_IMAGE {
 		var pi PayloadImage
 		json.Unmarshal(m.Payload, &pi)
-		if pi.Mime == "" || pi.SourceUrl == "" {
+		if pi.Mime == "" {
 			return &ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
 				Status:    http.StatusBadRequest,
@@ -138,7 +139,21 @@ func (m *Message) IsValid() *ProblemDetail {
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "payload",
-						Reason: "Image type needs mime and sourceUrl.",
+						Reason: "Image type needs mime.",
+					},
+				},
+			}
+		}
+
+		if pi.SourceUrl == "" {
+			return &ProblemDetail{
+				Title:     "Request parameter error. (Create message item)",
+				Status:    http.StatusBadRequest,
+				ErrorName: ERROR_NAME_INVALID_PARAM,
+				InvalidParams: []InvalidParam{
+					InvalidParam{
+						Name:   "payload",
+						Reason: "Image type needs sourceUrl.",
 					},
 				},
 			}

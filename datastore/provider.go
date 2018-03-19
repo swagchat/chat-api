@@ -23,6 +23,7 @@ type Provider interface {
 	Init()
 	DropDatabase() error
 	ApiStore
+	AssetStore
 	BlockUserStore
 	BotStore
 	DeviceStore
@@ -42,6 +43,7 @@ func GetProvider() Provider {
 	case "sqlite":
 		provider = &sqliteProvider{
 			sqlitePath: cfg.Datastore.SqlitePath,
+			trace:      false,
 		}
 	case "mysql":
 		provider = &mysqlProvider{
@@ -63,7 +65,7 @@ func GetProvider() Provider {
 			replicaSis:        cfg.Datastore.Replicas,
 			maxIdleConnection: cfg.Datastore.MaxIdleConnection,
 			maxOpenConnection: cfg.Datastore.MaxOpenConnection,
-			trace:             true,
+			trace:             false,
 		}
 	default:
 		utils.AppLogger.Error("",

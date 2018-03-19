@@ -57,7 +57,6 @@ type Storage struct {
 	Provider string
 
 	// Local
-	BaseUrl   string `yaml:"baseUrl"`
 	LocalPath string `yaml:"localPath"`
 
 	// GCP Storage, AWS S3
@@ -135,7 +134,6 @@ func NewConfig() *config {
 
 	storage := &Storage{
 		Provider:  "local",
-		BaseUrl:   "/assets",
 		LocalPath: "data/assets",
 	}
 
@@ -232,9 +230,6 @@ func (c *config) LoadEnvironment() {
 	}
 
 	// Storage - Local
-	if v = os.Getenv("SC_STORAGE_BASE_URL"); v != "" {
-		c.Storage.BaseUrl = v
-	}
 	if v = os.Getenv("SC_STORAGE_LOCAL_PATH"); v != "" {
 		c.Storage.LocalPath = v
 	}
@@ -442,7 +437,6 @@ func (c *config) ParseFlag() {
 	flag.StringVar(&c.Storage.ThumbnailDirectory, "storage.thumbnailDirectory", c.Storage.ThumbnailDirectory, "")
 
 	// Storage - Local
-	flag.StringVar(&c.Storage.BaseUrl, "storage.baseUrl", c.Storage.BaseUrl, "")
 	flag.StringVar(&c.Storage.LocalPath, "storage.localPath", c.Storage.LocalPath, "")
 
 	// Storage - GCP Storage

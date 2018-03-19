@@ -2,6 +2,7 @@ package utils
 
 import (
 	"math/rand"
+	"path/filepath"
 	"regexp"
 	"time"
 )
@@ -28,4 +29,8 @@ func GenerateToken(n int) string {
 		b[i] = token68Letters[rand.Intn(len(token68Letters))]
 	}
 	return string(b)
+}
+
+func GetFileNameWithoutExt(path string) string {
+	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }

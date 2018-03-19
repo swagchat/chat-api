@@ -11,7 +11,7 @@ import (
 )
 
 type AssetInfo struct {
-	FileName string
+	Filename string
 	Data     io.Reader
 }
 
@@ -28,7 +28,6 @@ func GetProvider() Provider {
 	switch cfg.Storage.Provider {
 	case "local":
 		provider = &LocalStorageProvider{
-			baseUrl:   cfg.Storage.BaseUrl,
 			localPath: cfg.Storage.LocalPath,
 		}
 	case "gcpStorage":

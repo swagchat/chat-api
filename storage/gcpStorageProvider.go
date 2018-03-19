@@ -52,7 +52,7 @@ func (provider GcpStorageProvider) Init() error {
 }
 
 func (provider GcpStorageProvider) Post(assetInfo *AssetInfo) (string, *models.ProblemDetail) {
-	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.FileName)
+	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.Filename)
 	object := &storage.Object{
 		Name: filePath,
 	}

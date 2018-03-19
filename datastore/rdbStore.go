@@ -10,6 +10,7 @@ import (
 var (
 	rdbStoreInstance        *rdbStore = nil
 	TABLE_NAME_API                    = utils.GetConfig().Datastore.TableNamePrefix + "api"
+	TABLE_NAME_ASSET                  = utils.GetConfig().Datastore.TableNamePrefix + "asset"
 	TABLE_NAME_BLOCK_USER             = utils.GetConfig().Datastore.TableNamePrefix + "block_user"
 	TABLE_NAME_BOT                    = utils.GetConfig().Datastore.TableNamePrefix + "bot"
 	TABLE_NAME_DEVICE                 = utils.GetConfig().Datastore.TableNamePrefix + "device"
