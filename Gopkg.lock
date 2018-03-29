@@ -4,14 +4,26 @@
 [[projects]]
   name = "cloud.google.com/go"
   packages = ["compute/metadata"]
-  revision = "767c40d6a2e058483c25fa193e963a22da17236d"
-  version = "v0.18.0"
+  revision = "4b98a6370e36d7a85192e7bad08a4ebd82eac2a8"
+  version = "v0.20.0"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/lexruntimeservice","service/s3","service/sns","service/sts"]
-  revision = "1b176c5c6b57adb03bb982c21930e708ebca5a77"
-  version = "v1.12.70"
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/lexruntimeservice","service/s3","service/sns","service/sts"]
+  revision = "bb206ce0d6a50da7807694a823aed5c601c57ce0"
+  version = "v1.13.23"
+
+[[projects]]
+  name = "github.com/confluentinc/confluent-kafka-go"
+  packages = ["kafka"]
+  revision = "5e4d04e05fc319ce5996a867aafef29059f26862"
+  version = "v0.11.4"
+
+[[projects]]
+  name = "github.com/fatih/structs"
+  packages = ["."]
+  revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
+  version = "v1.0"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -22,8 +34,8 @@
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a"
-  version = "v1.32.0"
+  revision = "6333e38ac20b8949a8dd68baa3650f4dee8f39f0"
+  version = "v1.33.0"
 
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
@@ -73,12 +85,6 @@
   revision = "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
 
 [[projects]]
-  name = "github.com/swagchat/rtm-api"
-  packages = ["utils"]
-  revision = "e9df42ca89f380e865b4143438e1b8a0212db64e"
-  version = "v0.3.0"
-
-[[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
   revision = "8474b86a5a6f79c443ce4b2992817ff32cf208b8"
@@ -100,19 +106,19 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp"]
-  revision = "2fb46b16b8dda405028c50f7c7f0f9dd1fa6bfb1"
+  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","google","internal","jws","jwt"]
-  revision = "a032972e28060ca4f5644acffae3dfc268cc09db"
+  revision = "fdc9e635145ae97e6c2cb777c48305600cf515cb"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
   packages = ["gensupport","googleapi","googleapi/internal/uritemplates","storage/v1"]
-  revision = "4c1b07210d562506ab52117997c3b7e294627ac9"
+  revision = "a213db537ac9b393526194a5c85ad6e546f7923f"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -123,18 +129,18 @@
 [[projects]]
   name = "gopkg.in/gorp.v2"
   packages = ["."]
-  revision = "4deece61034873cb5b5416e81abe4cea7bd0da72"
-  version = "v2.0.0"
+  revision = "4df78490a9aa9a78b9b02b0c913df8dc1954faee"
+  version = "2.1"
 
 [[projects]]
-  branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "d670f9405373e636a5a2765eea47fac0c9bc91a4"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "69cbc225400f29b2f89d996b2082f3fab116d2cf5ad920a663887e2dfa1a6c10"
+  inputs-digest = "d8eaa29b1cbbc847000db94bf7d992306e1bcafc624ae9633f90bc2b69a90c81"
   solver-name = "gps-cdcl"
   solver-version = 1

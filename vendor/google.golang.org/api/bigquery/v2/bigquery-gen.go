@@ -664,6 +664,42 @@ func (s *DatasetReference) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type DestinationTableProperties struct {
+	// Description: [Optional] The description for the destination table.
+	// This will only be used if the destination table is newly created. If
+	// the table already exists and a value different than the current
+	// description is provided, the job will fail.
+	Description string `json:"description,omitempty"`
+
+	// FriendlyName: [Optional] The friendly name for the destination table.
+	// This will only be used if the destination table is newly created. If
+	// the table already exists and a value different than the current
+	// friendly name is provided, the job will fail.
+	FriendlyName string `json:"friendlyName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DestinationTableProperties) MarshalJSON() ([]byte, error) {
+	type NoMethod DestinationTableProperties
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 type EncryptionConfiguration struct {
 	// KmsKeyName: [Optional] Describes the Cloud KMS encryption key that
 	// will be used to protect destination BigQuery table. The BigQuery
@@ -751,8 +787,14 @@ type ExplainQueryStage struct {
 	// CPU-bound tasks.
 	ComputeRatioMax float64 `json:"computeRatioMax,omitempty"`
 
+	// EndMs: Stage end time in milliseconds.
+	EndMs int64 `json:"endMs,omitempty,string"`
+
 	// Id: Unique ID for stage within plan.
 	Id int64 `json:"id,omitempty,string"`
+
+	// InputStages: IDs for stages that are inputs to this stage.
+	InputStages googleapi.Int64s `json:"inputStages,omitempty"`
 
 	// Name: Human-readable name for stage.
 	Name string `json:"name,omitempty"`
@@ -786,6 +828,9 @@ type ExplainQueryStage struct {
 	// ShuffleOutputBytesSpilled: Total number of bytes written to shuffle
 	// and spilled to disk.
 	ShuffleOutputBytesSpilled int64 `json:"shuffleOutputBytesSpilled,omitempty,string"`
+
+	// StartMs: Stage start time in milliseconds.
+	StartMs int64 `json:"startMs,omitempty,string"`
 
 	// Status: Current status for the stage.
 	Status string `json:"status,omitempty"`
@@ -1303,8 +1348,9 @@ func (s *JobConfiguration) MarshalJSON() ([]byte, error) {
 
 type JobConfigurationExtract struct {
 	// Compression: [Optional] The compression type to use for exported
-	// files. Possible values include GZIP and NONE. The default value is
-	// NONE.
+	// files. Possible values include GZIP, DEFLATE, SNAPPY, and NONE. The
+	// default value is NONE. DEFLATE and SNAPPY are only supported for
+	// Avro.
 	Compression string `json:"compression,omitempty"`
 
 	// DestinationFormat: [Optional] The exported file format. Possible
@@ -1385,13 +1431,17 @@ type JobConfigurationLoad struct {
 	// one atomic update upon job completion.
 	CreateDisposition string `json:"createDisposition,omitempty"`
 
-	// DestinationEncryptionConfiguration: [Experimental] Custom encryption
-	// configuration (e.g., Cloud KMS keys).
+	// DestinationEncryptionConfiguration: Custom encryption configuration
+	// (e.g., Cloud KMS keys).
 	DestinationEncryptionConfiguration *EncryptionConfiguration `json:"destinationEncryptionConfiguration,omitempty"`
 
 	// DestinationTable: [Required] The destination table to load the data
 	// into.
 	DestinationTable *TableReference `json:"destinationTable,omitempty"`
+
+	// DestinationTableProperties: [Experimental] [Optional] Properties with
+	// which to create the destination table if it is new.
+	DestinationTableProperties *DestinationTableProperties `json:"destinationTableProperties,omitempty"`
 
 	// Encoding: [Optional] The character encoding of the data. The
 	// supported values are UTF-8 or ISO-8859-1. The default value is UTF-8.
@@ -1488,7 +1538,8 @@ type JobConfigurationLoad struct {
 	// SourceFormat: [Optional] The format of the data files. For CSV files,
 	// specify "CSV". For datastore backups, specify "DATASTORE_BACKUP". For
 	// newline-delimited JSON, specify "NEWLINE_DELIMITED_JSON". For Avro,
-	// specify "AVRO". The default value is CSV.
+	// specify "AVRO". For parquet, specify "PARQUET". For orc, specify
+	// "ORC". The default value is CSV.
 	SourceFormat string `json:"sourceFormat,omitempty"`
 
 	// SourceUris: [Required] The fully-qualified URIs that point to your
@@ -1564,8 +1615,8 @@ type JobConfigurationQuery struct {
 	// unqualified table names in the query.
 	DefaultDataset *DatasetReference `json:"defaultDataset,omitempty"`
 
-	// DestinationEncryptionConfiguration: [Experimental] Custom encryption
-	// configuration (e.g., Cloud KMS keys).
+	// DestinationEncryptionConfiguration: Custom encryption configuration
+	// (e.g., Cloud KMS keys).
 	DestinationEncryptionConfiguration *EncryptionConfiguration `json:"destinationEncryptionConfiguration,omitempty"`
 
 	// DestinationTable: [Optional] Describes the table where the query
@@ -1705,8 +1756,8 @@ type JobConfigurationTableCopy struct {
 	// one atomic update upon job completion.
 	CreateDisposition string `json:"createDisposition,omitempty"`
 
-	// DestinationEncryptionConfiguration: [Experimental] Custom encryption
-	// configuration (e.g., Cloud KMS keys).
+	// DestinationEncryptionConfiguration: Custom encryption configuration
+	// (e.g., Cloud KMS keys).
 	DestinationEncryptionConfiguration *EncryptionConfiguration `json:"destinationEncryptionConfiguration,omitempty"`
 
 	// DestinationTable: [Required] The destination table
@@ -1858,7 +1909,7 @@ type JobReference struct {
 
 	// Location: [Experimental] The geographic location of the job. Required
 	// except for US and EU.
-	Location Location `json:"location,omitempty"`
+	Location string `json:"location,omitempty"`
 
 	// ProjectId: [Required] The ID of the project containing this job.
 	ProjectId string `json:"projectId,omitempty"`
@@ -2007,7 +2058,8 @@ type JobStatistics2 struct {
 	// query.
 	StatementType string `json:"statementType,omitempty"`
 
-	// Timeline: [Output-only] Describes a timeline of job execution.
+	// Timeline: [Output-only] [Experimental] Describes a timeline of job
+	// execution.
 	Timeline []*QueryTimelineSample `json:"timeline,omitempty"`
 
 	// TotalBytesBilled: [Output-only] Total bytes billed for the job.
@@ -2015,6 +2067,10 @@ type JobStatistics2 struct {
 
 	// TotalBytesProcessed: [Output-only] Total bytes processed for the job.
 	TotalBytesProcessed int64 `json:"totalBytesProcessed,omitempty,string"`
+
+	// TotalPartitionsProcessed: [Output-only] Total number of partitions
+	// processed from all partitioned tables referenced in the job.
+	TotalPartitionsProcessed int64 `json:"totalPartitionsProcessed,omitempty,string"`
 
 	// TotalSlotMs: [Output-only] Slot-milliseconds for the job.
 	TotalSlotMs int64 `json:"totalSlotMs,omitempty,string"`
@@ -2164,8 +2220,6 @@ func (s *JobStatus) MarshalJSON() ([]byte, error) {
 }
 
 type JsonValue interface{}
-
-type Location string
 
 type ProjectList struct {
 	// Etag: A hash of the page of results
@@ -2431,7 +2485,7 @@ type QueryRequest struct {
 
 	// Location: [Experimental] The geographic location where the job should
 	// run. Required except for US and EU.
-	Location Location `json:"location,omitempty"`
+	Location string `json:"location,omitempty"`
 
 	// MaxResults: [Optional] The maximum number of rows of data to return
 	// per page of results. Setting this flag to a small value such as 1000
@@ -2591,11 +2645,11 @@ type QueryTimelineSample struct {
 	// ActiveInputs: Total number of active workers. This does not
 	// correspond directly to slot usage. This is the largest value observed
 	// since the last sample.
-	ActiveInputs int64 `json:"activeInputs,omitempty"`
+	ActiveInputs int64 `json:"activeInputs,omitempty,string"`
 
 	// CompletedInputs: Total parallel units of work completed by this
 	// query.
-	CompletedInputs int64 `json:"completedInputs,omitempty"`
+	CompletedInputs int64 `json:"completedInputs,omitempty,string"`
 
 	// ElapsedMs: Milliseconds elapsed since the start of query execution.
 	ElapsedMs int64 `json:"elapsedMs,omitempty,string"`
@@ -2676,8 +2730,8 @@ type Table struct {
 	// Description: [Optional] A user-friendly description of this table.
 	Description string `json:"description,omitempty"`
 
-	// EncryptionConfiguration: [Experimental] Custom encryption
-	// configuration (e.g., Cloud KMS keys).
+	// EncryptionConfiguration: Custom encryption configuration (e.g., Cloud
+	// KMS keys).
 	EncryptionConfiguration *EncryptionConfiguration `json:"encryptionConfiguration,omitempty"`
 
 	// Etag: [Output-only] A hash of this resource.
@@ -3290,6 +3344,11 @@ type TimePartitioning struct {
 	// by this field. The field must be a top-level TIMESTAMP or DATE field.
 	// Its mode must be NULLABLE or REQUIRED.
 	Field string `json:"field,omitempty"`
+
+	// RequirePartitionFilter: [Experimental] [Optional] If set to true,
+	// queries over this table require a partition filter that can be used
+	// for partition elimination to be specified.
+	RequirePartitionFilter bool `json:"requirePartitionFilter,omitempty"`
 
 	// Type: [Required] The only type supported is DAY, which will generate
 	// one partition per day.
@@ -5100,10 +5159,26 @@ func (c *JobsListCall) AllUsers(allUsers bool) *JobsListCall {
 	return c
 }
 
+// MaxCreationTime sets the optional parameter "maxCreationTime": Max
+// value for job creation time, in milliseconds since the POSIX epoch.
+// If set, only jobs created before or at this timestamp are returned
+func (c *JobsListCall) MaxCreationTime(maxCreationTime uint64) *JobsListCall {
+	c.urlParams_.Set("maxCreationTime", fmt.Sprint(maxCreationTime))
+	return c
+}
+
 // MaxResults sets the optional parameter "maxResults": Maximum number
 // of results to return
 func (c *JobsListCall) MaxResults(maxResults int64) *JobsListCall {
 	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// MinCreationTime sets the optional parameter "minCreationTime": Min
+// value for job creation time, in milliseconds since the POSIX epoch.
+// If set, only jobs created after or at this timestamp are returned
+func (c *JobsListCall) MinCreationTime(minCreationTime uint64) *JobsListCall {
+	c.urlParams_.Set("minCreationTime", fmt.Sprint(minCreationTime))
 	return c
 }
 
@@ -5243,11 +5318,23 @@ func (c *JobsListCall) Do(opts ...googleapi.CallOption) (*JobList, error) {
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
+	//     "maxCreationTime": {
+	//       "description": "Max value for job creation time, in milliseconds since the POSIX epoch. If set, only jobs created before or at this timestamp are returned",
+	//       "format": "uint64",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "maxResults": {
 	//       "description": "Maximum number of results to return",
 	//       "format": "uint32",
 	//       "location": "query",
 	//       "type": "integer"
+	//     },
+	//     "minCreationTime": {
+	//       "description": "Min value for job creation time, in milliseconds since the POSIX epoch. If set, only jobs created after or at this timestamp are returned",
+	//       "format": "uint64",
+	//       "location": "query",
+	//       "type": "string"
 	//     },
 	//     "pageToken": {
 	//       "description": "Page token, returned by a previous call, to request the next page of results",

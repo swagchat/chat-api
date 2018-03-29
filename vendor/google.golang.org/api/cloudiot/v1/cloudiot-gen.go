@@ -1,4 +1,4 @@
-// Package cloudiot provides access to the Google Cloud IoT API.
+// Package cloudiot provides access to the Cloud IoT API.
 //
 // See https://cloud.google.com/iot
 //
@@ -149,16 +149,6 @@ type ProjectsLocationsRegistriesDevicesStatesService struct {
 
 // Binding: Associates `members` with a `role`.
 type Binding struct {
-	// Condition: The condition that is associated with this binding.
-	// NOTE: an unsatisfied condition will not allow user access via
-	// current
-	// binding. Different bindings, including their conditions, are
-	// examined
-	// independently.
-	// This field is only visible as GOOGLE_INTERNAL or
-	// CONDITION_TRUSTED_TESTER.
-	Condition *Expr `json:"condition,omitempty"`
-
 	// Members: Specifies the identities requesting access for a Cloud
 	// Platform resource.
 	// `members` can have the following values:
@@ -200,7 +190,7 @@ type Binding struct {
 	// Required
 	Role string `json:"role,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Condition") to
+	// ForceSendFields is a list of field names (e.g. "Members") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -208,7 +198,7 @@ type Binding struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Condition") to include in
+	// NullFields is a list of field names (e.g. "Members") to include in
 	// API requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -298,11 +288,15 @@ type Device struct {
 	// minutes.
 	LastEventTime string `json:"lastEventTime,omitempty"`
 
-	// LastHeartbeatTime: [Output only] The last time a heartbeat was
-	// received. Timestamps are
-	// periodically collected and written to storage; they may be stale by a
-	// few
-	// minutes. This field is only for devices connecting through MQTT.
+	// LastHeartbeatTime: [Output only] The last time an MQTT `PINGREQ` was
+	// received. This field
+	// applies only to devices connecting through MQTT. MQTT clients usually
+	// only
+	// send `PINGREQ` messages if the connection is idle, and no other
+	// messages
+	// have been sent. Timestamps are periodically collected and written
+	// to
+	// storage; they may be stale by a few minutes.
 	LastHeartbeatTime string `json:"lastHeartbeatTime,omitempty"`
 
 	// LastStateTime: [Output only] The last time a state event was
@@ -318,9 +312,8 @@ type Device struct {
 	// contextual
 	// information for the device.
 	//
-	// Keys must conform to the regular expression [a-zA-Z0-9-_]+ and be
-	// less than
-	// 128 bytes in length.
+	// Keys must conform to the regular expression a-zA-Z+ and
+	// be less than 128 bytes in length.
 	//
 	// Values are free-form strings. Each value must be less than or equal
 	// to 32
@@ -531,15 +524,17 @@ type DeviceRegistry struct {
 	// the
 	// device and acknowledged by Cloud IoT Core are guaranteed to
 	// be
-	// delivered to Cloud Pub/Sub. Only the first configuration is used. If
-	// you
-	// try to publish a device telemetry event using MQTT without specifying
+	// delivered to Cloud Pub/Sub. If multiple configurations match a
+	// message,
+	// only the first matching configuration is used. If you try to publish
 	// a
-	// Cloud Pub/Sub topic for the device's registry, the connection
-	// closes
-	// automatically. If you try to do so using an HTTP connection, an
-	// error
-	// is returned.
+	// device telemetry event using MQTT without specifying a Cloud Pub/Sub
+	// topic
+	// for the device's registry, the connection closes automatically. If
+	// you try
+	// to do so using an HTTP connection, an error is returned. Up to
+	// 10
+	// configurations may be provided.
 	EventNotificationConfigs []*EventNotificationConfig `json:"eventNotificationConfigs,omitempty"`
 
 	// HttpConfig: The DeviceService (HTTP) configuration for this device
@@ -650,13 +645,22 @@ type Empty struct {
 	googleapi.ServerResponse `json:"-"`
 }
 
-// EventNotificationConfig: The configuration to forward telemetry
+// EventNotificationConfig: The configuration for forwarding telemetry
 // events.
 type EventNotificationConfig struct {
 	// PubsubTopicName: A Cloud Pub/Sub topic name. For
 	// example,
 	// `projects/myProject/topics/deviceEvents`.
 	PubsubTopicName string `json:"pubsubTopicName,omitempty"`
+
+	// SubfolderMatches: If the subfolder name matches this string exactly,
+	// this configuration will
+	// be used. The string must not include the leading '/' character. If
+	// empty,
+	// all strings are matched. This field is used only for telemetry
+	// events;
+	// subfolders are not supported for state changes.
+	SubfolderMatches string `json:"subfolderMatches,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "PubsubTopicName") to
 	// unconditionally include in API requests. By default, fields with
@@ -678,60 +682,6 @@ type EventNotificationConfig struct {
 
 func (s *EventNotificationConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod EventNotificationConfig
-	raw := NoMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// Expr: Represents an expression text. Example:
-//
-//     title: "User account presence"
-//     description: "Determines whether the request has a user account"
-//     expression: "size(request.user) > 0"
-type Expr struct {
-	// Description: An optional description of the expression. This is a
-	// longer text which
-	// describes the expression, e.g. when hovered over it in a UI.
-	Description string `json:"description,omitempty"`
-
-	// Expression: Textual representation of an expression in
-	// Common Expression Language syntax.
-	//
-	// The application context of the containing message determines
-	// which
-	// well-known feature set of CEL is supported.
-	Expression string `json:"expression,omitempty"`
-
-	// Location: An optional string indicating the location of the
-	// expression for error
-	// reporting, e.g. a file name and a position in the file.
-	Location string `json:"location,omitempty"`
-
-	// Title: An optional title for the expression, i.e. a short string
-	// describing
-	// its purpose. This can be used e.g. in UIs which allow to enter
-	// the
-	// expression.
-	Title string `json:"title,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "Description") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
-	ForceSendFields []string `json:"-"`
-
-	// NullFields is a list of field names (e.g. "Description") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
-	NullFields []string `json:"-"`
-}
-
-func (s *Expr) MarshalJSON() ([]byte, error) {
-	type NoMethod Expr
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -1244,15 +1194,6 @@ type SetIamPolicyRequest struct {
 	// Projects)
 	// might reject them.
 	Policy *Policy `json:"policy,omitempty"`
-
-	// UpdateMask: OPTIONAL: A FieldMask specifying which fields of the
-	// policy to modify. Only
-	// the fields in the mask will be modified. If no mask is provided,
-	// the
-	// following default mask is used:
-	// paths: "bindings, etag"
-	// This field is only used by Cloud IAM.
-	UpdateMask string `json:"updateMask,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Policy") to
 	// unconditionally include in API requests. By default, fields with
@@ -3534,8 +3475,7 @@ func (r *ProjectsLocationsRegistriesDevicesService) Patch(name string, device *D
 // The field mask must not be empty, and it must not contain fields
 // that
 // are immutable or only set by the server.
-// Mutable top-level fields: `credentials`, `enabled_state`, and
-// `metadata`
+// Mutable top-level fields: `credentials`, `blocked`, and `metadata`
 func (c *ProjectsLocationsRegistriesDevicesPatchCall) UpdateMask(updateMask string) *ProjectsLocationsRegistriesDevicesPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
 	return c
@@ -3643,7 +3583,7 @@ func (c *ProjectsLocationsRegistriesDevicesPatchCall) Do(opts ...googleapi.CallO
 	//       "type": "string"
 	//     },
 	//     "updateMask": {
-	//       "description": "Only updates the `device` fields indicated by this mask.\nThe field mask must not be empty, and it must not contain fields that\nare immutable or only set by the server.\nMutable top-level fields: `credentials`, `enabled_state`, and `metadata`",
+	//       "description": "Only updates the `device` fields indicated by this mask.\nThe field mask must not be empty, and it must not contain fields that\nare immutable or only set by the server.\nMutable top-level fields: `credentials`, `blocked`, and `metadata`",
 	//       "format": "google-fieldmask",
 	//       "location": "query",
 	//       "type": "string"
