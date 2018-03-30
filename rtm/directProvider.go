@@ -20,7 +20,7 @@ func (provider DirectProvider) Init() error {
 func (provider DirectProvider) PublishMessage(mi *MessagingInfo) error {
 	rawIn := json.RawMessage(mi.Message)
 	input, err := rawIn.MarshalJSON()
-	resp, err := http.Post(utils.AppendStrings(utils.GetConfig().Rtm.DirectEndpoint, "/message"), "application/json", bytes.NewBuffer(input))
+	resp, err := http.Post(utils.AppendStrings(utils.GetConfig().RTM.Direct.Endpoint, "/message"), "application/json", bytes.NewBuffer(input))
 	if err != nil {
 		return err
 	}

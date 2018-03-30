@@ -20,7 +20,7 @@ func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 	cfg := utils.GetConfig()
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.Kafka.Host, cfg.Kafka.Port),
+		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.RTM.Kafka.Host, cfg.RTM.Kafka.Port),
 	})
 	if err != nil {
 		panic(err)
@@ -41,7 +41,7 @@ func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 	}()
 
 	// Produce messages to topic (asynchronously)
-	topic := cfg.Kafka.Topic
+	topic := cfg.RTM.Kafka.Topic
 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 	p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},

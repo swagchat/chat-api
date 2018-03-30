@@ -1,0 +1,62 @@
+{
+	"info": {
+		"_postman_id": "c3c1ffa8-4224-44b3-aa35-d07f1b45eeac",
+		"name": "[swagchat][msg]chat-api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "/v1/messages(text)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "243de39b-af0b-42e5-9b5a-fa09fb337d4c",
+						"type": "text/javascript",
+						"exec": [
+							"postman.setEnvironmentVariable(\"date\", Date.now());",
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "63d2fd98-8772-49b3-9ce7-2b1f0078a117",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"messages\" : [\n    {\n      \"roomId\": \"37293f6c-b2e8-49b0-afe3-12fb69cf99ad\",\n      \"userId\": \"7da9e9c6-d174-4ab5-86f8-99e727c710ff\",\n      \"type\": \"text\",\n      \"payload\": {\n        \"text\": \"{{date}}\"\n      }\n    }\n  ]\n}"
+				},
+				"url": {
+					"raw": "https://demo.swagchat.io/chat-api/messages",
+					"protocol": "https",
+					"host": [
+						"demo",
+						"swagchat",
+						"io"
+					],
+					"path": [
+						"chat-api",
+						"messages"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

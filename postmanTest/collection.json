@@ -183,7 +183,7 @@
 						"{{apiEndpoint}}"
 					]
 				},
-				"description": ""
+				"description": null
 			},
 			"response": []
 		},
@@ -193,7 +193,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "aa954414-4cf1-48bf-9c8e-018b70cbefe8",
+						"id": "e217db06-08f1-4409-b55b-119c73f1a359",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 201\", function () {",
@@ -219,7 +219,7 @@
 							"    pm.expect(res.informationUrl).to.eql(\"\");",
 							"    pm.expect(res.unreadCount).to.eql(0);",
 							"    pm.expect(res.isBot).to.eql(false);",
-							"    pm.expect(res.isPublic).to.eql(false);",
+							"    pm.expect(res.isPublic).to.eql(true);",
 							"    pm.expect(res.isCanBlock).to.eql(true);",
 							"    pm.expect(res.isShowUsers).to.eql(true);",
 							"    pm.expect(res.lang).to.eql(\"\");",
@@ -280,7 +280,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "7151fe4c-304e-4d60-86dd-ac7f8b131dfb",
+						"id": "51927c9e-3ea6-411f-8eab-ed7a518874ce",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 201\", function () {",
@@ -308,7 +308,7 @@
 							"    pm.expect(res.informationUrl).to.eql(\"\");",
 							"    pm.expect(res.unreadCount).to.eql(0);",
 							"    pm.expect(res.isBot).to.eql(false);",
-							"    pm.expect(res.isPublic).to.eql(false);",
+							"    pm.expect(res.isPublic).to.eql(true);",
 							"    pm.expect(res.isCanBlock).to.eql(true);",
 							"    pm.expect(res.isShowUsers).to.eql(true);",
 							"    pm.expect(res.lang).to.eql(\"\");",
@@ -437,7 +437,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "6fc0f140-ae82-4afc-b2c0-f3ee92cdf62e",
+						"id": "0cf4f95c-cccf-4f1f-b1af-c00ea0650f29",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -465,7 +465,7 @@
 							"    pm.expect(res.informationUrl).to.eql(\"\");",
 							"    pm.expect(res.unreadCount).to.eql(0);",
 							"    pm.expect(res.isBot).to.eql(false);",
-							"    pm.expect(res.isPublic).to.eql(false);",
+							"    pm.expect(res.isPublic).to.eql(true);",
 							"    pm.expect(res.isCanBlock).to.eql(true);",
 							"    pm.expect(res.isShowUsers).to.eql(true);",
 							"    pm.expect(res.lang).to.eql(\"\");",
@@ -1274,7 +1274,7 @@
 						"{{apiEndpoint}}"
 					]
 				},
-				"description": ""
+				"description": null
 			},
 			"response": []
 		}

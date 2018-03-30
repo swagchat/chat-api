@@ -40,12 +40,12 @@ func GetProvider() Provider {
 	switch cfg.Notification.Provider {
 	case "awsSns":
 		provider = &AwsSnsProvider{
-			region:                cfg.Notification.AwsRegion,
-			accessKeyId:           cfg.Notification.AwsAccessKeyId,
-			secretAccessKey:       cfg.Notification.AwsSecretAccessKey,
+			region:                cfg.Notification.AmazonSNS.Region,
+			accessKeyId:           cfg.Notification.AmazonSNS.AccessKeyID,
+			secretAccessKey:       cfg.Notification.AmazonSNS.SecretAccessKey,
 			roomTopicNamePrefix:   cfg.Notification.RoomTopicNamePrefix,
-			applicationArnIos:     cfg.Notification.AwsApplicationArnIos,
-			applicationArnAndroid: cfg.Notification.AwsApplicationArnAndroid,
+			applicationArnIos:     cfg.Notification.AmazonSNS.ApplicationArnIos,
+			applicationArnAndroid: cfg.Notification.AmazonSNS.ApplicationArnAndroid,
 		}
 	default:
 		provider = &NotUseProvider{}

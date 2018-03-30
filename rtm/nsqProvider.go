@@ -22,7 +22,7 @@ func (provider NsqProvider) PublishMessage(mi *MessagingInfo) error {
 	input, err := rawIn.MarshalJSON()
 	cfg := utils.GetConfig()
 
-	url := utils.AppendStrings(cfg.Rtm.QueEndpoint, "/pub?topic=", cfg.Rtm.QueTopic)
+	url := utils.AppendStrings(cfg.RTM.NSQ.QueEndpoint, "/pub?topic=", cfg.RTM.NSQ.QueTopic)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(input))
 	if err != nil {
 		return err

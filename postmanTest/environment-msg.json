@@ -1,0 +1,15 @@
+{
+  "id": "6322901a-ed4e-4f36-acf6-57dc7d62df28",
+  "name": "chat-api-msg",
+  "values": [
+    {
+      "key": "apiEndpoint",
+      "value": "http://localhost:8101",
+      "enabled": true,
+      "type": "text"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2018-03-23T08:32:55.754Z",
+  "_postman_exported_using": "Postman/6.0.10"
+}

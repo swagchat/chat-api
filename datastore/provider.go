@@ -42,8 +42,8 @@ func GetProvider() Provider {
 	switch cfg.Datastore.Provider {
 	case "sqlite":
 		provider = &sqliteProvider{
-			sqlitePath: cfg.Datastore.SqlitePath,
-			trace:      false,
+			sqlitePath: cfg.Datastore.SQLite.Path,
+			trace:      true,
 		}
 	case "mysql":
 		provider = &mysqlProvider{

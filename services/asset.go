@@ -23,7 +23,7 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 
 	asset.BeforePost()
 
-	storageProvider := storage.GetProvider()
+	storageProvider := storage.StorageProvider()
 	assetInfo := &storage.AssetInfo{
 		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
 		Data:     file,
@@ -61,7 +61,7 @@ func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.P
 	}
 
 	asset := dRes.Data.(*models.Asset)
-	storageProvider := storage.GetProvider()
+	storageProvider := storage.StorageProvider()
 	assetInfo := &storage.AssetInfo{
 		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
 	}

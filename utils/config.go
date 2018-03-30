@@ -41,9 +41,7 @@ type config struct {
 	Logging      *Logging
 	Storage      *Storage
 	Datastore    *Datastore
-	RtmProvider  string `yaml:"rtmProvider"`
-	Rtm          *Rtm
-	Kafka        *Kafka
+	RTM          *RTM
 	Notification *Notification
 }
 
@@ -58,40 +56,46 @@ type Logging struct {
 type Storage struct {
 	Provider string
 
-	// Local
-	LocalPath string `yaml:"localPath"`
+	Local struct {
+		Path string `yaml:"localPath"`
+	}
 
-	// GCP Storage, AWS S3
-	UploadBucket       string `yaml:"uploadBucket"`
-	UploadDirectory    string `yaml:"uploadDirectory"`
-	ThumbnailBucket    string `yaml:"thumbnailBucket"`
-	ThumbnailDirectory string `yaml:"thumbnailDirectory"`
+	GCS struct {
+		ProjectID          string `yaml:"projectId"`
+		JwtPath            string `yaml:"jwtPath"`
+		UploadBucket       string `yaml:"uploadBucket"`
+		UploadDirectory    string `yaml:"uploadDirectory"`
+		ThumbnailBucket    string `yaml:"thumbnailBucket"`
+		ThumbnailDirectory string `yaml:"thumbnailDirectory"`
+	}
 
-	// GCP Storage
-	GcpProjectId string `yaml:"gcpProjectId"`
-	GcpJwtPath   string `yaml:"gcpJwtPath"`
-
-	// AWS S3
-	AwsRegion          string `yaml:"awsRegion"`
-	AwsAccessKeyId     string `yaml:"awsAccessKeyId"`
-	AwsSecretAccessKey string `yaml:"awsSecretAccessKey"`
+	AWS struct {
+		Region             string `yaml:"region"`
+		AccessKeyID        string `yaml:"accessKeyId"`
+		SecretAccessKey    string `yaml:"secretAccessKey"`
+		UploadBucket       string `yaml:"uploadBucket"`
+		UploadDirectory    string `yaml:"uploadDirectory"`
+		ThumbnailBucket    string `yaml:"thumbnailBucket"`
+		ThumbnailDirectory string `yaml:"thumbnailDirectory"`
+	}
 }
 
 type Datastore struct {
-	Provider        string
-	TableNamePrefix string `yaml:"tableNamePrefix"`
+	Provider string
 
-	// SQLite
-	SqlitePath string `yaml:"sqlitePath"`
-
-	// MySQL, GCP SQL
 	User              string
 	Password          string
 	Database          string
+	TableNamePrefix   string `yaml:"tableNamePrefix"`
 	MaxIdleConnection string `yaml:"maxIdleConnection"`
 	MaxOpenConnection string `yaml:"maxOpenConnection"`
 	Master            *ServerInfo
 	Replicas          []*ServerInfo
+
+	// SQLite
+	SQLite struct {
+		Path string `yaml:"path"`
+	} `yaml:"sqlite"`
 }
 
 type ServerInfo struct {
@@ -103,17 +107,24 @@ type ServerInfo struct {
 	ClientKeyPath  string `yaml:"clientKeyPath"`
 }
 
-type Rtm struct {
-	DirectEndpoint string `yaml:"directEndpoint"`
-	QueEndpoint    string `yaml:"queEndpoint"`
-	QueTopic       string `yaml:"queTopic"`
-}
+type RTM struct {
+	Provider string
 
-type Kafka struct {
-	Host    string
-	Port    string
-	GroupID string `yaml:"groupId"`
-	Topic   string
+	Direct struct {
+		Endpoint string `yaml:"directEndpoint"`
+	}
+
+	Kafka struct {
+		Host    string
+		Port    string
+		GroupID string `yaml:"groupId"`
+		Topic   string
+	}
+
+	NSQ struct {
+		QueEndpoint string `yaml:"queEndpoint"`
+		QueTopic    string `yaml:"queTopic"`
+	}
 }
 
 type Notification struct {
@@ -121,12 +132,14 @@ type Notification struct {
 	RoomTopicNamePrefix string `yaml:"roomTopicNamePrefix"`
 	DefaultBadgeCount   string `yaml:"defaultBadgeCount"`
 
-	// AWS SNS
-	AwsRegion                string `yaml:"awsRegion"`
-	AwsAccessKeyId           string `yaml:"awsAccessKeyId"`
-	AwsSecretAccessKey       string `yaml:"awsSecretAccessKey"`
-	AwsApplicationArnIos     string `yaml:"awsApplicationArnIos"`
-	AwsApplicationArnAndroid string `yaml:"awsApplicationArnAndroid"`
+	// Amazon SNS
+	AmazonSNS struct {
+		Region                string `yaml:"awsRegion"`
+		AccessKeyID           string `yaml:"accessKeyId"`
+		SecretAccessKey       string `yaml:"secretAccessKey"`
+		ApplicationArnIos     string `yaml:"applicationArnIos"`
+		ApplicationArnAndroid string `yaml:"applicationArnAndroid"`
+	}
 }
 
 func NewConfig() *config {
@@ -141,24 +154,15 @@ func NewConfig() *config {
 	}
 
 	storage := &Storage{
-		Provider:  "local",
-		LocalPath: "data/assets",
+		Provider: "local",
 	}
+	storage.Local.Path = "data/assets"
 
 	datastore := &Datastore{
-		Provider:          "sqlite",
-		SqlitePath:        "/tmp/swagchat.db",
-		MaxIdleConnection: "10",
-		MaxOpenConnection: "10",
+		Provider: "sqlite",
 	}
 
-	rtm := &Rtm{
-		DirectEndpoint: "",
-		QueEndpoint:    "",
-		QueTopic:       "",
-	}
-
-	kafka := &Kafka{}
+	rtm := &RTM{}
 
 	notification := &Notification{}
 
@@ -172,15 +176,14 @@ func NewConfig() *config {
 		Logging:      logging,
 		Storage:      storage,
 		Datastore:    datastore,
-		RtmProvider:  "",
-		Rtm:          rtm,
-		Kafka:        kafka,
+		RTM:          rtm,
 		Notification: notification,
 	}
 
 	c.LoadYaml()
 	c.LoadEnvironment()
 	c.ParseFlag()
+	c.after()
 
 	return c
 }
@@ -242,56 +245,57 @@ func (c *config) LoadEnvironment() {
 
 	// Storage - Local
 	if v = os.Getenv("SC_STORAGE_LOCAL_PATH"); v != "" {
-		c.Storage.LocalPath = v
+		c.Storage.Local.Path = v
 	}
 
-	// Storage - GCP Storage, AWS S3
-	if v = os.Getenv("SC_STORAGE_UPLOAD_BUCKET"); v != "" {
-		c.Storage.UploadBucket = v
+	// Storage - Google Cloud Storage
+	if v = os.Getenv("SC_STORAGE_GCS_PROJECT_ID"); v != "" {
+		c.Storage.GCS.ProjectID = v
 	}
-	if v = os.Getenv("SC_STORAGE_UPLOAD_DIRECTORY"); v != "" {
-		c.Storage.UploadDirectory = v
+	if v = os.Getenv("SC_STORAGE_GCS_JWT_PATH"); v != "" {
+		c.Storage.GCS.JwtPath = v
 	}
-	if v = os.Getenv("SC_STORAGE_THUMBNAIL_BUCKET"); v != "" {
-		c.Storage.ThumbnailBucket = v
+	if v = os.Getenv("SC_STORAGE_GCS_UPLOAD_BUCKET"); v != "" {
+		c.Storage.GCS.UploadBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_THUMBNAIL_DIRECTORY"); v != "" {
-		c.Storage.ThumbnailDirectory = v
+	if v = os.Getenv("SC_STORAGE_GCS_UPLOAD_DIRECTORY"); v != "" {
+		c.Storage.GCS.UploadDirectory = v
 	}
-
-	// Storage - GCP Storage
-	if v = os.Getenv("SC_STORAGE_GCP_PROJECT_ID"); v != "" {
-		c.Storage.GcpProjectId = v
+	if v = os.Getenv("SC_STORAGE_GCS_THUMBNAIL_BUCKET"); v != "" {
+		c.Storage.GCS.ThumbnailBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_GCP_JWT_PATH"); v != "" {
-		c.Storage.GcpJwtPath = v
+	if v = os.Getenv("SC_STORAGE_GCS_THUMBNAIL_DIRECTORY"); v != "" {
+		c.Storage.GCS.ThumbnailDirectory = v
 	}
 
 	// Storage - AWS S3
 	if v = os.Getenv("SC_STORAGE_AWS_REGION"); v != "" {
-		c.Storage.AwsRegion = v
+		c.Storage.AWS.Region = v
 	}
 	if v = os.Getenv("SC_STORAGE_AWS_ACCESS_KEY_ID"); v != "" {
-		c.Storage.AwsAccessKeyId = v
+		c.Storage.AWS.AccessKeyID = v
 	}
 	if v = os.Getenv("SC_STORAGE_AWS_SECRET_ACCESS_KEY"); v != "" {
-		c.Storage.AwsSecretAccessKey = v
+		c.Storage.AWS.SecretAccessKey = v
+	}
+	if v = os.Getenv("SC_STORAGE_AWS_UPLOAD_BUCKET"); v != "" {
+		c.Storage.AWS.UploadBucket = v
+	}
+	if v = os.Getenv("SC_STORAGE_AWS_UPLOAD_DIRECTORY"); v != "" {
+		c.Storage.AWS.UploadDirectory = v
+	}
+	if v = os.Getenv("SC_STORAGE_AWS_THUMBNAIL_BUCKET"); v != "" {
+		c.Storage.AWS.ThumbnailBucket = v
+	}
+	if v = os.Getenv("SC_STORAGE_AWS_THUMBNAIL_DIRECTORY"); v != "" {
+		c.Storage.AWS.ThumbnailDirectory = v
 	}
 
 	// Datastore
 	if v = os.Getenv("SC_DATASTORE_PROVIDER"); v != "" {
 		c.Datastore.Provider = v
 	}
-	if v = os.Getenv("SC_DATASTORE_TABLE_NAME_PREFIX"); v != "" {
-		c.Datastore.TableNamePrefix = v
-	}
 
-	// Datastore - SQLite
-	if v = os.Getenv("SC_DATASTORE_SQLITE_PATH"); v != "" {
-		c.Datastore.SqlitePath = v
-	}
-
-	// Datastore - MySQL, GCP SQL
 	if v = os.Getenv("SC_DATASTORE_USER"); v != "" {
 		c.Datastore.User = v
 	}
@@ -300,6 +304,9 @@ func (c *config) LoadEnvironment() {
 	}
 	if v = os.Getenv("SC_DATASTORE_DATABASE"); v != "" {
 		c.Datastore.Database = v
+	}
+	if v = os.Getenv("SC_DATASTORE_TABLE_NAME_PREFIX"); v != "" {
+		c.Datastore.TableNamePrefix = v
 	}
 	if v = os.Getenv("SC_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
 		c.Datastore.MaxIdleConnection = v
@@ -376,32 +383,41 @@ func (c *config) LoadEnvironment() {
 		}
 	}
 
-	// Rtm
-	if v = os.Getenv("SC_RTM_PROVIDER"); v != "" {
-		c.RtmProvider = v
-	}
-	if v = os.Getenv("SC_RTM_DIRECT_ENDPOINT"); v != "" {
-		c.Rtm.DirectEndpoint = v
-	}
-	if v = os.Getenv("SC_RTM_QUE_ENDPOINT"); v != "" {
-		c.Rtm.QueEndpoint = v
-	}
-	if v = os.Getenv("SC_RTM_QUE_TOPIC"); v != "" {
-		c.Rtm.QueTopic = v
+	// Datastore - SQLite
+	if v = os.Getenv("SC_DATASTORE_SQLITE_PATH"); v != "" {
+		c.Datastore.SQLite.Path = v
 	}
 
-	// Kafka
-	if v = os.Getenv("SC_KAFKA_HOST"); v != "" {
-		c.Kafka.Host = v
+	// RTM
+	if v = os.Getenv("SC_RTM_PROVIDER"); v != "" {
+		c.RTM.Provider = v
 	}
-	if v = os.Getenv("SC_KAFKA_PORT"); v != "" {
-		c.Kafka.Port = v
+
+	// RTM - Direct
+	if v = os.Getenv("SC_RTM_DIRECT_ENDPOINT"); v != "" {
+		c.RTM.Direct.Endpoint = v
 	}
-	if v = os.Getenv("SC_KAFKA_GROUPID"); v != "" {
-		c.Kafka.GroupID = v
+
+	// RTM - Kafka
+	if v = os.Getenv("SC_RTM_KAFKA_HOST"); v != "" {
+		c.RTM.Kafka.Host = v
 	}
-	if v = os.Getenv("SC_KAFKA_TOPIC"); v != "" {
-		c.Kafka.Topic = v
+	if v = os.Getenv("SC_RTM_KAFKA_PORT"); v != "" {
+		c.RTM.Kafka.Port = v
+	}
+	if v = os.Getenv("SC_RTM_KAFKA_GROUPID"); v != "" {
+		c.RTM.Kafka.GroupID = v
+	}
+	if v = os.Getenv("SC_RTM_KAFKA_TOPIC"); v != "" {
+		c.RTM.Kafka.Topic = v
+	}
+
+	// RTM - NSQ
+	if v = os.Getenv("SC_RTM_NSQ_QUEENDPOINT"); v != "" {
+		c.RTM.NSQ.QueEndpoint = v
+	}
+	if v = os.Getenv("SC_RTM_NSQ_QUETOPIC"); v != "" {
+		c.RTM.NSQ.QueTopic = v
 	}
 
 	// Notification
@@ -415,21 +431,21 @@ func (c *config) LoadEnvironment() {
 		c.Notification.DefaultBadgeCount = v
 	}
 
-	// Notification - AWS SNS
-	if v = os.Getenv("SC_NOTIFICATION_AWS_REGION"); v != "" {
-		c.Notification.AwsRegion = v
+	// Notification - Amazon SNS
+	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_REGION"); v != "" {
+		c.Notification.AmazonSNS.Region = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AWS_ACCESS_KEY_ID"); v != "" {
-		c.Notification.AwsAccessKeyId = v
+	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_ACCESS_KEY_ID"); v != "" {
+		c.Notification.AmazonSNS.AccessKeyID = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AWS_SECRET_ACCESS_KEY"); v != "" {
-		c.Notification.AwsSecretAccessKey = v
+	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_SECRET_ACCESS_KEY"); v != "" {
+		c.Notification.AmazonSNS.SecretAccessKey = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_IOS"); v != "" {
-		c.Notification.AwsApplicationArnIos = v
+	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_IOS"); v != "" {
+		c.Notification.AmazonSNS.ApplicationArnIos = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AWS_APPLICATION_ARN_ANDROID"); v != "" {
-		c.Notification.AwsApplicationArnAndroid = v
+	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_ANDROID"); v != "" {
+		c.Notification.AmazonSNS.ApplicationArnAndroid = v
 	}
 }
 
@@ -456,31 +472,30 @@ func (c *config) ParseFlag() {
 
 	// Storage
 	flag.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
-	flag.StringVar(&c.Storage.UploadBucket, "storage.uploadBucket", c.Storage.UploadBucket, "")
-	flag.StringVar(&c.Storage.UploadDirectory, "storage.uploadDirectory", c.Storage.UploadDirectory, "")
-	flag.StringVar(&c.Storage.ThumbnailBucket, "storage.thumbnailBucket", c.Storage.ThumbnailBucket, "")
-	flag.StringVar(&c.Storage.ThumbnailDirectory, "storage.thumbnailDirectory", c.Storage.ThumbnailDirectory, "")
 
 	// Storage - Local
-	flag.StringVar(&c.Storage.LocalPath, "storage.localPath", c.Storage.LocalPath, "")
+	flag.StringVar(&c.Storage.Local.Path, "storage.local.path", c.Storage.Local.Path, "")
 
-	// Storage - GCP Storage
-	flag.StringVar(&c.Storage.GcpProjectId, "storage.gcpProjectId", c.Storage.GcpProjectId, "")
-	flag.StringVar(&c.Storage.GcpJwtPath, "storage.gcpJwtPath", c.Storage.GcpJwtPath, "")
+	// Storage - Google Cloud Storage
+	flag.StringVar(&c.Storage.GCS.ProjectID, "storage.gcs.projectId", c.Storage.GCS.ProjectID, "")
+	flag.StringVar(&c.Storage.GCS.JwtPath, "storage.gcs.jwtPath", c.Storage.GCS.JwtPath, "")
+	flag.StringVar(&c.Storage.GCS.UploadBucket, "storage.gcs.uploadBucket", c.Storage.GCS.UploadBucket, "")
+	flag.StringVar(&c.Storage.GCS.UploadDirectory, "storage.gcs.uploadDirectory", c.Storage.GCS.UploadDirectory, "")
+	flag.StringVar(&c.Storage.GCS.ThumbnailBucket, "storage.gcs.thumbnailBucket", c.Storage.GCS.ThumbnailBucket, "")
+	flag.StringVar(&c.Storage.GCS.ThumbnailDirectory, "storage.gcs.thumbnailDirectory", c.Storage.GCS.ThumbnailDirectory, "")
 
 	// Storage - AWS S3
-	flag.StringVar(&c.Storage.AwsRegion, "storage.awsRegion", c.Storage.AwsRegion, "")
-	flag.StringVar(&c.Storage.AwsAccessKeyId, "storage.awsAccessKeyId", c.Storage.AwsAccessKeyId, "")
-	flag.StringVar(&c.Storage.AwsSecretAccessKey, "storage.awsSecretAccessKey", c.Storage.AwsSecretAccessKey, "")
+	flag.StringVar(&c.Storage.AWS.Region, "storage.aws.region", c.Storage.AWS.Region, "")
+	flag.StringVar(&c.Storage.AWS.AccessKeyID, "storage.aws.accessKeyId", c.Storage.AWS.AccessKeyID, "")
+	flag.StringVar(&c.Storage.AWS.SecretAccessKey, "storage.aws.secretAccessKey", c.Storage.AWS.SecretAccessKey, "")
+	flag.StringVar(&c.Storage.AWS.UploadBucket, "storage.aws.uploadBucket", c.Storage.AWS.UploadBucket, "")
+	flag.StringVar(&c.Storage.AWS.UploadDirectory, "storage.aws.uploadDirectory", c.Storage.AWS.UploadDirectory, "")
+	flag.StringVar(&c.Storage.AWS.ThumbnailBucket, "storage.aws.thumbnailBucket", c.Storage.AWS.ThumbnailBucket, "")
+	flag.StringVar(&c.Storage.AWS.ThumbnailDirectory, "storage.aws.thumbnailDirectory", c.Storage.AWS.ThumbnailDirectory, "")
 
 	// Datastore
 	flag.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
 	flag.StringVar(&c.Datastore.TableNamePrefix, "datastore.tableNamePrefix", c.Datastore.TableNamePrefix, "")
-
-	// Datastore - SQLite
-	flag.StringVar(&c.Datastore.SqlitePath, "datastore.sqlitePath", c.Datastore.SqlitePath, "")
-
-	// Datastore - MySQL, GCP SQL
 	flag.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")
 	flag.StringVar(&c.Datastore.Password, "datastore.password", c.Datastore.Password, "")
 	flag.StringVar(&c.Datastore.Database, "datastore.database", c.Datastore.Database, "")
@@ -575,29 +590,35 @@ func (c *config) ParseFlag() {
 		}
 	}
 
-	// Rtm
-	flag.StringVar(&c.RtmProvider, "realtimeMessaging.provider", c.RtmProvider, "")
+	// Datastore - SQLite
+	flag.StringVar(&c.Datastore.SQLite.Path, "datastore.sqlite.path", c.Datastore.SQLite.Path, "")
 
-	flag.StringVar(&c.Rtm.DirectEndpoint, "realtimeMessaging.directEndpoint", c.Rtm.DirectEndpoint, "")
-	flag.StringVar(&c.Rtm.QueEndpoint, "realtimeMessaging.queEndpoint", c.Rtm.QueEndpoint, "")
-	flag.StringVar(&c.Rtm.QueTopic, "realtimeMessaging.queTopic", c.Rtm.QueTopic, "")
+	// RTM
+	flag.StringVar(&c.RTM.Provider, "rtm.provider", c.RTM.Provider, "")
 
-	// kafka
-	flag.StringVar(&c.Kafka.Host, "kafka.host", c.Kafka.Host, "")
-	flag.StringVar(&c.Kafka.Port, "kafka.port", c.Kafka.Port, "")
-	flag.StringVar(&c.Kafka.GroupID, "kafka.groupId", c.Kafka.GroupID, "")
-	flag.StringVar(&c.Kafka.Topic, "kafka.topic", c.Kafka.Topic, "")
+	// RTM - Direct
+	flag.StringVar(&c.RTM.Direct.Endpoint, "rtm.direct.endpoint", c.RTM.Direct.Endpoint, "")
+
+	// RTM - kafka
+	flag.StringVar(&c.RTM.Kafka.Host, "rtm.kafka.host", c.RTM.Kafka.Host, "")
+	flag.StringVar(&c.RTM.Kafka.Port, "rtm.kafka.port", c.RTM.Kafka.Port, "")
+	flag.StringVar(&c.RTM.Kafka.GroupID, "rtm.kafka.groupId", c.RTM.Kafka.GroupID, "")
+	flag.StringVar(&c.RTM.Kafka.Topic, "rtm.kafka.topic", c.RTM.Kafka.Topic, "")
+
+	// RTM - NSQ
+	flag.StringVar(&c.RTM.NSQ.QueEndpoint, "rtm.nsq.queEndpoint", c.RTM.NSQ.QueEndpoint, "")
+	flag.StringVar(&c.RTM.NSQ.QueTopic, "rtm.nsq.queTopic", c.RTM.NSQ.QueTopic, "")
 
 	// Notification
 	flag.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")
 	flag.StringVar(&c.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", c.Notification.RoomTopicNamePrefix, "")
 
-	// Notification - AWS SNS
-	flag.StringVar(&c.Notification.AwsRegion, "notification.awsRegion", c.Notification.AwsRegion, "")
-	flag.StringVar(&c.Notification.AwsAccessKeyId, "notification.awsAccessKeyId", c.Notification.AwsAccessKeyId, "")
-	flag.StringVar(&c.Notification.AwsSecretAccessKey, "notification.awsSecretAccessKey", c.Notification.AwsSecretAccessKey, "")
-	flag.StringVar(&c.Notification.AwsApplicationArnIos, "notification.awsApplicationArnIos", c.Notification.AwsApplicationArnIos, "")
-	flag.StringVar(&c.Notification.AwsApplicationArnAndroid, "notification.awsApplicationArnAndroid", c.Notification.AwsApplicationArnAndroid, "")
+	// Notification - Amazon SNS
+	flag.StringVar(&c.Notification.AmazonSNS.Region, "notification.amazonsns.region", c.Notification.AmazonSNS.Region, "")
+	flag.StringVar(&c.Notification.AmazonSNS.AccessKeyID, "notification.amazonsns.accessKeyId", c.Notification.AmazonSNS.AccessKeyID, "")
+	flag.StringVar(&c.Notification.AmazonSNS.SecretAccessKey, "notification.amazonsns.secretAccessKey", c.Notification.AmazonSNS.SecretAccessKey, "")
+	flag.StringVar(&c.Notification.AmazonSNS.ApplicationArnIos, "notification.amazonsns.applicationArnIos", c.Notification.AmazonSNS.ApplicationArnIos, "")
+	flag.StringVar(&c.Notification.AmazonSNS.ApplicationArnAndroid, "notification.amazonsns.applicationArnAndroid", c.Notification.AmazonSNS.ApplicationArnAndroid, "")
 	flag.Parse()
 
 	if profiling == "true" {
@@ -617,4 +638,16 @@ func (c *config) ParseFlag() {
 	} else if errorLogging == "false" {
 		c.ErrorLogging = false
 	}
+}
+
+func (c *config) after() {
+	if c.Datastore.Provider == "sqlite" {
+		if c.Datastore.SQLite.Path == "" {
+			c.Datastore.SQLite.Path = "/tmp/swagchat.db"
+		}
+	}
+
+	// MaxIdleConnection: "10",
+	// MaxOpenConnection: "10",
+
 }

@@ -39,7 +39,7 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 		}
 	}
 
-	filepath := fmt.Sprintf("%s/%s", utils.GetConfig().Storage.LocalPath, assetInfo.Filename)
+	filepath := fmt.Sprintf("%s/%s", utils.GetConfig().Storage.Local.Path, assetInfo.Filename)
 	err = ioutil.WriteFile(filepath, data, 0644)
 	if err != nil {
 		return "", &models.ProblemDetail{

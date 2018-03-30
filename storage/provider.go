@@ -21,35 +21,33 @@ type Provider interface {
 	Get(*AssetInfo) ([]byte, *models.ProblemDetail)
 }
 
-func GetProvider() Provider {
+func StorageProvider() Provider {
 	cfg := utils.GetConfig()
 
-	var provider Provider
+	var p Provider
 	switch cfg.Storage.Provider {
 	case "local":
-		provider = &LocalStorageProvider{
-			localPath: cfg.Storage.LocalPath,
-		}
+		p = &LocalStorageProvider{}
 	case "gcpStorage":
-		provider = &GcpStorageProvider{
-			projectId:          cfg.Storage.GcpProjectId,
-			jwtPath:            cfg.Storage.GcpJwtPath,
+		p = &GcpStorageProvider{
+			projectId:          cfg.Storage.GCS.ProjectID,
+			jwtPath:            cfg.Storage.GCS.JwtPath,
 			scope:              "https://www.googleapis.com/auth/devstorage.full_control",
-			uploadBucket:       cfg.Storage.UploadBucket,
-			uploadDirectory:    cfg.Storage.UploadDirectory,
-			thumbnailBucket:    cfg.Storage.ThumbnailBucket,
-			thumbnailDirectory: cfg.Storage.ThumbnailDirectory,
+			uploadBucket:       cfg.Storage.GCS.UploadBucket,
+			uploadDirectory:    cfg.Storage.GCS.UploadDirectory,
+			thumbnailBucket:    cfg.Storage.GCS.ThumbnailBucket,
+			thumbnailDirectory: cfg.Storage.GCS.ThumbnailDirectory,
 		}
 	case "awsS3":
-		provider = &AwsS3StorageProvider{
-			accessKeyId:        cfg.Storage.AwsAccessKeyId,
-			secretAccessKey:    cfg.Storage.AwsSecretAccessKey,
-			region:             cfg.Storage.AwsRegion,
+		p = &AwsS3StorageProvider{
+			accessKeyId:        cfg.Storage.AWS.AccessKeyID,
+			secretAccessKey:    cfg.Storage.AWS.SecretAccessKey,
+			region:             cfg.Storage.AWS.Region,
 			acl:                "public-read",
-			uploadBucket:       cfg.Storage.UploadBucket,
-			uploadDirectory:    cfg.Storage.UploadDirectory,
-			thumbnailBucket:    cfg.Storage.ThumbnailBucket,
-			thumbnailDirectory: cfg.Storage.ThumbnailDirectory,
+			uploadBucket:       cfg.Storage.AWS.UploadBucket,
+			uploadDirectory:    cfg.Storage.AWS.UploadDirectory,
+			thumbnailBucket:    cfg.Storage.AWS.ThumbnailBucket,
+			thumbnailDirectory: cfg.Storage.AWS.ThumbnailDirectory,
 		}
 	default:
 		utils.AppLogger.Error("",
@@ -57,5 +55,5 @@ func GetProvider() Provider {
 		)
 		os.Exit(0)
 	}
-	return provider
+	return p
 }

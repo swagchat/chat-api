@@ -67,8 +67,8 @@ func PostAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 	if input.Type == "SubscriptionConfirmation" {
 		cfg := utils.GetConfig()
 		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(cfg.Storage.AwsRegion),
-			Credentials: credentials.NewStaticCredentials(cfg.Storage.AwsAccessKeyId, cfg.Storage.AwsSecretAccessKey, ""),
+			Region:      aws.String(cfg.Storage.AWS.Region),
+			Credentials: credentials.NewStaticCredentials(cfg.Storage.AWS.AccessKeyID, cfg.Storage.AWS.SecretAccessKey, ""),
 		})
 		cli := sns.New(sess)
 

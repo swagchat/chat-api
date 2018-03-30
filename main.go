@@ -27,7 +27,7 @@ func main() {
 		}()
 	}
 
-	if err := storage.GetProvider().Init(); err != nil {
+	if err := storage.StorageProvider().Init(); err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)

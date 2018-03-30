@@ -125,9 +125,9 @@ func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, devic
 		var platformApplicationArn string
 		switch platform {
 		case models.PLATFORM_IOS:
-			platformApplicationArn = cfg.Notification.AwsApplicationArnIos
+			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnIos
 		case models.PLATFORM_ANDROID:
-			platformApplicationArn = cfg.Notification.AwsApplicationArnAndroid
+			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnAndroid
 		default:
 			// TODO new error
 			platformApplicationArn = ""
