@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/shareddefaults","private/protocol","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/lexruntimeservice","service/s3","service/sns","service/sts"]
-  revision = "bb206ce0d6a50da7807694a823aed5c601c57ce0"
-  version = "v1.13.23"
+  revision = "4b5324816e154564ef4e490842c2e40560971f75"
+  version = "v1.13.24"
 
 [[projects]]
   name = "github.com/confluentinc/confluent-kafka-go"
@@ -23,7 +23,7 @@
   name = "github.com/fatih/structs"
   packages = ["."]
   revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
-  version = "v1.0"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -85,6 +85,12 @@
   revision = "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
 
 [[projects]]
+  name = "github.com/swagchat/rtm-api"
+  packages = ["utils"]
+  revision = "e9df42ca89f380e865b4143438e1b8a0212db64e"
+  version = "v0.3.0"
+
+[[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
   revision = "8474b86a5a6f79c443ce4b2992817ff32cf208b8"
@@ -118,7 +124,7 @@
   branch = "master"
   name = "google.golang.org/api"
   packages = ["gensupport","googleapi","googleapi/internal/uritemplates","storage/v1"]
-  revision = "a213db537ac9b393526194a5c85ad6e546f7923f"
+  revision = "dbbc13f71100fa6ece308335445fca6bb0dd5c2f"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -129,8 +135,8 @@
 [[projects]]
   name = "gopkg.in/gorp.v2"
   packages = ["."]
-  revision = "4df78490a9aa9a78b9b02b0c913df8dc1954faee"
-  version = "2.1"
+  revision = "4deece61034873cb5b5416e81abe4cea7bd0da72"
+  version = "v2.0.0"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -141,6 +147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d8eaa29b1cbbc847000db94bf7d992306e1bcafc624ae9633f90bc2b69a90c81"
+  inputs-digest = "056050a3bc8c4e5c64afcb935866a25fd54927870bf83cf726fcff95bbde0ea3"
   solver-name = "gps-cdcl"
   solver-version = 1
