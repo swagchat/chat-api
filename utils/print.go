@@ -8,25 +8,6 @@ import (
 	"github.com/fatih/structs"
 )
 
-// func PrintStruct(v interface{}) {
-// 	fields := structs.Fields(v)
-// 	for _, f := range fields {
-// 		r := reflect.ValueOf(f.Value())
-// 		if r.IsValid() {
-// 			switch r.Kind() {
-// 			case reflect.String:
-// 				fmt.Printf("%s: %s, ", f.Name(), f.Value())
-// 			case reflect.Bool:
-// 				fmt.Printf("%s: %t, ", f.Name(), f.Value())
-// 			case reflect.Ptr:
-// 				PrintStruct(f.Value())
-// 			default:
-// 				fmt.Println(r.Interface())
-// 			}
-// 		}
-// 	}
-// }
-
 var builderStr *StringBuilder
 
 type StringBuilder struct {
@@ -45,17 +26,38 @@ func (b *StringBuilder) PrintStruct(name string, v interface{}) string {
 		switch r.Kind() {
 		case reflect.String:
 			if v.(string) != "" {
-				b.str.WriteString(fmt.Sprintf("%s: %s,", name, v))
+				b.str.WriteString(fmt.Sprintf("%s:%s\t", name, v))
 			}
 		case reflect.Bool:
-			b.str.WriteString(fmt.Sprintf("%s: %t, ", name, v))
-		case reflect.Ptr:
+			b.str.WriteString(fmt.Sprintf("%s:%t\t", name, v))
+		case reflect.Int:
+			b.str.WriteString(fmt.Sprintf("%s:%d\t", name, v))
+		case reflect.Ptr, reflect.Slice:
 			if !r.IsNil() {
 				fields := structs.Fields(v)
+				var printName string
 				for _, f := range fields {
-					b.PrintStruct(f.Name(), f.Value())
+					if name == "config" {
+						printName = f.Name()
+					} else {
+						printName = fmt.Sprintf("%s.%s", name, f.Name())
+					}
+					b.PrintStruct(printName, f.Value())
 				}
 			}
+		case reflect.Struct:
+			fields := structs.Fields(v)
+			var printName string
+			for _, f := range fields {
+				if name == "config" {
+					printName = f.Name()
+				} else {
+					printName = fmt.Sprintf("%s.%s", name, f.Name())
+				}
+				b.PrintStruct(printName, f.Value())
+			}
+		default:
+			fmt.Println(r.Kind())
 		}
 	}
 
