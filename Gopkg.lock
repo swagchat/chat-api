@@ -23,7 +23,7 @@
   name = "github.com/fatih/structs"
   packages = ["."]
   revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
-  version = "v1.0.0"
+  version = "v1.0"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -85,12 +85,6 @@
   revision = "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
 
 [[projects]]
-  name = "github.com/swagchat/rtm-api"
-  packages = ["utils"]
-  revision = "e9df42ca89f380e865b4143438e1b8a0212db64e"
-  version = "v0.3.0"
-
-[[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
   revision = "8474b86a5a6f79c443ce4b2992817ff32cf208b8"
@@ -147,6 +141,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "056050a3bc8c4e5c64afcb935866a25fd54927870bf83cf726fcff95bbde0ea3"
+  inputs-digest = "3ad05006fce7b4d6b05fa441d8dbf5c3205ace1e00a010dace72398e7338a376"
   solver-name = "gps-cdcl"
   solver-version = 1
