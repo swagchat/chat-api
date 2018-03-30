@@ -22,7 +22,7 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 	}
 	post.BeforePost(jwt)
 
-	dRes := datastore.GetProvider().SelectUser(post.UserId, true, true, true)
+	dRes := datastore.DatastoreProvider().SelectUser(post.UserId, true, true, true)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -32,7 +32,7 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 		}
 	}
 
-	dRes = datastore.GetProvider().InsertUser(post)
+	dRes = datastore.DatastoreProvider().InsertUser(post)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -40,7 +40,7 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 }
 
 func GetUsers() (*models.Users, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectUsers()
+	dRes := datastore.DatastoreProvider().SelectUsers()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -52,7 +52,7 @@ func GetUsers() (*models.Users, *models.ProblemDetail) {
 }
 
 func GetUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectUser(userId, true, true, true)
+	dRes := datastore.DatastoreProvider().SelectUser(userId, true, true, true)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -97,7 +97,7 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 	}
 
 	user.BeforePut(put)
-	dRes := datastore.GetProvider().UpdateUser(user)
+	dRes := datastore.DatastoreProvider().UpdateUser(user)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -112,21 +112,21 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		return pd
 	}
 
-	dRes := datastore.GetProvider().SelectDevicesByUserId(userId)
+	dRes := datastore.DatastoreProvider().SelectDevicesByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
 	if dRes.Data != nil {
 		devices := dRes.Data.([]*models.Device)
 		for _, device := range devices {
-			nRes := <-notification.GetProvider().DeleteEndpoint(device.NotificationDeviceId)
+			nRes := <-notification.NotificationProvider().DeleteEndpoint(device.NotificationDeviceId)
 			if nRes.ProblemDetail != nil {
 				return nRes.ProblemDetail
 			}
 		}
 	}
 
-	dRes = datastore.GetProvider().UpdateUserDeleted(userId)
+	dRes = datastore.DatastoreProvider().UpdateUserDeleted(userId)
 	if dRes.ProblemDetail != nil {
 		return dRes.ProblemDetail
 	}
@@ -138,7 +138,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 }
 
 func selectUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectUser(userId, false, false, false)
+	dRes := datastore.DatastoreProvider().SelectUser(userId, false, false, false)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -151,7 +151,7 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 }
 
 func unsubscribeByUserId(ctx context.Context, userId string) {
-	dRes := datastore.GetProvider().SelectDeletedSubscriptionsByUserId(userId)
+	dRes := datastore.DatastoreProvider().SelectDeletedSubscriptionsByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",

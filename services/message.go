@@ -64,7 +64,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 
 		post.BeforeSave()
 		log.Printf("%#v\n", post)
-		dRes := datastore.GetProvider().InsertMessage(post)
+		dRes := datastore.DatastoreProvider().InsertMessage(post)
 		if dRes.ProblemDetail != nil {
 			errors = append(errors, dRes.ProblemDetail)
 			continue
@@ -80,7 +80,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		mi := &notification.MessageInfo{
 			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
 		}
-		cfg := utils.GetConfig()
+		cfg := utils.Config()
 		if cfg.Notification.DefaultBadgeCount != "" {
 			dBadgeCount, err := strconv.Atoi(cfg.Notification.DefaultBadgeCount)
 			if err == nil {
@@ -88,7 +88,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			}
 		}
 		ctx, _ := context.WithCancel(context.Background())
-		go notification.GetProvider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
+		go notification.NotificationProvider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
 		go publishMessage(post)
 		go postMessageToBotService(*user.IsBot, post)
 	}
@@ -115,7 +115,7 @@ func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
 		}
 	}
 
-	dRes := datastore.GetProvider().SelectMessage(messageId)
+	dRes := datastore.DatastoreProvider().SelectMessage(messageId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -138,7 +138,7 @@ func publishMessage(m *models.Message) {
 	mi := &rtm.MessagingInfo{
 		Message: string(bytes),
 	}
-	err = rtm.GetMessagingProvider().PublishMessage(mi)
+	err = rtm.RTMProvider().PublishMessage(mi)
 	if err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
@@ -147,7 +147,7 @@ func publishMessage(m *models.Message) {
 }
 
 func postMessageToBotService(isBot bool, m *models.Message) {
-	dRes := datastore.GetProvider().SelectUsersForRoom(m.RoomId)
+	dRes := datastore.DatastoreProvider().SelectUsersForRoom(m.RoomId)
 	if dRes.ProblemDetail != nil {
 		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 		utils.AppLogger.Error("",
@@ -159,7 +159,7 @@ func postMessageToBotService(isBot bool, m *models.Message) {
 		userForRooms := dRes.Data.([]*models.UserForRoom)
 		for _, u := range userForRooms {
 			if !isBot && *u.IsBot && m.UserId != u.UserId {
-				dRes := datastore.GetProvider().SelectBot(u.UserId)
+				dRes := datastore.DatastoreProvider().SelectBot(u.UserId)
 				if dRes.ProblemDetail != nil {
 					pdBytes, _ := json.Marshal(dRes.ProblemDetail)
 					utils.AppLogger.Error("",

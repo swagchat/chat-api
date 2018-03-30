@@ -35,7 +35,7 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 	}
 	asset.URL = url
 
-	dRes := datastore.GetProvider().InsertAsset(asset)
+	dRes := datastore.DatastoreProvider().InsertAsset(asset)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -50,7 +50,7 @@ func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.P
 		}
 	}
 
-	dRes := datastore.GetProvider().SelectAsset(assetId)
+	dRes := datastore.DatastoreProvider().SelectAsset(assetId)
 	if dRes.ProblemDetail != nil {
 		return nil, nil, dRes.ProblemDetail
 	}

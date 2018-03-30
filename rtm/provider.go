@@ -16,24 +16,24 @@ type Provider interface {
 	PublishMessage(*MessagingInfo) error
 }
 
-func GetMessagingProvider() Provider {
-	cfg := utils.GetConfig()
+func RTMProvider() Provider {
+	cfg := utils.Config()
 
-	var provider Provider
+	var p Provider
 	switch cfg.RTM.Provider {
 	case "":
-		provider = &NotUseProvider{}
+		p = &NotUseProvider{}
 	case "direct":
-		provider = &DirectProvider{}
+		p = &DirectProvider{}
 	case "nsq":
-		provider = &NsqProvider{}
+		p = &NsqProvider{}
 	case "kafka":
-		provider = &KafkaProvider{}
+		p = &KafkaProvider{}
 	default:
 		utils.AppLogger.Error("",
 			zap.String("msg", "RTM Provider is incorrect"),
 		)
 		os.Exit(0)
 	}
-	return provider
+	return p
 }

@@ -42,7 +42,7 @@ var (
 
 func StartServer(ctx context.Context) {
 	Mux = bone.New()
-	if utils.GetConfig().DemoPage {
+	if utils.Config().DemoPage {
 		Mux.GetFunc("/", messengerHTMLHandler)
 	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
@@ -59,7 +59,7 @@ func StartServer(ctx context.Context) {
 	SetSettingMux()
 	SetUserMux()
 
-	cfg := utils.GetConfig()
+	cfg := utils.Config()
 
 	if cfg.Profiling {
 		SetPprofMux()
@@ -141,7 +141,7 @@ func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
 		apiKey := r.Header.Get(utils.HeaderAPIKey)
 		apiSecret := r.Header.Get(utils.HeaderAPISecret)
 		if apiKey != "" && apiSecret != "" {
-			dRes := datastore.GetProvider().SelectLatestApi("admin")
+			dRes := datastore.DatastoreProvider().SelectLatestApi("admin")
 			if dRes.ProblemDetail != nil {
 				// TODO error
 			}
@@ -158,7 +158,7 @@ func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
 			token := strings.Replace(authorization, "Bearer ", "", 1)
 			userId := r.Header.Get(utils.HeaderUserId)
 			if token != "" && userId != "" {
-				dRes := datastore.GetProvider().SelectUserByUserIdAndAccessToken(userId, token)
+				dRes := datastore.DatastoreProvider().SelectUserByUserIdAndAccessToken(userId, token)
 				if dRes.Data != nil {
 					role = "user"
 				}
@@ -199,7 +199,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 }
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	if utils.GetConfig().ErrorLogging {
+	if utils.Config().ErrorLogging {
 		problemDetailBytes, _ := json.Marshal(problemDetail)
 		utils.AppLogger.Error("",
 			zap.String("problemDetail", string(problemDetailBytes)),

@@ -20,7 +20,7 @@ func (provider NsqProvider) Init() error {
 func (provider NsqProvider) PublishMessage(mi *MessagingInfo) error {
 	rawIn := json.RawMessage(mi.Message)
 	input, err := rawIn.MarshalJSON()
-	cfg := utils.GetConfig()
+	cfg := utils.Config()
 
 	url := utils.AppendStrings(cfg.RTM.NSQ.QueEndpoint, "/pub?topic=", cfg.RTM.NSQ.QueTopic)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(input))

@@ -35,18 +35,18 @@ type Provider interface {
 	UserStore
 }
 
-func GetProvider() Provider {
-	cfg := utils.GetConfig()
+func DatastoreProvider() Provider {
+	cfg := utils.Config()
 
-	var provider Provider
+	var p Provider
 	switch cfg.Datastore.Provider {
 	case "sqlite":
-		provider = &sqliteProvider{
+		p = &sqliteProvider{
 			sqlitePath: cfg.Datastore.SQLite.Path,
-			trace:      true,
+			trace:      false,
 		}
 	case "mysql":
-		provider = &mysqlProvider{
+		p = &mysqlProvider{
 			user:              cfg.Datastore.User,
 			password:          cfg.Datastore.Password,
 			database:          cfg.Datastore.Database,
@@ -57,7 +57,7 @@ func GetProvider() Provider {
 			trace:             false,
 		}
 	case "gcpSql":
-		provider = &gcpSqlProvider{
+		p = &gcpSqlProvider{
 			user:              cfg.Datastore.User,
 			password:          cfg.Datastore.Password,
 			database:          cfg.Datastore.Database,
@@ -73,7 +73,7 @@ func GetProvider() Provider {
 		)
 		os.Exit(0)
 	}
-	return provider
+	return p
 }
 
 func createProblemDetail(title string, err error) *models.ProblemDetail {

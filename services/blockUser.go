@@ -8,7 +8,7 @@ import (
 )
 
 func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectBlockUsersByUserId(userId)
+	dRes := datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -45,12 +45,12 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 			Created:     nowTimestamp,
 		})
 	}
-	dRes := datastore.GetProvider().InsertBlockUsers(blockUsers)
+	dRes := datastore.DatastoreProvider().InsertBlockUsers(blockUsers)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	dRes = datastore.GetProvider().SelectBlockUsersByUserId(userId)
+	dRes = datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
@@ -78,12 +78,12 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*mode
 		return nil, pd
 	}
 
-	dRes := datastore.GetProvider().DeleteBlockUser(userId, bUIds)
+	dRes := datastore.DatastoreProvider().DeleteBlockUser(userId, bUIds)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}
 
-	dRes = datastore.GetProvider().SelectBlockUsersByUserId(userId)
+	dRes = datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

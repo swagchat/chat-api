@@ -17,7 +17,7 @@ func (provider KafkaProvider) Init() error {
 func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 	rawIn := json.RawMessage(mi.Message)
 	input, err := rawIn.MarshalJSON()
-	cfg := utils.GetConfig()
+	cfg := utils.Config()
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.RTM.Kafka.Host, cfg.RTM.Kafka.Port),

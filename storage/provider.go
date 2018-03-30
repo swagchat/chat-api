@@ -22,12 +22,14 @@ type Provider interface {
 }
 
 func StorageProvider() Provider {
-	cfg := utils.GetConfig()
+	cfg := utils.Config()
 
 	var p Provider
 	switch cfg.Storage.Provider {
 	case "local":
-		p = &LocalStorageProvider{}
+		p = &LocalStorageProvider{
+			localPath: cfg.Storage.Local.Path,
+		}
 	case "gcpStorage":
 		p = &GcpStorageProvider{
 			projectId:          cfg.Storage.GCS.ProjectID,

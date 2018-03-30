@@ -10,7 +10,7 @@ import (
 var AppLogger *zap.Logger
 
 func SetupLogger() {
-	c := GetConfig()
+	c := Config()
 
 	if AppLogger == nil {
 		var err error

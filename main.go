@@ -21,7 +21,7 @@ func main() {
 		return
 	}
 
-	if utils.GetConfig().Profiling {
+	if utils.Config().Profiling {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)
 		}()
@@ -33,12 +33,12 @@ func main() {
 		)
 	}
 
-	if err := datastore.GetProvider().Connect(); err != nil {
+	if err := datastore.DatastoreProvider().Connect(); err != nil {
 		utils.AppLogger.Error("",
 			zap.String("msg", err.Error()),
 		)
 	}
-	datastore.GetProvider().Init()
+	datastore.DatastoreProvider().Init()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

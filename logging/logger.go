@@ -3,7 +3,7 @@ package logging
 import (
 	"os"
 
-	"github.com/swagchat/rtm-api/utils"
+	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

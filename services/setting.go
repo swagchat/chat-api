@@ -10,7 +10,7 @@ import (
 )
 
 func GetSetting() (*models.Setting, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectLatestSetting()
+	dRes := datastore.DatastoreProvider().SelectLatestSetting()
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

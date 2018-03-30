@@ -25,7 +25,7 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 			Title:     "Create directory failed. (Local Storage)",
 			Status:    http.StatusInternalServerError,
 			ErrorName: "storage-error",
-			Detail:    err.Error(),
+			Detail:    fmt.Sprintf("%s [%s]", err.Error(), provider.localPath),
 		}
 	}
 
@@ -39,7 +39,7 @@ func (provider LocalStorageProvider) Post(assetInfo *AssetInfo) (string, *models
 		}
 	}
 
-	filepath := fmt.Sprintf("%s/%s", utils.GetConfig().Storage.Local.Path, assetInfo.Filename)
+	filepath := fmt.Sprintf("%s/%s", utils.Config().Storage.Local.Path, assetInfo.Filename)
 	err = ioutil.WriteFile(filepath, data, 0644)
 	if err != nil {
 		return "", &models.ProblemDetail{

@@ -8,7 +8,7 @@ import (
 )
 
 func GetContacts(userId string) (*models.Users, *models.ProblemDetail) {
-	dRes := datastore.GetProvider().SelectContacts(userId)
+	dRes := datastore.DatastoreProvider().SelectContacts(userId)
 	if dRes.ProblemDetail != nil {
 		return nil, dRes.ProblemDetail
 	}

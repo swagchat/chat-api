@@ -80,7 +80,7 @@ func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
 
 		client := provider.newSnsClient()
 		params := &sns.CreateTopicInput{
-			Name: aws.String(utils.AppendStrings(utils.GetConfig().Notification.RoomTopicNamePrefix, roomId)),
+			Name: aws.String(utils.AppendStrings(utils.Config().Notification.RoomTopicNamePrefix, roomId)),
 		}
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
@@ -115,7 +115,7 @@ func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) Notificat
 }
 
 func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
-	cfg := utils.GetConfig()
+	cfg := utils.Config()
 
 	nc := make(NotificationChannel, 1)
 	go func() {

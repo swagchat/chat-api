@@ -33,13 +33,13 @@ type Provider interface {
 	Publish(context.Context, string, string, *MessageInfo) NotificationChannel
 }
 
-func GetProvider() Provider {
-	cfg := utils.GetConfig()
+func NotificationProvider() Provider {
+	cfg := utils.Config()
 
-	var provider Provider
+	var p Provider
 	switch cfg.Notification.Provider {
 	case "awsSns":
-		provider = &AwsSnsProvider{
+		p = &AwsSnsProvider{
 			region:                cfg.Notification.AmazonSNS.Region,
 			accessKeyId:           cfg.Notification.AmazonSNS.AccessKeyID,
 			secretAccessKey:       cfg.Notification.AmazonSNS.SecretAccessKey,
@@ -48,9 +48,9 @@ func GetProvider() Provider {
 			applicationArnAndroid: cfg.Notification.AmazonSNS.ApplicationArnAndroid,
 		}
 	default:
-		provider = &NotUseProvider{}
+		p = &NotUseProvider{}
 	}
-	return provider
+	return p
 }
 
 func createProblemDetail(title string, err error) *models.ProblemDetail {

@@ -15,9 +15,9 @@ const (
 	// AppName is Application name
 	AppName = "chat-api"
 	// APIVersion is API version
-	APIVersion = "v0"
+	APIVersion = "0"
 	// BuildVersion is API build version
-	BuildVersion = "v0.9.1"
+	BuildVersion = "0.9.1"
 
 	KeyLength       = 32
 	TokenLength     = 32
@@ -188,7 +188,7 @@ func NewConfig() *config {
 	return c
 }
 
-func GetConfig() *config {
+func Config() *config {
 	return cfg
 }
 
