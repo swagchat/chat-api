@@ -20,13 +20,15 @@ func GetMessagingProvider() Provider {
 	cfg := utils.GetConfig()
 
 	var provider Provider
-	switch cfg.Rtm.Provider {
+	switch cfg.RtmProvider {
 	case "":
 		provider = &NotUseProvider{}
 	case "direct":
 		provider = &DirectProvider{}
 	case "nsq":
 		provider = &NsqProvider{}
+	case "kafka":
+		provider = &KafkaProvider{}
 	default:
 		utils.AppLogger.Error("",
 			zap.String("msg", "utils.Cfg.Rtm.Provider is incorrect"),

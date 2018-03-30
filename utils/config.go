@@ -41,7 +41,9 @@ type config struct {
 	Logging      *Logging
 	Storage      *Storage
 	Datastore    *Datastore
+	RtmProvider  string `yaml:"rtmProvider"`
 	Rtm          *Rtm
+	Kafka        *Kafka
 	Notification *Notification
 }
 
@@ -102,10 +104,16 @@ type ServerInfo struct {
 }
 
 type Rtm struct {
-	Provider       string
 	DirectEndpoint string `yaml:"directEndpoint"`
 	QueEndpoint    string `yaml:"queEndpoint"`
 	QueTopic       string `yaml:"queTopic"`
+}
+
+type Kafka struct {
+	Host    string
+	Port    string
+	GroupID string `yaml:"groupId"`
+	Topic   string
 }
 
 type Notification struct {
@@ -145,11 +153,12 @@ func NewConfig() *config {
 	}
 
 	rtm := &Rtm{
-		Provider:       "",
 		DirectEndpoint: "",
 		QueEndpoint:    "",
 		QueTopic:       "",
 	}
+
+	kafka := &Kafka{}
 
 	notification := &Notification{}
 
@@ -163,7 +172,9 @@ func NewConfig() *config {
 		Logging:      logging,
 		Storage:      storage,
 		Datastore:    datastore,
+		RtmProvider:  "",
 		Rtm:          rtm,
+		Kafka:        kafka,
 		Notification: notification,
 	}
 
@@ -367,7 +378,7 @@ func (c *config) LoadEnvironment() {
 
 	// Rtm
 	if v = os.Getenv("SC_RTM_PROVIDER"); v != "" {
-		c.Rtm.Provider = v
+		c.RtmProvider = v
 	}
 	if v = os.Getenv("SC_RTM_DIRECT_ENDPOINT"); v != "" {
 		c.Rtm.DirectEndpoint = v
@@ -377,6 +388,20 @@ func (c *config) LoadEnvironment() {
 	}
 	if v = os.Getenv("SC_RTM_QUE_TOPIC"); v != "" {
 		c.Rtm.QueTopic = v
+	}
+
+	// Kafka
+	if v = os.Getenv("SC_KAFKA_HOST"); v != "" {
+		c.Kafka.Host = v
+	}
+	if v = os.Getenv("SC_KAFKA_PORT"); v != "" {
+		c.Kafka.Port = v
+	}
+	if v = os.Getenv("SC_KAFKA_GROUPID"); v != "" {
+		c.Kafka.GroupID = v
+	}
+	if v = os.Getenv("SC_KAFKA_TOPIC"); v != "" {
+		c.Kafka.Topic = v
 	}
 
 	// Notification
@@ -551,10 +576,17 @@ func (c *config) ParseFlag() {
 	}
 
 	// Rtm
-	flag.StringVar(&c.Rtm.Provider, "realtimeMessaging.provider", c.Rtm.Provider, "")
+	flag.StringVar(&c.RtmProvider, "realtimeMessaging.provider", c.RtmProvider, "")
+
 	flag.StringVar(&c.Rtm.DirectEndpoint, "realtimeMessaging.directEndpoint", c.Rtm.DirectEndpoint, "")
 	flag.StringVar(&c.Rtm.QueEndpoint, "realtimeMessaging.queEndpoint", c.Rtm.QueEndpoint, "")
 	flag.StringVar(&c.Rtm.QueTopic, "realtimeMessaging.queTopic", c.Rtm.QueTopic, "")
+
+	// kafka
+	flag.StringVar(&c.Kafka.Host, "kafka.host", c.Kafka.Host, "")
+	flag.StringVar(&c.Kafka.Port, "kafka.port", c.Kafka.Port, "")
+	flag.StringVar(&c.Kafka.GroupID, "kafka.groupId", c.Kafka.GroupID, "")
+	flag.StringVar(&c.Kafka.Topic, "kafka.topic", c.Kafka.Topic, "")
 
 	// Notification
 	flag.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")

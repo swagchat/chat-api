@@ -21,6 +21,7 @@ func (provider NsqProvider) PublishMessage(mi *MessagingInfo) error {
 	rawIn := json.RawMessage(mi.Message)
 	input, err := rawIn.MarshalJSON()
 	cfg := utils.GetConfig()
+
 	url := utils.AppendStrings(cfg.Rtm.QueEndpoint, "/pub?topic=", cfg.Rtm.QueTopic)
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(input))
 	if err != nil {
@@ -33,5 +34,6 @@ func (provider NsqProvider) PublishMessage(mi *MessagingInfo) error {
 	if resp.StatusCode != http.StatusOK {
 		return errors.New(utils.AppendStrings("http status code[", strconv.Itoa(resp.StatusCode), "]"))
 	}
+
 	return nil
 }
