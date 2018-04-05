@@ -1,24 +1,10 @@
 package datastore
 
 import (
-	"net/http"
-	"os"
-
-	"go.uber.org/zap"
-
-	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
 
-type StoreResult struct {
-	Data          interface{}
-	ProblemDetail *models.ProblemDetail
-}
-
-//type StoreChannel chan StoreResult
-
-type Provider interface {
+type provider interface {
 	Connect() error
 	Init()
 	DropDatabase() error
@@ -35,10 +21,10 @@ type Provider interface {
 	UserStore
 }
 
-func DatastoreProvider() Provider {
+func Provider() provider {
 	cfg := utils.Config()
+	var p provider
 
-	var p Provider
 	switch cfg.Datastore.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
@@ -67,31 +53,7 @@ func DatastoreProvider() Provider {
 			maxOpenConnection: cfg.Datastore.MaxOpenConnection,
 			trace:             false,
 		}
-	default:
-		utils.AppLogger.Error("",
-			zap.String("msg", "cfg.ApiServer.Datastore is incorrect"),
-		)
-		os.Exit(0)
 	}
+
 	return p
-}
-
-func createProblemDetail(title string, err error) *models.ProblemDetail {
-	if err == nil {
-		err = errors.New("")
-	}
-	return &models.ProblemDetail{
-		Title:     title,
-		Status:    http.StatusInternalServerError,
-		ErrorName: models.ERROR_NAME_DATABASE_ERROR,
-		Detail:    err.Error(),
-		Error:     errors.Wrap(err, title),
-	}
-}
-
-func fatal(err error) {
-	utils.AppLogger.Error("",
-		zap.String("msg", err.Error()),
-	)
-	os.Exit(0)
 }

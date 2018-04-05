@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/handlers"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	utils.SetupLogger()
-
 	if utils.IsShowVersion {
 		fmt.Printf("API Version %s\nBuild Version %s\n", utils.APIVersion, utils.BuildVersion)
 		return
@@ -27,18 +27,22 @@ func main() {
 		}()
 	}
 
-	if err := storage.StorageProvider().Init(); err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", err.Error()),
-		)
+	if err := storage.Provider().Init(); err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Kind:    "storage",
+			Message: err.Error(),
+		})
+		os.Exit(1)
 	}
 
-	if err := datastore.DatastoreProvider().Connect(); err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", err.Error()),
-		)
+	if err := datastore.Provider().Connect(); err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Kind:    "datastore",
+			Message: err.Error(),
+		})
+		os.Exit(1)
 	}
-	datastore.DatastoreProvider().Init()
+	datastore.Provider().Init()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

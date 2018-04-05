@@ -6,26 +6,26 @@ func (p *mysqlProvider) CreateSubscriptionStore() {
 	RdbCreateSubscriptionStore()
 }
 
-func (p *mysqlProvider) InsertSubscription(room *models.Subscription) StoreResult {
+func (p *mysqlProvider) InsertSubscription(room *models.Subscription) (*models.Subscription, error) {
 	return RdbInsertSubscription(room)
 }
 
-func (p *mysqlProvider) SelectSubscription(roomId, userId string, platform int) StoreResult {
+func (p *mysqlProvider) SelectSubscription(roomId, userId string, platform int) (*models.Subscription, error) {
 	return RdbSelectSubscription(roomId, userId, platform)
 }
 
-func (p *mysqlProvider) SelectDeletedSubscriptionsByRoomId(roomId string) StoreResult {
+func (p *mysqlProvider) SelectDeletedSubscriptionsByRoomId(roomId string) ([]*models.Subscription, error) {
 	return RdbSelectDeletedSubscriptionsByRoomId(roomId)
 }
 
-func (p *mysqlProvider) SelectDeletedSubscriptionsByUserId(userId string) StoreResult {
+func (p *mysqlProvider) SelectDeletedSubscriptionsByUserId(userId string) ([]*models.Subscription, error) {
 	return RdbSelectDeletedSubscriptionsByUserId(userId)
 }
 
-func (p *mysqlProvider) SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
+func (p *mysqlProvider) SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) ([]*models.Subscription, error) {
 	return RdbSelectDeletedSubscriptionsByUserIdAndPlatform(userId, platform)
 }
 
-func (p *mysqlProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {
+func (p *mysqlProvider) DeleteSubscription(subscription *models.Subscription) error {
 	return RdbDeleteSubscription(subscription)
 }

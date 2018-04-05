@@ -5,16 +5,15 @@ import (
 	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
-type KafkaProvider struct{}
+type kafkaProvider struct{}
 
-func (provider KafkaProvider) Init() error {
-	return nil
-}
-
-func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
+func (kp kafkaProvider) PublishMessage(mi *MessagingInfo) error {
 	rawIn := json.RawMessage(mi.Message)
 	input, err := rawIn.MarshalJSON()
 	cfg := utils.Config()
@@ -23,7 +22,7 @@ func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.RTM.Kafka.Host, cfg.RTM.Kafka.Port),
 	})
 	if err != nil {
-		panic(err)
+		return errors.Wrap(err, "Kafka create producer failure")
 	}
 
 	// Delivery report handler for produced messages
@@ -32,9 +31,15 @@ func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+						Message: fmt.Sprintf("Delivery failed: %v\n", ev.TopicPartition),
+						Error:   err,
+					})
 				} else {
-					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+						Message: fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition),
+						Error:   err,
+					})
 				}
 			}
 		}

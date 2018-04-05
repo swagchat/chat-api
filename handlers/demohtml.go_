@@ -20,12 +20,12 @@ var baseMessengerHTMLData = `<!DOCTYPE html>
   </head>
   <body>
     <div id="swag" />
-    <script src="http://localhost:8101/static/main.5785e4e6.js"></script>
+    <script src="main.5785e4e6.js"></script>
     <script>
       Swag.renderMessenger({
         clientParams: {
           apiEndpoint: 'http://localhost:8101',
-          wsEndpoint: 'ws://localhost:8102',
+          wsEndpoint: 'ws://localhost:8102/ws',
           userId: '958c775a-9d71-4b26-8b17-5a210926a75e',
           username: 'demo user',
           paths: {

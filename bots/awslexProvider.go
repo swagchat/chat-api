@@ -2,20 +2,21 @@ package bots
 
 import (
 	"encoding/json"
-	"log"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lexruntimeservice"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
-type AwsLexProvider struct {
+type awslexProvider struct {
 }
 
-func (p *AwsLexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
+func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
 	r := BotResult{}
 
 	var message string
@@ -48,11 +49,12 @@ func (p *AwsLexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText
 	}
 	output, err := svc.PostText(input)
 	if err != nil {
-		log.Println(err)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "Amazon Lex post error",
+			Error:   err,
+		})
+		return r
 	}
-
-	log.Printf("============= Amazon Lex ====================")
-	log.Printf("%#v\n", output)
 
 	var textPayload utils.JSONText
 	err = json.Unmarshal([]byte("{\"text\": \""+*output.Message+"\"}"), &textPayload)

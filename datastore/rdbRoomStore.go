@@ -1,15 +1,19 @@
 package datastore
 
 import (
-	"log"
 	"time"
 
+	"github.com/pkg/errors"
+	"go.uber.org/zap/zapcore"
+
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func RdbCreateRoomStore() {
 	master := RdbStoreInstance().master()
+
 	tableMap := master.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -17,23 +21,27 @@ func RdbCreateRoomStore() {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := master.CreateTablesIfNotExists(); err != nil {
-		log.Println(err)
+	err := master.CreateTablesIfNotExists()
+	if err != nil {
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Create room table error",
+			Error:   err,
+		})
 	}
 }
 
-func RdbInsertRoom(room *models.Room) StoreResult {
+func RdbInsertRoom(room *models.Room) (*models.Room, error) {
 	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
-	result := StoreResult{}
-	if err = master.Insert(room); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while creating room item.", err)
-		if err = trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room item.", err)
-		}
-		return result
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
 	}
-	result.Data = room
+
+	err = trans.Insert(room)
+	if err != nil {
+		err = trans.Rollback()
+		return nil, errors.Wrap(err, "An error occurred while creating room")
+	}
 
 	var zero int64
 	zero = 0
@@ -47,10 +55,10 @@ func RdbInsertRoom(room *models.Room) StoreResult {
 		Modified:    room.Modified,
 	}
 	roomUsers = append(roomUsers, roomUser)
-	for _, userId := range room.RequestRoomUserIds.UserIds {
+	for _, userID := range room.RequestRoomUserIds.UserIds {
 		roomUsers = append(roomUsers, &models.RoomUser{
 			RoomId:      room.RoomId,
-			UserId:      userId,
+			UserId:      userID,
 			UnreadCount: &zero,
 			MetaData:    []byte("{}"),
 			Created:     room.Created,
@@ -59,54 +67,56 @@ func RdbInsertRoom(room *models.Room) StoreResult {
 	}
 
 	for _, roomUser := range roomUsers {
-		if err := trans.Insert(roomUser); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating room's user item.", err)
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while rollback creating room's user items.", err)
-			}
-			return result
+		err = trans.Insert(roomUser)
+		if err != nil {
+			err = trans.Rollback()
+			return nil, errors.Wrap(err, "An error occurred while creating room's users")
 		}
 	}
 
-	if result.ProblemDetail == nil {
-		if err = trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit creating room item.", err)
-		}
+	err = trans.Commit()
+	if err != nil {
+		err = trans.Rollback()
+		return nil, errors.Wrap(err, "An error occurred while commit creating room")
 	}
-	return result
+
+	return room, nil
 }
 
-func RdbSelectRoom(roomId string) StoreResult {
+func RdbSelectRoom(roomId string) (*models.Room, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
 	params := map[string]interface{}{"roomId": roomId}
-	if _, err := slave.Select(&rooms, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room item.", err)
+	_, err := slave.Select(&rooms, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting room")
 	}
+
 	if len(rooms) == 1 {
-		result.Data = rooms[0]
+		return rooms[0], nil
 	}
-	return result
+
+	return nil, nil
 }
 
-func RdbSelectRooms() StoreResult {
+func RdbSelectRooms() ([]*models.Room, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
 	_, err := slave.Select(&rooms, query)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room items.", err)
+		return nil, errors.Wrap(err, "An error occurred while getting rooms")
 	}
-	result.Data = rooms
-	return result
+
+	return rooms, nil
 }
 
-func RdbSelectUsersForRoom(roomId string) StoreResult {
+func RdbSelectUsersForRoom(roomId string) ([]*models.UserForRoom, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var users []*models.UserForRoom
 	query := utils.AppendStrings("SELECT ",
 		"u.user_id, ",
@@ -131,51 +141,51 @@ func RdbSelectUsersForRoom(roomId string) StoreResult {
 	params := map[string]interface{}{"roomId": roomId}
 	_, err := slave.Select(&users, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room's users.", err)
+		return nil, errors.Wrap(err, "An error occurred while getting room's users")
 	}
-	result.Data = users
-	return result
+
+	return users, nil
 }
 
-func RdbSelectCountRooms() StoreResult {
+func RdbSelectCountRooms() (int64, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
 	count, err := slave.SelectInt(query)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting room count.", err)
+		return 0, errors.Wrap(err, "An error occurred while getting room count")
 	}
-	result.Data = count
-	return result
+
+	return count, nil
 }
 
-func RdbUpdateRoom(room *models.Room) StoreResult {
+func RdbUpdateRoom(room *models.Room) (*models.Room, error) {
 	master := RdbStoreInstance().master()
-	result := StoreResult{}
+
 	_, err := master.Update(room)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
+		return nil, errors.Wrap(err, "An error occurred while updating room")
 	}
-	result.Data = room
-	return result
+
+	return room, nil
 }
 
-func RdbUpdateRoomDeleted(roomId string) StoreResult {
+func RdbUpdateRoomDeleted(roomId string) error {
 	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
-	result := StoreResult{}
+	if err != nil {
+		return errors.Wrap(err, "An error occurred while transaction beginning")
+	}
+
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{
 		"roomId": roomId,
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating room")
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
@@ -185,11 +195,8 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM, " SET deleted=:deleted WHERE room_id=:roomId;")
@@ -199,17 +206,15 @@ func RdbUpdateRoomDeleted(roomId string) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating room item.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating room item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating room")
 	}
 
-	if result.ProblemDetail == nil {
-		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit updating room item.", err)
-		}
+	err = trans.Commit()
+	if err != nil {
+		err := trans.Rollback()
+		return errors.Wrap(err, "An error occurred while commit updating room ")
 	}
-	return result
+
+	return nil
 }

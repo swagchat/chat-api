@@ -4,16 +4,14 @@ package services
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.ProblemDetail) {
@@ -22,47 +20,79 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 	}
 	post.BeforePost(jwt)
 
-	dRes := datastore.DatastoreProvider().SelectUser(post.UserId, true, true, true)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	user, err := datastore.Provider().SelectUser(post.UserId, true, true, true)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "User registration failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	if dRes.Data != nil {
+	if user != nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource already exists",
 			Status: http.StatusConflict,
 		}
 	}
 
-	dRes = datastore.DatastoreProvider().InsertUser(post)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	user, err = datastore.Provider().InsertUser(post)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "User registration failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	return dRes.Data.(*models.User), nil
+	return user, nil
 }
 
 func GetUsers() (*models.Users, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectUsers()
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	users, err := datastore.Provider().SelectUsers()
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get users failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	users := &models.Users{
-		Users: dRes.Data.([]*models.User),
-	}
-	return users, nil
+	return &models.Users{
+		Users: users,
+	}, nil
 }
 
 func GetUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectUser(userId, true, true, true)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	user, err := datastore.Provider().SelectUser(userId, true, true, true)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if user == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
 
-	user := dRes.Data.(*models.User)
 	// unreadCountRooms := make([]*models.RoomForUser, 0)
 	// notUnreadCountRooms := make([]*models.RoomForUser, 0)
 	// for _, roomForUser := range user.Rooms {
@@ -97,9 +127,18 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 	}
 
 	user.BeforePut(put)
-	dRes := datastore.DatastoreProvider().UpdateUser(user)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+
+	user, err := datastore.Provider().UpdateUser(user)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Update user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
 	return user, nil
@@ -112,23 +151,38 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		return pd
 	}
 
-	dRes := datastore.DatastoreProvider().SelectDevicesByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return dRes.ProblemDetail
+	devices, err := datastore.Provider().SelectDevicesByUserId(userId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return pd
 	}
-	if dRes.Data != nil {
-		devices := dRes.Data.([]*models.Device)
+	if devices != nil {
 		for _, device := range devices {
-			nRes := <-notification.NotificationProvider().DeleteEndpoint(device.NotificationDeviceId)
+			nRes := <-notification.Provider().DeleteEndpoint(device.NotificationDeviceId)
 			if nRes.ProblemDetail != nil {
 				return nRes.ProblemDetail
 			}
 		}
 	}
 
-	dRes = datastore.DatastoreProvider().UpdateUserDeleted(userId)
-	if dRes.ProblemDetail != nil {
-		return dRes.ProblemDetail
+	err = datastore.Provider().UpdateUserDeleted(userId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return pd
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
@@ -138,28 +192,35 @@ func DeleteUser(userId string) *models.ProblemDetail {
 }
 
 func selectUser(userId string) (*models.User, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectUser(userId, false, false, false)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	user, err := datastore.Provider().SelectUser(userId, false, false, false)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if user == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
-	return dRes.Data.(*models.User), nil
+	return user, nil
 }
 
 func unsubscribeByUserId(ctx context.Context, userId string) {
-	dRes := datastore.DatastoreProvider().SelectDeletedSubscriptionsByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-		utils.AppLogger.Error("",
-			zap.String("problemDetail", string(pdBytes)),
-			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-		)
+	subscriptions, err := datastore.Provider().SelectDeletedSubscriptionsByUserId(userId)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
-	unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	unsubscribe(ctx, subscriptions)
 }
 
 func GetUserUnreadCount(userId string) (*models.UserUnreadCount, *models.ProblemDetail) {
@@ -177,9 +238,8 @@ func GetUserUnreadCount(userId string) (*models.UserUnreadCount, *models.Problem
 func UserAuth(userId, sub string) *models.ProblemDetail {
 	if userId != sub {
 		return &models.ProblemDetail{
-			Title:     "You do not have permission",
-			Status:    http.StatusUnauthorized,
-			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
+			Title:  "You do not have permission",
+			Status: http.StatusUnauthorized,
 		}
 	}
 
@@ -202,9 +262,8 @@ func ContactsAuth(userId, sub string) *models.ProblemDetail {
 
 	if !isAuthorized {
 		return &models.ProblemDetail{
-			Title:     "You do not have permission",
-			Status:    http.StatusUnauthorized,
-			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
+			Title:  "You do not have permission",
+			Status: http.StatusUnauthorized,
 		}
 	}
 

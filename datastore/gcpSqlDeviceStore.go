@@ -6,30 +6,30 @@ func (p *gcpSqlProvider) CreateDeviceStore() {
 	RdbCreateDeviceStore()
 }
 
-func (p *gcpSqlProvider) InsertDevice(device *models.Device) StoreResult {
+func (p *gcpSqlProvider) InsertDevice(device *models.Device) (*models.Device, error) {
 	return RdbInsertDevice(device)
 }
 
-func (p *gcpSqlProvider) SelectDevices(userId string) StoreResult {
+func (p *gcpSqlProvider) SelectDevices(userId string) ([]*models.Device, error) {
 	return RdbSelectDevices(userId)
 }
 
-func (p *gcpSqlProvider) SelectDevice(userId string, platform int) StoreResult {
+func (p *gcpSqlProvider) SelectDevice(userId string, platform int) (*models.Device, error) {
 	return RdbSelectDevice(userId, platform)
 }
 
-func (p *gcpSqlProvider) SelectDevicesByUserId(userId string) StoreResult {
+func (p *gcpSqlProvider) SelectDevicesByUserId(userId string) ([]*models.Device, error) {
 	return RdbSelectDevicesByUserId(userId)
 }
 
-func (p *gcpSqlProvider) SelectDevicesByToken(token string) StoreResult {
+func (p *gcpSqlProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
 	return RdbSelectDevicesByToken(token)
 }
 
-func (p *gcpSqlProvider) UpdateDevice(device *models.Device) StoreResult {
+func (p *gcpSqlProvider) UpdateDevice(device *models.Device) error {
 	return RdbUpdateDevice(device)
 }
 
-func (p *gcpSqlProvider) DeleteDevice(userId string, platform int) StoreResult {
+func (p *gcpSqlProvider) DeleteDevice(userId string, platform int) error {
 	return RdbDeleteDevice(userId, platform)
 }

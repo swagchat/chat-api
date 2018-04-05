@@ -6,10 +6,10 @@ func (p *sqliteProvider) CreateAssetStore() {
 	RdbCreateAssetStore()
 }
 
-func (p *sqliteProvider) InsertAsset(asset *models.Asset) StoreResult {
+func (p *sqliteProvider) InsertAsset(asset *models.Asset) (*models.Asset, error) {
 	return RdbInsertAsset(asset)
 }
 
-func (p *sqliteProvider) SelectAsset(assetId string) StoreResult {
+func (p *sqliteProvider) SelectAsset(assetId string) (*models.Asset, error) {
 	return RdbSelectAsset(assetId)
 }

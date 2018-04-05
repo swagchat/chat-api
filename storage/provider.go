@@ -2,11 +2,7 @@ package storage
 
 import (
 	"io"
-	"os"
 
-	"go.uber.org/zap"
-
-	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -15,23 +11,23 @@ type AssetInfo struct {
 	Data     io.Reader
 }
 
-type Provider interface {
+type provider interface {
 	Init() error
-	Post(*AssetInfo) (string, *models.ProblemDetail)
-	Get(*AssetInfo) ([]byte, *models.ProblemDetail)
+	Post(*AssetInfo) (string, error)
+	Get(*AssetInfo) ([]byte, error)
 }
 
-func StorageProvider() Provider {
+func Provider() provider {
 	cfg := utils.Config()
+	var p provider
 
-	var p Provider
 	switch cfg.Storage.Provider {
 	case "local":
-		p = &LocalStorageProvider{
+		p = &localStorageProvider{
 			localPath: cfg.Storage.Local.Path,
 		}
-	case "gcpStorage":
-		p = &GcpStorageProvider{
+	case "gcs":
+		p = &gcsProvider{
 			projectId:          cfg.Storage.GCS.ProjectID,
 			jwtPath:            cfg.Storage.GCS.JwtPath,
 			scope:              "https://www.googleapis.com/auth/devstorage.full_control",
@@ -40,22 +36,18 @@ func StorageProvider() Provider {
 			thumbnailBucket:    cfg.Storage.GCS.ThumbnailBucket,
 			thumbnailDirectory: cfg.Storage.GCS.ThumbnailDirectory,
 		}
-	case "awsS3":
-		p = &AwsS3StorageProvider{
-			accessKeyId:        cfg.Storage.AWS.AccessKeyID,
-			secretAccessKey:    cfg.Storage.AWS.SecretAccessKey,
-			region:             cfg.Storage.AWS.Region,
+	case "awss3":
+		p = &awss3Provider{
+			accessKeyId:        cfg.Storage.AWSS3.AccessKeyID,
+			secretAccessKey:    cfg.Storage.AWSS3.SecretAccessKey,
+			region:             cfg.Storage.AWSS3.Region,
 			acl:                "public-read",
-			uploadBucket:       cfg.Storage.AWS.UploadBucket,
-			uploadDirectory:    cfg.Storage.AWS.UploadDirectory,
-			thumbnailBucket:    cfg.Storage.AWS.ThumbnailBucket,
-			thumbnailDirectory: cfg.Storage.AWS.ThumbnailDirectory,
+			uploadBucket:       cfg.Storage.AWSS3.UploadBucket,
+			uploadDirectory:    cfg.Storage.AWSS3.UploadDirectory,
+			thumbnailBucket:    cfg.Storage.AWSS3.ThumbnailBucket,
+			thumbnailDirectory: cfg.Storage.AWSS3.ThumbnailDirectory,
 		}
-	default:
-		utils.AppLogger.Error("",
-			zap.String("msg", "Storage provider is incorrect"),
-		)
-		os.Exit(0)
 	}
+
 	return p
 }

@@ -185,9 +185,8 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 func (r *Room) IsValidPost() *ProblemDetail {
 	if r.RoomId != "" && !utils.IsValidId(r.RoomId) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "roomId",
@@ -199,9 +198,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 
 	if r.UserId == "" {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -213,9 +211,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 
 	if !utils.IsValidId(r.UserId) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -227,9 +224,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 
 	if r.Type == nil {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "type",
@@ -241,9 +237,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 
 	if !(*r.Type > 0 && *r.Type < ROOM_TYPE_END) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "type",
@@ -255,9 +250,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 
 	if r.UserIds == nil {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userIds",
@@ -269,9 +263,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 
 	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SPEECH_MODE_END) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "speechMode",
@@ -340,9 +333,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.Type != nil {
 		if *r.Type == ONE_ON_ONE && *put.Type != ONE_ON_ONE {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Update room item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "type",
@@ -352,9 +344,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 			}
 		} else if *r.Type != ONE_ON_ONE && *put.Type == ONE_ON_ONE {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Update room item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "type",

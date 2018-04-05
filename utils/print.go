@@ -56,8 +56,6 @@ func (b *StringBuilder) PrintStruct(name string, v interface{}) string {
 				}
 				b.PrintStruct(printName, f.Value())
 			}
-		default:
-			fmt.Println(r.Kind())
 		}
 	}
 

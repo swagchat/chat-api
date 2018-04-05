@@ -1,17 +1,20 @@
 package datastore
 
 import (
-	"log"
 	"strconv"
 
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
 func RdbCreateApiStore() {
 	master := RdbStoreInstance().master()
+
 	tableMap := master.AddTableWithName(models.Api{}, TABLE_NAME_API)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
@@ -19,22 +22,22 @@ func RdbCreateApiStore() {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := master.CreateTablesIfNotExists(); err != nil {
-		log.Println(err)
-		return
+	err := master.CreateTablesIfNotExists()
+	if err != nil {
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Create api table error",
+			Error:   err,
+		})
 	}
-	dRes := RdbSelectLatestApi("admin")
-	if dRes.Data == nil {
-		dRes = RdbInsertApi("admin")
-		if dRes.ProblemDetail != nil {
-			// error
-		}
+	api, _ := RdbSelectLatestApi("admin")
+	if api == nil {
+		RdbInsertApi("admin")
 	}
 }
 
-func RdbInsertApi(name string) StoreResult {
+func RdbInsertApi(name string) (*models.Api, error) {
 	master := RdbStoreInstance().master()
-	result := StoreResult{}
+
 	api := &models.Api{
 		Name:    name,
 		Key:     utils.CreateApiKey(),
@@ -42,26 +45,30 @@ func RdbInsertApi(name string) StoreResult {
 		Created: time.Now().Unix(),
 		Expired: 0,
 	}
-	if err := master.Insert(api); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while creating api item.", err)
+	err := master.Insert(api)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while creating api")
 	}
-	result.Data = api
-	return result
+
+	return api, nil
 }
 
-func RdbSelectLatestApi(name string) StoreResult {
+func RdbSelectLatestApi(name string) (*models.Api, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var apis []*models.Api
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_API, " WHERE name=:name AND (expired=0 OR expired>", nowTimestampString, ") ORDER BY created DESC LIMIT 1;")
 	params := map[string]interface{}{"name": name}
-	if _, err := slave.Select(&apis, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting api item.", err)
+	_, err := slave.Select(&apis, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting api")
 	}
+
 	if len(apis) > 0 {
-		result.Data = apis[0]
+		return apis[0], nil
 	}
-	return result
+
+	return nil, nil
 }

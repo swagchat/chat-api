@@ -6,30 +6,30 @@ func (p *mysqlProvider) CreateDeviceStore() {
 	RdbCreateDeviceStore()
 }
 
-func (p *mysqlProvider) InsertDevice(device *models.Device) StoreResult {
+func (p *mysqlProvider) InsertDevice(device *models.Device) (*models.Device, error) {
 	return RdbInsertDevice(device)
 }
 
-func (p *mysqlProvider) SelectDevices(userId string) StoreResult {
+func (p *mysqlProvider) SelectDevices(userId string) ([]*models.Device, error) {
 	return RdbSelectDevices(userId)
 }
 
-func (p *mysqlProvider) SelectDevice(userId string, platform int) StoreResult {
+func (p *mysqlProvider) SelectDevice(userId string, platform int) (*models.Device, error) {
 	return RdbSelectDevice(userId, platform)
 }
 
-func (p *mysqlProvider) SelectDevicesByUserId(userId string) StoreResult {
+func (p *mysqlProvider) SelectDevicesByUserId(userId string) ([]*models.Device, error) {
 	return RdbSelectDevicesByUserId(userId)
 }
 
-func (p *mysqlProvider) SelectDevicesByToken(token string) StoreResult {
+func (p *mysqlProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
 	return RdbSelectDevicesByToken(token)
 }
 
-func (p *mysqlProvider) UpdateDevice(device *models.Device) StoreResult {
+func (p *mysqlProvider) UpdateDevice(device *models.Device) error {
 	return RdbUpdateDevice(device)
 }
 
-func (p *mysqlProvider) DeleteDevice(userId string, platform int) StoreResult {
+func (p *mysqlProvider) DeleteDevice(userId string, platform int) error {
 	return RdbDeleteDevice(userId, platform)
 }

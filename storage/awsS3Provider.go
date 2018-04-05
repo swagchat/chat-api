@@ -3,19 +3,16 @@ package storage
 import (
 	"bytes"
 	"io/ioutil"
-	"log"
-	"net/http"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awsutil"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/swagchat/chat-api/models"
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/utils"
 )
 
-type AwsS3StorageProvider struct {
+type awss3Provider struct {
 	accessKeyId        string
 	secretAccessKey    string
 	region             string
@@ -26,87 +23,69 @@ type AwsS3StorageProvider struct {
 	thumbnailDirectory string
 }
 
-func (provider AwsS3StorageProvider) Init() error {
-	awsS3Client, err := provider.getSession()
+func (ap *awss3Provider) Init() error {
+	awsS3Client, err := ap.getSession()
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AWS S3 get session failure")
 	}
 
 	params := &s3.CreateBucketInput{
-		Bucket: aws.String(provider.uploadBucket),
+		Bucket: aws.String(ap.uploadBucket),
 	}
-	createBucketResp, err := awsS3Client.CreateBucket(params)
+	_, err = awsS3Client.CreateBucket(params)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AWS S3 create bucket failure")
 	}
-	log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
 
 	params = &s3.CreateBucketInput{
-		Bucket: aws.String(provider.thumbnailBucket),
+		Bucket: aws.String(ap.thumbnailBucket),
 	}
-	createBucketResp, err = awsS3Client.CreateBucket(params)
+	_, err = awsS3Client.CreateBucket(params)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "AWS S3 create thumbnail bucket failure")
 	}
-	log.Printf("Created bucket %#v", awsutil.StringValue(createBucketResp))
+
 	return nil
 }
 
-func (provider AwsS3StorageProvider) Post(assetInfo *AssetInfo) (string, *models.ProblemDetail) {
-	awsS3Client, err := provider.getSession()
+func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
+	awsS3Client, err := ap.getSession()
 	if err != nil {
-		return "", &models.ProblemDetail{
-			Title:     "Create session failed. (Amazon S3)",
-			Status:    http.StatusInternalServerError,
-			ErrorName: "storage-error",
-			Detail:    err.Error(),
-		}
+		return "", errors.Wrap(err, "AWS S3 get session failure")
 	}
 
 	byteData, err := ioutil.ReadAll(assetInfo.Data)
 	if err != nil {
-		return "", &models.ProblemDetail{
-			Title:     "Reading asset data failed. (Amazon S3)",
-			Status:    http.StatusInternalServerError,
-			ErrorName: "storage-error",
-			Detail:    err.Error(),
-		}
+		return "", errors.Wrap(err, "AWS S3 read data failure")
 	}
 
 	data := bytes.NewReader(byteData)
-	filePath := utils.AppendStrings(provider.uploadDirectory, "/", assetInfo.Filename)
-	putObjectResp, err := awsS3Client.PutObject(&s3.PutObjectInput{
-		Bucket: aws.String(provider.uploadBucket),
+	filePath := utils.AppendStrings(ap.uploadDirectory, "/", assetInfo.Filename)
+	_, err = awsS3Client.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String(ap.uploadBucket),
 		Key:    aws.String(filePath),
 		Body:   data,
-		ACL:    &provider.acl,
+		ACL:    &ap.acl,
 	})
 	if err != nil {
-		return "", &models.ProblemDetail{
-			Title:     "Create object failed. (Amazon S3)",
-			Status:    http.StatusInternalServerError,
-			ErrorName: "storage-error",
-			Detail:    err.Error(),
-		}
+		return "", errors.Wrap(err, "AWS S3 put object failure")
 	}
-	log.Println("Created object %#v", awsutil.StringValue(putObjectResp))
 
-	sourceUrl := utils.AppendStrings("https://s3-ap-northeast-1.amazonaws.com/", provider.uploadBucket, "/", filePath)
-	log.Println("sourceUrl:", sourceUrl)
+	sourceUrl := utils.AppendStrings("https://s3-ap-northeast-1.amazonaws.com/", ap.uploadBucket, "/", filePath)
 	return sourceUrl, nil
 }
 
-func (provider AwsS3StorageProvider) Get(assetInfo *AssetInfo) ([]byte, *models.ProblemDetail) {
+func (ap *awss3Provider) Get(assetInfo *AssetInfo) ([]byte, error) {
 	return nil, nil
 }
 
-func (provider AwsS3StorageProvider) getSession() (*s3.S3, error) {
+func (ap *awss3Provider) getSession() (*s3.S3, error) {
 	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(provider.region),
-		Credentials: credentials.NewStaticCredentials(provider.accessKeyId, provider.secretAccessKey, ""),
+		Region:      aws.String(ap.region),
+		Credentials: credentials.NewStaticCredentials(ap.accessKeyId, ap.secretAccessKey, ""),
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "AWS S3 create session failure")
 	}
 	return s3.New(sess), nil
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func SetContactMux() {
-	Mux.GetFunc("/contacts/#userId^[a-z0-9-]$", colsHandler(aclHandler(GetContacts)))
+	Mux.GetFunc("/contacts/#userId^[a-z0-9-]$", colsHandler(GetContacts))
 }
 
 func GetContacts(w http.ResponseWriter, r *http.Request) {

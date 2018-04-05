@@ -6,10 +6,10 @@ func (p *gcpSqlProvider) CreateAssetStore() {
 	RdbCreateAssetStore()
 }
 
-func (p *gcpSqlProvider) InsertAsset(asset *models.Asset) StoreResult {
+func (p *gcpSqlProvider) InsertAsset(asset *models.Asset) (*models.Asset, error) {
 	return RdbInsertAsset(asset)
 }
 
-func (p *gcpSqlProvider) SelectAsset(assetId string) StoreResult {
+func (p *gcpSqlProvider) SelectAsset(assetId string) (*models.Asset, error) {
 	return RdbSelectAsset(assetId)
 }

@@ -6,18 +6,18 @@ import (
 	"strings"
 
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
-type A3rtProvider struct {
+type a3rtProvider struct {
 }
 
-func (p *A3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
+func (ap *a3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
 	r := BotResult{}
 
 	var message string
@@ -52,20 +52,18 @@ func (p *A3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) 
 	}
 	var res models.A3RTResponse
 
-	log.Printf("%#v\n", resp)
-	//json.NewDecoder(resp.Body).Decode(res)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 	}
-	log.Printf("%#v\n", string(body))
+
 	err = json.Unmarshal(body, &res)
 	if err != nil {
-		fmt.Println(err)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "A3RT response body unmarshal error",
+			Error:   err,
+		})
 	}
-	log.Printf("=================================")
-	log.Printf("%#v\n", res)
 
-	//if len(res.Results) > 0 {
 	var textPayload utils.JSONText
 	// A3RT
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Results[0].Reply+"\"}"), &textPayload)

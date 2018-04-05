@@ -5,18 +5,18 @@ import (
 	"net/url"
 
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
-type ApiAiProvider struct {
+type dialogflowProvider struct {
 }
 
-func (p *ApiAiProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
+func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
 	r := BotResult{}
 
 	var message string
@@ -40,7 +40,7 @@ func (p *ApiAiProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText)
 	values.Add("lang", "ja")
 	values.Add("sessionId", b.UserId)
 	values.Add("query", message)
-	log.Println(values.Encode())
+
 	req, err := http.NewRequest(
 		"GET",
 		"https://api.api.ai/v1/query?"+values.Encode(),
@@ -55,20 +55,19 @@ func (p *ApiAiProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText)
 	}
 	var res models.ApiAiResponse
 
-	log.Printf("%#v\n", resp)
-	//json.NewDecoder(resp.Body).Decode(res)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 	}
-	log.Printf("%#v\n", string(body))
+
 	err = json.Unmarshal(body, &res)
 	if err != nil {
-		fmt.Println(err)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "Dialogflow response body unmarshal error",
+			Error:   err,
+		})
+		return r
 	}
-	log.Printf("=================================")
-	log.Printf("%#v\n", res)
 
-	//if len(res.Results) > 0 {
 	var textPayload utils.JSONText
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Result.Fulfillment.Speech+"\"}"), &textPayload)
 	post := &models.Message{

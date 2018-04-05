@@ -1,22 +1,32 @@
 package services
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
+	"go.uber.org/zap/zapcore"
 )
 
 func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	blockUserIds, err := datastore.Provider().SelectBlockUsersByUserId(userId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get block users failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	blockUsers := &models.BlockUsers{
-		BlockUsers: dRes.Data.([]string),
-	}
-	return blockUsers, nil
+	return &models.BlockUsers{
+		BlockUsers: blockUserIds,
+	}, nil
 }
 
 func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
@@ -45,20 +55,35 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 			Created:     nowTimestamp,
 		})
 	}
-	dRes := datastore.DatastoreProvider().InsertBlockUsers(blockUsers)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	err := datastore.Provider().InsertBlockUsers(blockUsers)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Block user registration failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	dRes = datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnBlockUsers := &models.BlockUsers{
-		BlockUsers: dRes.Data.([]string),
+	blockUserIds, err := datastore.Provider().SelectBlockUsersByUserId(userId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Block user registration failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	return returnBlockUsers, nil
+	return &models.BlockUsers{
+		BlockUsers: blockUserIds,
+	}, nil
 }
 
 func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
@@ -78,18 +103,33 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*mode
 		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().DeleteBlockUser(userId, bUIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	err := datastore.Provider().DeleteBlockUser(userId, bUIds)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete block user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	dRes = datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnBlockUsers := &models.BlockUsers{
-		BlockUsers: dRes.Data.([]string),
+	blockUserIds, err := datastore.Provider().SelectBlockUsersByUserId(userId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete block user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	return returnBlockUsers, nil
+	return &models.BlockUsers{
+		BlockUsers: blockUserIds,
+	}, nil
 }

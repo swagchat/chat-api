@@ -2,16 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"path/filepath"
-	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
 func SetAssetAwsSnsMux() {
@@ -53,22 +52,22 @@ type Object struct {
 }
 
 func PostAssetAwsSns(w http.ResponseWriter, r *http.Request) {
-	log.Println("PostAssetSNS")
-
 	decoder := json.NewDecoder(r.Body)
 	var input AwsSNSSubscribeInput
 	err := decoder.Decode(&input)
 	if err != nil {
-		log.Println(err)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "Amazon SNS subscribe error",
+			Error:   err,
+		})
 		return
 	}
 
-	log.Printf("%#v", input)
 	if input.Type == "SubscriptionConfirmation" {
 		cfg := utils.Config()
 		sess, err := session.NewSession(&aws.Config{
-			Region:      aws.String(cfg.Storage.AWS.Region),
-			Credentials: credentials.NewStaticCredentials(cfg.Storage.AWS.AccessKeyID, cfg.Storage.AWS.SecretAccessKey, ""),
+			Region:      aws.String(cfg.Storage.AWSS3.Region),
+			Credentials: credentials.NewStaticCredentials(cfg.Storage.AWSS3.AccessKeyID, cfg.Storage.AWSS3.SecretAccessKey, ""),
 		})
 		cli := sns.New(sess)
 
@@ -76,54 +75,28 @@ func PostAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 			Token:    aws.String(input.Token),
 			TopicArn: aws.String(input.TopicArn),
 		}
-		resp, err := cli.ConfirmSubscription(params)
+		_, err = cli.ConfirmSubscription(params)
 
 		if err != nil {
-			log.Println(err.Error())
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				Message: "Amazon SNS post asset error",
+				Error:   err,
+			})
 			return
 		}
-
-		log.Println(resp)
 	} else {
-		log.Println(input.Message)
 		var records AssetS3SNSRecords
 		err = json.Unmarshal([]byte(input.Message), &records)
 		if err != nil {
-			log.Println(err)
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				Message: "Amazon SNS input message unmarshal error",
+				Error:   err,
+			})
 			return
 		}
-		filePath := records.Records[0].S3.Object.Key
-		filename := filepath.Base(filePath)
-		log.Println(filePath)
-		log.Println(filename)
-		pos := strings.LastIndex(filename, ".")
-		messageId := filename[0:pos]
-		log.Println("messageId=", messageId)
-
-		// TODO Update PayloadImage.ThumbnailUrl
-		// https://s3-ap-northeast-1.amazonaws.com/swagchat-thumbnail/assets/reduced/2d2eac8b-3ff2-491a-9ae4-e73009caecd6.png
-		/*
-			url := "https://s3-" + utils.Cfg.AwsS3.Region + ".amazonaws.com/" + utils.Cfg.AwsS3.ThumbnailBucketNameAsset + "/" + filePath
-			log.Println("url=", url)
-
-			if strings.Contains(filePath, utils.Cfg.AwsS3.SourceDirectory) {
-				log.Println("SourceDirectory")
-			} else if strings.Contains(filePath, utils.Cfg.AwsS3.ThumbnailDirectory) {
-				log.Println("ThumbnailDirectory")
-
-				message, problemDetail := services.GetMessage(messageId)
-				if problemDetail != nil {
-					log.Println(problemDetail)
-					return
-				}
-				var payloadImage models.PayloadImage
-				json.Unmarshal(message.Payload, &payloadImage)
-				payloadImage.ThumbnailUrl = url
-				payloadImageBuffer, err := json.Marshal(payloadImage)
-				message.Payload = payloadImageBuffer
-				datastoreProvider := datastore.GetDatastoreProvider()
-				<-datastoreProvider.MessageUpdate(message)
-			}
-		*/
+		// filePath := records.Records[0].S3.Object.Key
+		// filename := filepath.Base(filePath)
+		// pos := strings.LastIndex(filename, ".")
+		// messageId := filename[0:pos]
 	}
 }

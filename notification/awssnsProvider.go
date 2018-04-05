@@ -5,18 +5,20 @@ package notification
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
 
-type AwsSnsProvider struct {
+type awssnsProvider struct {
 	region                string
 	accessKeyId           string
 	secretAccessKey       string
@@ -60,25 +62,21 @@ type gcmPush struct {
 	Badge   *int        `json:"badge,omitempty"`
 }
 
-func (provider AwsSnsProvider) Init() error {
-	return nil
-}
-
-func (provider AwsSnsProvider) newSnsClient() *sns.SNS {
+func (ap *awssnsProvider) newSnsClient() *sns.SNS {
 	session, _ := session.NewSession(&aws.Config{
-		Region:      aws.String(provider.region),
-		Credentials: credentials.NewStaticCredentials(provider.accessKeyId, provider.secretAccessKey, ""),
+		Region:      aws.String(ap.region),
+		Credentials: credentials.NewStaticCredentials(ap.accessKeyId, ap.secretAccessKey, ""),
 	})
 	return sns.New(session)
 }
 
-func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
+func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
 		result := NotificationResult{}
 
-		client := provider.newSnsClient()
+		client := ap.newSnsClient()
 		params := &sns.CreateTopicInput{
 			Name: aws.String(utils.AppendStrings(utils.Config().Notification.RoomTopicNamePrefix, roomId)),
 		}
@@ -94,13 +92,13 @@ func (provider AwsSnsProvider) CreateTopic(roomId string) NotificationChannel {
 	return nc
 }
 
-func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
+func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
 		result := NotificationResult{}
 
-		client := provider.newSnsClient()
+		client := ap.newSnsClient()
 		params := &sns.DeleteTopicInput{
 			TopicArn: aws.String(notificationTopicId),
 		}
@@ -114,7 +112,7 @@ func (provider AwsSnsProvider) DeleteTopic(notificationTopicId string) Notificat
 	return nc
 }
 
-func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
+func (ap *awssnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
 	cfg := utils.Config()
 
 	nc := make(NotificationChannel, 1)
@@ -133,7 +131,7 @@ func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, devic
 			platformApplicationArn = ""
 		}
 
-		client := provider.newSnsClient()
+		client := ap.newSnsClient()
 		createPlatformEndpointInputParams := &sns.CreatePlatformEndpointInput{
 			PlatformApplicationArn: aws.String(platformApplicationArn),
 			Token:          aws.String(deviceToken),
@@ -151,13 +149,13 @@ func (provider AwsSnsProvider) CreateEndpoint(userId string, platform int, devic
 	return nc
 }
 
-func (provider AwsSnsProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
+func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
 		result := NotificationResult{}
 
-		client := provider.newSnsClient()
+		client := ap.newSnsClient()
 		deleteEndpointInputParams := &sns.DeleteEndpointInput{
 			EndpointArn: aws.String(notificationDeviceId),
 		}
@@ -171,13 +169,13 @@ func (provider AwsSnsProvider) DeleteEndpoint(notificationDeviceId string) Notif
 	return nc
 }
 
-func (provider AwsSnsProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
+func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
 		result := NotificationResult{}
 
-		client := provider.newSnsClient()
+		client := ap.newSnsClient()
 		subscribeInputParams := &sns.SubscribeInput{
 			Protocol: aws.String("Application"),
 			TopicArn: aws.String(notificationTopicId),
@@ -195,13 +193,13 @@ func (provider AwsSnsProvider) Subscribe(notificationTopicId string, notificatio
 	return nc
 }
 
-func (provider AwsSnsProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
+func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
 		result := NotificationResult{}
 
-		client := provider.newSnsClient()
+		client := ap.newSnsClient()
 		params := &sns.UnsubscribeInput{
 			SubscriptionArn: aws.String(notificationSubscribeId),
 		}
@@ -215,12 +213,12 @@ func (provider AwsSnsProvider) Unsubscribe(notificationSubscribeId string) Notif
 	return nc
 }
 
-func (provider AwsSnsProvider) Publish(ctx context.Context, notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
+func (ap *awssnsProvider) Publish(ctx context.Context, notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
 	nc := make(NotificationChannel, 1)
 	defer close(nc)
 	result := NotificationResult{}
 
-	client := provider.newSnsClient()
+	client := ap.newSnsClient()
 	contentAvailable := 1
 	iosPush := iosPush{
 		Alert:            messageInfo.Text,
@@ -270,12 +268,9 @@ func (provider AwsSnsProvider) Publish(ctx context.Context, notificationTopicId,
 		TopicArn:         aws.String(notificationTopicId),
 	}
 	res, err := client.Publish(params)
-	utils.AppLogger.Info("",
-		zap.String("msg", "[Amazon SNS]Publish message."),
-		zap.String("topicArn", notificationTopicId),
-		zap.String("message", message),
-		zap.String("response", res.String()),
-	)
+	logging.Log(zapcore.InfoLevel, &logging.AppLog{
+		Message: fmt.Sprintf("[Amazon SNS]Publish message topicArn:%s message:%s response:%s", notificationTopicId, message, res.String()),
+	})
 	nc <- result
 
 	select {

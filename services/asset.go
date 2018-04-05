@@ -3,13 +3,14 @@ package services
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/storage"
+	"go.uber.org/zap/zapcore"
 )
 
 func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.ProblemDetail) {
@@ -23,52 +24,88 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 
 	asset.BeforePost()
 
-	storageProvider := storage.StorageProvider()
 	assetInfo := &storage.AssetInfo{
 		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
 		Data:     file,
 	}
 
-	url, pd := storageProvider.Post(assetInfo)
-	if pd != nil {
+	url, err := storage.Provider().Post(assetInfo)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File upload failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
 		return nil, pd
 	}
 	asset.URL = url
 
-	dRes := datastore.DatastoreProvider().InsertAsset(asset)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	asset, err = datastore.Provider().InsertAsset(asset)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File upload failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
 	}
-	return dRes.Data.(*models.Asset), nil
+	return asset, nil
 }
 
 func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.ProblemDetail) {
 	if ifModifiedSince != "" {
-		t, err := time.Parse(http.TimeFormat, ifModifiedSince)
-		if err == nil {
-			log.Println("t=", t.Unix())
+		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Date format error [If-Modified-Since]",
+				Status: http.StatusInternalServerError,
+			}
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				ProblemDetail: pd,
+				Error:         err,
+			})
+			return nil, nil, pd
 		}
 	}
 
-	dRes := datastore.DatastoreProvider().SelectAsset(assetId)
-	if dRes.ProblemDetail != nil {
-		return nil, nil, dRes.ProblemDetail
+	asset, err := datastore.Provider().SelectAsset(assetId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File download failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
 	}
-	if dRes.Data == nil {
+	if asset == nil {
 		return nil, nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
 
-	asset := dRes.Data.(*models.Asset)
-	storageProvider := storage.StorageProvider()
 	assetInfo := &storage.AssetInfo{
 		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
 	}
-	bytes, pd := storageProvider.Get(assetInfo)
-	if pd != nil {
+	bytes, err := storage.Provider().Get(assetInfo)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File download error",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Stacktrace:    fmt.Sprintf("%v\n", err),
+		})
 		return nil, nil, pd
 	}
 
-	return bytes, dRes.Data.(*models.Asset), nil
+	return bytes, asset, nil
 }

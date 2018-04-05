@@ -13,12 +13,12 @@ import (
 	"syscall"
 	"time"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
-	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -41,8 +41,10 @@ var (
 )
 
 func StartServer(ctx context.Context) {
+	cfg := utils.Config()
+
 	Mux = bone.New()
-	if utils.Config().DemoPage {
+	if cfg.DemoPage {
 		Mux.GetFunc("/", messengerHTMLHandler)
 	}
 	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
@@ -59,32 +61,33 @@ func StartServer(ctx context.Context) {
 	SetSettingMux()
 	SetUserMux()
 
-	cfg := utils.Config()
-
 	if cfg.Profiling {
 		SetPprofMux()
 	}
+
 	if cfg.Storage.Provider == "awsS3" {
 		SetAssetAwsSnsMux()
 	}
+
 	Mux.NotFoundFunc(notFoundHandler)
 
 	go run(ctx)
 
+	c := utils.Config()
 	sb := utils.NewStringBuilder()
-	s := sb.PrintStruct("config", cfg)
-	utils.AppLogger.Info("",
-		zap.String("msg", "swagchat Chat API Start!"),
-		zap.String("config", s),
-	)
-	if err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux); err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", err.Error()),
-		)
-	}
-	utils.AppLogger.Info("",
-		zap.String("msg", "swagchat Chat API Shutdown finish!"),
-	)
+	cfgStr := sb.PrintStruct("config", c)
+	logging.Log(zapcore.InfoLevel, &logging.AppLog{
+		Kind:    "handler",
+		Message: fmt.Sprintf("%s start", utils.AppName),
+		Config:  cfgStr,
+	})
+
+	gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux)
+
+	logging.Log(zapcore.InfoLevel, &logging.AppLog{
+		Kind:    "handler",
+		Message: "shut down complete",
+	})
 }
 
 func run(ctx context.Context) {
@@ -96,10 +99,10 @@ func run(ctx context.Context) {
 			gracedown.Close()
 		case s := <-signalChan:
 			if s == syscall.SIGTERM || s == syscall.SIGINT {
-				utils.AppLogger.Info("",
-					zap.String("msg", "swagchat Chat API Shutdown start!"),
-					zap.String("signal", s.String()),
-				)
+				logging.Log(zapcore.InfoLevel, &logging.AppLog{
+					Kind:    "handler",
+					Message: fmt.Sprintf("%s graceful down by signal[%s]", utils.AppName, s.String()),
+				})
 				gracedown.Close()
 			}
 		}
@@ -107,7 +110,7 @@ func run(ctx context.Context) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	respond(w, r, http.StatusOK, "text/plain", utils.AppendStrings("swagchat Chat API version ", utils.APIVersion))
+	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", utils.AppName, utils.APIVersion, utils.BuildVersion))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
@@ -134,40 +137,45 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNotFound, "", nil)
 }
 
-func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		role := "guest"
+// func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		role := "guest"
 
-		apiKey := r.Header.Get(utils.HeaderAPIKey)
-		apiSecret := r.Header.Get(utils.HeaderAPISecret)
-		if apiKey != "" && apiSecret != "" {
-			dRes := datastore.DatastoreProvider().SelectLatestApi("admin")
-			if dRes.ProblemDetail != nil {
-				// TODO error
-			}
-			if dRes.Data != nil {
-				api := dRes.Data.(*models.Api)
-				if apiKey == api.Key && apiSecret == api.Secret {
-					role = "admin"
-				}
-			}
-		}
+// 		apiKey := r.Header.Get(utils.HeaderAPIKey)
+// 		apiSecret := r.Header.Get(utils.HeaderAPISecret)
+// 		if apiKey != "" && apiSecret != "" {
+// 			api, err := datastore.Provider().SelectLatestApi("admin")
+// 			if err != nil {
+// 				// TODO error
+// 			}
+// 			if api != nil {
+// 				if apiKey == api.Key && apiSecret == api.Secret {
+// 					role = "admin"
+// 				}
+// 			}
+// 		}
 
-		if role != "admin" {
-			authorization := r.Header.Get("Authorization")
-			token := strings.Replace(authorization, "Bearer ", "", 1)
-			userId := r.Header.Get(utils.HeaderUserId)
-			if token != "" && userId != "" {
-				dRes := datastore.DatastoreProvider().SelectUserByUserIdAndAccessToken(userId, token)
-				if dRes.Data != nil {
-					role = "user"
-				}
-			}
-		}
-		ctx := context.WithValue(r.Context(), "role", role)
-		fn(w, r.WithContext(ctx))
-	}
-}
+// 		if role != "admin" {
+// 			authorization := r.Header.Get("Authorization")
+// 			token := strings.Replace(authorization, "Bearer ", "", 1)
+// 			userId := r.Header.Get(utils.HeaderUserId)
+// 			if token != "" && userId != "" {
+// 				user, err := datastore.Provider().SelectUserByUserIdAndAccessToken(userId, token)
+// 				if err != nil {
+// 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+// 						Message:    err.Error(),
+// 						Stacktrace: fmt.Sprintf("%v\n", err),
+// 					})
+// 				}
+// 				if user != nil {
+// 					role = "user"
+// 				}
+// 			}
+// 		}
+// 		ctx := context.WithValue(r.Context(), "role", role)
+// 		fn(w, r.WithContext(ctx))
+// 	}
+// }
 
 func decodeBody(r *http.Request, v interface{}) error {
 	defer r.Body.Close()
@@ -199,13 +207,13 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 }
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	if utils.Config().ErrorLogging {
-		problemDetailBytes, _ := json.Marshal(problemDetail)
-		utils.AppLogger.Error("",
-			zap.String("problemDetail", string(problemDetailBytes)),
-			zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
-		)
-	}
+	// if utils.Config().ErrorLogging {
+	// problemDetailBytes, _ := json.Marshal(problemDetail)
+	// utils.AppLogger.Error("",
+	// 	zap.String("problemDetail", string(problemDetailBytes)),
+	// 	zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
+	// )
+	// }
 	respond(w, r, status, "application/json", problemDetail)
 }
 

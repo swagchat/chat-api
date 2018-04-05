@@ -178,9 +178,8 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 func (u *User) IsValidPost() *ProblemDetail {
 	if u.UserId != "" && !utils.IsValidId(u.UserId) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -192,9 +191,8 @@ func (u *User) IsValidPost() *ProblemDetail {
 
 	if len(u.UserId) > 36 {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -206,9 +204,8 @@ func (u *User) IsValidPost() *ProblemDetail {
 
 	if u.Name == "" {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "name",

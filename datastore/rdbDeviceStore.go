@@ -1,15 +1,18 @@
 package datastore
 
 import (
-	"log"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
 func RdbCreateDeviceStore() {
 	master := RdbStoreInstance().master()
+
 	tableMap := master.AddTableWithName(models.Device{}, TABLE_NAME_DEVICE)
 	tableMap.SetUniqueTogether("user_id", "platform")
 	for _, columnMap := range tableMap.Columns {
@@ -17,24 +20,28 @@ func RdbCreateDeviceStore() {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := master.CreateTablesIfNotExists(); err != nil {
-		log.Println(err)
+	err := master.CreateTablesIfNotExists()
+	if err != nil {
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Create device table error",
+			Error:   err,
+		})
 	}
 }
 
-func RdbInsertDevice(device *models.Device) StoreResult {
+func RdbInsertDevice(device *models.Device) (*models.Device, error) {
 	master := RdbStoreInstance().master()
-	result := StoreResult{}
+
 	if err := master.Insert(device); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while creating device item.", err)
+		return nil, errors.Wrap(err, "An error occurred while creating device")
 	}
-	result.Data = device
-	return result
+
+	return device, nil
 }
 
-func RdbSelectDevices(userId string) StoreResult {
+func RdbSelectDevices(userId string) ([]*models.Device, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
@@ -42,64 +49,72 @@ func RdbSelectDevices(userId string) StoreResult {
 	}
 	_, err := slave.Select(&devices, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
+		return nil, errors.Wrap(err, "An error occurred while getting device")
 	}
-	result.Data = devices
-	return result
+
+	return devices, nil
 }
 
-func RdbSelectDevice(userId string, platform int) StoreResult {
+func RdbSelectDevice(userId string, platform int) (*models.Device, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
 		"userId":   userId,
 		"platform": platform,
 	}
-	if _, err := slave.Select(&devices, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting device item.", err)
+	_, err := slave.Select(&devices, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting device")
 	}
+
 	if len(devices) == 1 {
-		result.Data = devices[0]
+		return devices[0], nil
 	}
-	return result
+
+	return nil, nil
 }
 
-func RdbSelectDevicesByUserId(userId string) StoreResult {
+func RdbSelectDevicesByUserId(userId string) ([]*models.Device, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	if _, err := slave.Select(&devices, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
+	_, err := slave.Select(&devices, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting devices")
 	}
-	result.Data = devices
-	return result
+
+	return devices, nil
 }
 
-func RdbSelectDevicesByToken(token string) StoreResult {
+func RdbSelectDevicesByToken(token string) ([]*models.Device, error) {
 	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE token=:token;")
 	params := map[string]interface{}{
 		"token": token,
 	}
-	if _, err := slave.Select(&devices, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
+	_, err := slave.Select(&devices, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting devices")
 	}
-	result.Data = devices
-	return result
+
+	return devices, nil
 }
 
-func RdbUpdateDevice(device *models.Device) StoreResult {
+func RdbUpdateDevice(device *models.Device) error {
 	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
-	result := StoreResult{}
+	if err != nil {
+		return errors.Wrap(err, "An error occurred while transaction beginning")
+	}
+
 	query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
 		"userId":   device.UserId,
@@ -108,11 +123,8 @@ func RdbUpdateDevice(device *models.Device) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating device item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
 	query = utils.AppendStrings("UPDATE ", TABLE_NAME_DEVICE, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
@@ -124,25 +136,26 @@ func RdbUpdateDevice(device *models.Device) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating device item.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating device item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating device")
 	}
 
-	if result.ProblemDetail == nil {
-		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit updating device item.", err)
-		}
+	err = trans.Commit()
+	if err != nil {
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while commit updating device")
 	}
-	return result
+
+	return nil
 }
 
-func RdbDeleteDevice(userId string, platform int) StoreResult {
+func RdbDeleteDevice(userId string, platform int) error {
 	master := RdbStoreInstance().master()
 	trans, err := master.Begin()
-	result := StoreResult{}
+	if err != nil {
+		return errors.Wrap(err, "An error occurred while transaction beginning")
+	}
+
 	query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
 		"userId":   userId,
@@ -151,11 +164,8 @@ func RdbDeleteDevice(userId string, platform int) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting device item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
 	query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
@@ -165,17 +175,15 @@ func RdbDeleteDevice(userId string, platform int) StoreResult {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while deleting device item.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback deleting device item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while deleting device")
 	}
 
-	if result.ProblemDetail == nil {
-		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit deleting device item.", err)
-		}
+	err = trans.Commit()
+	if err != nil {
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while commit deleting device")
 	}
-	return result
+
+	return nil
 }

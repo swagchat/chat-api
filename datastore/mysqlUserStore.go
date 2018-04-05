@@ -6,34 +6,34 @@ func (p *mysqlProvider) CreateUserStore() {
 	RdbCreateUserStore()
 }
 
-func (p *mysqlProvider) InsertUser(user *models.User) StoreResult {
+func (p *mysqlProvider) InsertUser(user *models.User) (*models.User, error) {
 	return RdbInsertUser(user)
 }
 
-func (p *mysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
+func (p *mysqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
 	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
 }
 
-func (p *mysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
+func (p *mysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.User, error) {
 	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
 }
 
-func (p *mysqlProvider) SelectUsers() StoreResult {
+func (p *mysqlProvider) SelectUsers() ([]*models.User, error) {
 	return RdbSelectUsers()
 }
 
-func (p *mysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
+func (p *mysqlProvider) SelectUserIdsByUserIds(userIds []string) ([]string, error) {
 	return RdbSelectUserIdsByUserIds(userIds)
 }
 
-func (p *mysqlProvider) UpdateUser(user *models.User) StoreResult {
+func (p *mysqlProvider) UpdateUser(user *models.User) (*models.User, error) {
 	return RdbUpdateUser(user)
 }
 
-func (p *mysqlProvider) UpdateUserDeleted(userId string) StoreResult {
+func (p *mysqlProvider) UpdateUserDeleted(userId string) error {
 	return RdbUpdateUserDeleted(userId)
 }
 
-func (p *mysqlProvider) SelectContacts(userId string) StoreResult {
+func (p *mysqlProvider) SelectContacts(userId string) ([]*models.User, error) {
 	return RdbSelectContacts(userId)
 }

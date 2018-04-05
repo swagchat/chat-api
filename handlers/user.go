@@ -9,7 +9,7 @@ import (
 )
 
 func SetUserMux() {
-	Mux.PostFunc("/users", colsHandler(aclHandler(PostUser)))
+	Mux.PostFunc("/users", colsHandler(PostUser))
 	Mux.GetFunc("/users", colsHandler(GetUsers))
 	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(GetUser)))
 	Mux.GetFunc("/profiles/#userId^[a-z0-9-]$", colsHandler(contactsAuthHandler(GetProfile)))

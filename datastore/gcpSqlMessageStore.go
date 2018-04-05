@@ -6,22 +6,22 @@ func (p *gcpSqlProvider) CreateMessageStore() {
 	RdbCreateMessageStore()
 }
 
-func (p *gcpSqlProvider) InsertMessage(message *models.Message) StoreResult {
+func (p *gcpSqlProvider) InsertMessage(message *models.Message) (string, error) {
 	return RdbInsertMessage(message)
 }
 
-func (p *gcpSqlProvider) SelectMessage(messageId string) StoreResult {
+func (p *gcpSqlProvider) SelectMessage(messageId string) (*models.Message, error) {
 	return RdbSelectMessage(messageId)
 }
 
-func (p *gcpSqlProvider) SelectMessages(roomId string, limit, offset int, order string) StoreResult {
+func (p *gcpSqlProvider) SelectMessages(roomId string, limit, offset int, order string) ([]*models.Message, error) {
 	return RdbSelectMessages(roomId, limit, offset, order)
 }
 
-func (p *gcpSqlProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {
+func (p *gcpSqlProvider) SelectCountMessagesByRoomId(roomId string) (int64, error) {
 	return RdbSelectCountMessagesByRoomId(roomId)
 }
 
-func (p *gcpSqlProvider) UpdateMessage(message *models.Message) StoreResult {
+func (p *gcpSqlProvider) UpdateMessage(message *models.Message) (*models.Message, error) {
 	return RdbUpdateMessage(message)
 }

@@ -10,9 +10,11 @@ import (
 	"os"
 	"strconv"
 
+	"go.uber.org/zap/zapcore"
 	gorp "gopkg.in/gorp.v2"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -39,7 +41,10 @@ func (p *gcpSqlProvider) Connect() error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
-			fatal(err)
+			logging.Log(zapcore.FatalLevel, &logging.AppLog{
+				Message: "Google Cloud SQL connect error",
+				Error:   err,
+			})
 		}
 
 		mic, err := strconv.Atoi(p.maxIdleConnection)
@@ -71,8 +76,10 @@ func (p *gcpSqlProvider) Connect() error {
 				p.database)
 			db, err := p.openDb(ds, replicaSi)
 			if err != nil {
-				log.Println(err)
-				fatal(err)
+				logging.Log(zapcore.FatalLevel, &logging.AppLog{
+					Message: "Google Cloud SQL connect error",
+					Error:   err,
+				})
 			}
 
 			mic, err := strconv.Atoi(p.maxIdleConnection)

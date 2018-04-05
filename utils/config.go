@@ -69,7 +69,7 @@ type Storage struct {
 		ThumbnailDirectory string `yaml:"thumbnailDirectory"`
 	}
 
-	AWS struct {
+	AWSS3 struct {
 		Region             string `yaml:"region"`
 		AccessKeyID        string `yaml:"accessKeyId"`
 		SecretAccessKey    string `yaml:"secretAccessKey"`
@@ -180,9 +180,9 @@ func NewConfig() *config {
 		Notification: notification,
 	}
 
-	c.LoadYaml()
-	c.LoadEnvironment()
-	c.ParseFlag()
+	c.loadYaml()
+	c.loadEnvironment()
+	c.parseFlag()
 	c.after()
 
 	return c
@@ -192,12 +192,12 @@ func Config() *config {
 	return cfg
 }
 
-func (c *config) LoadYaml() {
+func (c *config) loadYaml() {
 	buf, _ := ioutil.ReadFile("config/app.yaml")
 	yaml.Unmarshal(buf, c)
 }
 
-func (c *config) LoadEnvironment() {
+func (c *config) loadEnvironment() {
 	var v string
 
 	if v = os.Getenv("HTTP_PORT"); v != "" {
@@ -269,26 +269,26 @@ func (c *config) LoadEnvironment() {
 	}
 
 	// Storage - AWS S3
-	if v = os.Getenv("SC_STORAGE_AWS_REGION"); v != "" {
-		c.Storage.AWS.Region = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_REGION"); v != "" {
+		c.Storage.AWSS3.Region = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_ACCESS_KEY_ID"); v != "" {
-		c.Storage.AWS.AccessKeyID = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_ACCESS_KEY_ID"); v != "" {
+		c.Storage.AWSS3.AccessKeyID = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_SECRET_ACCESS_KEY"); v != "" {
-		c.Storage.AWS.SecretAccessKey = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_SECRET_ACCESS_KEY"); v != "" {
+		c.Storage.AWSS3.SecretAccessKey = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_UPLOAD_BUCKET"); v != "" {
-		c.Storage.AWS.UploadBucket = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_UPLOAD_BUCKET"); v != "" {
+		c.Storage.AWSS3.UploadBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_UPLOAD_DIRECTORY"); v != "" {
-		c.Storage.AWS.UploadDirectory = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_UPLOAD_DIRECTORY"); v != "" {
+		c.Storage.AWSS3.UploadDirectory = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_THUMBNAIL_BUCKET"); v != "" {
-		c.Storage.AWS.ThumbnailBucket = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_THUMBNAIL_BUCKET"); v != "" {
+		c.Storage.AWSS3.ThumbnailBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_THUMBNAIL_DIRECTORY"); v != "" {
-		c.Storage.AWS.ThumbnailDirectory = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_THUMBNAIL_DIRECTORY"); v != "" {
+		c.Storage.AWSS3.ThumbnailDirectory = v
 	}
 
 	// Datastore
@@ -449,7 +449,7 @@ func (c *config) LoadEnvironment() {
 	}
 }
 
-func (c *config) ParseFlag() {
+func (c *config) parseFlag() {
 	flag.BoolVar(&IsShowVersion, "v", false, "")
 	flag.BoolVar(&IsShowVersion, "version", false, "show version")
 
@@ -485,13 +485,13 @@ func (c *config) ParseFlag() {
 	flag.StringVar(&c.Storage.GCS.ThumbnailDirectory, "storage.gcs.thumbnailDirectory", c.Storage.GCS.ThumbnailDirectory, "")
 
 	// Storage - AWS S3
-	flag.StringVar(&c.Storage.AWS.Region, "storage.aws.region", c.Storage.AWS.Region, "")
-	flag.StringVar(&c.Storage.AWS.AccessKeyID, "storage.aws.accessKeyId", c.Storage.AWS.AccessKeyID, "")
-	flag.StringVar(&c.Storage.AWS.SecretAccessKey, "storage.aws.secretAccessKey", c.Storage.AWS.SecretAccessKey, "")
-	flag.StringVar(&c.Storage.AWS.UploadBucket, "storage.aws.uploadBucket", c.Storage.AWS.UploadBucket, "")
-	flag.StringVar(&c.Storage.AWS.UploadDirectory, "storage.aws.uploadDirectory", c.Storage.AWS.UploadDirectory, "")
-	flag.StringVar(&c.Storage.AWS.ThumbnailBucket, "storage.aws.thumbnailBucket", c.Storage.AWS.ThumbnailBucket, "")
-	flag.StringVar(&c.Storage.AWS.ThumbnailDirectory, "storage.aws.thumbnailDirectory", c.Storage.AWS.ThumbnailDirectory, "")
+	flag.StringVar(&c.Storage.AWSS3.Region, "storage.awss3.region", c.Storage.AWSS3.Region, "")
+	flag.StringVar(&c.Storage.AWSS3.AccessKeyID, "storage.awss3.accessKeyId", c.Storage.AWSS3.AccessKeyID, "")
+	flag.StringVar(&c.Storage.AWSS3.SecretAccessKey, "storage.awss3.secretAccessKey", c.Storage.AWSS3.SecretAccessKey, "")
+	flag.StringVar(&c.Storage.AWSS3.UploadBucket, "storage.awss3.uploadBucket", c.Storage.AWSS3.UploadBucket, "")
+	flag.StringVar(&c.Storage.AWSS3.UploadDirectory, "storage.awss3.uploadDirectory", c.Storage.AWSS3.UploadDirectory, "")
+	flag.StringVar(&c.Storage.AWSS3.ThumbnailBucket, "storage.awss3.thumbnailBucket", c.Storage.AWSS3.ThumbnailBucket, "")
+	flag.StringVar(&c.Storage.AWSS3.ThumbnailDirectory, "storage.awss3.thumbnailDirectory", c.Storage.AWSS3.ThumbnailDirectory, "")
 
 	// Datastore
 	flag.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
@@ -647,7 +647,12 @@ func (c *config) after() {
 		}
 	}
 
-	// MaxIdleConnection: "10",
-	// MaxOpenConnection: "10",
-
+	if c.Datastore.Provider == "mysql" {
+		if c.Datastore.MaxIdleConnection == "" {
+			c.Datastore.MaxIdleConnection = "10"
+		}
+		if c.Datastore.MaxIdleConnection == "" {
+			c.Datastore.MaxOpenConnection = "10"
+		}
+	}
 }

@@ -7,6 +7,8 @@ import (
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/swagchat/chat-api/logging"
+	"go.uber.org/zap/zapcore"
 	gorp "gopkg.in/gorp.v2"
 )
 
@@ -26,7 +28,10 @@ func (p *sqliteProvider) Connect() error {
 
 	db, err := sql.Open("sqlite3", p.sqlitePath)
 	if err != nil {
-		fatal(err)
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "SQLite connect error",
+			Error:   err,
+		})
 	}
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}

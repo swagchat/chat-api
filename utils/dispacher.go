@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"log"
 	"sync"
 )
 
@@ -30,7 +29,6 @@ func (d *Dispatcher) Work(ctx context.Context, proc WorkFunc) {
 func (d *Dispatcher) work(ctx context.Context, proc WorkFunc) {
 	select {
 	case <-ctx.Done():
-		log.Printf("cancel work")
 		return
 	case d.semaphore <- struct{}{}:
 		defer func() { <-d.semaphore }()

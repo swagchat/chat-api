@@ -1,8 +1,7 @@
 {
 	"info": {
-		"name": "[swagchat][test]chat-api",
 		"_postman_id": "bcec8999-6826-d645-c9b8-211dcdf7af7d",
-		"description": "",
+		"name": "[swagchat][test]chat-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -12,11 +11,11 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "4939670e-45aa-48f7-be50-995df67a0a66",
+						"id": "a4ae8606-1f7c-4f19-9756-7afff2b8c969",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Body matches string\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"swagchat Chat API version v0\");",
+							"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
 							"});"
 						]
 					}
@@ -182,8 +181,7 @@
 					"host": [
 						"{{apiEndpoint}}"
 					]
-				},
-				"description": null
+				}
 			},
 			"response": []
 		},
@@ -360,7 +358,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"userID\": \"{{randomUserId}}\",\n\t\"name\": \"{{randomUserName}}\"\n}"
+					"raw": "{\n  \"userID\": \"{{randomUserId}}\",\n  \"name\": \"{{randomUserName}}\"\n}"
 				},
 				"url": {
 					"raw": "{{apiEndpoint}}/users",
@@ -498,8 +496,7 @@
 						"users",
 						"{{randomUserId}}"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -550,8 +547,7 @@
 						"{{randomUserId}}",
 						"unreadCount"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -634,8 +630,7 @@
 						"users",
 						"{{randomUserId}}"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -682,8 +677,7 @@
 						"{{randomUserId}}",
 						"devices"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -719,8 +713,7 @@
 						"devices",
 						"1"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -792,8 +785,7 @@
 						"devices",
 						"1"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -874,8 +866,7 @@
 						"devices",
 						"1"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -935,8 +926,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -976,7 +966,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "d5b6c746-0e59-408a-a8c3-36314a36e8c3",
+						"id": "ae003546-c23e-419f-8b1b-81165bfb01c4",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -994,8 +984,10 @@
 							"pm.test('Schema is valid', function() {",
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(4);",
+							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
+							"var expectedCount = addBlockUserIds.length;",
+							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
 							"});",
 							"",
 							""
@@ -1025,8 +1017,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1066,7 +1057,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "255b527a-d79e-45a3-b05c-68683639b27e",
+						"id": "990a6df6-8cc1-47fb-89e0-a35b9bcaa551",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -1084,8 +1075,10 @@
 							"pm.test('Schema is valid', function() {",
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(3);",
+							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
+							"var expectedCount = addBlockUserIds.length - 1;",
+							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
 							"});",
 							"",
 							""
@@ -1115,8 +1108,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1126,7 +1118,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "9f5d2245-1e6f-47f4-946c-2a5e36386a78",
+						"id": "95513d2f-114a-4ad7-a10b-2e3f60a100c5",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -1144,8 +1136,11 @@
 							"pm.test('Schema is valid', function() {",
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(3);",
+							"",
+							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
+							"var expectedCount = addBlockUserIds.length - 1;",
+							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
 							"});",
 							"",
 							""
@@ -1175,8 +1170,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1228,8 +1222,7 @@
 						"users",
 						"{{randomUserId}}"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1239,11 +1232,11 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "4939670e-45aa-48f7-be50-995df67a0a66",
+						"id": "56a46721-3350-4a3f-b44d-0c996890f66c",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Body matches string\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"swagchat Chat API version v0\");",
+							"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
 							"});"
 						]
 					}
@@ -1273,8 +1266,7 @@
 					"host": [
 						"{{apiEndpoint}}"
 					]
-				},
-				"description": null
+				}
 			},
 			"response": []
 		}

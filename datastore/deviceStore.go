@@ -5,11 +5,11 @@ import "github.com/swagchat/chat-api/models"
 type DeviceStore interface {
 	CreateDeviceStore()
 
-	InsertDevice(device *models.Device) StoreResult
-	SelectDevices(userId string) StoreResult
-	SelectDevice(userId string, platform int) StoreResult
-	SelectDevicesByUserId(userId string) StoreResult
-	SelectDevicesByToken(token string) StoreResult
-	UpdateDevice(device *models.Device) StoreResult
-	DeleteDevice(userId string, platform int) StoreResult
+	InsertDevice(device *models.Device) (*models.Device, error)
+	SelectDevices(userId string) ([]*models.Device, error)
+	SelectDevice(userId string, platform int) (*models.Device, error)
+	SelectDevicesByUserId(userId string) ([]*models.Device, error)
+	SelectDevicesByToken(token string) ([]*models.Device, error)
+	UpdateDevice(device *models.Device) error
+	DeleteDevice(userId string, platform int) error
 }

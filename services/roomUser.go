@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/rtm"
@@ -25,11 +26,19 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 
 	put.RemoveDuplicate()
 
-	dRes := datastore.DatastoreProvider().SelectUsersForRoom(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	userForRooms, err := datastore.Provider().SelectUsersForRoom(roomId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Status: http.StatusInternalServerError,
+			Title:  "Get users failed",
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Stacktrace:    fmt.Sprintf("%v\n", err),
+		})
+		return nil, pd
 	}
-	room.Users = dRes.Data.([]*models.UserForRoom)
+	room.Users = userForRooms
 
 	if pd := put.IsValid("PUT", room); pd != nil {
 		return nil, pd
@@ -48,9 +57,17 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 
 		room.NotificationTopicId = notificationTopicId
 		room.Modified = time.Now().Unix()
-		dRes := datastore.DatastoreProvider().UpdateRoom(room)
-		if dRes.ProblemDetail != nil {
-			return nil, dRes.ProblemDetail
+		_, err := datastore.Provider().UpdateRoom(room)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Status: http.StatusInternalServerError,
+				Title:  "Get user information failed",
+			}
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				ProblemDetail: pd,
+				Stacktrace:    fmt.Sprintf("%v\n", err),
+			})
+			return nil, pd
 		}
 	}
 
@@ -68,17 +85,33 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 			Modified:    nowTimestamp,
 		})
 	}
-	dRes = datastore.DatastoreProvider().InsertRoomUsers(roomUsers)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	err = datastore.Provider().InsertRoomUsers(roomUsers)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's user list failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	dRes = datastore.DatastoreProvider().SelectRoomUsersByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	roomUsers, err = datastore.Provider().SelectRoomUsersByRoomId(roomId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's user list failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 	returnRoomUsers := &models.RoomUsers{
-		RoomUsers: dRes.Data.([]*models.RoomUser),
+		RoomUsers: roomUsers,
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
@@ -100,11 +133,19 @@ func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail)
 	}
 	roomUser.BeforeSave()
 
-	dRes := datastore.DatastoreProvider().UpdateRoomUser(roomUser)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	roomUser, err := datastore.Provider().UpdateRoomUser(roomUser)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Room's user registration failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	return dRes.Data.(*models.RoomUser), nil
+	return roomUser, nil
 }
 
 func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
@@ -124,55 +165,85 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().DeleteRoomUser(roomId, userIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	err := datastore.Provider().DeleteRoomUser(roomId, userIds)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete room's user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	dRes = datastore.DatastoreProvider().SelectRoomUsersByRoomIdAndUserIds(&roomId, userIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	roomUsers, err := datastore.Provider().SelectRoomUsersByRoomIdAndUserIds(&roomId, userIds)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete room's user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
-	go unsubscribeByRoomUsers(ctx, dRes.Data.([]*models.RoomUser))
+	go unsubscribeByRoomUsers(ctx, roomUsers)
 
-	dRes = datastore.DatastoreProvider().SelectRoomUsersByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnRoomUsers := &models.RoomUsers{
-		RoomUsers: dRes.Data.([]*models.RoomUser),
+	roomUsers, err = datastore.Provider().SelectRoomUsersByRoomId(roomId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's users failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
 
-	return returnRoomUsers, nil
+	return &models.RoomUsers{
+		RoomUsers: roomUsers,
+	}, nil
 }
 
 func selectRoomUser(roomId, userId string) (*models.RoomUser, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectRoomUser(roomId, userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	roomUser, err := datastore.Provider().SelectRoomUser(roomId, userId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's user failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if roomUser == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
-	return dRes.Data.(*models.RoomUser), nil
+	return roomUser, nil
 }
 
 func publishUserJoin(roomId string) {
-	dRes := datastore.DatastoreProvider().SelectUsersForRoom(roomId)
-	if dRes.ProblemDetail != nil {
-		problemDetailBytes, _ := json.Marshal(dRes.ProblemDetail)
-		utils.AppLogger.Error("",
-			zap.String("msg", "Publish error. (Add room's user list)"),
-			zap.String("problemDetail", string(problemDetailBytes)),
-		)
+	userForRooms, err := datastore.Provider().SelectUsersForRoom(roomId)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Stacktrace: fmt.Sprintf("%v\n", err),
+		})
 		return
 	}
-	users := dRes.Data.([]*models.UserForRoom)
-	b, _ := json.Marshal(users)
+
+	b, _ := json.Marshal(userForRooms)
 	buf := new(bytes.Buffer)
 	buf.Write(b)
 
@@ -183,19 +254,18 @@ func publishUserJoin(roomId string) {
 	}
 	bytes, err := json.Marshal(message)
 	if err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", err.Error()),
-		)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
 	mi := &rtm.MessagingInfo{
 		Message: string(bytes),
 	}
-	err = rtm.RTMProvider().PublishMessage(mi)
+	err = rtm.Provider().PublishMessage(mi)
 	if err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", "Publish error. (Add room's user list)"),
-			zap.String("detail", err.Error()),
-		)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
 }
 
@@ -209,23 +279,32 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
 
-			dRes := datastore.DatastoreProvider().SelectDevicesByUserId(ru.UserId)
-			if dRes.ProblemDetail != nil {
-				pdChan <- dRes.ProblemDetail
+			devices, err := datastore.Provider().SelectDevicesByUserId(ru.UserId)
+			if err != nil {
+				pd := &models.ProblemDetail{
+					Title:  "Subscribe failed",
+					Status: http.StatusInternalServerError,
+					Error:  err,
+				}
+				pdChan <- pd
 			}
-			if dRes.Data != nil {
-				devices := dRes.Data.([]*models.Device)
+			if devices != nil {
 				for _, d := range devices {
 					if d.Token != "" {
 						if d.NotificationDeviceId == "" {
-							nRes := <-notification.NotificationProvider().CreateEndpoint("", d.Platform, d.Token)
+							nRes := <-notification.Provider().CreateEndpoint("", d.Platform, d.Token)
 							if nRes.ProblemDetail != nil {
-								pdChan <- dRes.ProblemDetail
+								pdChan <- nRes.ProblemDetail
 							} else {
 								d.NotificationDeviceId = *nRes.Data.(*string)
-								dRes := datastore.DatastoreProvider().UpdateDevice(d)
-								if dRes.ProblemDetail != nil {
-									pdChan <- dRes.ProblemDetail
+								err := datastore.Provider().UpdateDevice(d)
+								if err != nil {
+									pd := &models.ProblemDetail{
+										Title:  "Subscribe failed",
+										Status: http.StatusInternalServerError,
+										Error:  err,
+									}
+									pdChan <- pd
 								}
 							}
 						}
@@ -241,11 +320,9 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			case <-doneChan:
 				return
 			case pd := <-pdChan:
-				pdBytes, _ := json.Marshal(pd)
-				utils.AppLogger.Error("",
-					zap.String("problemDetail", string(pdBytes)),
-					zap.String("err", fmt.Sprintf("%+v", pd.Error)),
-				)
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					ProblemDetail: pd,
+				})
 				return
 			}
 		})
@@ -263,23 +340,36 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
-			dRes := datastore.DatastoreProvider().DeleteRoomUser(ru.RoomId, []string{ru.UserId})
-			if dRes.ProblemDetail != nil {
-				pdChan <- dRes.ProblemDetail
+			err := datastore.Provider().DeleteRoomUser(ru.RoomId, []string{ru.UserId})
+			if err != nil {
+				pd := &models.ProblemDetail{
+					Title:  "Delete room's user failed",
+					Status: http.StatusInternalServerError,
+				}
+				pdChan <- pd
 			}
 
-			dRes = datastore.DatastoreProvider().SelectDevicesByUserId(ru.UserId)
-			if dRes.ProblemDetail != nil {
-				pdChan <- dRes.ProblemDetail
+			devices, err := datastore.Provider().SelectDevicesByUserId(ru.UserId)
+			if err != nil {
+				pd := &models.ProblemDetail{
+					Title:  "Subscribe failed",
+					Status: http.StatusInternalServerError,
+					Error:  err,
+				}
+				pdChan <- pd
 			}
-			if dRes.Data != nil {
-				devices := dRes.Data.([]*models.Device)
+			if devices != nil {
 				for _, d := range devices {
-					dRes = datastore.DatastoreProvider().SelectSubscription(ru.RoomId, ru.UserId, d.Platform)
-					if dRes.ProblemDetail != nil {
-						pdChan <- dRes.ProblemDetail
+					subscription, err := datastore.Provider().SelectSubscription(ru.RoomId, ru.UserId, d.Platform)
+					if err != nil {
+						pd := &models.ProblemDetail{
+							Title:  "User registration failed",
+							Status: http.StatusInternalServerError,
+							Error:  err,
+						}
+						pdChan <- pd
 					}
-					go unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+					go unsubscribe(ctx, []*models.Subscription{subscription})
 				}
 			}
 			doneChan <- true
@@ -290,11 +380,9 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			case <-doneChan:
 				return
 			case pd := <-pdChan:
-				pdBytes, _ := json.Marshal(pd)
-				utils.AppLogger.Error("",
-					zap.String("problemDetail", string(pdBytes)),
-					zap.String("err", fmt.Sprintf("%+v", pd.Error)),
-				)
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					ProblemDetail: pd,
+				})
 				return
 			}
 		})
@@ -304,7 +392,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 }
 
 func createTopic(roomId string) (string, *models.ProblemDetail) {
-	nRes := <-notification.NotificationProvider().CreateTopic(roomId)
+	nRes := <-notification.Provider().CreateTopic(roomId)
 	if nRes.ProblemDetail != nil {
 		return "", nRes.ProblemDetail
 	}
@@ -316,13 +404,21 @@ func createTopic(roomId string) (string, *models.ProblemDetail) {
 }
 
 func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectUserIdsByUserIds(requestUserIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	existUserIds, err := datastore.Provider().SelectUserIdsByUserIds(requestUserIds)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Status: http.StatusInternalServerError,
+			Title:  "Getting userIds failed",
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Stacktrace:    fmt.Sprintf("%v\n", err),
+		})
+		return nil, pd
 	}
-	existUserIds := dRes.Data.([]string)
+
 	if len(existUserIds) != len(requestUserIds) {
-		return nil, &models.ProblemDetail{
+		pd := &models.ProblemDetail{
 			Title:     "Request parameter error. (Create room's user list)",
 			Status:    http.StatusBadRequest,
 			ErrorName: models.ERROR_NAME_INVALID_PARAM,
@@ -333,6 +429,10 @@ func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) 
 				},
 			},
 		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+		})
+		return nil, pd
 	}
 
 	return existUserIds, nil

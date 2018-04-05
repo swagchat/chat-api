@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,7 +11,9 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
 type testRecord struct {
@@ -27,10 +28,13 @@ type testRecord struct {
 }
 
 func TestMain(m *testing.M) {
-	datastoreProvider := datastore.GetProvider()
+	datastoreProvider := datastore.Provider()
 	err := datastoreProvider.Connect()
 	if err != nil {
-		log.Println(err.Error())
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Datastore error",
+			Error:   err,
+		})
 	}
 	datastoreProvider.Init()
 	ctx, _ := context.WithTimeout(context.Background(), 7*time.Second)
@@ -38,7 +42,10 @@ func TestMain(m *testing.M) {
 	testRC := m.Run()
 	err = datastoreProvider.DropDatabase()
 	if err != nil {
-		log.Println(err.Error())
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Drop database error",
+			Error:   err,
+		})
 	}
 	os.Exit(testRC)
 }
@@ -100,30 +107,3 @@ func TestNotFound(t *testing.T) {
 		t.Fatalf("TestNo %d\nResponse Body Failure\n[expected]%s\n[result  ]%s", testRecord.testNo, testRecord.out, string(data))
 	}
 }
-
-//func BenchmarkPostRoom(b *testing.B) {
-//	datastoreProvider := datastore.GetProvider()
-//	err := datastoreProvider.Connect()
-//	if err != nil {
-//		log.Println(err.Error())
-//	}
-//	datastoreProvider.Init()
-//	Mux = bone.New().Prefix("/" + utils.API_VERSION)
-//	SetRoomMux()
-//	ts := httptest.NewServer(Mux)
-//	defer ts.Close()
-//
-//	for i := 0; i < b.N; i++ {
-//		in := `
-//				{
-//					"name": "dennis room"
-//				}
-//			`
-//		reader := strings.NewReader(in)
-//		http.Post(ts.URL+"/"+utils.API_VERSION+"/rooms", "application/json", reader)
-//	}
-//	err = datastoreProvider.DropDatabase()
-//	if err != nil {
-//		log.Println(err.Error())
-//	}
-//}

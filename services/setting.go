@@ -6,20 +6,30 @@ import (
 	"net/http"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
+	"go.uber.org/zap/zapcore"
 )
 
 func GetSetting() (*models.Setting, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectLatestSetting()
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	setting, err := datastore.Provider().SelectLatestSetting()
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get setting failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if setting == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
 
-	setting := dRes.Data.(*models.Setting)
 	return setting, nil
 }

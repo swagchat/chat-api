@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/swagchat/chat-api/bots"
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/rtm"
@@ -19,10 +19,8 @@ import (
 )
 
 func PostMessage(posts *models.Messages) *models.ResponseMessages {
-	log.Println("============= PostMessage ==============")
 	messageIds := make([]string, 0)
 	errors := make([]*models.ProblemDetail, 0)
-	var lastMessage string
 	for _, post := range posts.Messages {
 		room, pd := selectRoom(post.RoomId)
 		if pd != nil {
@@ -57,26 +55,27 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		}
 
 		if pd := post.IsValid(); pd != nil {
-			log.Printf("%#v\n", pd)
 			errors = append(errors, pd)
 			continue
 		}
 
 		post.BeforeSave()
-		log.Printf("%#v\n", post)
-		dRes := datastore.DatastoreProvider().InsertMessage(post)
-		if dRes.ProblemDetail != nil {
-			errors = append(errors, dRes.ProblemDetail)
+
+		lastMessage, err := datastore.Provider().InsertMessage(post)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Message registration failed",
+				Status: http.StatusInternalServerError,
+			}
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				ProblemDetail: pd,
+				Error:         err,
+			})
+			errors = append(errors, pd)
 			continue
 		}
-		if dRes.Data == nil {
-			lastMessage = ""
-		} else {
-			lastMessage = dRes.Data.(string)
-		}
-		messageIds = append(messageIds, post.MessageId)
-		log.Printf("%#v\n", post)
 
+		messageIds = append(messageIds, post.MessageId)
 		mi := &notification.MessageInfo{
 			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
 		}
@@ -88,7 +87,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			}
 		}
 		ctx, _ := context.WithCancel(context.Background())
-		go notification.NotificationProvider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
+		go notification.Provider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
 		go publishMessage(post)
 		go postMessageToBotService(*user.IsBot, post)
 	}
@@ -115,86 +114,86 @@ func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
 		}
 	}
 
-	dRes := datastore.DatastoreProvider().SelectMessage(messageId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	message, err := datastore.Provider().SelectMessage(messageId)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "User registration failed",
+			Status: http.StatusInternalServerError,
+		}
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			ProblemDetail: pd,
+			Error:         err,
+		})
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if message == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
-	return dRes.Data.(*models.Message), nil
+
+	return message, nil
 }
 
 func publishMessage(m *models.Message) {
 	m.EventName = "message"
 	bytes, err := json.Marshal(m)
 	if err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", err.Error()),
-		)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Stacktrace: fmt.Sprintf("%v\n", err),
+		})
 	}
 	mi := &rtm.MessagingInfo{
 		Message: string(bytes),
 	}
-	err = rtm.RTMProvider().PublishMessage(mi)
+	err = rtm.Provider().PublishMessage(mi)
 	if err != nil {
-		utils.AppLogger.Error("",
-			zap.String("msg", err.Error()),
-		)
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Stacktrace: fmt.Sprintf("%v\n", err),
+		})
 	}
 }
 
 func postMessageToBotService(isBot bool, m *models.Message) {
-	dRes := datastore.DatastoreProvider().SelectUsersForRoom(m.RoomId)
-	if dRes.ProblemDetail != nil {
-		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-		utils.AppLogger.Error("",
-			zap.String("problemDetail", string(pdBytes)),
-			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-		)
+	userForRooms, err := datastore.Provider().SelectUsersForRoom(m.RoomId)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Stacktrace: fmt.Sprintf("%v\n", err),
+		})
 	}
-	if dRes.Data != nil {
-		userForRooms := dRes.Data.([]*models.UserForRoom)
+	if len(userForRooms) > 0 {
 		for _, u := range userForRooms {
 			if !isBot && *u.IsBot && m.UserId != u.UserId {
-				dRes := datastore.DatastoreProvider().SelectBot(u.UserId)
-				if dRes.ProblemDetail != nil {
-					pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-					utils.AppLogger.Error("",
-						zap.String("problemDetail", string(pdBytes)),
-						zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-					)
+				bot, err := datastore.Provider().SelectBot(u.UserId)
+				if err != nil {
+					pd := &models.ProblemDetail{
+						Title:  "Get bot failure",
+						Status: http.StatusInternalServerError,
+					}
+					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+						ProblemDetail: pd,
+						Error:         err,
+					})
 				}
-				b := dRes.Data.(*models.Bot)
 
 				var cm models.CognitiveMap
-				log.Printf("%#v\n", string(b.Cognitive))
-				json.Unmarshal(b.Cognitive, &cm)
-				log.Printf("%#v\n", cm)
-				log.Printf("%#v\n", cm.Text)
+				json.Unmarshal(bot.Cognitive, &cm)
 
-				var p bots.Provider
-				var cred utils.JSONText
+				var res bots.BotResult
 				switch m.Type {
 				case "text":
-					p = bots.GetProvider(cm.Text.Name)
-					cred = cm.Text.Credencial
+					p := bots.Provider(cm.Text.Name)
+					cred := cm.Text.Credencial
+					res = p.Post(m, bot, cred)
 				case "image":
-					p = bots.GetProvider(cm.Image.Name)
-					cred = cm.Image.Credencial
+					p := bots.Provider(cm.Image.Name)
+					cred := cm.Image.Credencial
+					res = p.Post(m, bot, cred)
 				default:
-					p = bots.GetProvider(cm.Text.Name)
-					cred = cm.Text.Credencial
-				}
-				res := p.Post(m, b, cred)
-				if res.ProblemDetail != nil {
-					pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-					utils.AppLogger.Error("",
-						zap.String("problemDetail", string(pdBytes)),
-						zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-					)
+					p := bots.Provider(cm.Text.Name)
+					cred := cm.Text.Credencial
+					res = p.Post(m, bot, cred)
 				}
 				PostMessage(res.Messages)
 			}

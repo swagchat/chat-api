@@ -5,12 +5,12 @@ import "github.com/swagchat/chat-api/models"
 type UserStore interface {
 	CreateUserStore()
 
-	InsertUser(user *models.User) StoreResult
-	SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult
-	SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult
-	SelectUsers() StoreResult
-	SelectUserIdsByUserIds(userIds []string) StoreResult
-	UpdateUser(user *models.User) StoreResult
-	UpdateUserDeleted(userId string) StoreResult
-	SelectContacts(userId string) StoreResult
+	InsertUser(user *models.User) (*models.User, error)
+	SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error)
+	SelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.User, error)
+	SelectUsers() ([]*models.User, error)
+	SelectUserIdsByUserIds(userIds []string) ([]string, error)
+	UpdateUser(user *models.User) (*models.User, error)
+	UpdateUserDeleted(userId string) error
+	SelectContacts(userId string) ([]*models.User, error)
 }
