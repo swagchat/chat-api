@@ -107,9 +107,8 @@ type RoomUsers struct {
 func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 	if len(rus.UserIds) == 0 {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userIds",
@@ -119,30 +118,28 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if *r.Type == ONE_ON_ONE {
-		for _, userId := range rus.UserIds {
-			if userId == r.UserId {
-				return &ProblemDetail{
-					Title:     "Request parameter error. (Create room's user list)",
-					Status:    http.StatusBadRequest,
-					ErrorName: ERROR_NAME_INVALID_PARAM,
-					InvalidParams: []InvalidParam{
-						InvalidParam{
-							Name:   "userIds",
-							Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
-						},
-					},
-				}
-			}
-		}
-	}
+	// if *r.Type == ONE_ON_ONE {
+	// 	for _, userId := range rus.UserIds {
+	// 		if userId == r.UserId {
+	// 			return &ProblemDetail{
+	// 				Title:  "Request error",
+	// 				Status: http.StatusBadRequest,
+	// 				InvalidParams: []InvalidParam{
+	// 					InvalidParam{
+	// 						Name:   "userIds",
+	// 						Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
+	// 					},
+	// 				},
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	if method == "POST" && *r.Type == ONE_ON_ONE {
 		if len(rus.UserIds) == 2 {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create room's user list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",
@@ -156,9 +153,8 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 	if method == "PUT" && *r.Type == ONE_ON_ONE {
 		if len(r.Users) == 2 {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create room's user list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",
@@ -169,13 +165,13 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if method == "DELETE" && *r.Type == ONE_ON_ONE {
-		return &ProblemDetail{
-			Title:     "Operation not permitted. (Delete room's user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_OPERATION_NOT_PERMITTED,
-		}
-	}
+	// if method == "DELETE" && *r.Type == ONE_ON_ONE {
+	// 	return &ProblemDetail{
+	// 		Title:     "Request error",
+	// 		Status:    http.StatusBadRequest,
+	// 		ErrorName: ERROR_NAME_OPERATION_NOT_PERMITTED,
+	// 	}
+	// }
 
 	return nil
 }

@@ -246,12 +246,10 @@ func RdbUpdateRoomUser(roomUser *models.RoomUser) (*models.RoomUser, error) {
 		}
 	}
 
-	if roomUser == nil {
-		err = trans.Commit()
-		if err != nil {
-			err = trans.Rollback()
-			return nil, errors.New("An error occurred while commit updating room's user")
-		}
+	err = trans.Commit()
+	if err != nil {
+		err = trans.Rollback()
+		return nil, errors.New("An error occurred while commit updating room's user")
 	}
 
 	return roomUser, nil

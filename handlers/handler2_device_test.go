@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/swagchat/chat-api/utils"
 )
 
 var createDeviceIds []string
@@ -94,7 +92,7 @@ func TestPostDevice(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		res, err := http.Post(ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, "application/json", reader)
+		res, err := http.Post(ts.URL+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, "application/json", reader)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
@@ -136,7 +134,7 @@ func TestGetDevices(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId + "/devices")
+		res, err := http.Get(ts.URL + "/users/" + testRecord.userId + "/devices")
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
 		}
@@ -185,7 +183,7 @@ func TestGetDevice(t *testing.T) {
 		},
 	}
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId + "/devices/" + testRecord.platform)
+		res, err := http.Get(ts.URL + "/users/" + testRecord.userId + "/devices/" + testRecord.platform)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
@@ -319,7 +317,7 @@ func TestPutDevice(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		req, _ := http.NewRequest("PUT", ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, reader)
+		req, _ := http.NewRequest("PUT", ts.URL+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, reader)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -367,7 +365,7 @@ func TestDeleteDevice(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		req, _ := http.NewRequest("DELETE", ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, nil)
+		req, _ := http.NewRequest("DELETE", ts.URL+"/users/"+testRecord.userId+"/devices/"+testRecord.platform, nil)
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

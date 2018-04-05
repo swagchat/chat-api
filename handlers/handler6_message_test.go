@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/swagchat/chat-api/utils"
 )
 
 var createMessageIds []string
@@ -305,7 +303,7 @@ func TestPostMessages(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		req, _ := http.NewRequest("POST", ts.URL+"/"+utils.API_VERSION+"/messages", reader)
+		req, _ := http.NewRequest("POST", ts.URL+"/messages", reader)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -399,7 +397,7 @@ func TestGetMessage(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/messages/" + testRecord.messageId)
+		res, err := http.Get(ts.URL + "/messages/" + testRecord.messageId)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

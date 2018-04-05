@@ -6,9 +6,7 @@ import (
 	"net/http"
 
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
-	"go.uber.org/zap/zapcore"
 )
 
 func GetSetting() (*models.Setting, *models.ProblemDetail) {
@@ -17,11 +15,8 @@ func GetSetting() (*models.Setting, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get setting failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if setting == nil {

@@ -7,10 +7,8 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/storage"
-	"go.uber.org/zap/zapcore"
 )
 
 func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.ProblemDetail) {
@@ -34,11 +32,8 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 		pd := &models.ProblemDetail{
 			Title:  "File upload failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	asset.URL = url
@@ -48,11 +43,9 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 		pd := &models.ProblemDetail{
 			Title:  "File upload failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
+		return nil, pd
 	}
 	return asset, nil
 }
@@ -64,11 +57,8 @@ func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.P
 			pd := &models.ProblemDetail{
 				Title:  "Date format error [If-Modified-Since]",
 				Status: http.StatusInternalServerError,
+				Error:  err,
 			}
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				ProblemDetail: pd,
-				Error:         err,
-			})
 			return nil, nil, pd
 		}
 	}
@@ -78,11 +68,9 @@ func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.P
 		pd := &models.ProblemDetail{
 			Title:  "File download failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
+		return nil, nil, pd
 	}
 	if asset == nil {
 		return nil, nil, &models.ProblemDetail{
@@ -99,11 +87,8 @@ func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.P
 		pd := &models.ProblemDetail{
 			Title:  "File download error",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Stacktrace:    fmt.Sprintf("%v\n", err),
-		})
 		return nil, nil, pd
 	}
 

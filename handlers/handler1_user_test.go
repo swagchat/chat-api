@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/swagchat/chat-api/utils"
 )
 
 var createUserIds []string
@@ -178,7 +176,7 @@ func TestPostUser(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		res, err := http.Post(ts.URL+"/"+utils.API_VERSION+"/users", "application/json", reader)
+		res, err := http.Post(ts.URL+"/users", "application/json", reader)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
@@ -219,7 +217,7 @@ func TestGetUsers(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/users")
+		res, err := http.Get(ts.URL + "/users")
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
 		}
@@ -310,7 +308,7 @@ func TestGetUser(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId)
+		res, err := http.Get(ts.URL + "/users/" + testRecord.userId)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
@@ -435,7 +433,7 @@ func TestPutUser(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		req, _ := http.NewRequest("PUT", ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId, reader)
+		req, _ := http.NewRequest("PUT", ts.URL+"/users/"+testRecord.userId, reader)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -474,7 +472,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		req, _ := http.NewRequest("DELETE", ts.URL+"/"+utils.API_VERSION+"/users/"+testRecord.userId, nil)
+		req, _ := http.NewRequest("DELETE", ts.URL+"/users/"+testRecord.userId, nil)
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

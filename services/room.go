@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -30,11 +29,8 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 			pd := &models.ProblemDetail{
 				Title:  "Room registration failed",
 				Status: http.StatusInternalServerError,
+				Error:  err,
 			}
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				ProblemDetail: pd,
-				Error:         err,
-			})
 			return nil, pd
 		}
 		if roomUser != nil {
@@ -62,11 +58,8 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Room registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -75,11 +68,8 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	room.Users = userForRooms
@@ -89,11 +79,8 @@ func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -110,11 +97,8 @@ func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get rooms failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -123,11 +107,8 @@ func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room count failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	return &models.Rooms{
@@ -147,11 +128,8 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	room.Users = userForRooms
@@ -161,11 +139,8 @@ func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	room.MessageCount = count
@@ -191,11 +166,8 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Update room failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -204,11 +176,8 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	room.Users = userForRooms
@@ -234,11 +203,8 @@ func DeleteRoom(roomId string) *models.ProblemDetail {
 		pd := &models.ProblemDetail{
 			Title:  "Delete room failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return pd
 	}
 
@@ -266,11 +232,8 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 		pd := &models.ProblemDetail{
 			Title:  "Get room messages failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	returnMessages := &models.Messages{
@@ -282,11 +245,8 @@ func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *model
 		pd := &models.ProblemDetail{
 			Title:  "Get room messages failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	returnMessages.AllCount = count
@@ -299,11 +259,8 @@ func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get room failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if room == nil {
@@ -396,11 +353,8 @@ func RoomAuth(roomId, sub string) *models.ProblemDetail {
 		pd := &models.ProblemDetail{
 			Status: http.StatusInternalServerError,
 			Title:  "Get users failed",
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Stacktrace:    fmt.Sprintf("%v\n", err),
-		})
 		return pd
 	}
 

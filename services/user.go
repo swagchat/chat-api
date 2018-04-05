@@ -25,11 +25,8 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if user != nil {
@@ -44,11 +41,8 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	return user, nil
@@ -60,11 +54,8 @@ func GetUsers() (*models.Users, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -79,11 +70,8 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if user == nil {
@@ -133,11 +121,8 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Update user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -156,11 +141,8 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		pd := &models.ProblemDetail{
 			Title:  "Delete user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return pd
 	}
 	if devices != nil {
@@ -177,11 +159,8 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		pd := &models.ProblemDetail{
 			Title:  "Delete user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return pd
 	}
 
@@ -197,11 +176,8 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if user == nil {

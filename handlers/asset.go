@@ -29,8 +29,8 @@ func PostAsset(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("asset")
 	if err != nil {
 		pd := &models.ProblemDetail{
-			Title:     "Form value error. (Create asset item)",
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []models.InvalidParam{
 				models.InvalidParam{
 					Name:   "asset",

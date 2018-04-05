@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -31,11 +30,8 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 		pd := &models.ProblemDetail{
 			Status: http.StatusInternalServerError,
 			Title:  "Get users failed",
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Stacktrace:    fmt.Sprintf("%v\n", err),
-		})
 		return nil, pd
 	}
 	room.Users = userForRooms
@@ -62,11 +58,8 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 			pd := &models.ProblemDetail{
 				Status: http.StatusInternalServerError,
 				Title:  "Get user information failed",
+				Error:  err,
 			}
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				ProblemDetail: pd,
-				Stacktrace:    fmt.Sprintf("%v\n", err),
-			})
 			return nil, pd
 		}
 	}
@@ -90,11 +83,8 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user list failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -103,11 +93,8 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user list failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	returnRoomUsers := &models.RoomUsers{
@@ -138,11 +125,8 @@ func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail)
 		pd := &models.ProblemDetail{
 			Title:  "Room's user registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	return roomUser, nil
@@ -170,11 +154,8 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		pd := &models.ProblemDetail{
 			Title:  "Delete room's user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -183,11 +164,8 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		pd := &models.ProblemDetail{
 			Title:  "Delete room's user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -199,11 +177,8 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -218,11 +193,8 @@ func selectRoomUser(roomId, userId string) (*models.RoomUser, *models.ProblemDet
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if roomUser == nil {
@@ -238,7 +210,7 @@ func publishUserJoin(roomId string) {
 	userForRooms, err := datastore.Provider().SelectUsersForRoom(roomId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Stacktrace: fmt.Sprintf("%v\n", err),
+			Error: err,
 		})
 		return
 	}
@@ -322,6 +294,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			case pd := <-pdChan:
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 					ProblemDetail: pd,
+					Error:         pd.Error,
 				})
 				return
 			}
@@ -382,6 +355,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			case pd := <-pdChan:
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 					ProblemDetail: pd,
+					Error:         pd.Error,
 				})
 				return
 			}
@@ -409,19 +383,15 @@ func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) 
 		pd := &models.ProblemDetail{
 			Status: http.StatusInternalServerError,
 			Title:  "Getting userIds failed",
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Stacktrace:    fmt.Sprintf("%v\n", err),
-		})
 		return nil, pd
 	}
 
 	if len(existUserIds) != len(requestUserIds) {
 		pd := &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []models.InvalidParam{
 				models.InvalidParam{
 					Name:   "userIds",
@@ -429,9 +399,6 @@ func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) 
 				},
 			},
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-		})
 		return nil, pd
 	}
 

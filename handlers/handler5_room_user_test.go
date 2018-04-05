@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/swagchat/chat-api/utils"
 )
 
 var createRoomUserIds []string
@@ -121,7 +119,7 @@ func TestPutRoomUsers(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		req, _ := http.NewRequest("PUT", ts.URL+"/"+utils.API_VERSION+"/rooms/"+testRecord.roomId+"/users", reader)
+		req, _ := http.NewRequest("PUT", ts.URL+"/rooms/"+testRecord.roomId+"/users", reader)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -205,7 +203,7 @@ func TestPutRoomUser(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		req, _ := http.NewRequest("PUT", ts.URL+"/"+utils.API_VERSION+"/rooms/"+testRecord.roomId+"/users/"+testRecord.userId, reader)
+		req, _ := http.NewRequest("PUT", ts.URL+"/rooms/"+testRecord.roomId+"/users/"+testRecord.userId, reader)
 		req.Header.Set("Content-Type", "application/json")
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
@@ -306,7 +304,7 @@ func TestDeleteRoomUsers(t *testing.T) {
 
 	for _, testRecord := range testTable {
 		reader := strings.NewReader(testRecord.in)
-		req, _ := http.NewRequest("DELETE", ts.URL+"/"+utils.API_VERSION+"/rooms/"+testRecord.roomId+"/users", reader)
+		req, _ := http.NewRequest("DELETE", ts.URL+"/rooms/"+testRecord.roomId+"/users", reader)
 		res, err := http.DefaultClient.Do(req)
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

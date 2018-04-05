@@ -82,7 +82,12 @@ func StartServer(ctx context.Context) {
 		Config:  cfgStr,
 	})
 
-	gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux)
+	err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
+	}
 
 	logging.Log(zapcore.InfoLevel, &logging.AppLog{
 		Kind:    "handler",
@@ -206,15 +211,13 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 	}
 }
 
-func respondErr(w http.ResponseWriter, r *http.Request, status int, problemDetail *models.ProblemDetail) {
-	// if utils.Config().ErrorLogging {
-	// problemDetailBytes, _ := json.Marshal(problemDetail)
-	// utils.AppLogger.Error("",
-	// 	zap.String("problemDetail", string(problemDetailBytes)),
-	// 	zap.String("err", fmt.Sprintf("%+v", problemDetail.Error)),
-	// )
-	// }
-	respond(w, r, status, "application/json", problemDetail)
+func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *models.ProblemDetail) {
+	if pd.Error != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: pd.Error,
+		})
+	}
+	respond(w, r, status, "application/json", pd)
 }
 
 func respondJsonDecodeError(w http.ResponseWriter, r *http.Request, title string) {

@@ -84,9 +84,8 @@ type PayloadUsers struct {
 func (m *Message) IsValid() *ProblemDetail {
 	if m.MessageId != "" && !utils.IsValidId(m.MessageId) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create message item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "messageId",
@@ -98,9 +97,8 @@ func (m *Message) IsValid() *ProblemDetail {
 
 	if m.Payload == nil {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create message item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "payload",
@@ -115,9 +113,8 @@ func (m *Message) IsValid() *ProblemDetail {
 		json.Unmarshal(m.Payload, &pt)
 		if pt.Text == "" {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create message item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "payload",
@@ -133,9 +130,8 @@ func (m *Message) IsValid() *ProblemDetail {
 		json.Unmarshal(m.Payload, &pi)
 		if pi.Mime == "" {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create message item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "payload",
@@ -147,9 +143,8 @@ func (m *Message) IsValid() *ProblemDetail {
 
 		if pi.SourceUrl == "" {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create message item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "payload",

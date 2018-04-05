@@ -12,7 +12,6 @@ import (
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
-	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -53,12 +52,12 @@ func TestMain(m *testing.M) {
 func TestIndex(t *testing.T) {
 	testRecord := &testRecord{
 		testNo:         1,
-		out:            `(?m)^"Swagchat API version v[0-9]"$`,
+		out:            `(?m)^"chat-api \[API Version\][0-9] \[Build Version\][0-9.0-9.0-9]"$`,
 		httpStatusCode: 200,
 	}
 	ts := httptest.NewServer(Mux)
 	defer ts.Close()
-	res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/")
+	res, err := http.Get(ts.URL)
 
 	if err != nil {
 		t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
@@ -87,7 +86,7 @@ func TestNotFound(t *testing.T) {
 	}
 	ts := httptest.NewServer(Mux)
 	defer ts.Close()
-	res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/not-found")
+	res, err := http.Get(ts.URL + "/not-found")
 
 	if err != nil {
 		t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -66,11 +65,8 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			pd := &models.ProblemDetail{
 				Title:  "Message registration failed",
 				Status: http.StatusInternalServerError,
+				Error:  err,
 			}
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				ProblemDetail: pd,
-				Error:         err,
-			})
 			errors = append(errors, pd)
 			continue
 		}
@@ -119,11 +115,8 @@ func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if message == nil {
@@ -141,7 +134,7 @@ func publishMessage(m *models.Message) {
 	bytes, err := json.Marshal(m)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Stacktrace: fmt.Sprintf("%v\n", err),
+			Error: err,
 		})
 	}
 	mi := &rtm.MessagingInfo{
@@ -150,7 +143,7 @@ func publishMessage(m *models.Message) {
 	err = rtm.Provider().PublishMessage(mi)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Stacktrace: fmt.Sprintf("%v\n", err),
+			Error: err,
 		})
 	}
 }
@@ -159,7 +152,7 @@ func postMessageToBotService(isBot bool, m *models.Message) {
 	userForRooms, err := datastore.Provider().SelectUsersForRoom(m.RoomId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Stacktrace: fmt.Sprintf("%v\n", err),
+			Error: err,
 		})
 	}
 	if len(userForRooms) > 0 {
@@ -167,13 +160,8 @@ func postMessageToBotService(isBot bool, m *models.Message) {
 			if !isBot && *u.IsBot && m.UserId != u.UserId {
 				bot, err := datastore.Provider().SelectBot(u.UserId)
 				if err != nil {
-					pd := &models.ProblemDetail{
-						Title:  "Get bot failure",
-						Status: http.StatusInternalServerError,
-					}
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-						ProblemDetail: pd,
-						Error:         err,
+						Error: err,
 					})
 				}
 

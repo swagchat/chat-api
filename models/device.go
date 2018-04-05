@@ -26,9 +26,8 @@ func IsValidDevicePlatform(platform int) bool {
 func (d *Device) IsValid() *ProblemDetail {
 	if !(d.Platform > 0 && d.Platform < int(end)) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create device item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "device.platform",
@@ -40,9 +39,8 @@ func (d *Device) IsValid() *ProblemDetail {
 
 	if d.Token == "" {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create device item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "token",

@@ -30,9 +30,8 @@ func (reqUIDs *RequestBlockUserIds) IsValid(userId string) *ProblemDetail {
 	for _, reqUID := range reqUIDs.UserIds {
 		if reqUID == userId {
 			return &ProblemDetail{
-				Title:     "Request parameter error.",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",

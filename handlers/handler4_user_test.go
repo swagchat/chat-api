@@ -6,8 +6,6 @@ import (
 	"net/http/httptest"
 	"regexp"
 	"testing"
-
-	"github.com/swagchat/chat-api/utils"
 )
 
 func TestGetUsers2(t *testing.T) {
@@ -23,7 +21,7 @@ func TestGetUsers2(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/users")
+		res, err := http.Get(ts.URL + "/users")
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)
 		}
@@ -59,7 +57,7 @@ func TestGetUser2(t *testing.T) {
 	}
 
 	for _, testRecord := range testTable {
-		res, err := http.Get(ts.URL + "/" + utils.API_VERSION + "/users/" + testRecord.userId)
+		res, err := http.Get(ts.URL + "/" + testRecord.userId)
 
 		if err != nil {
 			t.Fatalf("TestNo %d\nhttp request failed: %v", testRecord.testNo, err)

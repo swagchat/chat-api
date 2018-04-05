@@ -5,9 +5,7 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
-	"go.uber.org/zap/zapcore"
 )
 
 func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
@@ -16,11 +14,8 @@ func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get block users failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -60,11 +55,8 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 		pd := &models.ProblemDetail{
 			Title:  "Block user registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -73,11 +65,8 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 		pd := &models.ProblemDetail{
 			Title:  "Block user registration failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -108,11 +97,8 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*mode
 		pd := &models.ProblemDetail{
 			Title:  "Delete block user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -121,11 +107,8 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*mode
 		pd := &models.ProblemDetail{
 			Title:  "Delete block user failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 

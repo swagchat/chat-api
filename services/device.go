@@ -21,11 +21,8 @@ func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
 		pd := &models.ProblemDetail{
 			Title:  "Get device failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 
@@ -70,11 +67,8 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 			pd := &models.ProblemDetail{
 				Title:  "Update device failed",
 				Status: http.StatusInternalServerError,
+				Error:  err,
 			}
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				ProblemDetail: pd,
-				Error:         err,
-			})
 			return nil, pd
 		}
 		if deleteDevices != nil {
@@ -89,11 +83,8 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 					pd := &models.ProblemDetail{
 						Title:  "Update device failed",
 						Status: http.StatusInternalServerError,
+						Error:  err,
 					}
-					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-						ProblemDetail: pd,
-						Error:         err,
-					})
 					return nil, pd
 				}
 				wg.Add(1)
@@ -117,11 +108,8 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 				pd := &models.ProblemDetail{
 					Title:  "Update device failed",
 					Status: http.StatusInternalServerError,
+					Error:  err,
 				}
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					ProblemDetail: pd,
-					Error:         err,
-				})
 				return nil, pd
 			}
 			nRes = <-notification.Provider().DeleteEndpoint(device.NotificationDeviceId)
@@ -141,11 +129,8 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 				pd := &models.ProblemDetail{
 					Title:  "Update device failed",
 					Status: http.StatusInternalServerError,
+					Error:  err,
 				}
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					ProblemDetail: pd,
-					Error:         err,
-				})
 				return nil, pd
 			}
 			go subscribeByDevice(ctx, device, nil)
@@ -179,11 +164,8 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 		pd := &models.ProblemDetail{
 			Title:  "Delete device failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return pd
 	}
 
@@ -199,11 +181,8 @@ func selectDevice(userId string, platform int) (*models.Device, *models.ProblemD
 		pd := &models.ProblemDetail{
 			Title:  "Get device failed",
 			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			ProblemDetail: pd,
-			Error:         err,
-		})
 		return nil, pd
 	}
 	if device == nil {
@@ -311,6 +290,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 			case pd := <-pdCh:
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 					ProblemDetail: pd,
+					Error:         pd.Error,
 				})
 				return
 			}
@@ -355,6 +335,7 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan
 			case pd := <-pdCh:
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 					ProblemDetail: pd,
+					Error:         pd.Error,
 				})
 				return
 			}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/handlers"
@@ -28,19 +27,17 @@ func main() {
 	}
 
 	if err := storage.Provider().Init(); err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Kind:    "storage",
-			Message: err.Error(),
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Kind:  "storage",
+			Error: err,
 		})
-		os.Exit(1)
 	}
 
 	if err := datastore.Provider().Connect(); err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Kind:    "datastore",
-			Message: err.Error(),
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Kind:  "datastore",
+			Error: err,
 		})
-		os.Exit(1)
 	}
 	datastore.Provider().Init()
 
