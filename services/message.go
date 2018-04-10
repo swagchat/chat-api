@@ -17,11 +17,11 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func PostMessage(posts *models.Messages) *models.ResponseMessages {
+func PostMessage(posts *models.Messages, dsCfg *utils.Datastore) *models.ResponseMessages {
 	messageIds := make([]string, 0)
 	errors := make([]*models.ProblemDetail, 0)
 	for _, post := range posts.Messages {
-		room, pd := selectRoom(post.RoomId)
+		room, pd := selectRoom(post.RoomId, dsCfg)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -37,7 +37,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 			continue
 		}
 
-		user, pd := selectUser(post.UserId)
+		user, pd := selectUser(post.UserId, dsCfg)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -60,7 +60,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 
 		post.BeforeSave()
 
-		lastMessage, err := datastore.Provider().InsertMessage(post)
+		lastMessage, err := datastore.Provider(dsCfg).InsertMessage(post)
 		if err != nil {
 			pd := &models.ProblemDetail{
 				Title:  "Message registration failed",
@@ -85,7 +85,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 		ctx, _ := context.WithCancel(context.Background())
 		go notification.Provider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
 		go publishMessage(post)
-		go postMessageToBotService(*user.IsBot, post)
+		go postMessageToBotService(*user.IsBot, post, dsCfg)
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -95,7 +95,7 @@ func PostMessage(posts *models.Messages) *models.ResponseMessages {
 	return responseMessages
 }
 
-func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
+func GetMessage(messageId string, dsCfg *utils.Datastore) (*models.Message, *models.ProblemDetail) {
 	if messageId == "" {
 		return nil, &models.ProblemDetail{
 			Title:     "Request parameter error. (Get message item)",
@@ -110,7 +110,7 @@ func GetMessage(messageId string) (*models.Message, *models.ProblemDetail) {
 		}
 	}
 
-	message, err := datastore.Provider().SelectMessage(messageId)
+	message, err := datastore.Provider(dsCfg).SelectMessage(messageId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -148,8 +148,8 @@ func publishMessage(m *models.Message) {
 	}
 }
 
-func postMessageToBotService(isBot bool, m *models.Message) {
-	userForRooms, err := datastore.Provider().SelectUsersForRoom(m.RoomId)
+func postMessageToBotService(isBot bool, m *models.Message, dsCfg *utils.Datastore) {
+	userForRooms, err := datastore.Provider(dsCfg).SelectUsersForRoom(m.RoomId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -158,7 +158,7 @@ func postMessageToBotService(isBot bool, m *models.Message) {
 	if len(userForRooms) > 0 {
 		for _, u := range userForRooms {
 			if !isBot && *u.IsBot && m.UserId != u.UserId {
-				bot, err := datastore.Provider().SelectBot(u.UserId)
+				bot, err := datastore.Provider(dsCfg).SelectBot(u.UserId)
 				if err != nil {
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 						Error: err,
@@ -183,7 +183,7 @@ func postMessageToBotService(isBot bool, m *models.Message) {
 					cred := cm.Text.Credencial
 					res = p.Post(m, bot, cred)
 				}
-				PostMessage(res.Messages)
+				PostMessage(res.Messages, dsCfg)
 			}
 		}
 	}

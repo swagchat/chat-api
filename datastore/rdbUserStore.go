@@ -12,8 +12,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateUserStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateUserStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.User{}, TABLE_NAME_USER)
 	tableMap.SetKeys(true, "id")
@@ -31,8 +31,8 @@ func RdbCreateUserStore() {
 	}
 }
 
-func RdbInsertUser(user *models.User) (*models.User, error) {
-	master := RdbStoreInstance().master()
+func RdbInsertUser(db string, user *models.User) (*models.User, error) {
+	master := RdbStore(db).master()
 
 	trans, err := master.Begin()
 	if err = trans.Insert(user); err != nil {
@@ -58,13 +58,13 @@ func RdbInsertUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectUser(db, userId string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
+	replica := RdbStore(db).replica()
 
 	var users []*models.User
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND deleted=0;")
 	params := map[string]interface{}{"userId": userId}
-	if _, err := slave.Select(&users, query, params); err != nil {
+	if _, err := replica.Select(&users, query, params); err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting user")
 	}
 	var user *models.User
@@ -94,7 +94,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 				"WHERE ru.user_id=:userId AND r.deleted=0 ",
 				"ORDER BY r.last_message_updated DESC;")
 			params := map[string]interface{}{"userId": userId}
-			_, err := slave.Select(&rooms, query, params)
+			_, err := replica.Select(&rooms, query, params)
 			if err != nil {
 				return nil, errors.Wrap(err, "An error occurred while getting user rooms")
 			}
@@ -117,7 +117,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 				"ORDER BY ru.room_id",
 			)
 			params = map[string]interface{}{"userId": userId}
-			_, err = slave.Select(&userMinis, query, params)
+			_, err = replica.Select(&userMinis, query, params)
 			if err != nil {
 				return nil, errors.Wrap(err, "An error occurred while getting user rooms")
 			}
@@ -137,7 +137,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 			var devices []*models.Device
 			query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", TABLE_NAME_DEVICE, " WHERE user_id=:userId")
 			params := map[string]interface{}{"userId": userId}
-			_, err := slave.Select(&devices, query, params)
+			_, err := replica.Select(&devices, query, params)
 			if err != nil {
 				return nil, errors.Wrap(err, "An error occurred while getting devices")
 			}
@@ -145,7 +145,7 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 		}
 
 		if isWithBlocks {
-			userIds, err := RdbSelectBlockUsersByUserId(userId)
+			userIds, err := RdbSelectBlockUsersByUserId(db, userId)
 			if err != nil {
 				return nil, errors.Wrap(err, "An error occurred while getting block users")
 			}
@@ -155,8 +155,8 @@ func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool)
 	return user, nil
 }
 
-func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.User, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectUserByUserIdAndAccessToken(db, userId, accessToken string) (*models.User, error) {
+	replica := RdbStore(db).replica()
 
 	var users []*models.User
 	query := utils.AppendStrings("SELECT id FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND access_token=:accessToken AND deleted=0;")
@@ -164,7 +164,7 @@ func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.Us
 		"userId":      userId,
 		"accessToken": accessToken,
 	}
-	_, err := slave.Select(&users, query, params)
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting user")
 	}
@@ -176,12 +176,12 @@ func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.Us
 	return nil, nil
 }
 
-func RdbSelectUsers() ([]*models.User, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectUsers(db string) ([]*models.User, error) {
+	replica := RdbStore(db).replica()
 
 	var users []*models.User
 	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_bot, is_public, is_can_block, is_show_users, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
-	_, err := slave.Select(&users, query)
+	_, err := replica.Select(&users, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting user list")
 	}
@@ -189,15 +189,15 @@ func RdbSelectUsers() ([]*models.User, error) {
 	return users, nil
 }
 
-func RdbSelectUserIdsByUserIds(userIds []string) ([]string, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectUserIdsByUserIds(db string, userIds []string) ([]string, error) {
+	replica := RdbStore(db).replica()
 
 	var users []*models.User
 	userIdsQuery, params := utils.MakePrepareForInExpression(userIds)
 	query := utils.AppendStrings("SELECT * ",
 		"FROM ", TABLE_NAME_USER,
 		" WHERE user_id in (", userIdsQuery, ") AND deleted = 0;")
-	_, err := slave.Select(&users, query, params)
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting userIds")
 	}
@@ -210,8 +210,8 @@ func RdbSelectUserIdsByUserIds(userIds []string) ([]string, error) {
 	return resultUserIds, nil
 }
 
-func RdbUpdateUser(user *models.User) (*models.User, error) {
-	master := RdbStoreInstance().master()
+func RdbUpdateUser(db string, user *models.User) (*models.User, error) {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
@@ -244,8 +244,8 @@ func RdbUpdateUser(user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func RdbUpdateUserDeleted(userId string) error {
-	master := RdbStoreInstance().master()
+func RdbUpdateUserDeleted(db, userId string) error {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 
 	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
@@ -309,8 +309,8 @@ func RdbUpdateUserDeleted(userId string) error {
 	return nil
 }
 
-func RdbSelectContacts(userId string) ([]*models.User, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectContacts(db, userId string) ([]*models.User, error) {
+	replica := RdbStore(db).replica()
 
 	var users []*models.User
 	query := utils.AppendStrings("SELECT ",
@@ -337,7 +337,7 @@ func RdbSelectContacts(userId string) ([]*models.User, error) {
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	_, err := slave.Select(&users, query, params)
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting contacts")
 	}

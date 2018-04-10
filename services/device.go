@@ -15,8 +15,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
-	devices, err := datastore.Provider().SelectDevices(userId)
+func GetDevices(userId string, dsCfg *utils.Datastore) (*models.Devices, *models.ProblemDetail) {
+	devices, err := datastore.Provider(dsCfg).SelectDevices(userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get device failed",
@@ -31,8 +31,8 @@ func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
 	}, nil
 }
 
-func GetDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
-	device, pd := selectDevice(userId, platform)
+func GetDevice(userId string, platform int, dsCfg *utils.Datastore) (*models.Device, *models.ProblemDetail) {
+	device, pd := selectDevice(userId, platform, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -40,19 +40,19 @@ func GetDevice(userId string, platform int) (*models.Device, *models.ProblemDeta
 	return device, nil
 }
 
-func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
+func PutDevice(put *models.Device, dsCfg *utils.Datastore) (*models.Device, *models.ProblemDetail) {
 	if pd := put.IsValid(); pd != nil {
 		return nil, pd
 	}
 
 	// User existence check
-	_, pd := selectUser(put.UserId)
+	_, pd := selectUser(put.UserId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
 
 	isExist := true
-	device, pd := selectDevice(put.UserId, put.Platform)
+	device, pd := selectDevice(put.UserId, put.Platform, dsCfg)
 	if device == nil {
 		isExist = false
 	}
@@ -62,7 +62,7 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 
 		// When using another user on the same device, delete the notification information
 		// of the olderuser in order to avoid duplication of the device token
-		deleteDevices, err := datastore.Provider().SelectDevicesByToken(put.Token)
+		deleteDevices, err := datastore.Provider(dsCfg).SelectDevicesByToken(put.Token)
 		if err != nil {
 			pd := &models.ProblemDetail{
 				Title:  "Update device failed",
@@ -78,7 +78,7 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 				if nRes.ProblemDetail != nil {
 					return nil, nRes.ProblemDetail
 				}
-				err := datastore.Provider().DeleteDevice(deleteDevice.UserId, deleteDevice.Platform)
+				err := datastore.Provider(dsCfg).DeleteDevice(deleteDevice.UserId, deleteDevice.Platform)
 				if err != nil {
 					pd := &models.ProblemDetail{
 						Title:  "Update device failed",
@@ -88,7 +88,7 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 					return nil, pd
 				}
 				wg.Add(1)
-				go unsubscribeByDevice(ctx, deleteDevice, wg)
+				go unsubscribeByDevice(ctx, deleteDevice, wg, dsCfg)
 			}
 			wg.Wait()
 		}
@@ -103,7 +103,7 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 		}
 
 		if isExist {
-			err := datastore.Provider().UpdateDevice(put)
+			err := datastore.Provider(dsCfg).UpdateDevice(put)
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Update device failed",
@@ -119,12 +119,12 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 			go func() {
 				wg := &sync.WaitGroup{}
 				wg.Add(1)
-				go unsubscribeByDevice(ctx, device, wg)
+				go unsubscribeByDevice(ctx, device, wg, dsCfg)
 				wg.Wait()
-				go subscribeByDevice(ctx, put, nil)
+				go subscribeByDevice(ctx, put, nil, dsCfg)
 			}()
 		} else {
-			device, err = datastore.Provider().InsertDevice(put)
+			device, err = datastore.Provider(dsCfg).InsertDevice(put)
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Update device failed",
@@ -133,7 +133,7 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 				}
 				return nil, pd
 			}
-			go subscribeByDevice(ctx, device, nil)
+			go subscribeByDevice(ctx, device, nil, dsCfg)
 		}
 		return device, nil
 	}
@@ -141,14 +141,14 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 	return nil, nil
 }
 
-func DeleteDevice(userId string, platform int) *models.ProblemDetail {
+func DeleteDevice(userId string, platform int, dsCfg *utils.Datastore) *models.ProblemDetail {
 	// User existence check
-	_, pd := selectUser(userId)
+	_, pd := selectUser(userId, dsCfg)
 	if pd != nil {
 		return pd
 	}
 
-	device, pd := selectDevice(userId, platform)
+	device, pd := selectDevice(userId, platform, dsCfg)
 	if pd != nil {
 		return pd
 	}
@@ -159,7 +159,7 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 		return nRes.ProblemDetail
 	}
 
-	err := datastore.Provider().DeleteDevice(userId, platform)
+	err := datastore.Provider(dsCfg).DeleteDevice(userId, platform)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete device failed",
@@ -170,13 +170,13 @@ func DeleteDevice(userId string, platform int) *models.ProblemDetail {
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
-	go unsubscribeByDevice(ctx, device, nil)
+	go unsubscribeByDevice(ctx, device, nil, dsCfg)
 
 	return nil
 }
 
-func selectDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
-	device, err := datastore.Provider().SelectDevice(userId, platform)
+func selectDevice(userId string, platform int, dsCfg *utils.Datastore) (*models.Device, *models.ProblemDetail) {
+	device, err := datastore.Provider(dsCfg).SelectDevice(userId, platform)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get device failed",
@@ -194,37 +194,37 @@ func selectDevice(userId string, platform int) (*models.Device, *models.ProblemD
 	return device, nil
 }
 
-func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
-	roomUser, err := datastore.Provider().SelectRoomUsersByUserId(device.UserId)
+func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup, dsCfg *utils.Datastore) {
+	roomUser, err := datastore.Provider(dsCfg).SelectRoomUsersByUserId(device.UserId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
 		})
 	}
 	if roomUser != nil {
-		<-subscribe(ctx, roomUser, device)
+		<-subscribe(ctx, roomUser, device, dsCfg)
 	}
 	if wg != nil {
 		wg.Done()
 	}
 }
 
-func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
-	subscriptions, err := datastore.Provider().SelectDeletedSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
+func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup, dsCfg *utils.Datastore) {
+	subscriptions, err := datastore.Provider(dsCfg).SelectDeletedSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
 		})
 	}
-	<-unsubscribe(ctx, subscriptions)
+	<-unsubscribe(ctx, subscriptions, dsCfg)
 	if wg != nil {
 		wg.Done()
 	}
 }
 
-func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models.Device) chan bool {
+func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models.Device, dsCfg *utils.Datastore) chan bool {
 	np := notification.Provider()
-	dp := datastore.Provider()
+	dp := datastore.Provider(dsCfg)
 	doneCh := make(chan bool, 1)
 	pdCh := make(chan *models.ProblemDetail, 1)
 	finishCh := make(chan bool, 1)
@@ -234,7 +234,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
-			room, pd := selectRoom(ru.RoomId)
+			room, pd := selectRoom(ru.RoomId, dsCfg)
 			if pd != nil {
 				pdCh <- pd
 			} else {
@@ -246,7 +246,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 
 					room.NotificationTopicId = notificationTopicId
 					room.Modified = time.Now().Unix()
-					_, err := datastore.Provider().UpdateRoom(room)
+					_, err := datastore.Provider(dsCfg).UpdateRoom(room)
 					if err != nil {
 						pd := &models.ProblemDetail{
 							Status: http.StatusInternalServerError,
@@ -301,9 +301,9 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 	return finishCh
 }
 
-func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan bool {
+func unsubscribe(ctx context.Context, subscriptions []*models.Subscription, dsCfg *utils.Datastore) chan bool {
 	np := notification.Provider()
-	dp := datastore.Provider()
+	dp := datastore.Provider(dsCfg)
 	doneCh := make(chan bool, 1)
 	pdCh := make(chan *models.ProblemDetail, 1)
 	finishCh := make(chan bool, 1)

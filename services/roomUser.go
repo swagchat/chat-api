@@ -17,15 +17,15 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
-	room, pd := selectRoom(roomId)
+func PutRoomUsers(roomId string, put *models.RequestRoomUserIds, dsCfg *utils.Datastore) (*models.RoomUsers, *models.ProblemDetail) {
+	room, pd := selectRoom(roomId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
 
 	put.RemoveDuplicate()
 
-	userForRooms, err := datastore.Provider().SelectUsersForRoom(roomId)
+	userForRooms, err := datastore.Provider(dsCfg).SelectUsersForRoom(roomId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Status: http.StatusInternalServerError,
@@ -40,7 +40,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 		return nil, pd
 	}
 
-	userIds, pd := getExistUserIds(put.UserIds)
+	userIds, pd := getExistUserIds(put.UserIds, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -53,7 +53,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 
 		room.NotificationTopicId = notificationTopicId
 		room.Modified = time.Now().Unix()
-		_, err := datastore.Provider().UpdateRoom(room)
+		_, err := datastore.Provider(dsCfg).UpdateRoom(room)
 		if err != nil {
 			pd := &models.ProblemDetail{
 				Status: http.StatusInternalServerError,
@@ -78,7 +78,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 			Modified:    nowTimestamp,
 		})
 	}
-	err = datastore.Provider().InsertRoomUsers(roomUsers)
+	err = datastore.Provider(dsCfg).InsertRoomUsers(roomUsers)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user list failed",
@@ -88,7 +88,7 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 		return nil, pd
 	}
 
-	roomUsers, err = datastore.Provider().SelectRoomUsersByRoomId(roomId)
+	roomUsers, err = datastore.Provider(dsCfg).SelectRoomUsersByRoomId(roomId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user list failed",
@@ -102,14 +102,14 @@ func PutRoomUsers(roomId string, put *models.RequestRoomUserIds) (*models.RoomUs
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
-	go subscribeByRoomUsers(ctx, roomUsers)
-	go publishUserJoin(roomId)
+	go subscribeByRoomUsers(ctx, roomUsers, dsCfg)
+	go publishUserJoin(roomId, dsCfg)
 
 	return returnRoomUsers, nil
 }
 
-func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
-	roomUser, pd := selectRoomUser(put.RoomId, put.UserId)
+func PutRoomUser(put *models.RoomUser, dsCfg *utils.Datastore) (*models.RoomUser, *models.ProblemDetail) {
+	roomUser, pd := selectRoomUser(put.RoomId, put.UserId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -120,7 +120,7 @@ func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail)
 	}
 	roomUser.BeforeSave()
 
-	roomUser, err := datastore.Provider().UpdateRoomUser(roomUser)
+	roomUser, err := datastore.Provider(dsCfg).UpdateRoomUser(roomUser)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Room's user registration failed",
@@ -132,8 +132,8 @@ func PutRoomUser(put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail)
 	return roomUser, nil
 }
 
-func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
-	room, pd := selectRoom(roomId)
+func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds, dsCfg *utils.Datastore) (*models.RoomUsers, *models.ProblemDetail) {
+	room, pd := selectRoom(roomId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -144,12 +144,12 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		return nil, pd
 	}
 
-	userIds, pd := getExistUserIds(deleteUserIds.UserIds)
+	userIds, pd := getExistUserIds(deleteUserIds.UserIds, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
 
-	err := datastore.Provider().DeleteRoomUser(roomId, userIds)
+	err := datastore.Provider(dsCfg).DeleteRoomUser(roomId, userIds)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete room's user failed",
@@ -159,7 +159,7 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 		return nil, pd
 	}
 
-	roomUsers, err := datastore.Provider().SelectRoomUsersByRoomIdAndUserIds(&roomId, userIds)
+	roomUsers, err := datastore.Provider(dsCfg).SelectRoomUsersByRoomIdAndUserIds(&roomId, userIds)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete room's user failed",
@@ -170,9 +170,9 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
-	go unsubscribeByRoomUsers(ctx, roomUsers)
+	go unsubscribeByRoomUsers(ctx, roomUsers, dsCfg)
 
-	roomUsers, err = datastore.Provider().SelectRoomUsersByRoomId(roomId)
+	roomUsers, err = datastore.Provider(dsCfg).SelectRoomUsersByRoomId(roomId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
@@ -187,8 +187,8 @@ func DeleteRoomUsers(roomId string, deleteUserIds *models.RequestRoomUserIds) (*
 	}, nil
 }
 
-func selectRoomUser(roomId, userId string) (*models.RoomUser, *models.ProblemDetail) {
-	roomUser, err := datastore.Provider().SelectRoomUser(roomId, userId)
+func selectRoomUser(roomId, userId string, dsCfg *utils.Datastore) (*models.RoomUser, *models.ProblemDetail) {
+	roomUser, err := datastore.Provider(dsCfg).SelectRoomUser(roomId, userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user failed",
@@ -206,8 +206,8 @@ func selectRoomUser(roomId, userId string) (*models.RoomUser, *models.ProblemDet
 	return roomUser, nil
 }
 
-func publishUserJoin(roomId string) {
-	userForRooms, err := datastore.Provider().SelectUsersForRoom(roomId)
+func publishUserJoin(roomId string, dsCfg *utils.Datastore) {
+	userForRooms, err := datastore.Provider(dsCfg).SelectUsersForRoom(roomId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -241,7 +241,7 @@ func publishUserJoin(roomId string) {
 	}
 }
 
-func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
+func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser, dsCfg *utils.Datastore) {
 	doneChan := make(chan bool, 1)
 	pdChan := make(chan *models.ProblemDetail, 1)
 
@@ -251,7 +251,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
 
-			devices, err := datastore.Provider().SelectDevicesByUserId(ru.UserId)
+			devices, err := datastore.Provider(dsCfg).SelectDevicesByUserId(ru.UserId)
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Subscribe failed",
@@ -269,7 +269,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 								pdChan <- nRes.ProblemDetail
 							} else {
 								d.NotificationDeviceId = *nRes.Data.(*string)
-								err := datastore.Provider().UpdateDevice(d)
+								err := datastore.Provider(dsCfg).UpdateDevice(d)
 								if err != nil {
 									pd := &models.ProblemDetail{
 										Title:  "Subscribe failed",
@@ -280,7 +280,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 								}
 							}
 						}
-						go subscribe(ctx, []*models.RoomUser{ru}, d)
+						go subscribe(ctx, []*models.RoomUser{ru}, d, dsCfg)
 					}
 				}
 			}
@@ -304,7 +304,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 	return
 }
 
-func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
+func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser, dsCfg *utils.Datastore) {
 	doneChan := make(chan bool, 1)
 	pdChan := make(chan *models.ProblemDetail, 1)
 
@@ -313,7 +313,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		ctx = context.WithValue(ctx, "roomUser", roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value("roomUser").(*models.RoomUser)
-			err := datastore.Provider().DeleteRoomUser(ru.RoomId, []string{ru.UserId})
+			err := datastore.Provider(dsCfg).DeleteRoomUser(ru.RoomId, []string{ru.UserId})
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Delete room's user failed",
@@ -322,7 +322,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 				pdChan <- pd
 			}
 
-			devices, err := datastore.Provider().SelectDevicesByUserId(ru.UserId)
+			devices, err := datastore.Provider(dsCfg).SelectDevicesByUserId(ru.UserId)
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Subscribe failed",
@@ -333,7 +333,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			}
 			if devices != nil {
 				for _, d := range devices {
-					subscription, err := datastore.Provider().SelectSubscription(ru.RoomId, ru.UserId, d.Platform)
+					subscription, err := datastore.Provider(dsCfg).SelectSubscription(ru.RoomId, ru.UserId, d.Platform)
 					if err != nil {
 						pd := &models.ProblemDetail{
 							Title:  "User registration failed",
@@ -342,7 +342,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 						}
 						pdChan <- pd
 					}
-					go unsubscribe(ctx, []*models.Subscription{subscription})
+					go unsubscribe(ctx, []*models.Subscription{subscription}, dsCfg)
 				}
 			}
 			doneChan <- true
@@ -377,8 +377,8 @@ func createTopic(roomId string) (string, *models.ProblemDetail) {
 	}
 }
 
-func getExistUserIds(requestUserIds []string) ([]string, *models.ProblemDetail) {
-	existUserIds, err := datastore.Provider().SelectUserIdsByUserIds(requestUserIds)
+func getExistUserIds(requestUserIds []string, dsCfg *utils.Datastore) ([]string, *models.ProblemDetail) {
+	existUserIds, err := datastore.Provider(dsCfg).SelectUserIdsByUserIds(requestUserIds)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Status: http.StatusInternalServerError,

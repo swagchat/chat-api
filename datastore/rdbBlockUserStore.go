@@ -9,8 +9,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateBlockUserStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateBlockUserStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.BlockUser{}, TABLE_NAME_BLOCK_USER)
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
@@ -23,15 +23,15 @@ func RdbCreateBlockUserStore() {
 	}
 }
 
-func RdbInsertBlockUsers(blockUsers []*models.BlockUser) error {
-	master := RdbStoreInstance().master()
+func RdbInsertBlockUsers(db string, blockUsers []*models.BlockUser) error {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
 	for _, blockUser := range blockUsers {
-		bu, err := RdbSelectBlockUser(blockUser.UserId, blockUser.BlockUserId)
+		bu, err := RdbSelectBlockUser(db, blockUser.UserId, blockUser.BlockUserId)
 		if err != nil {
 			err = trans.Rollback()
 			return errors.Wrap(err, "An error occurred while getting block user")
@@ -54,8 +54,8 @@ func RdbInsertBlockUsers(blockUsers []*models.BlockUser) error {
 	return nil
 }
 
-func RdbSelectBlockUser(userId, blockUserId string) (*models.BlockUser, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectBlockUser(db, userId, blockUserId string) (*models.BlockUser, error) {
+	replica := RdbStore(db).replica()
 
 	var blockUsers []*models.BlockUser
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId AND block_user_id=:blockUserId;")
@@ -63,7 +63,7 @@ func RdbSelectBlockUser(userId, blockUserId string) (*models.BlockUser, error) {
 		"userId":      userId,
 		"blockUserId": blockUserId,
 	}
-	_, err := slave.Select(&blockUsers, query, params)
+	_, err := replica.Select(&blockUsers, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting block user")
 	}
@@ -75,15 +75,15 @@ func RdbSelectBlockUser(userId, blockUserId string) (*models.BlockUser, error) {
 	return nil, nil
 }
 
-func RdbSelectBlockUsersByUserId(userId string) ([]string, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectBlockUsersByUserId(db, userId string) ([]string, error) {
+	replica := RdbStore(db).replica()
 
 	var blockUserIds []string
 	query := utils.AppendStrings("SELECT block_user_id FROM ", TABLE_NAME_BLOCK_USER, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	_, err := slave.Select(&blockUserIds, query, params)
+	_, err := replica.Select(&blockUserIds, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting block users")
 	}
@@ -91,8 +91,8 @@ func RdbSelectBlockUsersByUserId(userId string) ([]string, error) {
 	return blockUserIds, nil
 }
 
-func RdbDeleteBlockUser(userId string, blockUserIds []string) error {
-	master := RdbStoreInstance().master()
+func RdbDeleteBlockUser(db, userId string, blockUserIds []string) error {
+	master := RdbStore(db).master()
 
 	var blockUserIdsQuery string
 	blockUserIdsQuery, params := utils.MakePrepareForInExpression(blockUserIds)

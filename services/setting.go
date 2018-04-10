@@ -7,10 +7,11 @@ import (
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/utils"
 )
 
-func GetSetting() (*models.Setting, *models.ProblemDetail) {
-	setting, err := datastore.Provider().SelectLatestSetting()
+func GetSetting(dsCfg *utils.Datastore) (*models.Setting, *models.ProblemDetail) {
+	setting, err := datastore.Provider(dsCfg).SelectLatestSetting()
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get setting failed",

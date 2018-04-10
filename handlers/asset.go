@@ -11,8 +11,8 @@ import (
 )
 
 func SetAssetMux() {
-	Mux.PostFunc("/assets", colsHandler(PostAsset))
-	Mux.GetFunc("/assets/:filename", GetAsset)
+	Mux.PostFunc("/assets", colsHandler(datastoreHandler(PostAsset)))
+	Mux.GetFunc("/assets/:filename", datastoreHandler(GetAsset))
 }
 
 func PostAsset(w http.ResponseWriter, r *http.Request) {
@@ -44,8 +44,9 @@ func PostAsset(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	contentType := header.Header.Get("Content-Type")
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	asset, pd := services.PostAsset(contentType, file)
+	asset, pd := services.PostAsset(contentType, file, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -58,7 +59,9 @@ func GetAsset(w http.ResponseWriter, r *http.Request) {
 	filename := bone.GetValue(r, "filename")
 	assetId := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
-	bytes, asset, pd := services.GetAsset(assetId, ifModifiedSince)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	bytes, asset, pd := services.GetAsset(assetId, ifModifiedSince, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

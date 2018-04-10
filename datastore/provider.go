@@ -1,12 +1,13 @@
 package datastore
 
 import (
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
 type provider interface {
-	Connect() error
-	Init()
+	Connect(dsCfg *utils.Datastore) error
 	DropDatabase() error
 	ApiStore
 	AssetStore
@@ -21,38 +22,45 @@ type provider interface {
 	UserStore
 }
 
-func Provider() provider {
-	cfg := utils.Config()
+func Provider(dsCfg *utils.Datastore) provider {
 	var p provider
 
-	switch cfg.Datastore.Provider {
+	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
-			sqlitePath: cfg.Datastore.SQLite.Path,
+			sqlitePath: dsCfg.SQLite.Path,
 			trace:      false,
 		}
 	case "mysql":
 		p = &mysqlProvider{
-			user:              cfg.Datastore.User,
-			password:          cfg.Datastore.Password,
-			database:          cfg.Datastore.Database,
-			masterSi:          cfg.Datastore.Master,
-			replicaSis:        cfg.Datastore.Replicas,
-			maxIdleConnection: cfg.Datastore.MaxIdleConnection,
-			maxOpenConnection: cfg.Datastore.MaxOpenConnection,
+			user:              dsCfg.User,
+			password:          dsCfg.Password,
+			database:          dsCfg.Database,
+			masterSi:          dsCfg.Master,
+			replicaSis:        dsCfg.Replicas,
+			maxIdleConnection: dsCfg.MaxIdleConnection,
+			maxOpenConnection: dsCfg.MaxOpenConnection,
 			trace:             false,
 		}
-	case "gcpSql":
+	case "gcSql":
 		p = &gcpSqlProvider{
-			user:              cfg.Datastore.User,
-			password:          cfg.Datastore.Password,
-			database:          cfg.Datastore.Database,
-			masterSi:          cfg.Datastore.Master,
-			replicaSis:        cfg.Datastore.Replicas,
-			maxIdleConnection: cfg.Datastore.MaxIdleConnection,
-			maxOpenConnection: cfg.Datastore.MaxOpenConnection,
+			user:              dsCfg.User,
+			password:          dsCfg.Password,
+			database:          dsCfg.Database,
+			masterSi:          dsCfg.Master,
+			replicaSis:        dsCfg.Replicas,
+			maxIdleConnection: dsCfg.MaxIdleConnection,
+			maxOpenConnection: dsCfg.MaxOpenConnection,
 			trace:             false,
 		}
+	}
+
+	err := p.Connect(dsCfg)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "Database connect error",
+			Error:   err,
+		})
 	}
 
 	return p

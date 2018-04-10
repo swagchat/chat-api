@@ -8,18 +8,18 @@ import (
 )
 
 var (
-	rdbStoreInstance        *rdbStore = nil
-	TABLE_NAME_API                    = utils.Config().Datastore.TableNamePrefix + "api"
-	TABLE_NAME_ASSET                  = utils.Config().Datastore.TableNamePrefix + "asset"
-	TABLE_NAME_BLOCK_USER             = utils.Config().Datastore.TableNamePrefix + "block_user"
-	TABLE_NAME_BOT                    = utils.Config().Datastore.TableNamePrefix + "bot"
-	TABLE_NAME_DEVICE                 = utils.Config().Datastore.TableNamePrefix + "device"
-	TABLE_NAME_MESSAGE                = utils.Config().Datastore.TableNamePrefix + "message"
-	TABLE_NAME_ROOM                   = utils.Config().Datastore.TableNamePrefix + "room"
-	TABLE_NAME_ROOM_USER              = utils.Config().Datastore.TableNamePrefix + "room_user"
-	TABLE_NAME_SETTING                = utils.Config().Datastore.TableNamePrefix + "setting"
-	TABLE_NAME_SUBSCRIPTION           = utils.Config().Datastore.TableNamePrefix + "subscription"
-	TABLE_NAME_USER                   = utils.Config().Datastore.TableNamePrefix + "user"
+	rdbStores               = make(map[string]*rdbStore)
+	TABLE_NAME_API          = utils.Config().Datastore.TableNamePrefix + "api"
+	TABLE_NAME_ASSET        = utils.Config().Datastore.TableNamePrefix + "asset"
+	TABLE_NAME_BLOCK_USER   = utils.Config().Datastore.TableNamePrefix + "block_user"
+	TABLE_NAME_BOT          = utils.Config().Datastore.TableNamePrefix + "bot"
+	TABLE_NAME_DEVICE       = utils.Config().Datastore.TableNamePrefix + "device"
+	TABLE_NAME_MESSAGE      = utils.Config().Datastore.TableNamePrefix + "message"
+	TABLE_NAME_ROOM         = utils.Config().Datastore.TableNamePrefix + "room"
+	TABLE_NAME_ROOM_USER    = utils.Config().Datastore.TableNamePrefix + "room_user"
+	TABLE_NAME_SETTING      = utils.Config().Datastore.TableNamePrefix + "setting"
+	TABLE_NAME_SUBSCRIPTION = utils.Config().Datastore.TableNamePrefix + "subscription"
+	TABLE_NAME_USER         = utils.Config().Datastore.TableNamePrefix + "user"
 )
 
 type rdbStore struct {
@@ -28,11 +28,11 @@ type rdbStore struct {
 	replicaCounter int64
 }
 
-func RdbStoreInstance() *rdbStore {
-	if rdbStoreInstance == nil {
-		rdbStoreInstance = &rdbStore{}
+func RdbStore(db string) *rdbStore {
+	if rs, ok := rdbStores[db]; ok {
+		return rs
 	}
-	return rdbStoreInstance
+	return nil
 }
 
 func (rs *rdbStore) master() *gorp.DbMap {

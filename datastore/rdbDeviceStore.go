@@ -10,8 +10,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func RdbCreateDeviceStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateDeviceStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.Device{}, TABLE_NAME_DEVICE)
 	tableMap.SetUniqueTogether("user_id", "platform")
@@ -29,8 +29,8 @@ func RdbCreateDeviceStore() {
 	}
 }
 
-func RdbInsertDevice(device *models.Device) (*models.Device, error) {
-	master := RdbStoreInstance().master()
+func RdbInsertDevice(db string, device *models.Device) (*models.Device, error) {
+	master := RdbStore(db).master()
 
 	if err := master.Insert(device); err != nil {
 		return nil, errors.Wrap(err, "An error occurred while creating device")
@@ -39,15 +39,15 @@ func RdbInsertDevice(device *models.Device) (*models.Device, error) {
 	return device, nil
 }
 
-func RdbSelectDevices(userId string) ([]*models.Device, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectDevices(db, userId string) ([]*models.Device, error) {
+	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	_, err := slave.Select(&devices, query, params)
+	_, err := replica.Select(&devices, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting device")
 	}
@@ -55,8 +55,8 @@ func RdbSelectDevices(userId string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func RdbSelectDevice(userId string, platform int) (*models.Device, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectDevice(db, userId string, platform int) (*models.Device, error) {
+	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
@@ -64,7 +64,7 @@ func RdbSelectDevice(userId string, platform int) (*models.Device, error) {
 		"userId":   userId,
 		"platform": platform,
 	}
-	_, err := slave.Select(&devices, query, params)
+	_, err := replica.Select(&devices, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting device")
 	}
@@ -76,15 +76,15 @@ func RdbSelectDevice(userId string, platform int) (*models.Device, error) {
 	return nil, nil
 }
 
-func RdbSelectDevicesByUserId(userId string) ([]*models.Device, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectDevicesByUserId(db, userId string) ([]*models.Device, error) {
+	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
 		"userId": userId,
 	}
-	_, err := slave.Select(&devices, query, params)
+	_, err := replica.Select(&devices, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting devices")
 	}
@@ -92,15 +92,15 @@ func RdbSelectDevicesByUserId(userId string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func RdbSelectDevicesByToken(token string) ([]*models.Device, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
+	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE token=:token;")
 	params := map[string]interface{}{
 		"token": token,
 	}
-	_, err := slave.Select(&devices, query, params)
+	_, err := replica.Select(&devices, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting devices")
 	}
@@ -108,8 +108,8 @@ func RdbSelectDevicesByToken(token string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func RdbUpdateDevice(device *models.Device) error {
-	master := RdbStoreInstance().master()
+func RdbUpdateDevice(db string, device *models.Device) error {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
@@ -149,8 +149,8 @@ func RdbUpdateDevice(device *models.Device) error {
 	return nil
 }
 
-func RdbDeleteDevice(userId string, platform int) error {
-	master := RdbStoreInstance().master()
+func RdbDeleteDevice(db, userId string, platform int) error {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")

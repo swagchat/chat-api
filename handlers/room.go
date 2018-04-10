@@ -7,23 +7,26 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func SetRoomMux() {
-	Mux.PostFunc("/rooms", colsHandler(PostRoom))
-	Mux.GetFunc("/rooms", colsHandler(GetRooms))
-	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(GetRoom)))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(PutRoom)))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(DeleteRoom)))
-	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", colsHandler(roomAuthHandler(GetRoomMessages)))
+	Mux.PostFunc("/rooms", colsHandler(datastoreHandler(PostRoom)))
+	Mux.GetFunc("/rooms", colsHandler(datastoreHandler(GetRooms)))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(datastoreHandler(GetRoom))))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(datastoreHandler(PutRoom))))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$", colsHandler(roomAuthHandler(datastoreHandler(DeleteRoom))))
+	Mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/messages", colsHandler(roomAuthHandler(datastoreHandler(GetRoomMessages))))
 }
 
 func roomAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		roomID := bone.GetValue(r, "roomId")
-		sub := r.Header.Get("X-Sub")
+		sub := r.Header.Get(jwtSub)
+		dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
 		if roomID != "" && sub != "" {
-			pd := services.RoomAuth(roomID, sub)
+			pd := services.RoomAuth(roomID, sub, dsCfg)
 			if pd != nil {
 				respondErr(w, r, pd.Status, pd)
 				return
@@ -40,7 +43,9 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, pd := services.PostRoom(&post)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	room, pd := services.PostRoom(&post, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -51,7 +56,9 @@ func PostRoom(w http.ResponseWriter, r *http.Request) {
 
 func GetRooms(w http.ResponseWriter, r *http.Request) {
 	requestParams, _ := url.ParseQuery(r.URL.RawQuery)
-	rooms, pd := services.GetRooms(requestParams)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	rooms, pd := services.GetRooms(requestParams, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -62,7 +69,9 @@ func GetRooms(w http.ResponseWriter, r *http.Request) {
 
 func GetRoom(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
-	room, pd := services.GetRoom(roomId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	room, pd := services.GetRoom(roomId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -79,8 +88,9 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.RoomId = bone.GetValue(r, "roomId")
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	room, pd := services.PutRoom(&put)
+	room, pd := services.PutRoom(&put, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -91,7 +101,9 @@ func PutRoom(w http.ResponseWriter, r *http.Request) {
 
 func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
-	pd := services.DeleteRoom(roomId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	pd := services.DeleteRoom(roomId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -103,7 +115,9 @@ func DeleteRoom(w http.ResponseWriter, r *http.Request) {
 func GetRoomMessages(w http.ResponseWriter, r *http.Request) {
 	roomId := bone.GetValue(r, "roomId")
 	params, _ := url.ParseQuery(r.URL.RawQuery)
-	messages, pd := services.GetRoomMessages(roomId, params)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	messages, pd := services.GetRoomMessages(roomId, params, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

@@ -12,8 +12,8 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func RdbCreateApiStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateApiStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.Api{}, TABLE_NAME_API)
 	tableMap.SetKeys(true, "id")
@@ -29,14 +29,14 @@ func RdbCreateApiStore() {
 			Error:   err,
 		})
 	}
-	api, _ := RdbSelectLatestApi("admin")
+	api, _ := RdbSelectLatestApi(db, "admin")
 	if api == nil {
-		RdbInsertApi("admin")
+		RdbInsertApi(db, "admin")
 	}
 }
 
-func RdbInsertApi(name string) (*models.Api, error) {
-	master := RdbStoreInstance().master()
+func RdbInsertApi(db, name string) (*models.Api, error) {
+	master := RdbStore(db).master()
 
 	api := &models.Api{
 		Name:    name,
@@ -53,15 +53,15 @@ func RdbInsertApi(name string) (*models.Api, error) {
 	return api, nil
 }
 
-func RdbSelectLatestApi(name string) (*models.Api, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectLatestApi(db, name string) (*models.Api, error) {
+	replica := RdbStore(db).replica()
 
 	var apis []*models.Api
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_API, " WHERE name=:name AND (expired=0 OR expired>", nowTimestampString, ") ORDER BY created DESC LIMIT 1;")
 	params := map[string]interface{}{"name": name}
-	_, err := slave.Select(&apis, query, params)
+	_, err := replica.Select(&apis, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting api")
 	}

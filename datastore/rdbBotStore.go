@@ -9,8 +9,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateBotStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateBotStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.Bot{}, TABLE_NAME_BOT)
 	for _, columnMap := range tableMap.Columns {
@@ -27,13 +27,13 @@ func RdbCreateBotStore() {
 	}
 }
 
-func RdbSelectBot(userId string) (*models.Bot, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectBot(db, userId string) (*models.Bot, error) {
+	replica := RdbStore(db).replica()
 
 	var bots []*models.Bot
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_BOT, " WHERE user_id=:userId AND deleted=0;")
 	params := map[string]interface{}{"userId": userId}
-	_, err := slave.Select(&bots, query, params)
+	_, err := replica.Select(&bots, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting bot")
 	}

@@ -253,6 +253,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -354,6 +358,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -404,7 +412,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users",
@@ -484,6 +497,10 @@
 						"key": "Accept",
 						"value": "application/json",
 						"disabled": true
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -535,7 +552,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/unreadCount",
@@ -615,6 +637,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -665,7 +691,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices",
@@ -700,7 +731,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
@@ -768,6 +804,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -812,6 +852,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -853,7 +897,12 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
@@ -876,7 +925,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "280d77f4-ad71-43ad-9d30-efaa34bd87cb",
+						"id": "f370d955-a744-40f2-b67b-ba27d34a1ce3",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -895,7 +944,6 @@
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
 							"pm.test('Data is valid', function() {",
-							"    console.log(res.blockUsers);",
 							"    pm.expect(res.blockUsers.length).to.eql(0);",
 							"});",
 							"",
@@ -910,6 +958,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -931,12 +983,63 @@
 			"response": []
 		},
 		{
+			"name": "GET_USERS_0002",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6cfed53f-8845-4887-a9a5-d9e5e35dadcc",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"pm.environment.set(\"usersRes\", responseBody);",
+							"const usersSchemaString = pm.environment.get(\"usersSchema\");",
+							"const usersSchema = JSON.parse(usersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users"
+					]
+				},
+				"description": "No params"
+			},
+			"response": []
+		},
+		{
 			"name": "PUT_USER_BLOCKS_0001",
 			"event": [
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "7f823d01-0de5-4aea-8ecf-a0f466388f19",
+						"id": "de0b3d4e-6751-49fc-94f2-ab462b5af92e",
 						"type": "text/javascript",
 						"exec": [
 							"const addBlockUserCount = 4;",
@@ -944,21 +1047,19 @@
 							"const randomUserId = pm.environment.get(\"randomUserId\");",
 							"",
 							"let addBlockUserIds = [];",
-							"pm.sendRequest(apiEndpoint + \"/users\", function (err, response) {",
-							"    let users = response.json();",
-							"    let i = 0;",
-							"    for (let user of users.users) {",
-							"        if (user.userId !== randomUserId) {",
-							"            addBlockUserIds.push(user.userId);",
-							"            i++;",
-							"        }",
-							"        if (i >= addBlockUserCount) {",
-							"            break;",
-							"        }",
+							"usersRes = pm.environment.get(\"usersRes\");",
+							"var users = JSON.parse(usersRes);",
+							"let i = 0;",
+							"for (let user of users.users) {",
+							"    if (user.userId !== randomUserId) {",
+							"        addBlockUserIds.push(user.userId);",
+							"        i++;",
 							"    }",
-							"    pm.environment.set(\"addBlockUserIds\", JSON.stringify(addBlockUserIds));",
-							"});",
-							"",
+							"    if (i >= addBlockUserCount) {",
+							"        break;",
+							"    }",
+							"}",
+							"pm.environment.set(\"addBlockUserIds\", JSON.stringify(addBlockUserIds));",
 							""
 						]
 					}
@@ -1001,6 +1102,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -1027,7 +1132,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "ca6a5f0b-eb0b-4a7a-a8a8-a8005ba041f7",
+						"id": "7dacccec-cd71-41b1-965f-8706da31b097",
 						"type": "text/javascript",
 						"exec": [
 							"const deleteBlockUserCount = 1;",
@@ -1035,20 +1140,20 @@
 							"const randomUserId = pm.environment.get(\"randomUserId\");",
 							"",
 							"let deleteBlockUserIds = [];",
-							"pm.sendRequest(apiEndpoint + \"/users\", function (err, response) {",
-							"    let users = response.json();",
-							"    let i = 0;",
-							"    for (let user of users.users) {",
-							"        if (user.userId !== randomUserId) {",
-							"            deleteBlockUserIds.push(user.userId);",
-							"            i++;",
-							"        }",
-							"        if (i >= deleteBlockUserCount) {",
-							"            break;",
-							"        }",
+							"usersRes = pm.environment.get(\"usersRes\");",
+							"var users = JSON.parse(usersRes);",
+							"let i = 0;",
+							"for (let user of users.users) {",
+							"    if (user.userId !== randomUserId) {",
+							"        deleteBlockUserIds.push(user.userId);",
+							"        i++;",
 							"    }",
-							"    pm.environment.set(\"deleteBlockUserIds\", JSON.stringify(deleteBlockUserIds));",
-							"});",
+							"    if (i >= deleteBlockUserCount) {",
+							"        break;",
+							"    }",
+							"}",
+							"pm.environment.set(\"deleteBlockUserIds\", JSON.stringify(deleteBlockUserIds));",
+							"",
 							"",
 							""
 						]
@@ -1092,6 +1197,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -1154,6 +1263,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -1207,6 +1320,10 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {

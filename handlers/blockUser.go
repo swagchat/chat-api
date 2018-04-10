@@ -6,17 +6,20 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func SetBlockUserMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(GetBlockUsers)))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(PutBlockUsers)))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(DeleteBlockUsers)))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(datastoreHandler(GetBlockUsers))))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(datastoreHandler(PutBlockUsers))))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(datastoreHandler(DeleteBlockUsers))))
 }
 
 func GetBlockUsers(w http.ResponseWriter, r *http.Request) {
 	userId := bone.GetValue(r, "userId")
-	blockUsers, pd := services.GetBlockUsers(userId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	blockUsers, pd := services.GetBlockUsers(userId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -33,7 +36,9 @@ func PutBlockUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId := bone.GetValue(r, "userId")
-	blockUsers, pd := services.PutBlockUsers(userId, &reqUIDs)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	blockUsers, pd := services.PutBlockUsers(userId, &reqUIDs, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -50,7 +55,9 @@ func DeleteBlockUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId := bone.GetValue(r, "userId")
-	blockUsers, pd := services.DeleteBlockUsers(userId, &reqUIDs)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	blockUsers, pd := services.DeleteBlockUsers(userId, &reqUIDs, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

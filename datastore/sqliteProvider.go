@@ -2,12 +2,12 @@ package datastore
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap/zapcore"
 	gorp "gopkg.in/gorp.v2"
 )
@@ -17,13 +17,14 @@ type sqliteProvider struct {
 	trace      bool
 }
 
-func (p *sqliteProvider) Connect() error {
-	rs := RdbStoreInstance()
-	if rs.master() != nil {
+func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
+	if _, ok := rdbStores[dsCfg.Database]; ok {
 		return nil
 	}
-	if p.sqlitePath == "" {
-		return errors.New("not key sqlitePath")
+
+	rs := &rdbStore{}
+	if rs.master() != nil {
+		return nil
 	}
 
 	db, err := sql.Open("sqlite3", p.sqlitePath)
@@ -39,10 +40,13 @@ func (p *sqliteProvider) Connect() error {
 		master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
 	}
 	rs.setMaster(master)
+
+	rdbStores[dsCfg.SQLite.Path] = rs
+	p.init()
 	return nil
 }
 
-func (p *sqliteProvider) Init() {
+func (p *sqliteProvider) init() {
 	p.CreateApiStore()
 	p.CreateAssetStore()
 	p.CreateUserStore()

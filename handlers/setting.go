@@ -4,14 +4,17 @@ import (
 	"net/http"
 
 	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func SetSettingMux() {
-	Mux.GetFunc("/setting", colsHandler(GetSetting))
+	Mux.GetFunc("/setting", colsHandler(datastoreHandler(GetSetting)))
 }
 
 func GetSetting(w http.ResponseWriter, r *http.Request) {
-	setting, pd := services.GetSetting()
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	setting, pd := services.GetSetting(dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

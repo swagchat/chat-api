@@ -18,9 +18,19 @@ import (
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
+	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+)
+
+type key int
+
+const (
+	jwtSub       = "X-Sub"
+	jwtRealm     = "X-Realm"
+	ctxDsCfg key = iota
+	ctxJwt
 )
 
 var (
@@ -140,6 +150,59 @@ func optionsHandler(w http.ResponseWriter, r *http.Request) {
 
 func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNotFound, "", nil)
+}
+
+func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		jwt := &models.JWT{
+			Sub: r.Header.Get(jwtSub),
+		}
+
+		ctx := context.WithValue(r.Context(), ctxJwt, jwt)
+		fn(w, r.WithContext(ctx))
+	}
+}
+
+func datastoreHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cfg := utils.Config()
+		var dsCfg *utils.Datastore
+
+		switch utils.Config().Datastore.Provider {
+		case "sqlite":
+			dsCfg = &utils.Datastore{
+				Provider:        cfg.Datastore.Provider,
+				TableNamePrefix: cfg.Datastore.TableNamePrefix,
+			}
+			dsCfg.SQLite.Path = cfg.Datastore.SQLite.Path
+		case "mysql", "gcSql":
+			dsCfg = &utils.Datastore{
+				Provider:          cfg.Datastore.Provider,
+				User:              cfg.Datastore.User,
+				Password:          cfg.Datastore.Password,
+				Database:          cfg.Datastore.Database,
+				TableNamePrefix:   cfg.Datastore.TableNamePrefix,
+				Master:            cfg.Datastore.Master,
+				Replicas:          cfg.Datastore.Replicas,
+				MaxIdleConnection: cfg.Datastore.MaxIdleConnection,
+				MaxOpenConnection: cfg.Datastore.MaxOpenConnection,
+			}
+		}
+		if cfg.Datastore.Dynamic {
+			dsCfg.Database = r.Header.Get(jwtRealm)
+		}
+
+		if dsCfg.Database == "" {
+			respondErr(w, r, 400, &models.ProblemDetail{
+				Title: "No database",
+			})
+			return
+		}
+
+		datastore.Provider(dsCfg)
+		ctx := context.WithValue(r.Context(), ctxDsCfg, dsCfg)
+		fn(w, r.WithContext(ctx))
+	}
 }
 
 // func aclHandler(fn http.HandlerFunc) http.HandlerFunc {

@@ -6,12 +6,13 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func SetRoomUserMux() {
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(roomAuthHandler(PutRoomUsers)))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(roomAuthHandler(PutRoomUser)))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(roomAuthHandler(DeleteRoomUsers)))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(roomAuthHandler(datastoreHandler(PutRoomUsers))))
+	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(roomAuthHandler(datastoreHandler(PutRoomUser))))
+	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(roomAuthHandler(datastoreHandler(DeleteRoomUsers))))
 }
 
 func PutRoomUsers(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +23,9 @@ func PutRoomUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	roomId := bone.GetValue(r, "roomId")
-	roomUsers, pd := services.PutRoomUsers(roomId, &put)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	roomUsers, pd := services.PutRoomUsers(roomId, &put, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -40,7 +43,9 @@ func PutRoomUser(w http.ResponseWriter, r *http.Request) {
 
 	put.RoomId = bone.GetValue(r, "roomId")
 	put.UserId = bone.GetValue(r, "userId")
-	roomUser, pd := services.PutRoomUser(&put)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	roomUser, pd := services.PutRoomUser(&put, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -58,7 +63,9 @@ func DeleteRoomUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	roomId := bone.GetValue(r, "roomId")
-	roomUsers, pd := services.DeleteRoomUsers(roomId, &deleteRus)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	roomUsers, pd := services.DeleteRoomUsers(roomId, &deleteRus, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

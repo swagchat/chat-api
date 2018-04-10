@@ -9,9 +9,10 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/storage"
+	"github.com/swagchat/chat-api/utils"
 )
 
-func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.ProblemDetail) {
+func PostAsset(contentType string, file io.Reader, dsCfg *utils.Datastore) (*models.Asset, *models.ProblemDetail) {
 	asset := &models.Asset{
 		Mime: contentType,
 	}
@@ -38,7 +39,7 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 	}
 	asset.URL = url
 
-	asset, err = datastore.Provider().InsertAsset(asset)
+	asset, err = datastore.Provider(dsCfg).InsertAsset(asset)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "File upload failed",
@@ -50,7 +51,7 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 	return asset, nil
 }
 
-func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.ProblemDetail) {
+func GetAsset(assetId, ifModifiedSince string, dsCfg *utils.Datastore) ([]byte, *models.Asset, *models.ProblemDetail) {
 	if ifModifiedSince != "" {
 		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
 		if err != nil {
@@ -63,7 +64,7 @@ func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.P
 		}
 	}
 
-	asset, err := datastore.Provider().SelectAsset(assetId)
+	asset, err := datastore.Provider(dsCfg).SelectAsset(assetId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "File download failed",

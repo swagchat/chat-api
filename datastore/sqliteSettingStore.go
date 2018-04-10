@@ -3,9 +3,9 @@ package datastore
 import "github.com/swagchat/chat-api/models"
 
 func (p *sqliteProvider) CreateSettingStore() {
-	RdbCreateSettingStore()
+	RdbCreateSettingStore(p.sqlitePath)
 }
 
 func (p *sqliteProvider) SelectLatestSetting() (*models.Setting, error) {
-	return RdbSelectLatestSetting()
+	return RdbSelectLatestSetting(p.sqlitePath)
 }

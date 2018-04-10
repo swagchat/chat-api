@@ -81,6 +81,7 @@ type Storage struct {
 }
 
 type Datastore struct {
+	Dynamic  bool
 	Provider string
 
 	User              string
@@ -159,6 +160,7 @@ func NewConfig() *config {
 	storage.Local.Path = "data/assets"
 
 	datastore := &Datastore{
+		Dynamic:  false,
 		Provider: "sqlite",
 	}
 
@@ -292,6 +294,13 @@ func (c *config) loadEnvironment() {
 	}
 
 	// Datastore
+	if v = os.Getenv("SC_DATASTORE_DYNAMIC"); v != "" {
+		if v == "true" {
+			c.Datastore.Dynamic = true
+		} else if v == "false" {
+			c.Datastore.Dynamic = false
+		}
+	}
 	if v = os.Getenv("SC_DATASTORE_PROVIDER"); v != "" {
 		c.Datastore.Provider = v
 	}
@@ -494,6 +503,7 @@ func (c *config) parseFlag() {
 	flag.StringVar(&c.Storage.AWSS3.ThumbnailDirectory, "storage.awss3.thumbnailDirectory", c.Storage.AWSS3.ThumbnailDirectory, "")
 
 	// Datastore
+	flag.BoolVar(&c.Datastore.Dynamic, "datastore.dynamic", c.Datastore.Dynamic, "")
 	flag.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
 	flag.StringVar(&c.Datastore.TableNamePrefix, "datastore.tableNamePrefix", c.Datastore.TableNamePrefix, "")
 	flag.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")

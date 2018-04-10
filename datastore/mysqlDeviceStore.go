@@ -3,33 +3,33 @@ package datastore
 import "github.com/swagchat/chat-api/models"
 
 func (p *mysqlProvider) CreateDeviceStore() {
-	RdbCreateDeviceStore()
+	RdbCreateDeviceStore(p.database)
 }
 
 func (p *mysqlProvider) InsertDevice(device *models.Device) (*models.Device, error) {
-	return RdbInsertDevice(device)
+	return RdbInsertDevice(p.database, device)
 }
 
 func (p *mysqlProvider) SelectDevices(userId string) ([]*models.Device, error) {
-	return RdbSelectDevices(userId)
+	return RdbSelectDevices(p.database, userId)
 }
 
 func (p *mysqlProvider) SelectDevice(userId string, platform int) (*models.Device, error) {
-	return RdbSelectDevice(userId, platform)
+	return RdbSelectDevice(p.database, userId, platform)
 }
 
 func (p *mysqlProvider) SelectDevicesByUserId(userId string) ([]*models.Device, error) {
-	return RdbSelectDevicesByUserId(userId)
+	return RdbSelectDevicesByUserId(p.database, userId)
 }
 
 func (p *mysqlProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
-	return RdbSelectDevicesByToken(token)
+	return RdbSelectDevicesByToken(p.database, token)
 }
 
 func (p *mysqlProvider) UpdateDevice(device *models.Device) error {
-	return RdbUpdateDevice(device)
+	return RdbUpdateDevice(p.database, device)
 }
 
 func (p *mysqlProvider) DeleteDevice(userId string, platform int) error {
-	return RdbDeleteDevice(userId, platform)
+	return RdbDeleteDevice(p.database, userId, platform)
 }

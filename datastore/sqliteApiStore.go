@@ -3,13 +3,13 @@ package datastore
 import "github.com/swagchat/chat-api/models"
 
 func (p *sqliteProvider) CreateApiStore() {
-	RdbCreateApiStore()
+	RdbCreateApiStore(p.sqlitePath)
 }
 
 func (p *sqliteProvider) InsertApi(name string) (*models.Api, error) {
-	return RdbInsertApi(name)
+	return RdbInsertApi(p.sqlitePath, name)
 }
 
 func (p *sqliteProvider) SelectLatestApi(name string) (*models.Api, error) {
-	return RdbSelectLatestApi(name)
+	return RdbSelectLatestApi(p.sqlitePath, name)
 }

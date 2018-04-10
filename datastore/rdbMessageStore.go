@@ -13,8 +13,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateMessageStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateMessageStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.Message{}, TABLE_NAME_MESSAGE)
 	tableMap.SetKeys(true, "id")
@@ -49,8 +49,8 @@ func RdbCreateMessageStore() {
 	}
 }
 
-func RdbInsertMessage(message *models.Message) (string, error) {
-	master := RdbStoreInstance().master()
+func RdbInsertMessage(db string, message *models.Message) (string, error) {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return "", errors.Wrap(err, "An error occurred while transaction beginning")
@@ -138,13 +138,13 @@ func RdbInsertMessage(message *models.Message) (string, error) {
 	return lastMessage, nil
 }
 
-func RdbSelectMessage(messageId string) (*models.Message, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectMessage(db, messageId string) (*models.Message, error) {
+	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_MESSAGE, " WHERE message_id=:messageId;")
 	params := map[string]interface{}{"messageId": messageId}
-	_, err := slave.Select(&messages, query, params)
+	_, err := replica.Select(&messages, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting message")
 	}
@@ -156,8 +156,8 @@ func RdbSelectMessage(messageId string) (*models.Message, error) {
 	return nil, nil
 }
 
-func RdbSelectMessages(roomId string, limit, offset int, order string) ([]*models.Message, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectMessages(db, roomId string, limit, offset int, order string) ([]*models.Message, error) {
+	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * ",
@@ -172,7 +172,7 @@ func RdbSelectMessages(roomId string, limit, offset int, order string) ([]*model
 		"limit":  limit,
 		"offset": offset,
 	}
-	_, err := slave.Select(&messages, query, params)
+	_, err := replica.Select(&messages, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting messages")
 	}
@@ -180,8 +180,8 @@ func RdbSelectMessages(roomId string, limit, offset int, order string) ([]*model
 	return messages, nil
 }
 
-func RdbSelectCountMessagesByRoomId(roomId string) (int64, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectCountMessagesByRoomId(db, roomId string) (int64, error) {
+	replica := RdbStore(db).replica()
 
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_MESSAGE, " ",
@@ -190,7 +190,7 @@ func RdbSelectCountMessagesByRoomId(roomId string) (int64, error) {
 	params := map[string]interface{}{
 		"roomId": roomId,
 	}
-	count, err := slave.SelectInt(query, params)
+	count, err := replica.SelectInt(query, params)
 	if err != nil {
 		return 0, errors.Wrap(err, "An error occurred while getting message count")
 	}
@@ -198,8 +198,8 @@ func RdbSelectCountMessagesByRoomId(roomId string) (int64, error) {
 	return count, nil
 }
 
-func RdbUpdateMessage(message *models.Message) (*models.Message, error) {
-	master := RdbStoreInstance().master()
+func RdbUpdateMessage(db string, message *models.Message) (*models.Message, error) {
+	master := RdbStore(db).master()
 
 	_, err := master.Update(message)
 	if err != nil {

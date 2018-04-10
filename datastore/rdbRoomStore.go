@@ -11,8 +11,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateRoomStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateRoomStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
 	tableMap.SetKeys(true, "id")
@@ -30,8 +30,8 @@ func RdbCreateRoomStore() {
 	}
 }
 
-func RdbInsertRoom(room *models.Room) (*models.Room, error) {
-	master := RdbStoreInstance().master()
+func RdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
@@ -83,13 +83,13 @@ func RdbInsertRoom(room *models.Room) (*models.Room, error) {
 	return room, nil
 }
 
-func RdbSelectRoom(roomId string) (*models.Room, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectRoom(db, roomId string) (*models.Room, error) {
+	replica := RdbStore(db).replica()
 
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
 	params := map[string]interface{}{"roomId": roomId}
-	_, err := slave.Select(&rooms, query, params)
+	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room")
 	}
@@ -101,12 +101,12 @@ func RdbSelectRoom(roomId string) (*models.Room, error) {
 	return nil, nil
 }
 
-func RdbSelectRooms() ([]*models.Room, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectRooms(db string) ([]*models.Room, error) {
+	replica := RdbStore(db).replica()
 
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
-	_, err := slave.Select(&rooms, query)
+	_, err := replica.Select(&rooms, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting rooms")
 	}
@@ -114,8 +114,8 @@ func RdbSelectRooms() ([]*models.Room, error) {
 	return rooms, nil
 }
 
-func RdbSelectUsersForRoom(roomId string) ([]*models.UserForRoom, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectUsersForRoom(db, roomId string) ([]*models.UserForRoom, error) {
+	replica := RdbStore(db).replica()
 
 	var users []*models.UserForRoom
 	query := utils.AppendStrings("SELECT ",
@@ -139,7 +139,7 @@ func RdbSelectUsersForRoom(roomId string) ([]*models.UserForRoom, error) {
 		"WHERE ru.room_id = :roomId AND u.deleted = 0 ",
 		"ORDER BY u.created;")
 	params := map[string]interface{}{"roomId": roomId}
-	_, err := slave.Select(&users, query, params)
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room's users")
 	}
@@ -147,12 +147,12 @@ func RdbSelectUsersForRoom(roomId string) ([]*models.UserForRoom, error) {
 	return users, nil
 }
 
-func RdbSelectCountRooms() (int64, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectCountRooms(db string) (int64, error) {
+	replica := RdbStore(db).replica()
 
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
-	count, err := slave.SelectInt(query)
+	count, err := replica.SelectInt(query)
 	if err != nil {
 		return 0, errors.Wrap(err, "An error occurred while getting room count")
 	}
@@ -160,8 +160,8 @@ func RdbSelectCountRooms() (int64, error) {
 	return count, nil
 }
 
-func RdbUpdateRoom(room *models.Room) (*models.Room, error) {
-	master := RdbStoreInstance().master()
+func RdbUpdateRoom(db string, room *models.Room) (*models.Room, error) {
+	master := RdbStore(db).master()
 
 	_, err := master.Update(room)
 	if err != nil {
@@ -171,8 +171,8 @@ func RdbUpdateRoom(room *models.Room) (*models.Room, error) {
 	return room, nil
 }
 
-func RdbUpdateRoomDeleted(roomId string) error {
-	master := RdbStoreInstance().master()
+func RdbUpdateRoomDeleted(db, roomId string) error {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")

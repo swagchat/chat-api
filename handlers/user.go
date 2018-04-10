@@ -6,22 +6,23 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func SetUserMux() {
-	Mux.PostFunc("/users", colsHandler(PostUser))
-	Mux.GetFunc("/users", colsHandler(GetUsers))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(GetUser)))
-	Mux.GetFunc("/profiles/#userId^[a-z0-9-]$", colsHandler(contactsAuthHandler(GetProfile)))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(PutUser)))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(DeleteUser)))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", colsHandler(userAuthHandler(GetUserUnreadCount)))
+	Mux.PostFunc("/users", colsHandler(jwtHandler(datastoreHandler(datastoreHandler(PostUser)))))
+	Mux.GetFunc("/users", colsHandler(datastoreHandler(datastoreHandler(GetUsers))))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(datastoreHandler(GetUser))))
+	Mux.GetFunc("/profiles/#userId^[a-z0-9-]$", colsHandler(contactsAuthHandler(datastoreHandler(GetProfile))))
+	Mux.PutFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(datastoreHandler(PutUser))))
+	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(datastoreHandler(DeleteUser))))
+	Mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", colsHandler(userAuthHandler(datastoreHandler(GetUserUnreadCount))))
 }
 
 func userAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := bone.GetValue(r, "userId")
-		sub := r.Header.Get("X-Sub")
+		sub := r.Header.Get(jwtSub)
 		if userID != "" && sub != "" {
 			pd := services.UserAuth(userID, sub)
 			if pd != nil {
@@ -36,9 +37,10 @@ func userAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
 func contactsAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := bone.GetValue(r, "userId")
-		sub := r.Header.Get("X-Sub")
+		sub := r.Header.Get(jwtSub)
 		if userID != "" && sub != "" {
-			pd := services.ContactsAuth(userID, sub)
+			dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+			pd := services.ContactsAuth(userID, sub, dsCfg)
 			if pd != nil {
 				respondErr(w, r, pd.Status, pd)
 				return
@@ -55,11 +57,10 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt := &models.JWT{
-		Sub: r.Header.Get("X-Sub"),
-	}
+	jwt := r.Context().Value(ctxJwt).(*models.JWT)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	user, pd := services.PostUser(&post, jwt)
+	user, pd := services.PostUser(&post, jwt, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -69,7 +70,9 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	users, pd := services.GetUsers()
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	users, pd := services.GetUsers(dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -80,7 +83,9 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	userId := bone.GetValue(r, "userId")
-	user, pd := services.GetUser(userId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	user, pd := services.GetUser(userId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -91,7 +96,9 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	userId := bone.GetValue(r, "userId")
-	user, pd := services.GetProfile(userId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	user, pd := services.GetProfile(userId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -108,8 +115,9 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.UserId = bone.GetValue(r, "userId")
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	user, pd := services.PutUser(&put)
+	user, pd := services.PutUser(&put, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -120,7 +128,9 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	userId := bone.GetValue(r, "userId")
-	pd := services.DeleteUser(userId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	pd := services.DeleteUser(userId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -131,7 +141,9 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 func GetUserUnreadCount(w http.ResponseWriter, r *http.Request) {
 	userId := bone.GetValue(r, "userId")
-	userUnreadCount, pd := services.GetUserUnreadCount(userId)
+	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+
+	userUnreadCount, pd := services.GetUserUnreadCount(userId, dsCfg)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

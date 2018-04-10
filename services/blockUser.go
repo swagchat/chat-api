@@ -6,10 +6,11 @@ import (
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/utils"
 )
 
-func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
-	blockUserIds, err := datastore.Provider().SelectBlockUsersByUserId(userId)
+func GetBlockUsers(userId string, dsCfg *utils.Datastore) (*models.BlockUsers, *models.ProblemDetail) {
+	blockUserIds, err := datastore.Provider(dsCfg).SelectBlockUsersByUserId(userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get block users failed",
@@ -24,8 +25,8 @@ func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
 	}, nil
 }
 
-func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
-	_, pd := selectUser(userId)
+func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg *utils.Datastore) (*models.BlockUsers, *models.ProblemDetail) {
+	_, pd := selectUser(userId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -36,7 +37,7 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 		return nil, pd
 	}
 
-	bUIds, pd := getExistUserIds(reqUIDs.UserIds)
+	bUIds, pd := getExistUserIds(reqUIDs.UserIds, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -50,7 +51,7 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 			Created:     nowTimestamp,
 		})
 	}
-	err := datastore.Provider().InsertBlockUsers(blockUsers)
+	err := datastore.Provider(dsCfg).InsertBlockUsers(blockUsers)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Block user registration failed",
@@ -60,7 +61,7 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 		return nil, pd
 	}
 
-	blockUserIds, err := datastore.Provider().SelectBlockUsersByUserId(userId)
+	blockUserIds, err := datastore.Provider(dsCfg).SelectBlockUsersByUserId(userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Block user registration failed",
@@ -75,8 +76,8 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.
 	}, nil
 }
 
-func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
-	_, pd := selectUser(userId)
+func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg *utils.Datastore) (*models.BlockUsers, *models.ProblemDetail) {
+	_, pd := selectUser(userId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -87,12 +88,12 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*mode
 		return nil, pd
 	}
 
-	bUIds, pd := getExistUserIds(reqUIDs.UserIds)
+	bUIds, pd := getExistUserIds(reqUIDs.UserIds, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
 
-	err := datastore.Provider().DeleteBlockUser(userId, bUIds)
+	err := datastore.Provider(dsCfg).DeleteBlockUser(userId, bUIds)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete block user failed",
@@ -102,7 +103,7 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*mode
 		return nil, pd
 	}
 
-	blockUserIds, err := datastore.Provider().SelectBlockUsersByUserId(userId)
+	blockUserIds, err := datastore.Provider(dsCfg).SelectBlockUsersByUserId(userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete block user failed",

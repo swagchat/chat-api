@@ -12,15 +12,17 @@ import (
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/utils"
 )
 
-func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.ProblemDetail) {
+func PostUser(post *models.User, jwt *models.JWT, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
 	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
+
 	post.BeforePost(jwt)
 
-	user, err := datastore.Provider().SelectUser(post.UserId, true, true, true)
+	user, err := datastore.Provider(dsCfg).SelectUser(post.UserId, true, true, true)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -36,7 +38,7 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 		}
 	}
 
-	user, err = datastore.Provider().InsertUser(post)
+	user, err = datastore.Provider(dsCfg).InsertUser(post)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -48,8 +50,8 @@ func PostUser(post *models.User, jwt *models.JWT) (*models.User, *models.Problem
 	return user, nil
 }
 
-func GetUsers() (*models.Users, *models.ProblemDetail) {
-	users, err := datastore.Provider().SelectUsers()
+func GetUsers(dsCfg *utils.Datastore) (*models.Users, *models.ProblemDetail) {
+	users, err := datastore.Provider(dsCfg).SelectUsers()
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get users failed",
@@ -64,8 +66,8 @@ func GetUsers() (*models.Users, *models.ProblemDetail) {
 	}, nil
 }
 
-func GetUser(userId string) (*models.User, *models.ProblemDetail) {
-	user, err := datastore.Provider().SelectUser(userId, true, true, true)
+func GetUser(userId string, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
+	user, err := datastore.Provider(dsCfg).SelectUser(userId, true, true, true)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
@@ -95,8 +97,8 @@ func GetUser(userId string) (*models.User, *models.ProblemDetail) {
 	return user, nil
 }
 
-func GetProfile(userId string) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(userId)
+func GetProfile(userId string, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
+	user, pd := selectUser(userId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -104,8 +106,8 @@ func GetProfile(userId string) (*models.User, *models.ProblemDetail) {
 	return user, nil
 }
 
-func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(put.UserId)
+func PutUser(put *models.User, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
+	user, pd := selectUser(put.UserId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -116,7 +118,7 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 
 	user.BeforePut(put)
 
-	user, err := datastore.Provider().UpdateUser(user)
+	user, err := datastore.Provider(dsCfg).UpdateUser(user)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Update user failed",
@@ -129,14 +131,15 @@ func PutUser(put *models.User) (*models.User, *models.ProblemDetail) {
 	return user, nil
 }
 
-func DeleteUser(userId string) *models.ProblemDetail {
+func DeleteUser(userId string, dsCfg *utils.Datastore) *models.ProblemDetail {
+	dsp := datastore.Provider(dsCfg)
 	// User existence check
-	_, pd := selectUser(userId)
+	_, pd := selectUser(userId, dsCfg)
 	if pd != nil {
 		return pd
 	}
 
-	devices, err := datastore.Provider().SelectDevicesByUserId(userId)
+	devices, err := dsp.SelectDevicesByUserId(userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete user failed",
@@ -154,7 +157,7 @@ func DeleteUser(userId string) *models.ProblemDetail {
 		}
 	}
 
-	err = datastore.Provider().UpdateUserDeleted(userId)
+	err = dsp.UpdateUserDeleted(userId)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete user failed",
@@ -165,13 +168,13 @@ func DeleteUser(userId string) *models.ProblemDetail {
 	}
 
 	ctx, _ := context.WithCancel(context.Background())
-	go unsubscribeByUserId(ctx, userId)
+	go unsubscribeByUserId(ctx, userId, dsCfg)
 
 	return nil
 }
 
-func selectUser(userId string) (*models.User, *models.ProblemDetail) {
-	user, err := datastore.Provider().SelectUser(userId, false, false, false)
+func selectUser(userId string, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
+	user, err := datastore.Provider(dsCfg).SelectUser(userId, false, false, false)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
@@ -189,18 +192,18 @@ func selectUser(userId string) (*models.User, *models.ProblemDetail) {
 	return user, nil
 }
 
-func unsubscribeByUserId(ctx context.Context, userId string) {
-	subscriptions, err := datastore.Provider().SelectDeletedSubscriptionsByUserId(userId)
+func unsubscribeByUserId(ctx context.Context, userId string, dsCfg *utils.Datastore) {
+	subscriptions, err := datastore.Provider(dsCfg).SelectDeletedSubscriptionsByUserId(userId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
 		})
 	}
-	unsubscribe(ctx, subscriptions)
+	unsubscribe(ctx, subscriptions, dsCfg)
 }
 
-func GetUserUnreadCount(userId string) (*models.UserUnreadCount, *models.ProblemDetail) {
-	user, pd := selectUser(userId)
+func GetUserUnreadCount(userId string, dsCfg *utils.Datastore) (*models.UserUnreadCount, *models.ProblemDetail) {
+	user, pd := selectUser(userId, dsCfg)
 	if pd != nil {
 		return nil, pd
 	}
@@ -222,8 +225,8 @@ func UserAuth(userId, sub string) *models.ProblemDetail {
 	return nil
 }
 
-func ContactsAuth(userId, sub string) *models.ProblemDetail {
-	contacts, pd := GetContacts(sub)
+func ContactsAuth(userId, sub string, dsCfg *utils.Datastore) *models.ProblemDetail {
+	contacts, pd := GetContacts(sub, dsCfg)
 	if pd != nil {
 		return pd
 	}

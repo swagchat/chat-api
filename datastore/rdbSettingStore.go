@@ -13,8 +13,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateSettingStore() {
-	master := RdbStoreInstance().master()
+func RdbCreateSettingStore(db string) {
+	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(models.Setting{}, TABLE_NAME_SETTING)
 	tableMap.SetKeys(true, "id")
@@ -27,14 +27,14 @@ func RdbCreateSettingStore() {
 	}
 }
 
-func RdbSelectLatestSetting() (*models.Setting, error) {
-	slave := RdbStoreInstance().replica()
+func RdbSelectLatestSetting(db string) (*models.Setting, error) {
+	replica := RdbStore(db).replica()
 
 	var settings []*models.Setting
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SETTING, " WHERE expired=0 OR expired>", nowTimestampString, " ORDER BY created DESC LIMIT 1;")
-	if _, err := slave.Select(&settings, query, nil); err != nil {
+	if _, err := replica.Select(&settings, query, nil); err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting setting")
 	}
 	if len(settings) > 0 {
