@@ -3,15 +3,16 @@
 package services
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 )
 
-func GetSetting(dsCfg *utils.Datastore) (*models.Setting, *models.ProblemDetail) {
-	setting, err := datastore.Provider(dsCfg).SelectLatestSetting()
+// GetSetting is get setting
+func GetSetting(ctx context.Context) (*models.Setting, *models.ProblemDetail) {
+	setting, err := datastore.Provider(ctx).SelectLatestSetting()
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get setting failed",

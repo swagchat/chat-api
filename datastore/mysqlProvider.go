@@ -104,17 +104,17 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 }
 
 func (p *mysqlProvider) init() {
-	p.CreateApiStore()
-	p.CreateAssetStore()
-	p.CreateUserStore()
-	p.CreateBlockUserStore()
-	p.CreateBotStore()
-	p.CreateRoomStore()
-	p.CreateRoomUserStore()
-	p.CreateMessageStore()
-	p.CreateDeviceStore()
-	p.CreateSettingStore()
-	p.CreateSubscriptionStore()
+	p.createAppClientStore()
+	p.createAssetStore()
+	p.createBlockUserStore()
+	p.createBotStore()
+	p.createDeviceStore()
+	p.createMessageStore()
+	p.createRoomStore()
+	p.createRoomUserStore()
+	p.createSettingStore()
+	p.createSubscriptionStore()
+	p.createUserStore()
 }
 
 func (p *mysqlProvider) DropDatabase() error {

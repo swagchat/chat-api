@@ -6,6 +6,7 @@ import (
 	"errors"
 )
 
+// JSONText is JSONText
 type JSONText json.RawMessage
 
 // MarshalJSON returns j as the JSON encoding of j.

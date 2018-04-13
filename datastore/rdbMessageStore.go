@@ -13,10 +13,10 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateMessageStore(db string) {
+func rdbCreateMessageStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Message{}, TABLE_NAME_MESSAGE)
+	tableMap := master.AddTableWithName(models.Message{}, tableNameMessage)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "message_id" {
@@ -33,9 +33,9 @@ func RdbCreateMessageStore(db string) {
 
 	var addIndexQuery string
 	if utils.Config().Datastore.Provider == "sqlite" {
-		addIndexQuery = utils.AppendStrings("CREATE INDEX room_id_deleted_created ON ", TABLE_NAME_MESSAGE, "(room_id, deleted, created)")
+		addIndexQuery = utils.AppendStrings("CREATE INDEX room_id_deleted_created ON ", tableNameMessage, "(room_id, deleted, created)")
 	} else {
-		addIndexQuery = utils.AppendStrings("ALTER TABLE ", TABLE_NAME_MESSAGE, " ADD INDEX room_id_deleted_created (room_id, deleted, created)")
+		addIndexQuery = utils.AppendStrings("ALTER TABLE ", tableNameMessage, " ADD INDEX room_id_deleted_created (room_id, deleted, created)")
 		_, err = master.Exec(addIndexQuery)
 		if err != nil {
 			errMessage := err.Error()
@@ -49,7 +49,7 @@ func RdbCreateMessageStore(db string) {
 	}
 }
 
-func RdbInsertMessage(db string, message *models.Message) (string, error) {
+func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -63,7 +63,7 @@ func RdbInsertMessage(db string, message *models.Message) (string, error) {
 	}
 
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameRoom, " WHERE room_id=:roomId AND deleted=0;")
 	params := map[string]interface{}{"roomId": message.RoomId}
 	if _, err = trans.Select(&rooms, query, params); err != nil {
 		err = trans.Rollback()
@@ -93,7 +93,7 @@ func RdbInsertMessage(db string, message *models.Message) (string, error) {
 		return "", errors.Wrap(err, "An error occurred while updating room")
 	}
 
-	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
+	query = utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
 	params = map[string]interface{}{
 		"roomId": message.RoomId,
 		"userId": message.UserId,
@@ -106,8 +106,8 @@ func RdbInsertMessage(db string, message *models.Message) (string, error) {
 
 	var users []*models.User
 	query = utils.AppendStrings("SELECT u.* ",
-		"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-		"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
+		"FROM ", tableNameRoomUser, " AS ru ",
+		"LEFT JOIN ", tableNameUser, " AS u ",
 		"ON ru.user_id = u.user_id ",
 		"WHERE room_id = :roomId;")
 	params = map[string]interface{}{"roomId": message.RoomId}
@@ -120,7 +120,7 @@ func RdbInsertMessage(db string, message *models.Message) (string, error) {
 		if user.UserId == message.UserId {
 			continue
 		}
-		query := utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET unread_count=unread_count+1 WHERE user_id=:userId;")
+		query := utils.AppendStrings("UPDATE ", tableNameUser, " SET unread_count=unread_count+1 WHERE user_id=:userId;")
 		params := map[string]interface{}{"userId": user.UserId}
 		_, err = trans.Exec(query, params)
 		if err != nil {
@@ -138,12 +138,12 @@ func RdbInsertMessage(db string, message *models.Message) (string, error) {
 	return lastMessage, nil
 }
 
-func RdbSelectMessage(db, messageId string) (*models.Message, error) {
+func rdbSelectMessage(db, messageID string) (*models.Message, error) {
 	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_MESSAGE, " WHERE message_id=:messageId;")
-	params := map[string]interface{}{"messageId": messageId}
+	query := utils.AppendStrings("SELECT * FROM ", tableNameMessage, " WHERE message_id=:messageId;")
+	params := map[string]interface{}{"messageId": messageID}
 	_, err := replica.Select(&messages, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting message")
@@ -156,19 +156,19 @@ func RdbSelectMessage(db, messageId string) (*models.Message, error) {
 	return nil, nil
 }
 
-func RdbSelectMessages(db, roomId string, limit, offset int, order string) ([]*models.Message, error) {
+func rdbSelectMessages(db, roomID string, limit, offset int, order string) ([]*models.Message, error) {
 	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
 	query := utils.AppendStrings("SELECT * ",
-		"FROM ", TABLE_NAME_MESSAGE, " ",
+		"FROM ", tableNameMessage, " ",
 		"WHERE room_id = :roomId ",
 		"AND deleted = 0 ",
 		"ORDER BY created ", order, " ",
 		"LIMIT :limit ",
 		"OFFSET :offset;")
 	params := map[string]interface{}{
-		"roomId": roomId,
+		"roomId": roomID,
 		"limit":  limit,
 		"offset": offset,
 	}
@@ -180,15 +180,15 @@ func RdbSelectMessages(db, roomId string, limit, offset int, order string) ([]*m
 	return messages, nil
 }
 
-func RdbSelectCountMessagesByRoomId(db, roomId string) (int64, error) {
+func rdbSelectCountMessagesByRoomID(db, roomID string) (int64, error) {
 	replica := RdbStore(db).replica()
 
 	query := utils.AppendStrings("SELECT count(id) ",
-		"FROM ", TABLE_NAME_MESSAGE, " ",
+		"FROM ", tableNameMessage, " ",
 		"WHERE room_id = :roomId ",
 		"AND deleted = 0;")
 	params := map[string]interface{}{
-		"roomId": roomId,
+		"roomId": roomID,
 	}
 	count, err := replica.SelectInt(query, params)
 	if err != nil {
@@ -198,7 +198,7 @@ func RdbSelectCountMessagesByRoomId(db, roomId string) (int64, error) {
 	return count, nil
 }
 
-func RdbUpdateMessage(db string, message *models.Message) (*models.Message, error) {
+func rdbUpdateMessage(db string, message *models.Message) (*models.Message, error) {
 	master := RdbStore(db).master()
 
 	_, err := master.Update(message)

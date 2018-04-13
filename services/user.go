@@ -12,17 +12,17 @@ import (
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/utils"
 )
 
-func PostUser(post *models.User, jwt *models.JWT, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
+// PostUser is post user
+func PostUser(ctx context.Context, post *models.User) (*models.User, *models.ProblemDetail) {
 	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
 
-	post.BeforePost(jwt)
+	post.BeforePost()
 
-	user, err := datastore.Provider(dsCfg).SelectUser(post.UserId, true, true, true)
+	user, err := datastore.Provider(ctx).SelectUser(post.UserId, true, true, true)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -38,7 +38,7 @@ func PostUser(post *models.User, jwt *models.JWT, dsCfg *utils.Datastore) (*mode
 		}
 	}
 
-	user, err = datastore.Provider(dsCfg).InsertUser(post)
+	user, err = datastore.Provider(ctx).InsertUser(post)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -50,8 +50,9 @@ func PostUser(post *models.User, jwt *models.JWT, dsCfg *utils.Datastore) (*mode
 	return user, nil
 }
 
-func GetUsers(dsCfg *utils.Datastore) (*models.Users, *models.ProblemDetail) {
-	users, err := datastore.Provider(dsCfg).SelectUsers()
+// GetUsers is get users
+func GetUsers(ctx context.Context) (*models.Users, *models.ProblemDetail) {
+	users, err := datastore.Provider(ctx).SelectUsers()
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get users failed",
@@ -66,8 +67,9 @@ func GetUsers(dsCfg *utils.Datastore) (*models.Users, *models.ProblemDetail) {
 	}, nil
 }
 
-func GetUser(userId string, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
-	user, err := datastore.Provider(dsCfg).SelectUser(userId, true, true, true)
+// GetUser is get user
+func GetUser(ctx context.Context, userID string) (*models.User, *models.ProblemDetail) {
+	user, err := datastore.Provider(ctx).SelectUser(userID, true, true, true)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
@@ -97,17 +99,9 @@ func GetUser(userId string, dsCfg *utils.Datastore) (*models.User, *models.Probl
 	return user, nil
 }
 
-func GetProfile(userId string, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(userId, dsCfg)
-	if pd != nil {
-		return nil, pd
-	}
-
-	return user, nil
-}
-
-func PutUser(put *models.User, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(put.UserId, dsCfg)
+// PutUser is put user
+func PutUser(ctx context.Context, put *models.User) (*models.User, *models.ProblemDetail) {
+	user, pd := selectUser(ctx, put.UserId)
 	if pd != nil {
 		return nil, pd
 	}
@@ -118,7 +112,7 @@ func PutUser(put *models.User, dsCfg *utils.Datastore) (*models.User, *models.Pr
 
 	user.BeforePut(put)
 
-	user, err := datastore.Provider(dsCfg).UpdateUser(user)
+	user, err := datastore.Provider(ctx).UpdateUser(user)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Update user failed",
@@ -131,15 +125,16 @@ func PutUser(put *models.User, dsCfg *utils.Datastore) (*models.User, *models.Pr
 	return user, nil
 }
 
-func DeleteUser(userId string, dsCfg *utils.Datastore) *models.ProblemDetail {
-	dsp := datastore.Provider(dsCfg)
+// DeleteUser is delete user
+func DeleteUser(ctx context.Context, userID string) *models.ProblemDetail {
+	dsp := datastore.Provider(ctx)
 	// User existence check
-	_, pd := selectUser(userId, dsCfg)
+	_, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return pd
 	}
 
-	devices, err := dsp.SelectDevicesByUserId(userId)
+	devices, err := dsp.SelectDevicesByUserID(userID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete user failed",
@@ -157,7 +152,7 @@ func DeleteUser(userId string, dsCfg *utils.Datastore) *models.ProblemDetail {
 		}
 	}
 
-	err = dsp.UpdateUserDeleted(userId)
+	err = dsp.UpdateUserDeleted(userID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete user failed",
@@ -167,14 +162,53 @@ func DeleteUser(userId string, dsCfg *utils.Datastore) *models.ProblemDetail {
 		return pd
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
-	go unsubscribeByUserId(ctx, userId, dsCfg)
+	go unsubscribeByUserID(ctx, userID)
 
 	return nil
 }
 
-func selectUser(userId string, dsCfg *utils.Datastore) (*models.User, *models.ProblemDetail) {
-	user, err := datastore.Provider(dsCfg).SelectUser(userId, false, false, false)
+// GetUserUnreadCount is get user unread count
+func GetUserUnreadCount(ctx context.Context, userID string) (*models.UserUnreadCount, *models.ProblemDetail) {
+	user, pd := selectUser(ctx, userID)
+	if pd != nil {
+		return nil, pd
+	}
+
+	userUnreadCount := &models.UserUnreadCount{
+		UnreadCount: user.UnreadCount,
+	}
+	return userUnreadCount, nil
+}
+
+// GetContacts is get contacts
+func GetContacts(ctx context.Context, userID string) (*models.Users, *models.ProblemDetail) {
+	contacts, err := datastore.Provider(ctx).SelectContacts(userID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get contact list failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
+	}
+
+	return &models.Users{
+		Users: contacts,
+	}, nil
+}
+
+// GetProfile is get profile
+func GetProfile(ctx context.Context, userID string) (*models.User, *models.ProblemDetail) {
+	user, pd := selectUser(ctx, userID)
+	if pd != nil {
+		return nil, pd
+	}
+
+	return user, nil
+}
+
+func selectUser(ctx context.Context, userID string) (*models.User, *models.ProblemDetail) {
+	user, err := datastore.Provider(ctx).SelectUser(userID, false, false, false)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
@@ -192,48 +226,26 @@ func selectUser(userId string, dsCfg *utils.Datastore) (*models.User, *models.Pr
 	return user, nil
 }
 
-func unsubscribeByUserId(ctx context.Context, userId string, dsCfg *utils.Datastore) {
-	subscriptions, err := datastore.Provider(dsCfg).SelectDeletedSubscriptionsByUserId(userId)
+func unsubscribeByUserID(ctx context.Context, userID string) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserID(userID)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
 		})
 	}
-	unsubscribe(ctx, subscriptions, dsCfg)
+	unsubscribe(ctx, subscriptions)
 }
 
-func GetUserUnreadCount(userId string, dsCfg *utils.Datastore) (*models.UserUnreadCount, *models.ProblemDetail) {
-	user, pd := selectUser(userId, dsCfg)
-	if pd != nil {
-		return nil, pd
-	}
-
-	userUnreadCount := &models.UserUnreadCount{
-		UnreadCount: user.UnreadCount,
-	}
-	return userUnreadCount, nil
-}
-
-func UserAuth(userId, sub string) *models.ProblemDetail {
-	if userId != sub {
-		return &models.ProblemDetail{
-			Title:  "You do not have permission",
-			Status: http.StatusUnauthorized,
-		}
-	}
-
-	return nil
-}
-
-func ContactsAuth(userId, sub string, dsCfg *utils.Datastore) *models.ProblemDetail {
-	contacts, pd := GetContacts(sub, dsCfg)
+// ContactsAuthz is contacts authorize
+func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *models.ProblemDetail {
+	contacts, pd := GetContacts(ctx, requestUserID)
 	if pd != nil {
 		return pd
 	}
 
 	isAuthorized := false
 	for _, contact := range contacts.Users {
-		if contact.UserId == userId {
+		if contact.UserId == resourceUserID {
 			isAuthorized = true
 			break
 		}

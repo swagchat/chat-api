@@ -6,8 +6,9 @@ import (
 	"net/url"
 )
 
-func IsUrl(checkUrl string) error {
-	urlStruct, err := url.Parse(checkUrl)
+// IsURL is url
+func IsURL(checkURL string) error {
+	urlStruct, err := url.Parse(checkURL)
 	if err != nil {
 		return errors.New(fmt.Sprintf("url parse error. %s", err.Error()))
 	}

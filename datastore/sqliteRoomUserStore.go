@@ -2,42 +2,42 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *sqliteProvider) CreateRoomUserStore() {
-	RdbCreateRoomUserStore(p.sqlitePath)
+func (p *sqliteProvider) createRoomUserStore() {
+	rdbCreateRoomUserStore(p.sqlitePath)
 }
 
 func (p *sqliteProvider) DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) error {
-	return RdbDeleteAndInsertRoomUsers(p.sqlitePath, roomUsers)
+	return rdbDeleteAndInsertRoomUsers(p.sqlitePath, roomUsers)
 }
 
 func (p *sqliteProvider) InsertRoomUsers(roomUsers []*models.RoomUser) error {
-	return RdbInsertRoomUsers(p.sqlitePath, roomUsers)
+	return rdbInsertRoomUsers(p.sqlitePath, roomUsers)
 }
 
-func (p *sqliteProvider) SelectRoomUser(roomId, userId string) (*models.RoomUser, error) {
-	return RdbSelectRoomUser(p.sqlitePath, roomId, userId)
+func (p *sqliteProvider) SelectRoomUser(roomID, userID string) (*models.RoomUser, error) {
+	return rdbSelectRoomUser(p.sqlitePath, roomID, userID)
 }
 
-func (p *sqliteProvider) SelectRoomUserOfOneOnOne(myUserId, opponentUserId string) (*models.RoomUser, error) {
-	return RdbSelectRoomUserOfOneOnOne(p.sqlitePath, myUserId, opponentUserId)
+func (p *sqliteProvider) SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*models.RoomUser, error) {
+	return rdbSelectRoomUserOfOneOnOne(p.sqlitePath, myUserID, opponentUserID)
 }
 
-func (p *sqliteProvider) SelectRoomUsersByRoomId(roomId string) ([]*models.RoomUser, error) {
-	return RdbSelectRoomUsersByRoomId(p.sqlitePath, roomId)
+func (p *sqliteProvider) SelectRoomUsersByRoomID(roomID string) ([]*models.RoomUser, error) {
+	return rdbSelectRoomUsersByRoomID(p.sqlitePath, roomID)
 }
 
-func (p *sqliteProvider) SelectRoomUsersByUserId(userId string) ([]*models.RoomUser, error) {
-	return RdbSelectRoomUsersByUserId(p.sqlitePath, userId)
+func (p *sqliteProvider) SelectRoomUsersByUserID(userID string) ([]*models.RoomUser, error) {
+	return rdbSelectRoomUsersByUserID(p.sqlitePath, userID)
 }
 
-func (p *sqliteProvider) SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) ([]*models.RoomUser, error) {
-	return RdbSelectRoomUsersByRoomIdAndUserIds(p.sqlitePath, roomId, userIds)
+func (p *sqliteProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error) {
+	return rdbSelectRoomUsersByRoomIDAndUserIDs(p.sqlitePath, roomID, userIDs)
 }
 
 func (p *sqliteProvider) UpdateRoomUser(roomUser *models.RoomUser) (*models.RoomUser, error) {
-	return RdbUpdateRoomUser(p.sqlitePath, roomUser)
+	return rdbUpdateRoomUser(p.sqlitePath, roomUser)
 }
 
-func (p *sqliteProvider) DeleteRoomUser(roomId string, userIds []string) error {
-	return RdbDeleteRoomUser(p.sqlitePath, roomId, userIds)
+func (p *sqliteProvider) DeleteRoomUser(roomID string, userIDs []string) error {
+	return rdbDeleteRoomUser(p.sqlitePath, roomID, userIDs)
 }

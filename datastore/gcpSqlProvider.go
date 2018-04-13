@@ -16,7 +16,7 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-type gcpSqlProvider struct {
+type gcpSQLProvider struct {
 	user              string
 	password          string
 	database          string
@@ -27,7 +27,7 @@ type gcpSqlProvider struct {
 	trace             bool
 }
 
-func (p *gcpSqlProvider) Connect(dsCfg *utils.Datastore) error {
+func (p *gcpSQLProvider) Connect(dsCfg *utils.Datastore) error {
 	if _, ok := rdbStores[dsCfg.Database]; ok {
 		return nil
 	}
@@ -101,21 +101,21 @@ func (p *gcpSqlProvider) Connect(dsCfg *utils.Datastore) error {
 	return nil
 }
 
-func (p *gcpSqlProvider) init() {
-	p.CreateApiStore()
-	p.CreateAssetStore()
-	p.CreateUserStore()
-	p.CreateBlockUserStore()
-	p.CreateBotStore()
-	p.CreateRoomStore()
-	p.CreateRoomUserStore()
-	p.CreateMessageStore()
-	p.CreateDeviceStore()
-	p.CreateSettingStore()
-	p.CreateSubscriptionStore()
+func (p *gcpSQLProvider) init() {
+	p.createAppClientStore()
+	p.createAssetStore()
+	p.createBlockUserStore()
+	p.createBotStore()
+	p.createDeviceStore()
+	p.createMessageStore()
+	p.createRoomStore()
+	p.createRoomUserStore()
+	p.createSettingStore()
+	p.createSubscriptionStore()
+	p.createUserStore()
 }
 
-func (p *gcpSqlProvider) DropDatabase() error {
+func (p *gcpSQLProvider) DropDatabase() error {
 	master := RdbStore(p.database).master()
 	if master != nil {
 		ds := fmt.Sprintf(
@@ -138,7 +138,7 @@ func (p *gcpSqlProvider) DropDatabase() error {
 	return nil
 }
 
-func (p *gcpSqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB, error) {
+func (p *gcpSQLProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB, error) {
 	var err error
 	if si.ServerName != "" && si.ServerCaPath != "" && si.ClientCertPath != "" && si.ClientKeyPath != "" {
 		rootCertPool := x509.NewCertPool()

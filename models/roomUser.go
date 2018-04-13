@@ -38,7 +38,7 @@ func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 }
 
 func (ru *RoomUser) IsValid() *ProblemDetail {
-	if ru.RoomId != "" && !utils.IsValidId(ru.RoomId) {
+	if ru.RoomId != "" && !utils.IsValidID(ru.RoomId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room user item)",
 			Status:    http.StatusBadRequest,
@@ -52,7 +52,7 @@ func (ru *RoomUser) IsValid() *ProblemDetail {
 		}
 	}
 
-	if ru.UserId != "" && !utils.IsValidId(ru.UserId) {
+	if ru.UserId != "" && !utils.IsValidID(ru.UserId) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room user item)",
 			Status:    http.StatusBadRequest,

@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *sqliteProvider) CreateRoomStore() {
-	RdbCreateRoomStore(p.sqlitePath)
+func (p *sqliteProvider) createRoomStore() {
+	rdbCreateRoomStore(p.sqlitePath)
 }
 
 func (p *sqliteProvider) InsertRoom(room *models.Room) (*models.Room, error) {
-	return RdbInsertRoom(p.sqlitePath, room)
+	return rdbInsertRoom(p.sqlitePath, room)
 }
 
-func (p *sqliteProvider) SelectRoom(roomId string) (*models.Room, error) {
-	return RdbSelectRoom(p.sqlitePath, roomId)
+func (p *sqliteProvider) SelectRoom(roomID string) (*models.Room, error) {
+	return rdbSelectRoom(p.sqlitePath, roomID)
 }
 
 func (p *sqliteProvider) SelectRooms() ([]*models.Room, error) {
-	return RdbSelectRooms(p.sqlitePath)
+	return rdbSelectRooms(p.sqlitePath)
 }
 
-func (p *sqliteProvider) SelectUsersForRoom(roomId string) ([]*models.UserForRoom, error) {
-	return RdbSelectUsersForRoom(p.sqlitePath, roomId)
+func (p *sqliteProvider) SelectUsersForRoom(roomID string) ([]*models.UserForRoom, error) {
+	return rdbSelectUsersForRoom(p.sqlitePath, roomID)
 }
 
 func (p *sqliteProvider) SelectCountRooms() (int64, error) {
-	return RdbSelectCountRooms(p.sqlitePath)
+	return rdbSelectCountRooms(p.sqlitePath)
 }
 
 func (p *sqliteProvider) UpdateRoom(room *models.Room) (*models.Room, error) {
-	return RdbUpdateRoom(p.sqlitePath, room)
+	return rdbUpdateRoom(p.sqlitePath, room)
 }
 
-func (p *sqliteProvider) UpdateRoomDeleted(roomId string) error {
-	return RdbUpdateRoomDeleted(p.sqlitePath, roomId)
+func (p *sqliteProvider) UpdateRoomDeleted(roomID string) error {
+	return rdbUpdateRoomDeleted(p.sqlitePath, roomID)
 }

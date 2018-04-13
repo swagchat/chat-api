@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,10 +10,10 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/storage"
-	"github.com/swagchat/chat-api/utils"
 )
 
-func PostAsset(contentType string, file io.Reader, dsCfg *utils.Datastore) (*models.Asset, *models.ProblemDetail) {
+// PostAsset is post asset
+func PostAsset(ctx context.Context, contentType string, file io.Reader) (*models.Asset, *models.ProblemDetail) {
 	asset := &models.Asset{
 		Mime: contentType,
 	}
@@ -39,7 +40,7 @@ func PostAsset(contentType string, file io.Reader, dsCfg *utils.Datastore) (*mod
 	}
 	asset.URL = url
 
-	asset, err = datastore.Provider(dsCfg).InsertAsset(asset)
+	asset, err = datastore.Provider(ctx).InsertAsset(asset)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "File upload failed",
@@ -51,7 +52,8 @@ func PostAsset(contentType string, file io.Reader, dsCfg *utils.Datastore) (*mod
 	return asset, nil
 }
 
-func GetAsset(assetId, ifModifiedSince string, dsCfg *utils.Datastore) ([]byte, *models.Asset, *models.ProblemDetail) {
+// GetAsset is get asset
+func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *models.Asset, *models.ProblemDetail) {
 	if ifModifiedSince != "" {
 		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
 		if err != nil {
@@ -64,7 +66,7 @@ func GetAsset(assetId, ifModifiedSince string, dsCfg *utils.Datastore) ([]byte, 
 		}
 	}
 
-	asset, err := datastore.Provider(dsCfg).SelectAsset(assetId)
+	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "File download failed",

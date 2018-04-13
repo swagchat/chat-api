@@ -2,22 +2,22 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *mysqlProvider) CreateBlockUserStore() {
-	RdbCreateBlockUserStore(p.database)
+func (p *mysqlProvider) createBlockUserStore() {
+	rdbCreateBlockUserStore(p.database)
 }
 
 func (p *mysqlProvider) InsertBlockUsers(blockUsers []*models.BlockUser) error {
-	return RdbInsertBlockUsers(p.database, blockUsers)
+	return rdbInsertBlockUsers(p.database, blockUsers)
 }
 
-func (p *mysqlProvider) SelectBlockUser(userId, blockUserId string) (*models.BlockUser, error) {
-	return RdbSelectBlockUser(p.database, userId, blockUserId)
+func (p *mysqlProvider) SelectBlockUser(userID, blockUserID string) (*models.BlockUser, error) {
+	return rdbSelectBlockUser(p.database, userID, blockUserID)
 }
 
-func (p *mysqlProvider) SelectBlockUsersByUserId(userId string) ([]string, error) {
-	return RdbSelectBlockUsersByUserId(p.database, userId)
+func (p *mysqlProvider) SelectBlockUsersByUserID(userID string) ([]string, error) {
+	return rdbSelectBlockUsersByUserID(p.database, userID)
 }
 
-func (p *mysqlProvider) DeleteBlockUser(userId string, blockUserIds []string) error {
-	return RdbDeleteBlockUser(p.database, userId, blockUserIds)
+func (p *mysqlProvider) DeleteBlockUser(userID string, blockUserIDs []string) error {
+	return rdbDeleteBlockUser(p.database, userID, blockUserIDs)
 }

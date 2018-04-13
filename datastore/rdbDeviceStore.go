@@ -10,10 +10,10 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func RdbCreateDeviceStore(db string) {
+func rdbCreateDeviceStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Device{}, TABLE_NAME_DEVICE)
+	tableMap := master.AddTableWithName(models.Device{}, tableNameDevice)
 	tableMap.SetUniqueTogether("user_id", "platform")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "token" || columnMap.ColumnName == "notification_device_id" {
@@ -29,7 +29,7 @@ func RdbCreateDeviceStore(db string) {
 	}
 }
 
-func RdbInsertDevice(db string, device *models.Device) (*models.Device, error) {
+func rdbInsertDevice(db string, device *models.Device) (*models.Device, error) {
 	master := RdbStore(db).master()
 
 	if err := master.Insert(device); err != nil {
@@ -39,13 +39,13 @@ func RdbInsertDevice(db string, device *models.Device) (*models.Device, error) {
 	return device, nil
 }
 
-func RdbSelectDevices(db, userId string) ([]*models.Device, error) {
+func rdbSelectDevices(db, userID string) ([]*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
+	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", tableNameDevice, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
 	_, err := replica.Select(&devices, query, params)
 	if err != nil {
@@ -55,13 +55,13 @@ func RdbSelectDevices(db, userId string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func RdbSelectDevice(db, userId string, platform int) (*models.Device, error) {
+func rdbSelectDevice(db, userID string, platform int) (*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameDevice, " WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
-		"userId":   userId,
+		"userId":   userID,
 		"platform": platform,
 	}
 	_, err := replica.Select(&devices, query, params)
@@ -76,13 +76,13 @@ func RdbSelectDevice(db, userId string, platform int) (*models.Device, error) {
 	return nil, nil
 }
 
-func RdbSelectDevicesByUserId(db, userId string) ([]*models.Device, error) {
+func rdbSelectDevicesByUserID(db, userID string) ([]*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameDevice, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
 	_, err := replica.Select(&devices, query, params)
 	if err != nil {
@@ -92,11 +92,11 @@ func RdbSelectDevicesByUserId(db, userId string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func RdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
+func rdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_DEVICE, " WHERE token=:token;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameDevice, " WHERE token=:token;")
 	params := map[string]interface{}{
 		"token": token,
 	}
@@ -108,14 +108,14 @@ func RdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func RdbUpdateDevice(db string, device *models.Device) error {
+func rdbUpdateDevice(db string, device *models.Device) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
+	query := utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
 		"userId":   device.UserId,
 		"platform": device.Platform,
@@ -127,7 +127,7 @@ func RdbUpdateDevice(db string, device *models.Device) error {
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("UPDATE ", TABLE_NAME_DEVICE, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
+	query = utils.AppendStrings("UPDATE ", tableNameDevice, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
 	params = map[string]interface{}{
 		"token":                device.Token,
 		"notificationDeviceId": device.NotificationDeviceId,
@@ -149,16 +149,16 @@ func RdbUpdateDevice(db string, device *models.Device) error {
 	return nil
 }
 
-func RdbDeleteDevice(db, userId string, platform int) error {
+func rdbDeleteDevice(db, userID string, platform int) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
+	query := utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
-		"userId":   userId,
+		"userId":   userID,
 		"platform": platform,
 		"deleted":  time.Now().Unix(),
 	}
@@ -168,9 +168,9 @@ func RdbDeleteDevice(db, userId string, platform int) error {
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId AND platform=:platform;")
+	query = utils.AppendStrings("DELETE FROM ", tableNameDevice, " WHERE user_id=:userId AND platform=:platform;")
 	params = map[string]interface{}{
-		"userId":   userId,
+		"userId":   userID,
 		"platform": platform,
 	}
 	_, err = trans.Exec(query, params)

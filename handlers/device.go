@@ -7,21 +7,19 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
-	"github.com/swagchat/chat-api/utils"
 )
 
-func SetDeviceMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", colsHandler(userAuthHandler(datastoreHandler(GetDevices))))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(userAuthHandler(datastoreHandler(GetDevice))))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(userAuthHandler(datastoreHandler(PutDevice))))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", colsHandler(userAuthHandler(datastoreHandler(DeleteDevice))))
+func setDeviceMux() {
+	mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", commonHandler(selfResourceAuthzHandler(getDevices)))
+	mux.GetFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", commonHandler(selfResourceAuthzHandler(getDevice)))
+	mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", commonHandler(selfResourceAuthzHandler(putDevice)))
+	mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", commonHandler(selfResourceAuthzHandler(deleteDevice)))
 }
 
-func GetDevices(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+func getDevices(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
 
-	devices, pd := services.GetDevices(userId, dsCfg)
+	devices, pd := services.GetDevices(r.Context(), userID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -30,12 +28,11 @@ func GetDevices(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", devices)
 }
 
-func GetDevice(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
+func getDevice(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	device, pd := services.GetDevice(userId, platform, dsCfg)
+	device, pd := services.GetDevice(r.Context(), userID, platform)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -44,19 +41,18 @@ func GetDevice(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", device)
 }
 
-func PutDevice(w http.ResponseWriter, r *http.Request) {
+func putDevice(w http.ResponseWriter, r *http.Request) {
 	var put models.Device
 	if err := decodeBody(r, &put); err != nil {
-		respondJsonDecodeError(w, r, "Create device item")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
 	put.UserId = bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
 	put.Platform = platform
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	device, pd := services.PutDevice(&put, dsCfg)
+	device, pd := services.PutDevice(r.Context(), &put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -69,12 +65,11 @@ func PutDevice(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeleteDevice(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
+func deleteDevice(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	pd := services.DeleteDevice(userId, platform, dsCfg)
+	pd := services.DeleteDevice(r.Context(), userID, platform)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

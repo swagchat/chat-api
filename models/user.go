@@ -20,6 +20,7 @@ type User struct {
 	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
 	UnreadCount    *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+	IsGuest        *bool          `json:"isGuest,omitempty" db:"is_guest,notnull"`
 	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
@@ -28,6 +29,7 @@ type User struct {
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
 	Deleted        int64          `json:"-" db:"deleted,notnull"`
+	AccessToken    string         `json:"accessToken,omitempty"`
 
 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices []*Device      `json:"devices,omitempty" db:"-"`
@@ -73,6 +75,11 @@ type UserUnreadCount struct {
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
+	isGuest := false
+	if u.IsGuest != nil {
+		isGuest = *u.IsGuest
+	}
+
 	isBot := false
 	if u.IsBot != nil {
 		isBot = *u.IsBot
@@ -100,6 +107,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl string         `json:"informationUrl"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
+		IsGuest        bool           `json:"isGuest"`
 		IsBot          bool           `json:"isBot"`
 		IsPublic       bool           `json:"isPublic"`
 		IsCanBlock     bool           `json:"isCanBlock"`
@@ -107,6 +115,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Lang           string         `json:"lang"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
+		AccessToken    string         `json:"accessToken"`
 		Rooms          []*RoomForUser `json:"rooms"`
 		Devices        []*Device      `json:"devices"`
 		Blocks         []string       `json:"blocks"`
@@ -117,6 +126,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationUrl: u.InformationUrl,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
+		IsGuest:        isGuest,
 		IsBot:          isBot,
 		IsPublic:       isPublic,
 		IsCanBlock:     isCanBlock,
@@ -124,6 +134,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Lang:           u.Lang,
 		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
+		AccessToken:    u.AccessToken,
 		Rooms:          u.Rooms,
 		Devices:        u.Devices,
 		Blocks:         u.Blocks,
@@ -176,7 +187,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 }
 
 func (u *User) IsValidPost() *ProblemDetail {
-	if u.UserId != "" && !utils.IsValidId(u.UserId) {
+	if u.UserId != "" && !utils.IsValidID(u.UserId) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -222,17 +233,18 @@ func (u *User) IsValidPut() *ProblemDetail {
 	return nil
 }
 
-func (u *User) BeforePost(jwt *JWT) {
-	if jwt.Sub != "" {
-		u.UserId = jwt.Sub
-	}
-
+func (u *User) BeforePost() {
 	if u.UserId == "" {
-		u.UserId = utils.CreateUuid()
+		u.UserId = utils.GenerateUUID()
 	}
 
 	if u.MetaData == nil {
 		u.MetaData = []byte("{}")
+	}
+
+	if u.IsGuest == nil {
+		isGuest := false
+		u.IsGuest = &isGuest
 	}
 
 	if u.IsBot == nil {

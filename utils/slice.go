@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Join is join strings
 func Join(stringSlice []string, delimiter string, enclosure string) string {
 	resultString := ""
 	for i, v := range stringSlice {
@@ -18,6 +19,7 @@ func Join(stringSlice []string, delimiter string, enclosure string) string {
 	return resultString
 }
 
+// MakePrepareForInExpression is make prepare for in expression
 func MakePrepareForInExpression(target interface{}) (string, map[string]interface{}) {
 	bindParams := make(map[string]interface{})
 	query := ""
@@ -44,6 +46,7 @@ func MakePrepareForInExpression(target interface{}) (string, map[string]interfac
 	return query, bindParams
 }
 
+// RemoveDuplicate is remove duplicate
 func RemoveDuplicate(args []string) []string {
 	results := make([]string, 0, len(args))
 	encountered := map[string]bool{}
@@ -56,6 +59,7 @@ func RemoveDuplicate(args []string) []string {
 	return results
 }
 
+// MergeMap is merge map
 func MergeMap(baseMap map[string]interface{}, mergeMaps ...map[string]interface{}) map[string]interface{} {
 	for _, mergeMap := range mergeMaps {
 		for k, v := range mergeMap {
@@ -65,6 +69,7 @@ func MergeMap(baseMap map[string]interface{}, mergeMaps ...map[string]interface{
 	return baseMap
 }
 
+// SearchStringValueInSlice is search string value in slice
 func SearchStringValueInSlice(slice []string, value string) bool {
 	for _, v := range slice {
 		if v == value {

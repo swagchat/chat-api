@@ -17,11 +17,12 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func PostMessage(posts *models.Messages, dsCfg *utils.Datastore) *models.ResponseMessages {
+// PostMessage is post message
+func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMessages {
 	messageIds := make([]string, 0)
 	errors := make([]*models.ProblemDetail, 0)
 	for _, post := range posts.Messages {
-		room, pd := selectRoom(post.RoomId, dsCfg)
+		room, pd := selectRoom(ctx, post.RoomId)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -37,7 +38,7 @@ func PostMessage(posts *models.Messages, dsCfg *utils.Datastore) *models.Respons
 			continue
 		}
 
-		user, pd := selectUser(post.UserId, dsCfg)
+		user, pd := selectUser(ctx, post.UserId)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -60,7 +61,7 @@ func PostMessage(posts *models.Messages, dsCfg *utils.Datastore) *models.Respons
 
 		post.BeforeSave()
 
-		lastMessage, err := datastore.Provider(dsCfg).InsertMessage(post)
+		lastMessage, err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
 			pd := &models.ProblemDetail{
 				Title:  "Message registration failed",
@@ -82,10 +83,10 @@ func PostMessage(posts *models.Messages, dsCfg *utils.Datastore) *models.Respons
 				mi.Badge = dBadgeCount
 			}
 		}
-		ctx, _ := context.WithCancel(context.Background())
+
 		go notification.Provider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
 		go publishMessage(post)
-		go postMessageToBotService(*user.IsBot, post, dsCfg)
+		go postMessageToBotService(ctx, *user.IsBot, post)
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -95,8 +96,9 @@ func PostMessage(posts *models.Messages, dsCfg *utils.Datastore) *models.Respons
 	return responseMessages
 }
 
-func GetMessage(messageId string, dsCfg *utils.Datastore) (*models.Message, *models.ProblemDetail) {
-	if messageId == "" {
+// GetMessage is get message
+func GetMessage(ctx context.Context, messageID string) (*models.Message, *models.ProblemDetail) {
+	if messageID == "" {
 		return nil, &models.ProblemDetail{
 			Title:     "Request parameter error. (Get message item)",
 			Status:    http.StatusBadRequest,
@@ -110,7 +112,7 @@ func GetMessage(messageId string, dsCfg *utils.Datastore) (*models.Message, *mod
 		}
 	}
 
-	message, err := datastore.Provider(dsCfg).SelectMessage(messageId)
+	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -148,8 +150,8 @@ func publishMessage(m *models.Message) {
 	}
 }
 
-func postMessageToBotService(isBot bool, m *models.Message, dsCfg *utils.Datastore) {
-	userForRooms, err := datastore.Provider(dsCfg).SelectUsersForRoom(m.RoomId)
+func postMessageToBotService(ctx context.Context, isBot bool, m *models.Message) {
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomId)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -158,7 +160,7 @@ func postMessageToBotService(isBot bool, m *models.Message, dsCfg *utils.Datasto
 	if len(userForRooms) > 0 {
 		for _, u := range userForRooms {
 			if !isBot && *u.IsBot && m.UserId != u.UserId {
-				bot, err := datastore.Provider(dsCfg).SelectBot(u.UserId)
+				bot, err := datastore.Provider(ctx).SelectBot(u.UserId)
 				if err != nil {
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 						Error: err,
@@ -183,7 +185,7 @@ func postMessageToBotService(isBot bool, m *models.Message, dsCfg *utils.Datasto
 					cred := cm.Text.Credencial
 					res = p.Post(m, bot, cred)
 				}
-				PostMessage(res.Messages, dsCfg)
+				PostMessage(ctx, res.Messages)
 			}
 		}
 	}

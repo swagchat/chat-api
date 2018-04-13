@@ -1,4 +1,3 @@
-// http handler
 package handlers
 
 import (
@@ -21,22 +20,13 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
 )
 
-type key int
-
-const (
-	jwtSub       = "X-Sub"
-	jwtRealm     = "X-Realm"
-	ctxDsCfg key = iota
-	ctxJwt
-)
-
 var (
-	Mux            *bone.Mux
-	Context        context.Context
-	allowedMethods []string = []string{
+	mux            *bone.Mux
+	allowedMethods = []string{
 		"POST",
 		"GET",
 		"OPTIONS",
@@ -44,55 +34,56 @@ var (
 		"PATCH",
 		"DELETE",
 	}
-	NoBodyStatusCodes []int = []int{
+	noBodyStatusCodes = []int{
 		http.StatusNotFound,
 		http.StatusConflict,
 	}
 )
 
+// StartServer is start api server
 func StartServer(ctx context.Context) {
 	cfg := utils.Config()
+	mux = bone.New()
 
-	Mux = bone.New()
 	if cfg.DemoPage {
-		Mux.GetFunc("/", messengerHTMLHandler)
+		mux.GetFunc("/", messengerHTMLHandler)
 	}
-	Mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-	Mux.GetFunc("/stats", stats_api.Handler)
-	Mux.GetFunc("/", indexHandler)
-	Mux.OptionsFunc("/*", optionsHandler)
-	SetAssetMux()
-	SetBlockUserMux()
-	SetContactMux()
-	SetDeviceMux()
-	SetMessageMux()
-	SetRoomMux()
-	SetRoomUserMux()
-	SetSettingMux()
-	SetUserMux()
+
+	mux.Get("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	mux.GetFunc("/stats", stats_api.Handler)
+	mux.GetFunc("/", indexHandler)
+	mux.OptionsFunc("/*", optionsHandler)
+	setAssetMux()
+	setBlockUserMux()
+	setDeviceMux()
+	setGuestMux()
+	setMessageMux()
+	setRoomMux()
+	setRoomUserMux()
+	setSettingMux()
+	setUserMux()
 
 	if cfg.Profiling {
-		SetPprofMux()
+		setPprofMux()
 	}
 
 	if cfg.Storage.Provider == "awsS3" {
-		SetAssetAwsSnsMux()
+		setAssetAwsSnsMux()
 	}
 
-	Mux.NotFoundFunc(notFoundHandler)
+	mux.NotFoundFunc(notFoundHandler)
 
 	go run(ctx)
 
-	c := utils.Config()
 	sb := utils.NewStringBuilder()
-	cfgStr := sb.PrintStruct("config", c)
+	cfgStr := sb.PrintStruct("config", cfg)
 	logging.Log(zapcore.InfoLevel, &logging.AppLog{
 		Kind:    "handler",
 		Message: fmt.Sprintf("%s start", utils.AppName),
 		Config:  cfgStr,
 	})
 
-	err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), Mux)
+	err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), mux)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -128,13 +119,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", utils.AppName, utils.APIVersion, utils.BuildVersion))
 }
 
-func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		optionsHandler(w, r)
-		fn(w, r)
-	}
-}
-
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	rHeaders := make([]string, 0, len(r.Header))
@@ -152,13 +136,27 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNotFound, "", nil)
 }
 
+func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return colsHandler(
+		jwtHandler(
+			datastoreHandler(
+				judgeAppClientHandler(
+					func(w http.ResponseWriter, r *http.Request) {
+						fn(w, r)
+					}))))
+}
+
+func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		optionsHandler(w, r)
+		fn(w, r)
+	}
+}
+
 func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		jwt := &models.JWT{
-			Sub: r.Header.Get(jwtSub),
-		}
-
-		ctx := context.WithValue(r.Context(), ctxJwt, jwt)
+		userID := r.Header.Get(utils.HeaderUserID)
+		ctx := context.WithValue(r.Context(), utils.CtxUserID, userID)
 		fn(w, r.WithContext(ctx))
 	}
 }
@@ -166,84 +164,120 @@ func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 func datastoreHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cfg := utils.Config()
-		var dsCfg *utils.Datastore
+		dsCfg := cfg.Datastore
 
-		switch utils.Config().Datastore.Provider {
-		case "sqlite":
-			dsCfg = &utils.Datastore{
-				Provider:        cfg.Datastore.Provider,
-				TableNamePrefix: cfg.Datastore.TableNamePrefix,
-			}
-			dsCfg.SQLite.Path = cfg.Datastore.SQLite.Path
-		case "mysql", "gcSql":
-			dsCfg = &utils.Datastore{
-				Provider:          cfg.Datastore.Provider,
-				User:              cfg.Datastore.User,
-				Password:          cfg.Datastore.Password,
-				Database:          cfg.Datastore.Database,
-				TableNamePrefix:   cfg.Datastore.TableNamePrefix,
-				Master:            cfg.Datastore.Master,
-				Replicas:          cfg.Datastore.Replicas,
-				MaxIdleConnection: cfg.Datastore.MaxIdleConnection,
-				MaxOpenConnection: cfg.Datastore.MaxOpenConnection,
-			}
-		}
 		if cfg.Datastore.Dynamic {
-			dsCfg.Database = r.Header.Get(jwtRealm)
+			dsCfg.Database = r.Header.Get(utils.HeaderRealm)
 		}
 
 		if dsCfg.Database == "" {
 			respondErr(w, r, 400, &models.ProblemDetail{
-				Title: "No database",
+				Title: "No realm",
 			})
 			return
 		}
 
-		datastore.Provider(dsCfg)
-		ctx := context.WithValue(r.Context(), ctxDsCfg, dsCfg)
+		ctx := context.WithValue(r.Context(), utils.CtxDsCfg, dsCfg)
 		fn(w, r.WithContext(ctx))
 	}
 }
 
-// func aclHandler(fn http.HandlerFunc) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		role := "guest"
+func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		isAppClient := false
+		username := r.Header.Get(utils.HeaderUsername)
+		if username != "" {
+			api, err := datastore.Provider(r.Context()).SelectLatestAppClientByClientID(username)
+			if err != nil {
+				respondErr(w, r, http.StatusInternalServerError, &models.ProblemDetail{
+					Error: err,
+				})
+				return
+			}
+			if api != nil {
+				isAppClient = true
+			}
+		}
+		ctx := context.WithValue(r.Context(), utils.CtxIsAppClient, isAppClient)
+		fn(w, r.WithContext(ctx))
+	}
+}
 
-// 		apiKey := r.Header.Get(utils.HeaderAPIKey)
-// 		apiSecret := r.Header.Get(utils.HeaderAPISecret)
-// 		if apiKey != "" && apiSecret != "" {
-// 			api, err := datastore.Provider().SelectLatestApi("admin")
-// 			if err != nil {
-// 				// TODO error
-// 			}
-// 			if api != nil {
-// 				if apiKey == api.Key && apiSecret == api.Secret {
-// 					role = "admin"
-// 				}
-// 			}
-// 		}
+func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		if !isAppClient {
+			respondErr(w, r, http.StatusUnauthorized, &models.ProblemDetail{
+				Status: http.StatusUnauthorized,
+			})
+			return
+		}
+		fn(w, r)
+	}
+}
 
-// 		if role != "admin" {
-// 			authorization := r.Header.Get("Authorization")
-// 			token := strings.Replace(authorization, "Bearer ", "", 1)
-// 			userId := r.Header.Get(utils.HeaderUserId)
-// 			if token != "" && userId != "" {
-// 				user, err := datastore.Provider().SelectUserByUserIdAndAccessToken(userId, token)
-// 				if err != nil {
-// 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-// 						Message:    err.Error(),
-// 						Stacktrace: fmt.Sprintf("%v\n", err),
-// 					})
-// 				}
-// 				if user != nil {
-// 					role = "user"
-// 				}
-// 			}
-// 		}
-// 		ctx := context.WithValue(r.Context(), "role", role)
-// 		fn(w, r.WithContext(ctx))
-// 	}
-// }
+func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		if isAppClient {
+			fn(w, r)
+			return
+		}
+
+		requestUserID := r.Header.Get(utils.HeaderUserID)
+		resourceUserID := bone.GetValue(r, "userId")
+
+		if requestUserID != "" && resourceUserID != "" {
+			if requestUserID != resourceUserID {
+				respondErr(w, r, http.StatusUnauthorized, &models.ProblemDetail{
+					Title:  "Not your resource",
+					Status: http.StatusUnauthorized,
+				})
+				return
+			}
+		}
+		fn(w, r)
+	}
+}
+
+func contactsAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		if isAppClient {
+			fn(w, r)
+			return
+		}
+
+		requestUserID := r.Header.Get(utils.HeaderUserID)
+		resourceUserID := bone.GetValue(r, "userId")
+		pd := services.ContactsAuthz(r.Context(), requestUserID, resourceUserID)
+		if pd != nil {
+			respondErr(w, r, pd.Status, pd)
+			return
+		}
+		fn(w, r)
+	}
+}
+
+func roomMemberAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		if isAppClient {
+			fn(w, r)
+			return
+		}
+
+		roomID := bone.GetValue(r, "roomId")
+		userID := r.Header.Get(utils.HeaderUserID)
+
+		pd := services.RoomAuthz(r.Context(), roomID, userID)
+		if pd != nil {
+			respondErr(w, r, pd.Status, pd)
+			return
+		}
+		fn(w, r)
+	}
+}
 
 func decodeBody(r *http.Request, v interface{}) error {
 	defer r.Body.Close()
@@ -264,7 +298,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 		w.Header().Set("Content-Type", contentType)
 	}
 	w.WriteHeader(status)
-	for _, v := range NoBodyStatusCodes {
+	for _, v := range noBodyStatusCodes {
 		if status == v {
 			data = nil
 		}
@@ -283,7 +317,7 @@ func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *models.P
 	respond(w, r, status, "application/json", pd)
 }
 
-func respondJsonDecodeError(w http.ResponseWriter, r *http.Request, title string) {
+func respondJSONDecodeError(w http.ResponseWriter, r *http.Request, title string) {
 	respondErr(w, r, http.StatusBadRequest, &models.ProblemDetail{
 		Title:     utils.AppendStrings("Json parse error. (", title, ")"),
 		Status:    http.StatusBadRequest,

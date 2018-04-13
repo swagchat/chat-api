@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap/zapcore"
@@ -14,6 +14,7 @@ import (
 
 type sqliteProvider struct {
 	sqlitePath string
+	database   string
 	trace      bool
 }
 
@@ -47,22 +48,22 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 }
 
 func (p *sqliteProvider) init() {
-	p.CreateApiStore()
-	p.CreateAssetStore()
-	p.CreateUserStore()
-	p.CreateBlockUserStore()
-	p.CreateBotStore()
-	p.CreateRoomStore()
-	p.CreateRoomUserStore()
-	p.CreateMessageStore()
-	p.CreateDeviceStore()
-	p.CreateSettingStore()
-	p.CreateSubscriptionStore()
+	p.createAppClientStore()
+	p.createAssetStore()
+	p.createBlockUserStore()
+	p.createBotStore()
+	p.createDeviceStore()
+	p.createMessageStore()
+	p.createRoomStore()
+	p.createRoomUserStore()
+	p.createSettingStore()
+	p.createSubscriptionStore()
+	p.createUserStore()
 }
 
 func (p *sqliteProvider) DropDatabase() error {
 	if err := os.Remove(p.sqlitePath); err != nil {
-		return err
+		return errors.Wrap(err, "Drop database failure")
 	}
 	return nil
 }

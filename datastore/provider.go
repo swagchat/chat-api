@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"context"
+
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap/zapcore"
@@ -9,26 +11,37 @@ import (
 type provider interface {
 	Connect(dsCfg *utils.Datastore) error
 	DropDatabase() error
-	ApiStore
-	AssetStore
-	BlockUserStore
-	BotStore
-	DeviceStore
-	MessageStore
-	RoomStore
-	RoomUserStore
-	SettingStore
-	SubscriptionStore
-	UserStore
+	appClientStore
+	assetStore
+	blockUserStore
+	botStore
+	deviceStore
+	messageStore
+	roomStore
+	roomUserStore
+	settingStore
+	subscriptionStore
+	userStore
 }
 
-func Provider(dsCfg *utils.Datastore) provider {
+// Provider is get datastore provider
+func Provider(ctx context.Context) provider {
 	var p provider
+
+	ctxDsCfg := ctx.Value(utils.CtxDsCfg)
+	if ctxDsCfg == nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "Database connect error. Database config is nil",
+		})
+	}
+
+	dsCfg := ctxDsCfg.(*utils.Datastore)
 
 	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
 			sqlitePath: dsCfg.SQLite.Path,
+			database:   dsCfg.Database,
 			trace:      false,
 		}
 	case "mysql":
@@ -43,7 +56,7 @@ func Provider(dsCfg *utils.Datastore) provider {
 			trace:             false,
 		}
 	case "gcSql":
-		p = &gcpSqlProvider{
+		p = &gcpSQLProvider{
 			user:              dsCfg.User,
 			password:          dsCfg.Password,
 			database:          dsCfg.Database,

@@ -11,10 +11,10 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateRoomStore(db string) {
+func rdbCreateRoomStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Room{}, TABLE_NAME_ROOM)
+	tableMap := master.AddTableWithName(models.Room{}, tableNameRoom)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "room_id" {
@@ -30,7 +30,7 @@ func RdbCreateRoomStore(db string) {
 	}
 }
 
-func RdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
+func rdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -83,12 +83,12 @@ func RdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
 	return room, nil
 }
 
-func RdbSelectRoom(db, roomId string) (*models.Room, error) {
+func rdbSelectRoom(db, roomID string) (*models.Room, error) {
 	replica := RdbStore(db).replica()
 
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM, " WHERE room_id=:roomId AND deleted=0;")
-	params := map[string]interface{}{"roomId": roomId}
+	query := utils.AppendStrings("SELECT * FROM ", tableNameRoom, " WHERE room_id=:roomId AND deleted=0;")
+	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room")
@@ -101,11 +101,11 @@ func RdbSelectRoom(db, roomId string) (*models.Room, error) {
 	return nil, nil
 }
 
-func RdbSelectRooms(db string) ([]*models.Room, error) {
+func rdbSelectRooms(db string) ([]*models.Room, error) {
 	replica := RdbStore(db).replica()
 
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
+	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", tableNameRoom, " WHERE deleted = 0;")
 	_, err := replica.Select(&rooms, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting rooms")
@@ -114,7 +114,7 @@ func RdbSelectRooms(db string) ([]*models.Room, error) {
 	return rooms, nil
 }
 
-func RdbSelectUsersForRoom(db, roomId string) ([]*models.UserForRoom, error) {
+func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
 	replica := RdbStore(db).replica()
 
 	var users []*models.UserForRoom
@@ -133,12 +133,12 @@ func RdbSelectUsersForRoom(db, roomId string) ([]*models.UserForRoom, error) {
 		"ru.meta_data AS ru_meta_data, ",
 		"ru.created AS ru_created, ",
 		"ru.modified AS ru_modified ",
-		"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-		"LEFT JOIN ", TABLE_NAME_USER, " AS u ",
+		"FROM ", tableNameRoomUser, " AS ru ",
+		"LEFT JOIN ", tableNameUser, " AS u ",
 		"ON ru.user_id = u.user_id ",
 		"WHERE ru.room_id = :roomId AND u.deleted = 0 ",
 		"ORDER BY u.created;")
-	params := map[string]interface{}{"roomId": roomId}
+	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room's users")
@@ -147,11 +147,11 @@ func RdbSelectUsersForRoom(db, roomId string) ([]*models.UserForRoom, error) {
 	return users, nil
 }
 
-func RdbSelectCountRooms(db string) (int64, error) {
+func rdbSelectCountRooms(db string) (int64, error) {
 	replica := RdbStore(db).replica()
 
 	query := utils.AppendStrings("SELECT count(id) ",
-		"FROM ", TABLE_NAME_ROOM, " WHERE deleted = 0;")
+		"FROM ", tableNameRoom, " WHERE deleted = 0;")
 	count, err := replica.SelectInt(query)
 	if err != nil {
 		return 0, errors.Wrap(err, "An error occurred while getting room count")
@@ -160,7 +160,7 @@ func RdbSelectCountRooms(db string) (int64, error) {
 	return count, nil
 }
 
-func RdbUpdateRoom(db string, room *models.Room) (*models.Room, error) {
+func rdbUpdateRoom(db string, room *models.Room) (*models.Room, error) {
 	master := RdbStore(db).master()
 
 	_, err := master.Update(room)
@@ -171,16 +171,16 @@ func RdbUpdateRoom(db string, room *models.Room) (*models.Room, error) {
 	return room, nil
 }
 
-func RdbUpdateRoomDeleted(db, roomId string) error {
+func rdbUpdateRoomDeleted(db, roomID string) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+	query := utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{
-		"roomId": roomId,
+		"roomId": roomID,
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
@@ -188,9 +188,9 @@ func RdbUpdateRoomDeleted(db, roomId string) error {
 		return errors.Wrap(err, "An error occurred while updating room")
 	}
 
-	query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
+	query = utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE room_id=:roomId;")
 	params = map[string]interface{}{
-		"roomId":  roomId,
+		"roomId":  roomID,
 		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
@@ -199,9 +199,9 @@ func RdbUpdateRoomDeleted(db, roomId string) error {
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM, " SET deleted=:deleted WHERE room_id=:roomId;")
+	query = utils.AppendStrings("UPDATE ", tableNameRoom, " SET deleted=:deleted WHERE room_id=:roomId;")
 	params = map[string]interface{}{
-		"roomId":  roomId,
+		"roomId":  roomID,
 		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)

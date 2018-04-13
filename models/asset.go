@@ -60,7 +60,7 @@ func (a *Asset) IsValidPost() *ProblemDetail {
 }
 
 func (a *Asset) BeforePost() {
-	a.AssetId = utils.CreateUuid()
+	a.AssetId = utils.GenerateUUID()
 
 	var extension string
 	switch a.Mime {

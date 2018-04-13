@@ -13,13 +13,14 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func SetAssetAwsSnsMux() {
-	Mux.PostFunc("/assets/aws-sns", colsHandler(PostAssetAwsSns))
+func setAssetAwsSnsMux() {
+	mux.PostFunc("/assets/aws-sns", commonHandler(postAssetAwsSns))
 }
 
+// AwsSNSSubscribeInput is AwsSNSSubscribeInput
 type AwsSNSSubscribeInput struct {
 	Type             string `json:"Type"`
-	MessageId        string `json:"MessageId"`
+	MessageID        string `json:"MessageId"`
 	TopicArn         string `json:"TopicArn"`
 	Subject          string `json:"Subject"`
 	Message          string `json:"Message,omitempty"`
@@ -32,18 +33,22 @@ type AwsSNSSubscribeInput struct {
 	Token            string `json:"Token,omitempty"`
 }
 
+// AssetS3SNSRecords is asset s3 sns records
 type AssetS3SNSRecords struct {
 	Records []Record `json:"Records"`
 }
 
+// Record is Record
 type Record struct {
 	S3 S3 `json:"s3"`
 }
 
+// S3 is s3
 type S3 struct {
 	Object Object `json:"object"`
 }
 
+// Object is Object
 type Object struct {
 	Etag      string `json:"eTag"`
 	Key       string `json:"key"`
@@ -51,7 +56,7 @@ type Object struct {
 	Size      int    `json:"size"`
 }
 
-func PostAssetAwsSns(w http.ResponseWriter, r *http.Request) {
+func postAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var input AwsSNSSubscribeInput
 	err := decoder.Decode(&input)

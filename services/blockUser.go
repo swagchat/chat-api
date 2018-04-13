@@ -1,16 +1,17 @@
 package services
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 )
 
-func GetBlockUsers(userId string, dsCfg *utils.Datastore) (*models.BlockUsers, *models.ProblemDetail) {
-	blockUserIds, err := datastore.Provider(dsCfg).SelectBlockUsersByUserId(userId)
+// GetBlockUsers is get block users
+func GetBlockUsers(ctx context.Context, userID string) (*models.BlockUsers, *models.ProblemDetail) {
+	blockUserIds, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get block users failed",
@@ -25,33 +26,34 @@ func GetBlockUsers(userId string, dsCfg *utils.Datastore) (*models.BlockUsers, *
 	}, nil
 }
 
-func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg *utils.Datastore) (*models.BlockUsers, *models.ProblemDetail) {
-	_, pd := selectUser(userId, dsCfg)
+// PutBlockUsers is put block users
+func PutBlockUsers(ctx context.Context, userID string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
+	_, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return nil, pd
 	}
 
 	reqUIDs.RemoveDuplicate()
 
-	if pd := reqUIDs.IsValid(userId); pd != nil {
+	if pd := reqUIDs.IsValid(userID); pd != nil {
 		return nil, pd
 	}
 
-	bUIds, pd := getExistUserIds(reqUIDs.UserIds, dsCfg)
+	bUIDs, pd := getExistUserIDs(ctx, reqUIDs.UserIds)
 	if pd != nil {
 		return nil, pd
 	}
 
 	blockUsers := make([]*models.BlockUser, 0)
 	nowTimestamp := time.Now().Unix()
-	for _, bUId := range bUIds {
+	for _, bUID := range bUIDs {
 		blockUsers = append(blockUsers, &models.BlockUser{
-			UserId:      userId,
-			BlockUserId: bUId,
+			UserId:      userID,
+			BlockUserId: bUID,
 			Created:     nowTimestamp,
 		})
 	}
-	err := datastore.Provider(dsCfg).InsertBlockUsers(blockUsers)
+	err := datastore.Provider(ctx).InsertBlockUsers(blockUsers)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Block user registration failed",
@@ -61,7 +63,7 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg *ut
 		return nil, pd
 	}
 
-	blockUserIds, err := datastore.Provider(dsCfg).SelectBlockUsersByUserId(userId)
+	blockUserIds, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Block user registration failed",
@@ -76,24 +78,25 @@ func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg *ut
 	}, nil
 }
 
-func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg *utils.Datastore) (*models.BlockUsers, *models.ProblemDetail) {
-	_, pd := selectUser(userId, dsCfg)
+// DeleteBlockUsers is  delete block users
+func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
+	_, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return nil, pd
 	}
 
 	reqUIDs.RemoveDuplicate()
 
-	if pd := reqUIDs.IsValid(userId); pd != nil {
+	if pd := reqUIDs.IsValid(userID); pd != nil {
 		return nil, pd
 	}
 
-	bUIds, pd := getExistUserIds(reqUIDs.UserIds, dsCfg)
+	bUIDs, pd := getExistUserIDs(ctx, reqUIDs.UserIds)
 	if pd != nil {
 		return nil, pd
 	}
 
-	err := datastore.Provider(dsCfg).DeleteBlockUser(userId, bUIds)
+	err := datastore.Provider(ctx).DeleteBlockUser(userID, bUIDs)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete block user failed",
@@ -103,7 +106,7 @@ func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds, dsCfg 
 		return nil, pd
 	}
 
-	blockUserIds, err := datastore.Provider(dsCfg).SelectBlockUsersByUserId(userId)
+	blockUserIds, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete block user failed",

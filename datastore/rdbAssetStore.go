@@ -8,10 +8,10 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func RdbCreateAssetStore(db string) {
+func rdbCreateAssetStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Asset{}, TABLE_NAME_ASSET)
+	tableMap := master.AddTableWithName(models.Asset{}, tableNameAsset)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "key" {
@@ -27,7 +27,7 @@ func RdbCreateAssetStore(db string) {
 	}
 }
 
-func RdbInsertAsset(db string, asset *models.Asset) (*models.Asset, error) {
+func rdbInsertAsset(db string, asset *models.Asset) (*models.Asset, error) {
 	master := RdbStore(db).master()
 
 	if err := master.Insert(asset); err != nil {
@@ -37,12 +37,12 @@ func RdbInsertAsset(db string, asset *models.Asset) (*models.Asset, error) {
 	return asset, nil
 }
 
-func RdbSelectAsset(db, assetId string) (*models.Asset, error) {
+func rdbSelectAsset(db, assetID string) (*models.Asset, error) {
 	replica := RdbStore(db).replica()
 
 	var assets []*models.Asset
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ASSET, " WHERE asset_id=:assetId AND deleted = 0;")
-	params := map[string]interface{}{"assetId": assetId}
+	query := utils.AppendStrings("SELECT * FROM ", tableNameAsset, " WHERE asset_id=:assetId AND deleted = 0;")
+	params := map[string]interface{}{"assetId": assetID}
 	_, err := replica.Select(&assets, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting asset")

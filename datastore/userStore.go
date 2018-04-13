@@ -2,15 +2,15 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-type UserStore interface {
-	CreateUserStore()
+type userStore interface {
+	createUserStore()
 
 	InsertUser(user *models.User) (*models.User, error)
-	SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error)
-	SelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.User, error)
+	SelectUser(userID string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error)
+	SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error)
 	SelectUsers() ([]*models.User, error)
-	SelectUserIdsByUserIds(userIds []string) ([]string, error)
+	SelectUserIDsByUserIDs(userIDs []string) ([]string, error)
 	UpdateUser(user *models.User) (*models.User, error)
-	UpdateUserDeleted(userId string) error
-	SelectContacts(userId string) ([]*models.User, error)
+	UpdateUserDeleted(userID string) error
+	SelectContacts(userID string) ([]*models.User, error)
 }

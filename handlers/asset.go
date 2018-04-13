@@ -10,12 +10,12 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func SetAssetMux() {
-	Mux.PostFunc("/assets", colsHandler(datastoreHandler(PostAsset)))
-	Mux.GetFunc("/assets/:filename", datastoreHandler(GetAsset))
+func setAssetMux() {
+	mux.PostFunc("/assets", commonHandler(postAsset))
+	mux.GetFunc("/assets/:filename", commonHandler(getAsset))
 }
 
-func PostAsset(w http.ResponseWriter, r *http.Request) {
+func postAsset(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		pd := &models.ProblemDetail{
@@ -44,9 +44,8 @@ func PostAsset(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	contentType := header.Header.Get("Content-Type")
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	asset, pd := services.PostAsset(contentType, file, dsCfg)
+	asset, pd := services.PostAsset(r.Context(), contentType, file)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -55,13 +54,12 @@ func PostAsset(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusCreated, "application/json", asset)
 }
 
-func GetAsset(w http.ResponseWriter, r *http.Request) {
+func getAsset(w http.ResponseWriter, r *http.Request) {
 	filename := bone.GetValue(r, "filename")
-	assetId := utils.GetFileNameWithoutExt(filename)
+	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
 
-	bytes, asset, pd := services.GetAsset(assetId, ifModifiedSince, dsCfg)
+	bytes, asset, pd := services.GetAsset(r.Context(), assetID, ifModifiedSince)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

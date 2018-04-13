@@ -6,6 +6,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/swagchat/chat-api/handlers"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/storage"

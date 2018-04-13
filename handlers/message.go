@@ -6,24 +6,21 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
-	"github.com/swagchat/chat-api/utils"
 )
 
-func SetMessageMux() {
-	Mux.PostFunc("/messages", colsHandler(datastoreHandler(PostMessages)))
-	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", colsHandler(datastoreHandler(GetMessage)))
+func setMessageMux() {
+	mux.PostFunc("/messages", commonHandler(postMessages))
+	mux.GetFunc("/messages/#messageId^[a-z0-9-]$", commonHandler(getMessage))
 }
 
-func PostMessages(w http.ResponseWriter, r *http.Request) {
+func postMessages(w http.ResponseWriter, r *http.Request) {
 	var post models.Messages
 	if err := decodeBody(r, &post); err != nil {
-		respondJsonDecodeError(w, r, "Create message item")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
-
-	mRes := services.PostMessage(&post, dsCfg)
+	mRes := services.PostMessage(r.Context(), &post)
 	if len(mRes.MessageIds) == 0 {
 		respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
 		return
@@ -32,11 +29,10 @@ func PostMessages(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusCreated, "application/json", mRes)
 }
 
-func GetMessage(w http.ResponseWriter, r *http.Request) {
-	messageId := bone.GetValue(r, "messageId")
-	dsCfg := r.Context().Value(ctxDsCfg).(*utils.Datastore)
+func getMessage(w http.ResponseWriter, r *http.Request) {
+	messageID := bone.GetValue(r, "messageId")
 
-	message, pd := services.GetMessage(messageId, dsCfg)
+	message, pd := services.GetMessage(r.Context(), messageID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

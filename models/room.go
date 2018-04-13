@@ -183,7 +183,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Room) IsValidPost() *ProblemDetail {
-	if r.RoomId != "" && !utils.IsValidId(r.RoomId) {
+	if r.RoomId != "" && !utils.IsValidID(r.RoomId) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -209,7 +209,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !utils.IsValidId(r.UserId) {
+	if !utils.IsValidID(r.UserId) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -283,7 +283,7 @@ func (r *Room) IsValidPut() *ProblemDetail {
 
 func (r *Room) BeforePost() {
 	if r.RoomId == "" {
-		r.RoomId = utils.CreateUuid()
+		r.RoomId = utils.GenerateUUID()
 	}
 
 	if r.MetaData == nil {

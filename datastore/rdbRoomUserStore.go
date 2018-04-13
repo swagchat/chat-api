@@ -11,10 +11,10 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateRoomUserStore(db string) {
+func rdbCreateRoomUserStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.RoomUser{}, TABLE_NAME_ROOM_USER)
+	tableMap := master.AddTableWithName(models.RoomUser{}, tableNameRoomUser)
 	tableMap.SetUniqueTogether("room_id", "user_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
@@ -25,14 +25,14 @@ func RdbCreateRoomUserStore(db string) {
 	}
 }
 
-func RdbDeleteAndInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
+func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+	query := utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
 	_, err = trans.Exec(query, params)
 	if err != nil {
@@ -57,7 +57,7 @@ func RdbDeleteAndInsertRoomUsers(db string, roomUsers []*models.RoomUser) error 
 	return nil
 }
 
-func RdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
+func rdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -65,12 +65,12 @@ func RdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 	}
 
 	for _, roomUser := range roomUsers {
-		roomUser, err := RdbSelectRoomUser(db, roomUser.RoomId, roomUser.UserId)
+		ru, err := rdbSelectRoomUser(db, roomUser.RoomId, roomUser.UserId)
 		if err != nil {
 			err = trans.Rollback()
 			return errors.Wrap(err, "An error occurred while creating room's users")
 		}
-		if roomUser == nil {
+		if ru == nil {
 			err = trans.Insert(roomUser)
 			if err != nil {
 				err = trans.Rollback()
@@ -88,14 +88,14 @@ func RdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 	return nil
 }
 
-func RdbSelectRoomUser(db, roomId, userId string) (*models.RoomUser, error) {
+func rdbSelectRoomUser(db, roomID, userID string) (*models.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*models.RoomUser
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id=:userId;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameRoomUser, " WHERE room_id=:roomId AND user_id=:userId;")
 	params := map[string]interface{}{
-		"roomId": roomId,
-		"userId": userId,
+		"roomId": roomID,
+		"userId": userID,
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
@@ -109,15 +109,15 @@ func RdbSelectRoomUser(db, roomId, userId string) (*models.RoomUser, error) {
 	return nil, nil
 }
 
-func RdbSelectRoomUserOfOneOnOne(db, myUserId, opponentUserId string) (*models.RoomUser, error) {
+func rdbSelectRoomUserOfOneOnOne(db, myUserID, opponentUserID string) (*models.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*models.RoomUser
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id IN (SELECT room_id FROM ", TABLE_NAME_ROOM, " WHERE type=:type AND user_id=:myUserId) AND user_id=:opponentUserId;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameRoomUser, " WHERE room_id IN (SELECT room_id FROM ", tableNameRoom, " WHERE type=:type AND user_id=:myUserId) AND user_id=:opponentUserId;")
 	params := map[string]interface{}{
 		"type":           models.ONE_ON_ONE,
-		"myUserId":       myUserId,
-		"opponentUserId": opponentUserId,
+		"myUserId":       myUserID,
+		"opponentUserId": opponentUserID,
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
@@ -131,13 +131,13 @@ func RdbSelectRoomUserOfOneOnOne(db, myUserId, opponentUserId string) (*models.R
 	return nil, nil
 }
 
-func RdbSelectRoomUsersByRoomId(db, roomId string) ([]*models.RoomUser, error) {
+func rdbSelectRoomUsersByRoomID(db, roomID string) ([]*models.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*models.RoomUser
-	query := utils.AppendStrings("SELECT room_id, user_id, unread_count, meta_data, created, modified FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
+	query := utils.AppendStrings("SELECT room_id, user_id, unread_count, meta_data, created, modified FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
 	params := map[string]interface{}{
-		"roomId": roomId,
+		"roomId": roomID,
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
@@ -147,13 +147,13 @@ func RdbSelectRoomUsersByRoomId(db, roomId string) ([]*models.RoomUser, error) {
 	return roomUsers, nil
 }
 
-func RdbSelectRoomUsersByUserId(db, userId string) ([]*models.RoomUser, error) {
+func rdbSelectRoomUsersByUserID(db, userID string) ([]*models.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*models.RoomUser
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameRoomUser, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
@@ -163,32 +163,32 @@ func RdbSelectRoomUsersByUserId(db, userId string) ([]*models.RoomUser, error) {
 	return roomUsers, nil
 }
 
-func RdbSelectRoomUsersByRoomIdAndUserIds(db string, roomId *string, userIds []string) ([]*models.RoomUser, error) {
+func rdbSelectRoomUsersByRoomIDAndUserIDs(db string, roomID *string, userIDs []string) ([]*models.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*models.RoomUser
-	var userIdsQuery string
-	var userIdsParams map[string]interface{}
-	var roomIdParams map[string]interface{}
-	if userIds != nil {
-		userIdsQuery, userIdsParams = utils.MakePrepareForInExpression(userIds)
+	var userIDsQuery string
+	var userIDsParams map[string]interface{}
+	var roomIDParams map[string]interface{}
+	if userIDs != nil {
+		userIDsQuery, userIDsParams = utils.MakePrepareForInExpression(userIDs)
 	}
-	if roomId != nil {
-		roomIdParams = map[string]interface{}{"roomId": roomId}
+	if roomID != nil {
+		roomIDParams = map[string]interface{}{"roomId": roomID}
 	}
-	params := utils.MergeMap(userIdsParams, roomIdParams)
+	params := utils.MergeMap(userIDsParams, roomIDParams)
 
 	query := utils.AppendStrings("SELECT * ",
-		"FROM ", TABLE_NAME_ROOM_USER,
+		"FROM ", tableNameRoomUser,
 		" WHERE ")
-	if roomId != nil {
+	if roomID != nil {
 		query = utils.AppendStrings(query, " room_id=:roomId")
 	}
-	if roomId != nil && userIds != nil {
+	if roomID != nil && userIDs != nil {
 		query = utils.AppendStrings(query, " AND ")
 	}
-	if userIds != nil {
-		query = utils.AppendStrings(query, " user_id IN (", userIdsQuery, ")")
+	if userIDs != nil {
+		query = utils.AppendStrings(query, " user_id IN (", userIDsQuery, ")")
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
@@ -198,7 +198,7 @@ func RdbSelectRoomUsersByRoomIdAndUserIds(db string, roomId *string, userIds []s
 	return roomUsers, nil
 }
 
-func RdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, error) {
+func rdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -223,7 +223,7 @@ func RdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 		}
 	}
 	if updateQuery != "" {
-		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
+		query := utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			err = trans.Rollback()
@@ -231,8 +231,8 @@ func RdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 		}
 
 		if roomUser.UnreadCount != nil {
-			query = utils.AppendStrings("UPDATE ", TABLE_NAME_USER,
-				" SET unread_count=(SELECT SUM(unread_count) FROM ", TABLE_NAME_ROOM_USER,
+			query = utils.AppendStrings("UPDATE ", tableNameUser,
+				" SET unread_count=(SELECT SUM(unread_count) FROM ", tableNameRoomUser,
 				" WHERE user_id=:userId1) WHERE user_id=:userId2;")
 			params = map[string]interface{}{
 				"userId1": roomUser.UserId,
@@ -255,7 +255,7 @@ func RdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 	return roomUser, nil
 }
 
-func RdbDeleteRoomUser(db, roomId string, userIds []string) error {
+func rdbDeleteRoomUser(db, roomID string, userIDs []string) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -264,18 +264,18 @@ func RdbDeleteRoomUser(db, roomId string, userIds []string) error {
 
 	var query string
 	var params map[string]interface{}
-	if userIds == nil {
-		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId;")
-		params = map[string]interface{}{"roomId": roomId}
+	if userIDs == nil {
+		query = utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
+		params = map[string]interface{}{"roomId": roomID}
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			err = trans.Rollback()
 			return errors.Wrap(err, "An error occurred while deleting room's users")
 		}
 
-		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId;")
+		query = utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE room_id=:roomId;")
 		params = map[string]interface{}{
-			"roomId":  roomId,
+			"roomId":  roomID,
 			"deleted": time.Now().Unix(),
 		}
 		_, err = trans.Exec(query, params)
@@ -285,16 +285,16 @@ func RdbDeleteRoomUser(db, roomId string, userIds []string) error {
 		}
 	} else {
 		var userIdsQuery string
-		userIdsQuery, params = utils.MakePrepareForInExpression(userIds)
-		query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
-		params["roomId"] = roomId
+		userIdsQuery, params = utils.MakePrepareForInExpression(userIDs)
+		query = utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
+		params["roomId"] = roomID
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			err = trans.Rollback()
 			return errors.Wrap(err, "An error occurred while deleting room's users")
 		}
 
-		query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
+		query = utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (", userIdsQuery, ");")
 		params["deleted"] = time.Now().Unix()
 		_, err = trans.Exec(query, params)
 		if err != nil {

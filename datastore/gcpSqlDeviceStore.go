@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *gcpSqlProvider) CreateDeviceStore() {
-	RdbCreateDeviceStore(p.database)
+func (p *gcpSQLProvider) createDeviceStore() {
+	rdbCreateDeviceStore(p.database)
 }
 
-func (p *gcpSqlProvider) InsertDevice(device *models.Device) (*models.Device, error) {
-	return RdbInsertDevice(p.database, device)
+func (p *gcpSQLProvider) InsertDevice(device *models.Device) (*models.Device, error) {
+	return rdbInsertDevice(p.database, device)
 }
 
-func (p *gcpSqlProvider) SelectDevices(userId string) ([]*models.Device, error) {
-	return RdbSelectDevices(p.database, userId)
+func (p *gcpSQLProvider) SelectDevices(userID string) ([]*models.Device, error) {
+	return rdbSelectDevices(p.database, userID)
 }
 
-func (p *gcpSqlProvider) SelectDevice(userId string, platform int) (*models.Device, error) {
-	return RdbSelectDevice(p.database, userId, platform)
+func (p *gcpSQLProvider) SelectDevice(userID string, platform int) (*models.Device, error) {
+	return rdbSelectDevice(p.database, userID, platform)
 }
 
-func (p *gcpSqlProvider) SelectDevicesByUserId(userId string) ([]*models.Device, error) {
-	return RdbSelectDevicesByUserId(p.database, userId)
+func (p *gcpSQLProvider) SelectDevicesByUserID(userID string) ([]*models.Device, error) {
+	return rdbSelectDevicesByUserID(p.database, userID)
 }
 
-func (p *gcpSqlProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
-	return RdbSelectDevicesByToken(p.database, token)
+func (p *gcpSQLProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
+	return rdbSelectDevicesByToken(p.database, token)
 }
 
-func (p *gcpSqlProvider) UpdateDevice(device *models.Device) error {
-	return RdbUpdateDevice(p.database, device)
+func (p *gcpSQLProvider) UpdateDevice(device *models.Device) error {
+	return rdbUpdateDevice(p.database, device)
 }
 
-func (p *gcpSqlProvider) DeleteDevice(userId string, platform int) error {
-	return RdbDeleteDevice(p.database, userId, platform)
+func (p *gcpSQLProvider) DeleteDevice(userID string, platform int) error {
+	return rdbDeleteDevice(p.database, userID, platform)
 }

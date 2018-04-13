@@ -2,13 +2,13 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-type SubscriptionStore interface {
-	CreateSubscriptionStore()
+type subscriptionStore interface {
+	createSubscriptionStore()
 
 	InsertSubscription(subscription *models.Subscription) (*models.Subscription, error)
-	SelectSubscription(roomId, userId string, platform int) (*models.Subscription, error)
-	SelectDeletedSubscriptionsByRoomId(roomId string) ([]*models.Subscription, error)
-	SelectDeletedSubscriptionsByUserId(userId string) ([]*models.Subscription, error)
-	SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) ([]*models.Subscription, error)
+	SelectSubscription(roomID, userID string, platform int) (*models.Subscription, error)
+	SelectDeletedSubscriptionsByRoomID(roomID string) ([]*models.Subscription, error)
+	SelectDeletedSubscriptionsByUserID(userID string) ([]*models.Subscription, error)
+	SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int) ([]*models.Subscription, error)
 	DeleteSubscription(subscription *models.Subscription) error
 }

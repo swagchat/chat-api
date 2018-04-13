@@ -11,6 +11,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type key int
+
 const (
 	// AppName is Application name
 	AppName = "chat-api"
@@ -19,11 +21,23 @@ const (
 	// BuildVersion is API build version
 	BuildVersion = "0.9.1"
 
-	KeyLength       = 32
-	TokenLength     = 32
-	HeaderAPIKey    = "X-SwagChat-Api-Key"
-	HeaderAPISecret = "X-SwagChat-Api-Secret"
-	HeaderUserId    = "X-SwagChat-User-Id"
+	// KeyLength is key length
+	KeyLength = 32
+	// TokenLength is token length
+	TokenLength = 32
+
+	// HeaderUserID is http header for userID
+	HeaderUserID = "X-Sub"
+	// HeaderUserName is http header for username
+	HeaderUsername = "X-Preferred-Username"
+	// HeaderRealm is http header for realm
+	HeaderRealm = "X-Realm"
+
+	CtxDsCfg key = iota
+	CtxIsAppClient
+	CtxUserID
+	CtxRoomUser
+	CtxSubscription
 )
 
 var (
@@ -190,6 +204,7 @@ func NewConfig() *config {
 	return c
 }
 
+// Config is get config
 func Config() *config {
 	return cfg
 }
@@ -655,6 +670,7 @@ func (c *config) after() {
 		if c.Datastore.SQLite.Path == "" {
 			c.Datastore.SQLite.Path = "/tmp/swagchat.db"
 		}
+		c.Datastore.Database = c.Datastore.SQLite.Path
 	}
 
 	if c.Datastore.Provider == "mysql" {

@@ -2,38 +2,38 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *sqliteProvider) CreateUserStore() {
-	RdbCreateUserStore(p.sqlitePath)
+func (p *sqliteProvider) createUserStore() {
+	rdbCreateUserStore(p.sqlitePath)
 }
 
 func (p *sqliteProvider) InsertUser(user *models.User) (*models.User, error) {
-	return RdbInsertUser(p.sqlitePath, user)
+	return rdbInsertUser(p.sqlitePath, user)
 }
 
-func (p *sqliteProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
-	return RdbSelectUser(p.sqlitePath, userId, isWithRooms, isWithDevices, isWithBlocks)
+func (p *sqliteProvider) SelectUser(userID string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
+	return rdbSelectUser(p.sqlitePath, userID, isWithRooms, isWithDevices, isWithBlocks)
 }
 
-func (p *sqliteProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) (*models.User, error) {
-	return RdbSelectUserByUserIdAndAccessToken(p.sqlitePath, userId, accessToken)
+func (p *sqliteProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error) {
+	return rdbSelectUserByUserIDAndAccessToken(p.sqlitePath, userID, accessToken)
 }
 
 func (p *sqliteProvider) SelectUsers() ([]*models.User, error) {
-	return RdbSelectUsers(p.sqlitePath)
+	return rdbSelectUsers(p.sqlitePath)
 }
 
-func (p *sqliteProvider) SelectUserIdsByUserIds(userIds []string) ([]string, error) {
-	return RdbSelectUserIdsByUserIds(p.sqlitePath, userIds)
+func (p *sqliteProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
+	return rdbSelectUserIDsByUserIDs(p.sqlitePath, userIDs)
 }
 
 func (p *sqliteProvider) UpdateUser(user *models.User) (*models.User, error) {
-	return RdbUpdateUser(p.sqlitePath, user)
+	return rdbUpdateUser(p.sqlitePath, user)
 }
 
-func (p *sqliteProvider) UpdateUserDeleted(userId string) error {
-	return RdbUpdateUserDeleted(p.sqlitePath, userId)
+func (p *sqliteProvider) UpdateUserDeleted(userID string) error {
+	return rdbUpdateUserDeleted(p.sqlitePath, userID)
 }
 
-func (p *sqliteProvider) SelectContacts(userId string) ([]*models.User, error) {
-	return RdbSelectContacts(p.sqlitePath, userId)
+func (p *sqliteProvider) SelectContacts(userID string) ([]*models.User, error) {
+	return rdbSelectContacts(p.sqlitePath, userID)
 }

@@ -82,7 +82,7 @@ type PayloadUsers struct {
 }
 
 func (m *Message) IsValid() *ProblemDetail {
-	if m.MessageId != "" && !utils.IsValidId(m.MessageId) {
+	if m.MessageId != "" && !utils.IsValidID(m.MessageId) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -160,7 +160,7 @@ func (m *Message) IsValid() *ProblemDetail {
 
 func (m *Message) BeforeSave() {
 	if m.MessageId == "" {
-		m.MessageId = utils.CreateUuid()
+		m.MessageId = utils.GenerateUUID()
 	}
 
 	nowTimestamp := time.Now().Unix()
