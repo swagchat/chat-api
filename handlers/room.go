@@ -65,7 +65,7 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	put.RoomId = bone.GetValue(r, "roomId")
+	put.RoomID = bone.GetValue(r, "roomId")
 
 	room, pd := services.PutRoom(r.Context(), &put)
 	if pd != nil {

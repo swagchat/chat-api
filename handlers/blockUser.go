@@ -27,7 +27,7 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func putBlockUsers(w http.ResponseWriter, r *http.Request) {
-	var reqUIDs models.RequestBlockUserIds
+	var reqUIDs models.RequestBlockUserIDs
 	if err := decodeBody(r, &reqUIDs); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -45,7 +45,7 @@ func putBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
-	var reqUIDs models.RequestBlockUserIds
+	var reqUIDs models.RequestBlockUserIDs
 	if err := decodeBody(r, &reqUIDs); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,6 +43,8 @@ var (
 
 // StartServer is start api server
 func StartServer(ctx context.Context) {
+	configValidate()
+
 	cfg := utils.Config()
 	mux = bone.New()
 
@@ -83,7 +86,7 @@ func StartServer(ctx context.Context) {
 		Config:  cfgStr,
 	})
 
-	err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HttpPort), mux)
+	err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HTTPPort), mux)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -116,6 +119,9 @@ func run(ctx context.Context) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
+	for i, v := range r.Header {
+		log.Printf("%s=%s\n", i, v)
+	}
 	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", utils.AppName, utils.APIVersion, utils.BuildVersion))
 }
 
@@ -139,11 +145,11 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return colsHandler(
 		jwtHandler(
-			datastoreHandler(
-				judgeAppClientHandler(
-					func(w http.ResponseWriter, r *http.Request) {
-						fn(w, r)
-					}))))
+			// datastoreHandler(
+			judgeAppClientHandler(
+				func(w http.ResponseWriter, r *http.Request) {
+					fn(w, r)
+				})))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
@@ -157,30 +163,34 @@ func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		userID := r.Header.Get(utils.HeaderUserID)
 		ctx := context.WithValue(r.Context(), utils.CtxUserID, userID)
+
+		realm := r.Header.Get(utils.HeaderRealm)
+		ctx = context.WithValue(ctx, utils.CtxRealm, realm)
+
 		fn(w, r.WithContext(ctx))
 	}
 }
 
-func datastoreHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		cfg := utils.Config()
-		dsCfg := cfg.Datastore
+// func datastoreHandler(fn http.HandlerFunc) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		cfg := utils.Config()
+// 		dsCfg := cfg.Datastore
 
-		if cfg.Datastore.Dynamic {
-			dsCfg.Database = r.Header.Get(utils.HeaderRealm)
-		}
+// 		if cfg.Datastore.Dynamic {
+// 			dsCfg.Database = r.Header.Get(utils.HeaderRealm)
+// 		}
 
-		if dsCfg.Database == "" {
-			respondErr(w, r, 400, &models.ProblemDetail{
-				Title: "No realm",
-			})
-			return
-		}
+// 		if dsCfg.Database == "" {
+// 			respondErr(w, r, http.StatusBadRequest, &models.ProblemDetail{
+// 				Title: "No realm",
+// 			})
+// 			return
+// 		}
 
-		ctx := context.WithValue(r.Context(), utils.CtxDsCfg, dsCfg)
-		fn(w, r.WithContext(ctx))
-	}
-}
+// 		ctx := context.WithValue(r.Context(), utils.CtxDsCfg, dsCfg)
+// 		fn(w, r.WithContext(ctx))
+// 	}
+// }
 
 func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

@@ -48,7 +48,7 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	put.UserId = bone.GetValue(r, "userId")
+	put.UserID = bone.GetValue(r, "userId")
 	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
 	put.Platform = platform
 

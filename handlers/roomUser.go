@@ -15,7 +15,7 @@ func setRoomUserMux() {
 }
 
 func putRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var put models.RequestRoomUserIds
+	var put models.RequestRoomUserIDs
 	if err := decodeBody(r, &put); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -39,8 +39,8 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	put.RoomId = bone.GetValue(r, "roomId")
-	put.UserId = bone.GetValue(r, "userId")
+	put.RoomID = bone.GetValue(r, "roomId")
+	put.UserID = bone.GetValue(r, "userId")
 
 	roomUser, pd := services.PutRoomUser(r.Context(), &put)
 	if pd != nil {
@@ -53,7 +53,7 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var deleteRus models.RequestRoomUserIds
+	var deleteRus models.RequestRoomUserIDs
 	if err := decodeBody(r, &deleteRus); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return

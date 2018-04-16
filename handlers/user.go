@@ -64,7 +64,7 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	put.UserId = bone.GetValue(r, "userId")
+	put.UserID = bone.GetValue(r, "userId")
 
 	user, pd := services.PutUser(r.Context(), &put)
 	if pd != nil {
