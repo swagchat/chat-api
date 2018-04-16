@@ -3,9 +3,9 @@ package models
 import "net/http"
 
 const (
-	PLATFORM_IOS = iota + 1
-	PLATFORM_ANDROID
-	end
+	PlatformIOS = iota + 1
+	PlatformAndroid
+	PlatformEnd
 )
 
 type Devices struct {
@@ -13,18 +13,18 @@ type Devices struct {
 }
 
 type Device struct {
-	UserId               string `json:"userId,omitempty" db:"user_id,notnull"`
+	UserID               string `json:"userId,omitempty" db:"user_id,notnull"`
 	Platform             int    `json:"platform,omitempty" db:"platform,notnull"`
 	Token                string `json:"token,omitempty" db:"token,notnull"`
-	NotificationDeviceId string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
+	NotificationDeviceID string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
 }
 
 func IsValidDevicePlatform(platform int) bool {
-	return platform > 0 && platform < int(end)
+	return platform > 0 && platform < int(PlatformEnd)
 }
 
 func (d *Device) IsValid() *ProblemDetail {
-	if !(d.Platform > 0 && d.Platform < int(end)) {
+	if !(d.Platform > 0 && d.Platform < int(PlatformEnd)) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,

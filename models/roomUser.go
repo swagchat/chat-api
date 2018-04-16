@@ -10,8 +10,8 @@ import (
 )
 
 type RoomUser struct {
-	RoomId      string         `json:"roomId" db:"room_id,notnull"`
-	UserId      string         `json:"userId" db:"user_id,notnull"`
+	RoomID      string         `json:"roomId" db:"room_id,notnull"`
+	UserID      string         `json:"userId" db:"user_id,notnull"`
 	UnreadCount *int64         `json:"unreadCount" db:"unread_count"`
 	MetaData    utils.JSONText `json:"metaData" db:"meta_data"`
 	Created     int64          `json:"created" db:"created,notnull"`
@@ -21,15 +21,15 @@ type RoomUser struct {
 func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		RoomId      string         `json:"roomId"`
-		UserId      string         `json:"userId"`
+		RoomID      string         `json:"roomId"`
+		UserID      string         `json:"userId"`
 		UnreadCount *int64         `json:"unreadCount"`
 		MetaData    utils.JSONText `json:"metaData"`
 		Created     string         `json:"created"`
 		Modified    string         `json:"modified"`
 	}{
-		RoomId:      ru.RoomId,
-		UserId:      ru.UserId,
+		RoomID:      ru.RoomID,
+		UserID:      ru.UserID,
 		UnreadCount: ru.UnreadCount,
 		MetaData:    ru.MetaData,
 		Created:     time.Unix(ru.Created, 0).In(l).Format(time.RFC3339),
@@ -38,7 +38,7 @@ func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 }
 
 func (ru *RoomUser) IsValid() *ProblemDetail {
-	if ru.RoomId != "" && !utils.IsValidID(ru.RoomId) {
+	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room user item)",
 			Status:    http.StatusBadRequest,
@@ -52,7 +52,7 @@ func (ru *RoomUser) IsValid() *ProblemDetail {
 		}
 	}
 
-	if ru.UserId != "" && !utils.IsValidID(ru.UserId) {
+	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room user item)",
 			Status:    http.StatusBadRequest,
@@ -96,16 +96,16 @@ type ResponseRoomUser struct {
 	Errors    []ErrorRoomUser `json:"errors,omitempty"`
 }
 
-type RequestRoomUserIds struct {
-	UserIds []string `json:"userIds,omitempty" db:"-"`
+type RequestRoomUserIDs struct {
+	UserIDs []string `json:"userIds,omitempty" db:"-"`
 }
 
 type RoomUsers struct {
 	RoomUsers []*RoomUser `json:"roomUsers"`
 }
 
-func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
-	if len(rus.UserIds) == 0 {
+func (rus *RequestRoomUserIDs) IsValid(method string, r *Room) *ProblemDetail {
+	if len(rus.UserIDs) == 0 {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -118,7 +118,7 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	// if *r.Type == ONE_ON_ONE {
+	// if *r.Type == OneOnOne {
 	// 	for _, userId := range rus.UserIds {
 	// 		if userId == r.UserId {
 	// 			return &ProblemDetail{
@@ -135,8 +135,8 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 	// 	}
 	// }
 
-	if method == "POST" && *r.Type == ONE_ON_ONE {
-		if len(rus.UserIds) == 2 {
+	if method == "POST" && *r.Type == OneOnOne {
+		if len(rus.UserIDs) == 2 {
 			return &ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,
@@ -150,7 +150,7 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if method == "PUT" && *r.Type == ONE_ON_ONE {
+	if method == "PUT" && *r.Type == OneOnOne {
 		if len(r.Users) == 2 {
 			return &ProblemDetail{
 				Title:  "Request error",
@@ -165,7 +165,7 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	// if method == "DELETE" && *r.Type == ONE_ON_ONE {
+	// if method == "DELETE" && *r.Type == OneOnOne {
 	// 	return &ProblemDetail{
 	// 		Title:     "Request error",
 	// 		Status:    http.StatusBadRequest,
@@ -176,6 +176,6 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 	return nil
 }
 
-func (rus *RequestRoomUserIds) RemoveDuplicate() {
-	rus.UserIds = utils.RemoveDuplicate(rus.UserIds)
+func (rus *RequestRoomUserIDs) RemoveDuplicate() {
+	rus.UserIDs = utils.RemoveDuplicate(rus.UserIDs)
 }

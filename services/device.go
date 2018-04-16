@@ -49,13 +49,13 @@ func PutDevice(ctx context.Context, put *models.Device) (*models.Device, *models
 	}
 
 	// User existence check
-	_, pd := selectUser(ctx, put.UserId)
+	_, pd := selectUser(ctx, put.UserID)
 	if pd != nil {
 		return nil, pd
 	}
 
 	isExist := true
-	device, pd := selectDevice(ctx, put.UserId, put.Platform)
+	device, pd := selectDevice(ctx, put.UserID, put.Platform)
 	if device == nil {
 		isExist = false
 	}
@@ -75,11 +75,11 @@ func PutDevice(ctx context.Context, put *models.Device) (*models.Device, *models
 		if deleteDevices != nil {
 			wg := &sync.WaitGroup{}
 			for _, deleteDevice := range deleteDevices {
-				nRes := <-notification.Provider().DeleteEndpoint(deleteDevice.NotificationDeviceId)
+				nRes := <-notification.Provider().DeleteEndpoint(deleteDevice.NotificationDeviceID)
 				if nRes.ProblemDetail != nil {
 					return nil, nRes.ProblemDetail
 				}
-				err := datastore.Provider(ctx).DeleteDevice(deleteDevice.UserId, deleteDevice.Platform)
+				err := datastore.Provider(ctx).DeleteDevice(deleteDevice.UserID, deleteDevice.Platform)
 				if err != nil {
 					pd := &models.ProblemDetail{
 						Title:  "Update device failed",
@@ -94,13 +94,13 @@ func PutDevice(ctx context.Context, put *models.Device) (*models.Device, *models
 			wg.Wait()
 		}
 
-		nRes := <-notification.Provider().CreateEndpoint(put.UserId, put.Platform, put.Token)
+		nRes := <-notification.Provider().CreateEndpoint(put.UserID, put.Platform, put.Token)
 		if nRes.ProblemDetail != nil {
 			return nil, nRes.ProblemDetail
 		}
-		put.NotificationDeviceId = put.Token
+		put.NotificationDeviceID = put.Token
 		if nRes.Data != nil {
-			put.NotificationDeviceId = *nRes.Data.(*string)
+			put.NotificationDeviceID = *nRes.Data.(*string)
 		}
 
 		if isExist {
@@ -113,7 +113,7 @@ func PutDevice(ctx context.Context, put *models.Device) (*models.Device, *models
 				}
 				return nil, pd
 			}
-			nRes = <-notification.Provider().DeleteEndpoint(device.NotificationDeviceId)
+			nRes = <-notification.Provider().DeleteEndpoint(device.NotificationDeviceID)
 			if nRes.ProblemDetail != nil {
 				return nil, nRes.ProblemDetail
 			}
@@ -156,7 +156,7 @@ func DeleteDevice(ctx context.Context, userID string, platform int) *models.Prob
 	}
 
 	np := notification.Provider()
-	nRes := <-np.DeleteEndpoint(device.NotificationDeviceId)
+	nRes := <-np.DeleteEndpoint(device.NotificationDeviceID)
 	if nRes.ProblemDetail != nil {
 		return nRes.ProblemDetail
 	}
@@ -196,7 +196,7 @@ func selectDevice(ctx context.Context, userID string, platform int) (*models.Dev
 }
 
 func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
-	roomUser, err := datastore.Provider(ctx).SelectRoomUsersByUserID(device.UserId)
+	roomUser, err := datastore.Provider(ctx).SelectRoomUsersByUserID(device.UserID)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -211,7 +211,7 @@ func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.Wait
 }
 
 func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserIDAndPlatform(device.UserId, device.Platform)
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserIDAndPlatform(device.UserID, device.Platform)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -235,17 +235,17 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
-			room, pd := selectRoom(ctx, ru.RoomId)
+			room, pd := selectRoom(ctx, ru.RoomID)
 			if pd != nil {
 				pdCh <- pd
 			} else {
-				if room.NotificationTopicId == "" {
-					notificationTopicID, pd := createTopic(room.RoomId)
+				if room.NotificationTopicID == "" {
+					notificationTopicID, pd := createTopic(room.RoomID)
 					if pd != nil {
 						pdCh <- pd
 					}
 
-					room.NotificationTopicId = notificationTopicID
+					room.NotificationTopicID = notificationTopicID
 					room.Modified = time.Now().Unix()
 					_, err := datastore.Provider(ctx).UpdateRoom(room)
 					if err != nil {
@@ -256,17 +256,17 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 						pdCh <- pd
 					}
 				}
-				nRes := <-np.Subscribe(room.NotificationTopicId, device.NotificationDeviceId)
+				nRes := <-np.Subscribe(room.NotificationTopicID, device.NotificationDeviceID)
 				if nRes.ProblemDetail != nil {
 					pdCh <- nRes.ProblemDetail
 				} else {
 					if nRes.Data != nil {
 						notificationSubscriptionID := nRes.Data.(*string)
 						subscription := &models.Subscription{
-							RoomId:                     ru.RoomId,
-							UserId:                     ru.UserId,
+							RoomID:                     ru.RoomID,
+							UserID:                     ru.UserID,
 							Platform:                   device.Platform,
-							NotificationSubscriptionId: *notificationSubscriptionID,
+							NotificationSubscriptionID: *notificationSubscriptionID,
 						}
 						subscription, err := dp.InsertSubscription(subscription)
 						if err != nil {
@@ -314,7 +314,7 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan
 		ctx = context.WithValue(ctx, utils.CtxSubscription, subscription)
 		d.Work(ctx, func(ctx context.Context) {
 			targetSubscription := ctx.Value(utils.CtxSubscription).(*models.Subscription)
-			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionId)
+			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionID)
 			if nRes.ProblemDetail != nil {
 				pdCh <- nRes.ProblemDetail
 			}

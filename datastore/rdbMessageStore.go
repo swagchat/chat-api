@@ -64,7 +64,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 
 	var rooms []*models.Room
 	query := utils.AppendStrings("SELECT * FROM ", tableNameRoom, " WHERE room_id=:roomId AND deleted=0;")
-	params := map[string]interface{}{"roomId": message.RoomId}
+	params := map[string]interface{}{"roomId": message.RoomID}
 	if _, err = trans.Select(&rooms, query, params); err != nil {
 		err = trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while getting room")
@@ -95,8 +95,8 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 
 	query = utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
 	params = map[string]interface{}{
-		"roomId": message.RoomId,
-		"userId": message.UserId,
+		"roomId": message.RoomID,
+		"userId": message.UserID,
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
@@ -110,18 +110,18 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		"LEFT JOIN ", tableNameUser, " AS u ",
 		"ON ru.user_id = u.user_id ",
 		"WHERE room_id = :roomId;")
-	params = map[string]interface{}{"roomId": message.RoomId}
+	params = map[string]interface{}{"roomId": message.RoomID}
 	_, err = trans.Select(&users, query, params)
 	if err != nil {
 		err = trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while getting room's users")
 	}
 	for _, user := range users {
-		if user.UserId == message.UserId {
+		if user.UserID == message.UserID {
 			continue
 		}
 		query := utils.AppendStrings("UPDATE ", tableNameUser, " SET unread_count=unread_count+1 WHERE user_id=:userId;")
-		params := map[string]interface{}{"userId": user.UserId}
+		params := map[string]interface{}{"userId": user.UserID}
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			err = trans.Rollback()

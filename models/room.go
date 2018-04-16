@@ -10,38 +10,40 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
+// RoomType is room type
 type RoomType int
 
 const (
-	ONE_ON_ONE RoomType = iota + 1
-	PRIVATE_ROOM
-	PUBLIC_ROOM
-	NOTICE_ROOM
-	ROOM_TYPE_END
+	OneOnOne RoomType = iota + 1
+	PrivateRoom
+	PublicRoom
+	NoticeRoom
+	RoomTypeEnd
 )
 
+// SpeechMode is speech mode
 type SpeechMode int
 
 const (
-	SPEECH_MODE_NONE SpeechMode = iota + 1
-	SPEECH_MODE_WAKEUP_WEB_TO_WEB
-	SPEECH_MODE_WAKEUP_WEB_TO_CLOUD
-	SPEECH_MODE_WAKEUP_CLOUD_TO_CLOUD
-	SPEECH_MODE_ALWAYS
-	SPEECH_MODE_MANUAL
-	SPEECH_MODE_END
+	SpeechModeNone SpeechMode = iota + 1
+	SpeechModeWakeupWebToWeb
+	SpeechModeWakeupWebToCloud
+	SpeechModeWakeupCloudToCloud
+	SpeechModeAlways
+	SpeechModeManual
+	SpeechModeEnd
 )
 
 func (rt RoomType) String() string {
 	switch rt {
-	case ONE_ON_ONE:
-		return "ONE_ON_ONE"
-	case PRIVATE_ROOM:
-		return "PRIVATE_ROOM"
-	case PUBLIC_ROOM:
-		return "PUBLIC_ROOM"
-	case NOTICE_ROOM:
-		return "NOTICE_ROOM"
+	case OneOnOne:
+		return "OneOnOne"
+	case PrivateRoom:
+		return "PrivateRoom"
+	case PublicRoom:
+		return "PublicRoom"
+	case NoticeRoom:
+		return "NoticeRoom"
 	default:
 		return "Unknown"
 	}
@@ -53,19 +55,19 @@ type Rooms struct {
 }
 
 type Room struct {
-	Id                    uint64         `json:"-" db:"id"`
-	RoomId                string         `json:"roomId" db:"room_id,notnull"`
-	UserId                string         `json:"userId" db:"user_id,notnull"`
+	ID                    uint64         `json:"-" db:"id"`
+	RoomID                string         `json:"roomId" db:"room_id,notnull"`
+	UserID                string         `json:"userId" db:"user_id,notnull"`
 	Name                  string         `json:"name" db:"name,notnull"`
-	PictureUrl            string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl        string         `json:"informationUrl,omitempty" db:"information_url"`
+	PictureURL            string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL        string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData              utils.JSONText `json:"metaData" db:"meta_data"`
 	AvailableMessageTypes string         `json:"availableMessageTypes,omitempty" db:"available_message_types"`
 	Type                  *RoomType      `json:"type,omitempty" db:"type,notnull"`
 	LastMessage           string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated    int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
 	MessageCount          int64          `json:"messageCount" db:"-"`
-	NotificationTopicId   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
+	NotificationTopicID   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
 	IsCanLeft             *bool          `json:"isCanLeft,omitempty" db:"is_can_left,notnull"`
 	IsShowUsers           *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
 	SpeechMode            *SpeechMode    `json:"speechMode,omitempty" db:"speech_mode,notnull"`
@@ -74,15 +76,15 @@ type Room struct {
 	Deleted               int64          `json:"-" db:"deleted,notnull"`
 
 	Users []*UserForRoom `json:"users,omitempty" db:"-"`
-	RequestRoomUserIds
+	RequestRoomUserIDs
 }
 
 type UserForRoom struct {
 	// from User
-	UserId         string         `json:"userId" db:"user_id"`
+	UserID         string         `json:"userId" db:"user_id"`
 	Name           string         `json:"name" db:"name"`
-	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
+	PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
 	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
@@ -108,18 +110,18 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		availableMessageTypesSlice = strings.Split(r.AvailableMessageTypes, ",")
 	}
 	return json.Marshal(&struct {
-		RoomId                string         `json:"roomId"`
-		UserId                string         `json:"userId"`
+		RoomID                string         `json:"roomId"`
+		UserID                string         `json:"userId"`
 		Name                  string         `json:"name"`
-		PictureUrl            string         `json:"pictureUrl,omitempty"`
-		InformationUrl        string         `json:"informationUrl,omitempty"`
+		PictureURL            string         `json:"pictureUrl,omitempty"`
+		InformationURL        string         `json:"informationUrl,omitempty"`
 		MetaData              utils.JSONText `json:"metaData"`
 		AvailableMessageTypes []string       `json:"availableMessageTypes,omitempty"`
 		Type                  *RoomType      `json:"type"`
 		LastMessage           string         `json:"lastMessage"`
 		LastMessageUpdated    string         `json:"lastMessageUpdated"`
 		MessageCount          int64          `json:"messageCount"`
-		NotificationTopicId   string         `json:"notificationTopicId,omitempty"`
+		NotificationTopicID   string         `json:"notificationTopicId,omitempty"`
 		IsCanLeft             *bool          `json:"isCanLeft,omitempty"`
 		IsShowUsers           *bool          `json:"isShowUsers,omitempty"`
 		SpeechMode            *SpeechMode    `json:"speechMode,omitempty"`
@@ -127,11 +129,11 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		Modified              string         `json:"modified"`
 		Users                 []*UserForRoom `json:"users,omitempty"`
 	}{
-		RoomId:                r.RoomId,
-		UserId:                r.UserId,
+		RoomID:                r.RoomID,
+		UserID:                r.UserID,
 		Name:                  r.Name,
-		PictureUrl:            r.PictureUrl,
-		InformationUrl:        r.InformationUrl,
+		PictureURL:            r.PictureURL,
+		InformationURL:        r.InformationURL,
 		MetaData:              r.MetaData,
 		AvailableMessageTypes: availableMessageTypesSlice,
 		Type:               r.Type,
@@ -150,10 +152,10 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		UserId         string         `json:"userId"`
+		UserID         string         `json:"userId"`
 		Name           string         `json:"name"`
-		PictureUrl     string         `json:"pictureUrl,omitempty"`
-		InformationUrl string         `json:"informationUrl,omitempty"`
+		PictureURL     string         `json:"pictureUrl,omitempty"`
+		InformationURL string         `json:"informationUrl,omitempty"`
 		MetaData       utils.JSONText `json:"metaData"`
 		IsBot          *bool          `json:"isBot,omitempty"`
 		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
@@ -165,10 +167,10 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		RuCreated      string         `json:"ruCreated"`
 		RuModified     string         `json:"ruModified"`
 	}{
-		UserId:         ufr.UserId,
+		UserID:         ufr.UserID,
 		Name:           ufr.Name,
-		PictureUrl:     ufr.PictureUrl,
-		InformationUrl: ufr.InformationUrl,
+		PictureURL:     ufr.PictureURL,
+		InformationURL: ufr.InformationURL,
 		MetaData:       ufr.MetaData,
 		IsBot:          ufr.IsBot,
 		IsCanBlock:     ufr.IsCanBlock,
@@ -183,7 +185,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Room) IsValidPost() *ProblemDetail {
-	if r.RoomId != "" && !utils.IsValidID(r.RoomId) {
+	if r.RoomID != "" && !utils.IsValidID(r.RoomID) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -196,7 +198,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.UserId == "" {
+	if r.UserID == "" {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -209,7 +211,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !utils.IsValidID(r.UserId) {
+	if !utils.IsValidID(r.UserID) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -235,7 +237,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !(*r.Type > 0 && *r.Type < ROOM_TYPE_END) {
+	if !(*r.Type > 0 && *r.Type < RoomTypeEnd) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -248,7 +250,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.UserIds == nil {
+	if r.UserIDs == nil {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -261,7 +263,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SPEECH_MODE_END) {
+	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SpeechModeEnd) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -282,8 +284,8 @@ func (r *Room) IsValidPut() *ProblemDetail {
 }
 
 func (r *Room) BeforePost() {
-	if r.RoomId == "" {
-		r.RoomId = utils.GenerateUUID()
+	if r.RoomID == "" {
+		r.RoomID = utils.GenerateUUID()
 	}
 
 	if r.MetaData == nil {
@@ -301,7 +303,7 @@ func (r *Room) BeforePost() {
 	}
 
 	if r.SpeechMode == nil {
-		speechMode := SpeechMode(SPEECH_MODE_NONE)
+		speechMode := SpeechMode(SpeechModeNone)
 		r.SpeechMode = &speechMode
 	}
 
@@ -315,11 +317,11 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.Name != "" {
 		r.Name = put.Name
 	}
-	if put.PictureUrl != "" {
-		r.PictureUrl = put.PictureUrl
+	if put.PictureURL != "" {
+		r.PictureURL = put.PictureURL
 	}
-	if put.InformationUrl != "" {
-		r.InformationUrl = put.InformationUrl
+	if put.InformationURL != "" {
+		r.InformationURL = put.InformationURL
 	}
 	if put.MetaData != nil {
 		r.MetaData = put.MetaData
@@ -331,7 +333,7 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 		r.IsShowUsers = put.IsShowUsers
 	}
 	if put.Type != nil {
-		if *r.Type == ONE_ON_ONE && *put.Type != ONE_ON_ONE {
+		if *r.Type == OneOnOne && *put.Type != OneOnOne {
 			return &ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,
@@ -342,7 +344,7 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 					},
 				},
 			}
-		} else if *r.Type != ONE_ON_ONE && *put.Type == ONE_ON_ONE {
+		} else if *r.Type != OneOnOne && *put.Type == OneOnOne {
 			return &ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,

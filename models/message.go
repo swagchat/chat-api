@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	MESSAGE_TYPE_TEXT  = "text"
-	MESSAGE_TYPE_IMAGE = "image"
+	MessageTypeText  = "text"
+	MessageTypeImage = "image"
 )
 
 type Messages struct {
@@ -19,10 +19,10 @@ type Messages struct {
 }
 
 type Message struct {
-	Id        uint64         `json:"-" db:"id"`
-	MessageId string         `json:"messageId" db:"message_id,notnull"`
-	RoomId    string         `json:"roomId" db:"room_id,notnull"`
-	UserId    string         `json:"userId" db:"user_id,notnull"`
+	ID        uint64         `json:"-" db:"id"`
+	MessageID string         `json:"messageId" db:"message_id,notnull"`
+	RoomID    string         `json:"roomId" db:"room_id,notnull"`
+	UserID    string         `json:"userId" db:"user_id,notnull"`
 	Type      string         `json:"type,omitempty" db:"type"`
 	EventName string         `json:"eventName,omitempty" db:"-"`
 	Payload   utils.JSONText `json:"payload" db:"payload"`
@@ -34,18 +34,18 @@ type Message struct {
 func (m *Message) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		MessageId string         `json:"messageId"`
-		RoomId    string         `json:"roomId"`
-		UserId    string         `json:"userId"`
+		MessageID string         `json:"messageId"`
+		RoomID    string         `json:"roomId"`
+		UserID    string         `json:"userId"`
 		Type      string         `json:"type"`
 		EventName string         `json:"eventName,omitempty"`
 		Payload   utils.JSONText `json:"payload"`
 		Created   string         `json:"created"`
 		Modified  string         `json:"modified"`
 	}{
-		MessageId: m.MessageId,
-		RoomId:    m.RoomId,
-		UserId:    m.UserId,
+		MessageID: m.MessageID,
+		RoomID:    m.RoomID,
+		UserID:    m.UserID,
 		Type:      m.Type,
 		EventName: m.EventName,
 		Payload:   m.Payload,
@@ -82,7 +82,7 @@ type PayloadUsers struct {
 }
 
 func (m *Message) IsValid() *ProblemDetail {
-	if m.MessageId != "" && !utils.IsValidID(m.MessageId) {
+	if m.MessageID != "" && !utils.IsValidID(m.MessageID) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -108,7 +108,7 @@ func (m *Message) IsValid() *ProblemDetail {
 		}
 	}
 
-	if m.Type == MESSAGE_TYPE_TEXT {
+	if m.Type == MessageTypeText {
 		var pt PayloadText
 		json.Unmarshal(m.Payload, &pt)
 		if pt.Text == "" {
@@ -125,7 +125,7 @@ func (m *Message) IsValid() *ProblemDetail {
 		}
 	}
 
-	if m.Type == MESSAGE_TYPE_IMAGE {
+	if m.Type == MessageTypeImage {
 		var pi PayloadImage
 		json.Unmarshal(m.Payload, &pi)
 		if pi.Mime == "" {
@@ -159,8 +159,8 @@ func (m *Message) IsValid() *ProblemDetail {
 }
 
 func (m *Message) BeforeSave() {
-	if m.MessageId == "" {
-		m.MessageId = utils.GenerateUUID()
+	if m.MessageID == "" {
+		m.MessageID = utils.GenerateUUID()
 	}
 
 	nowTimestamp := time.Now().Unix()

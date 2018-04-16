@@ -122,9 +122,9 @@ func (ap *awssnsProvider) CreateEndpoint(userId string, platform int, deviceToke
 
 		var platformApplicationArn string
 		switch platform {
-		case models.PLATFORM_IOS:
+		case models.PlatformIOS:
 			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnIos
-		case models.PLATFORM_ANDROID:
+		case models.PlatformAndroid:
 			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnAndroid
 		default:
 			// TODO new error

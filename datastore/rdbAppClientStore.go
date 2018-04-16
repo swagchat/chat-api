@@ -29,9 +29,9 @@ func rdbCreateAppClientStore(db string) {
 			Error:   err,
 		})
 	}
-	api, _ := rdbSelectLatestAppClientByName(db, "admin")
+	api, _ := rdbSelectLatestAppClientByName(db, "browser")
 	if api == nil {
-		rdbInsertAppClient(db, "admin")
+		rdbInsertAppClient(db, "browser")
 	}
 }
 

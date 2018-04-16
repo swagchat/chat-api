@@ -22,10 +22,10 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 		return nil, pd
 	}
 	post.BeforePost()
-	post.RequestRoomUserIds.RemoveDuplicate()
+	post.RequestRoomUserIDs.RemoveDuplicate()
 
-	if *post.Type == models.ONE_ON_ONE {
-		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserId, post.RequestRoomUserIds.UserIds[0])
+	if *post.Type == models.OneOnOne {
+		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.RequestRoomUserIDs.UserIDs[0])
 		if err != nil {
 			pd := &models.ProblemDetail{
 				Title:  "Room registration failed",
@@ -42,16 +42,16 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 		}
 	}
 
-	if pd := post.RequestRoomUserIds.IsValid("POST", post); pd != nil {
+	if pd := post.RequestRoomUserIDs.IsValid("POST", post); pd != nil {
 		return nil, pd
 	}
 
-	if post.RequestRoomUserIds.UserIds != nil {
-		notificationTopicID, pd := createTopic(post.RoomId)
+	if post.RequestRoomUserIDs.UserIDs != nil {
+		notificationTopicID, pd := createTopic(post.RoomID)
 		if pd != nil {
 			return nil, pd
 		}
-		post.NotificationTopicId = notificationTopicID
+		post.NotificationTopicID = notificationTopicID
 	}
 
 	room, err := datastore.Provider(ctx).InsertRoom(post)
@@ -64,7 +64,7 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 		return nil, pd
 	}
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomId)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
@@ -75,7 +75,7 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 	}
 	room.Users = userForRooms
 
-	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(room.RoomId)
+	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(room.RoomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
@@ -86,7 +86,7 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 	}
 
 	go subscribeByRoomUsers(ctx, roomUsers)
-	go publishUserJoin(ctx, room.RoomId)
+	go publishUserJoin(ctx, room.RoomID)
 
 	return room, nil
 }
@@ -151,7 +151,7 @@ func GetRoom(ctx context.Context, roomID string) (*models.Room, *models.ProblemD
 
 // PutRoom is put room
 func PutRoom(ctx context.Context, put *models.Room) (*models.Room, *models.ProblemDetail) {
-	room, pd := selectRoom(ctx, put.RoomId)
+	room, pd := selectRoom(ctx, put.RoomID)
 	if pd != nil {
 		return nil, pd
 	}
@@ -174,7 +174,7 @@ func PutRoom(ctx context.Context, put *models.Room) (*models.Room, *models.Probl
 		return nil, pd
 	}
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomId)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
@@ -194,8 +194,8 @@ func DeleteRoom(ctx context.Context, roomID string) *models.ProblemDetail {
 		return pd
 	}
 
-	if room.NotificationTopicId != "" {
-		nRes := <-notification.Provider().DeleteTopic(room.NotificationTopicId)
+	if room.NotificationTopicID != "" {
+		nRes := <-notification.Provider().DeleteTopic(room.NotificationTopicID)
 		if nRes.ProblemDetail != nil {
 			return nRes.ProblemDetail
 		}
@@ -217,7 +217,7 @@ func DeleteRoom(ctx context.Context, roomID string) *models.ProblemDetail {
 		wg.Add(1)
 		go unsubscribeByRoomID(ctx, roomID, wg)
 		wg.Wait()
-		room.NotificationTopicId = ""
+		room.NotificationTopicID = ""
 		datastore.Provider(ctx).UpdateRoom(room)
 	}()
 
@@ -358,7 +358,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *models.ProblemDetail
 		return pd
 	}
 
-	if *room.Type == models.PUBLIC_ROOM {
+	if *room.Type == models.PublicRoom {
 		return nil
 	}
 
@@ -374,7 +374,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *models.ProblemDetail
 
 	isAuthorized := false
 	for _, userForRoom := range userForRooms {
-		if userForRoom.UserId == userID {
+		if userForRoom.UserID == userID {
 			isAuthorized = true
 			break
 		}

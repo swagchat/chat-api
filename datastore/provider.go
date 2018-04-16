@@ -28,14 +28,20 @@ type provider interface {
 func Provider(ctx context.Context) provider {
 	var p provider
 
-	ctxDsCfg := ctx.Value(utils.CtxDsCfg)
-	if ctxDsCfg == nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Message: "Database connect error. Database config is nil",
-		})
-	}
+	// ctxDsCfg := ctx.Value(utils.CtxDsCfg)
+	// if ctxDsCfg == nil {
+	// 	logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+	// 		Message: "Database connect error. Database config is nil",
+	// 	})
+	// }
+	// dsCfg := ctxDsCfg.(*utils.Datastore)
 
-	dsCfg := ctxDsCfg.(*utils.Datastore)
+	cfg := utils.Config()
+	dsCfg := cfg.Datastore
+
+	if cfg.Datastore.Dynamic {
+		dsCfg.Database = ctx.Value(utils.CtxRealm).(string)
+	}
 
 	switch dsCfg.Provider {
 	case "sqlite":

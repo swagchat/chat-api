@@ -5,8 +5,9 @@ import (
 	"time"
 )
 
+// AppClient is model of app client
 type AppClient struct {
-	Id           uint64 `json:"-" db:"id"`
+	ID           uint64 `json:"-" db:"id"`
 	Name         string `json:"name" db:"name,notnull"`
 	ClientID     string `json:"clientId" db:"client_id,notnull"`
 	ClientSecret string `json:"client_secret" db:"client_secret,notnull"`
@@ -14,6 +15,7 @@ type AppClient struct {
 	Expired      int64  `json:"expired" db:"expired,notnull"`
 }
 
+// MarshalJSON is MarshalJSON of AppClient
 func (ac *AppClient) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {

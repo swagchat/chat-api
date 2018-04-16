@@ -18,7 +18,7 @@ import (
 )
 
 // PutRoomUsers is put room users
-func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
+func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUserIDs) (*models.RoomUsers, *models.ProblemDetail) {
 	room, pd := selectRoom(ctx, roomID)
 	if pd != nil {
 		return nil, pd
@@ -41,18 +41,18 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 		return nil, pd
 	}
 
-	userIds, pd := getExistUserIDs(ctx, put.UserIds)
+	userIds, pd := getExistUserIDs(ctx, put.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}
 
-	if room.NotificationTopicId == "" {
-		notificationTopicID, pd := createTopic(room.RoomId)
+	if room.NotificationTopicID == "" {
+		notificationTopicID, pd := createTopic(room.RoomID)
 		if pd != nil {
 			return nil, pd
 		}
 
-		room.NotificationTopicId = notificationTopicID
+		room.NotificationTopicID = notificationTopicID
 		room.Modified = time.Now().Unix()
 		_, err := datastore.Provider(ctx).UpdateRoom(room)
 		if err != nil {
@@ -71,8 +71,8 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 	nowTimestamp := time.Now().Unix()
 	for _, userID := range userIds {
 		roomUsers = append(roomUsers, &models.RoomUser{
-			RoomId:      roomID,
-			UserId:      userID,
+			RoomID:      roomID,
+			UserID:      userID,
 			UnreadCount: &zero,
 			MetaData:    []byte("{}"),
 			Created:     nowTimestamp,
@@ -110,7 +110,7 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 
 // PutRoomUser is put room user
 func PutRoomUser(ctx context.Context, put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
-	roomUser, pd := selectRoomUser(ctx, put.RoomId, put.UserId)
+	roomUser, pd := selectRoomUser(ctx, put.RoomID, put.UserID)
 	if pd != nil {
 		return nil, pd
 	}
@@ -134,7 +134,7 @@ func PutRoomUser(ctx context.Context, put *models.RoomUser) (*models.RoomUser, *
 }
 
 // DeleteRoomUsers is delete room users
-func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.RequestRoomUserIds) (*models.RoomUsers, *models.ProblemDetail) {
+func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.RequestRoomUserIDs) (*models.RoomUsers, *models.ProblemDetail) {
 	room, pd := selectRoom(ctx, roomID)
 	if pd != nil {
 		return nil, pd
@@ -146,7 +146,7 @@ func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.R
 		return nil, pd
 	}
 
-	userIds, pd := getExistUserIDs(ctx, deleteUserIds.UserIds)
+	userIds, pd := getExistUserIDs(ctx, deleteUserIds.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}
@@ -221,7 +221,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 	buf.Write(b)
 
 	message := &models.Message{
-		RoomId:    roomID,
+		RoomID:    roomID,
 		EventName: "userJoin",
 		Payload:   utils.JSONText(buf.String()),
 	}
@@ -252,7 +252,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
 
-			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserId)
+			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Subscribe failed",
@@ -264,12 +264,12 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			if devices != nil {
 				for _, d := range devices {
 					if d.Token != "" {
-						if d.NotificationDeviceId == "" {
+						if d.NotificationDeviceID == "" {
 							nRes := <-notification.Provider().CreateEndpoint("", d.Platform, d.Token)
 							if nRes.ProblemDetail != nil {
 								pdChan <- nRes.ProblemDetail
 							} else {
-								d.NotificationDeviceId = *nRes.Data.(*string)
+								d.NotificationDeviceID = *nRes.Data.(*string)
 								err := datastore.Provider(ctx).UpdateDevice(d)
 								if err != nil {
 									pd := &models.ProblemDetail{
@@ -314,7 +314,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
-			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomId, []string{ru.UserId})
+			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomID, []string{ru.UserID})
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Delete room's user failed",
@@ -323,7 +323,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 				pdChan <- pd
 			}
 
-			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserId)
+			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
 				pd := &models.ProblemDetail{
 					Title:  "Subscribe failed",
@@ -334,7 +334,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 			}
 			if devices != nil {
 				for _, d := range devices {
-					subscription, err := datastore.Provider(ctx).SelectSubscription(ru.RoomId, ru.UserId, d.Platform)
+					subscription, err := datastore.Provider(ctx).SelectSubscription(ru.RoomID, ru.UserID, d.Platform)
 					if err != nil {
 						pd := &models.ProblemDetail{
 							Title:  "User registration failed",

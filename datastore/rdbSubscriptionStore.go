@@ -108,8 +108,8 @@ func rdbDeleteSubscription(db string, subscription *models.Subscription) error {
 
 	query := utils.AppendStrings("DELETE FROM ", tableNameSubscription, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
-		"roomId":   subscription.RoomId,
-		"userId":   subscription.UserId,
+		"roomId":   subscription.RoomID,
+		"userId":   subscription.UserID,
 		"platform": subscription.Platform,
 	}
 	_, err := master.Exec(query, params)

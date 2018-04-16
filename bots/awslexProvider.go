@@ -45,7 +45,7 @@ func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONTex
 		BotAlias:  aws.String("lextest"),
 		InputText: aws.String(message),
 		//SessionAttributes: "",
-		UserId: aws.String(m.UserId),
+		UserId: aws.String(m.UserID),
 	}
 	output, err := svc.PostText(input)
 	if err != nil {
@@ -59,8 +59,8 @@ func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONTex
 	var textPayload utils.JSONText
 	err = json.Unmarshal([]byte("{\"text\": \""+*output.Message+"\"}"), &textPayload)
 	post := &models.Message{
-		RoomId:  m.RoomId,
-		UserId:  b.UserId,
+		RoomID:  m.RoomID,
+		UserID:  b.UserID,
 		Type:    "text",
 		Payload: textPayload,
 	}

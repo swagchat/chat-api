@@ -117,7 +117,7 @@ func rdbUpdateDevice(db string, device *models.Device) error {
 
 	query := utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
-		"userId":   device.UserId,
+		"userId":   device.UserID,
 		"platform": device.Platform,
 		"deleted":  time.Now().Unix(),
 	}
@@ -130,8 +130,8 @@ func rdbUpdateDevice(db string, device *models.Device) error {
 	query = utils.AppendStrings("UPDATE ", tableNameDevice, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
 	params = map[string]interface{}{
 		"token":                device.Token,
-		"notificationDeviceId": device.NotificationDeviceId,
-		"userId":               device.UserId,
+		"notificationDeviceId": device.NotificationDeviceID,
+		"userId":               device.UserID,
 		"platform":             device.Platform,
 	}
 	_, err = trans.Exec(query, params)

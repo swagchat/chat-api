@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"encoding/base64"
+	"fmt"
 	"math/rand"
 	"path/filepath"
 	"regexp"
@@ -52,4 +54,10 @@ func GenerateClientID() string {
 // GetFileNameWithoutExt is get filename without extention
 func GetFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
+}
+
+// BasicAuth is generate basic authorization
+func BasicAuth(username, password string) string {
+	auth := fmt.Sprintf("%s:%s", username, password)
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }

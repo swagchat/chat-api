@@ -38,7 +38,7 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 	values.Set("v", "20150910")
 	values.Add("timezone", "Asia/Tokyo")
 	values.Add("lang", "ja")
-	values.Add("sessionId", b.UserId)
+	values.Add("sessionId", b.UserID)
 	values.Add("query", message)
 
 	req, err := http.NewRequest(
@@ -71,8 +71,8 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 	var textPayload utils.JSONText
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Result.Fulfillment.Speech+"\"}"), &textPayload)
 	post := &models.Message{
-		RoomId:  m.RoomId,
-		UserId:  b.UserId,
+		RoomID:  m.RoomID,
+		UserID:  b.UserID,
 		Type:    "text",
 		Payload: textPayload,
 	}

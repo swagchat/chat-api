@@ -33,7 +33,7 @@ func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*models.RoomUser) error 
 	}
 
 	query := utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
-	params := map[string]interface{}{"roomId": roomUsers[0].RoomId}
+	params := map[string]interface{}{"roomId": roomUsers[0].RoomID}
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		err = trans.Rollback()
@@ -65,7 +65,7 @@ func rdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 	}
 
 	for _, roomUser := range roomUsers {
-		ru, err := rdbSelectRoomUser(db, roomUser.RoomId, roomUser.UserId)
+		ru, err := rdbSelectRoomUser(db, roomUser.RoomID, roomUser.UserID)
 		if err != nil {
 			err = trans.Rollback()
 			return errors.Wrap(err, "An error occurred while creating room's users")
@@ -115,7 +115,7 @@ func rdbSelectRoomUserOfOneOnOne(db, myUserID, opponentUserID string) (*models.R
 	var roomUsers []*models.RoomUser
 	query := utils.AppendStrings("SELECT * FROM ", tableNameRoomUser, " WHERE room_id IN (SELECT room_id FROM ", tableNameRoom, " WHERE type=:type AND user_id=:myUserId) AND user_id=:opponentUserId;")
 	params := map[string]interface{}{
-		"type":           models.ONE_ON_ONE,
+		"type":           models.OneOnOne,
 		"myUserId":       myUserID,
 		"opponentUserId": opponentUserID,
 	}
@@ -207,8 +207,8 @@ func rdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 
 	updateQuery := ""
 	params := map[string]interface{}{
-		"roomId": roomUser.RoomId,
-		"userId": roomUser.UserId,
+		"roomId": roomUser.RoomID,
+		"userId": roomUser.UserID,
 	}
 	if roomUser.UnreadCount != nil {
 		params["unreadCount"] = roomUser.UnreadCount
@@ -235,8 +235,8 @@ func rdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 				" SET unread_count=(SELECT SUM(unread_count) FROM ", tableNameRoomUser,
 				" WHERE user_id=:userId1) WHERE user_id=:userId2;")
 			params = map[string]interface{}{
-				"userId1": roomUser.UserId,
-				"userId2": roomUser.UserId,
+				"userId1": roomUser.UserID,
+				"userId2": roomUser.UserID,
 			}
 			_, err = trans.Exec(query, params)
 			if err != nil {

@@ -22,7 +22,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 	messageIds := make([]string, 0)
 	errors := make([]*models.ProblemDetail, 0)
 	for _, post := range posts.Messages {
-		room, pd := selectRoom(ctx, post.RoomId)
+		room, pd := selectRoom(ctx, post.RoomID)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -38,7 +38,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
-		user, pd := selectUser(ctx, post.UserId)
+		user, pd := selectUser(ctx, post.UserID)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -72,7 +72,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
-		messageIds = append(messageIds, post.MessageId)
+		messageIds = append(messageIds, post.MessageID)
 		mi := &notification.MessageInfo{
 			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
 		}
@@ -84,7 +84,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			}
 		}
 
-		go notification.Provider().Publish(ctx, room.NotificationTopicId, room.RoomId, mi)
+		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
 		go publishMessage(post)
 		go postMessageToBotService(ctx, *user.IsBot, post)
 	}
@@ -151,7 +151,7 @@ func publishMessage(m *models.Message) {
 }
 
 func postMessageToBotService(ctx context.Context, isBot bool, m *models.Message) {
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomId)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomID)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
@@ -159,8 +159,8 @@ func postMessageToBotService(ctx context.Context, isBot bool, m *models.Message)
 	}
 	if len(userForRooms) > 0 {
 		for _, u := range userForRooms {
-			if !isBot && *u.IsBot && m.UserId != u.UserId {
-				bot, err := datastore.Provider(ctx).SelectBot(u.UserId)
+			if !isBot && *u.IsBot && m.UserID != u.UserID {
+				bot, err := datastore.Provider(ctx).SelectBot(u.UserID)
 				if err != nil {
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 						Error: err,

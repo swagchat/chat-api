@@ -8,8 +8,8 @@ import (
 )
 
 type Bot struct {
-	Id        uint64         `json:"-" db:"id"`
-	UserId    string         `json:"userId" db:"user_id,notnull"`
+	ID        uint64         `json:"-" db:"id"`
+	UserID    string         `json:"userId" db:"user_id,notnull"`
 	Cognitive utils.JSONText `json:"cognitive,omitempty" db:"cognitive"`
 	Created   int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified  int64          `json:"modified,omitempty" db:"modified,notnull"`
@@ -19,12 +19,12 @@ type Bot struct {
 func (b *Bot) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		UserId    string         `json:"userId"`
+		UserID    string         `json:"userId"`
 		Cognitive utils.JSONText `json:"cognitive"`
 		Created   string         `json:"created"`
 		Modified  string         `json:"modified"`
 	}{
-		UserId:    b.UserId,
+		UserID:    b.UserID,
 		Cognitive: b.Cognitive,
 		Created:   time.Unix(b.Created, 0).In(l).Format(time.RFC3339),
 		Modified:  time.Unix(b.Modified, 0).In(l).Format(time.RFC3339),

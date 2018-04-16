@@ -11,7 +11,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type key int
+type ctxKey int
 
 const (
 	// AppName is Application name
@@ -28,39 +28,36 @@ const (
 
 	// HeaderUserID is http header for userID
 	HeaderUserID = "X-Sub"
-	// HeaderUserName is http header for username
+	// HeaderUsername is http header for username
 	HeaderUsername = "X-Preferred-Username"
 	// HeaderRealm is http header for realm
 	HeaderRealm = "X-Realm"
 
-	CtxDsCfg key = iota
+	CtxDsCfg ctxKey = iota
 	CtxIsAppClient
 	CtxUserID
+	CtxRealm
 	CtxRoomUser
 	CtxSubscription
 )
 
 var (
-	cfg           *config = NewConfig()
+	cfg           = NewConfig()
 	IsShowVersion bool
 )
 
 type config struct {
 	Version      string
-	HttpPort     string `yaml:"httpPort"`
+	HTTPPort     string `yaml:"httpPort"`
 	Profiling    bool
 	DemoPage     bool `yaml:"demoPage"`
 	ErrorLogging bool `yaml:"errorLogging"`
-	Auth         *Auth
 	Logging      *Logging
 	Storage      *Storage
 	Datastore    *Datastore
 	RTM          *RTM
 	Notification *Notification
-}
-
-type Auth struct {
-	DefaultUsernameJWTClaimName string `yaml:"defaultUsernameJWTClaimName"`
+	IdP          *IdP
 }
 
 type Logging struct {
@@ -157,43 +154,34 @@ type Notification struct {
 	}
 }
 
+type IdP struct {
+	Provider string
+
+	// Keycloak
+	Keycloak struct {
+		BaseEndpoint string `yaml:"baseEndpoint"`
+		ClientID     string `yaml:"clientId"`
+		ClientSecret string `yaml:"clientSecret"`
+	}
+}
+
 func NewConfig() *config {
 	log.SetFlags(log.Llongfile)
 
-	auth := &Auth{
-		DefaultUsernameJWTClaimName: "preferred_username",
-	}
-
-	logging := &Logging{
-		Level: "development",
-	}
-
-	storage := &Storage{
-		Provider: "local",
-	}
-	storage.Local.Path = "data/assets"
-
-	datastore := &Datastore{
-		Dynamic:  false,
-		Provider: "sqlite",
-	}
-
-	rtm := &RTM{}
-
-	notification := &Notification{}
-
 	c := &config{
 		Version:      "0",
-		HttpPort:     "8101",
+		HTTPPort:     "8101",
 		Profiling:    false,
 		DemoPage:     false,
 		ErrorLogging: false,
-		Auth:         auth,
-		Logging:      logging,
-		Storage:      storage,
-		Datastore:    datastore,
-		RTM:          rtm,
-		Notification: notification,
+		Logging:      &Logging{},
+		Storage:      &Storage{},
+		Datastore: &Datastore{
+			Dynamic: false,
+		},
+		RTM:          &RTM{},
+		Notification: &Notification{},
+		IdP:          &IdP{},
 	}
 
 	c.loadYaml()
@@ -218,10 +206,10 @@ func (c *config) loadEnvironment() {
 	var v string
 
 	if v = os.Getenv("HTTP_PORT"); v != "" {
-		c.HttpPort = v
+		c.HTTPPort = v
 	}
 	if v = os.Getenv("SC_PORT"); v != "" {
-		c.HttpPort = v
+		c.HTTPPort = v
 	}
 	if v = os.Getenv("SC_PROFILING"); v != "" {
 		if v == "true" {
@@ -243,11 +231,6 @@ func (c *config) loadEnvironment() {
 		} else if v == "false" {
 			c.ErrorLogging = false
 		}
-	}
-
-	// Auth
-	if v = os.Getenv("SC_AUTH_DEFAULT_USERNAME_JWT_CLAIM_NAME"); v != "" {
-		c.Auth.DefaultUsernameJWTClaimName = v
 	}
 
 	// Logging
@@ -471,13 +454,29 @@ func (c *config) loadEnvironment() {
 	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_ANDROID"); v != "" {
 		c.Notification.AmazonSNS.ApplicationArnAndroid = v
 	}
+
+	// IdP
+	if v = os.Getenv("SC_IDP_PROVIDER"); v != "" {
+		c.IdP.Provider = v
+	}
+
+	// IdP Keycloak
+	if v = os.Getenv("SC_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
+		c.IdP.Keycloak.BaseEndpoint = v
+	}
+	if v = os.Getenv("SC_IDP_KEYCLOAK_CLIENTID"); v != "" {
+		c.IdP.Keycloak.ClientID = v
+	}
+	if v = os.Getenv("SC_IDP_KEYCLOAK_CLIENTSECRET"); v != "" {
+		c.IdP.Keycloak.ClientSecret = v
+	}
 }
 
 func (c *config) parseFlag() {
 	flag.BoolVar(&IsShowVersion, "v", false, "")
 	flag.BoolVar(&IsShowVersion, "version", false, "show version")
 
-	flag.StringVar(&c.HttpPort, "httpPort", c.HttpPort, "")
+	flag.StringVar(&c.HTTPPort, "httpPort", c.HTTPPort, "")
 
 	var profiling string
 	flag.StringVar(&profiling, "profiling", "", "")
@@ -487,9 +486,6 @@ func (c *config) parseFlag() {
 
 	var errorLogging string
 	flag.StringVar(&errorLogging, "errorLogging", "", "false")
-
-	// Auth
-	flag.StringVar(&c.Auth.DefaultUsernameJWTClaimName, "auth.defaultUsernameJWTClaimName", c.Auth.DefaultUsernameJWTClaimName, "")
 
 	// Logging
 	flag.StringVar(&c.Logging.Level, "logging.level", c.Logging.Level, "")
@@ -663,9 +659,29 @@ func (c *config) parseFlag() {
 	} else if errorLogging == "false" {
 		c.ErrorLogging = false
 	}
+
+	// IdP
+	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
+	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
+	flag.StringVar(&c.IdP.Keycloak.ClientID, "idp.keycloak.clientId", c.IdP.Keycloak.ClientID, "")
+	flag.StringVar(&c.IdP.Keycloak.ClientSecret, "idp.keycloak.clientSecret", c.IdP.Keycloak.ClientSecret, "")
 }
 
 func (c *config) after() {
+	if c.Logging.Level == "" {
+		c.Logging.Level = "development"
+	}
+
+	if c.Storage.Provider == "" {
+		c.Storage.Provider = "local"
+	}
+	if c.Storage.Provider == "" && c.Storage.Local.Path == "" {
+		c.Storage.Local.Path = "data/assets"
+	}
+
+	if c.Datastore.Provider == "" {
+		c.Datastore.Provider = "sqlite"
+	}
 	if c.Datastore.Provider == "sqlite" {
 		if c.Datastore.SQLite.Path == "" {
 			c.Datastore.SQLite.Path = "/tmp/swagchat.db"
@@ -680,5 +696,9 @@ func (c *config) after() {
 		if c.Datastore.MaxIdleConnection == "" {
 			c.Datastore.MaxOpenConnection = "10"
 		}
+	}
+
+	if c.IdP.Provider == "" {
+		c.IdP.Provider = "local"
 	}
 }

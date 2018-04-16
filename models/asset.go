@@ -17,8 +17,8 @@ var (
 )
 
 type Asset struct {
-	Id        uint64 `json:"-" db:"id"`
-	AssetId   string `json:"assetId" db:"asset_id,notnull"`
+	ID        uint64 `json:"-" db:"id"`
+	AssetID   string `json:"assetId" db:"asset_id,notnull"`
 	Extension string `json:"extension" db:"extension,notnull"`
 	Mime      string `json:"mime" db:"mime,notnull"`
 	URL       string `json:"url" db:"url"`
@@ -31,14 +31,14 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
 	return json.Marshal(&struct {
-		AssetId   string `json:"assetId"`
+		AssetID   string `json:"assetId"`
 		Extension string `json:"extension"`
 		Mime      string `json:"mime"`
 		URL       string `json:"url"`
 		Created   string `json:"created"`
 		Modified  string `json:"modified"`
 	}{
-		AssetId:   a.AssetId,
+		AssetID:   a.AssetID,
 		Extension: a.Extension,
 		Mime:      a.Mime,
 		URL:       a.URL,
@@ -60,7 +60,7 @@ func (a *Asset) IsValidPost() *ProblemDetail {
 }
 
 func (a *Asset) BeforePost() {
-	a.AssetId = utils.GenerateUUID()
+	a.AssetID = utils.GenerateUUID()
 
 	var extension string
 	switch a.Mime {

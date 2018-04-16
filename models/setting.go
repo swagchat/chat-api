@@ -8,7 +8,7 @@ import (
 )
 
 type Setting struct {
-	Id       uint64         `json:"-" db:"id"`
+	ID       uint64         `json:"-" db:"id"`
 	Values   utils.JSONText `json:"values" db:"values"`
 	Created  int64          `json:"created" db:"created,notnull"`
 	Modified int64          `json:"modified" db:"modified,notnull"`

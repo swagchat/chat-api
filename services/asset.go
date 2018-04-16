@@ -25,7 +25,7 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader) (*models
 	asset.BeforePost()
 
 	assetInfo := &storage.AssetInfo{
-		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
+		Filename: fmt.Sprintf("%s.%s", asset.AssetID, asset.Extension),
 		Data:     file,
 	}
 
@@ -83,7 +83,7 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 	}
 
 	assetInfo := &storage.AssetInfo{
-		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
+		Filename: fmt.Sprintf("%s.%s", asset.AssetID, asset.Extension),
 	}
 	bytes, err := storage.Provider().Get(assetInfo)
 	if err != nil {

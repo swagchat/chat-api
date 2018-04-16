@@ -125,7 +125,7 @@ func rdbSelectUser(db, userID string, isWithRooms, isWithDevices, isWithBlocks b
 			for _, room := range rooms {
 				room.Users = make([]*models.UserMini, 0)
 				for _, userMini := range userMinis {
-					if room.RoomId == userMini.RoomId {
+					if room.RoomID == userMini.RoomID {
 						room.Users = append(room.Users, userMini)
 					}
 				}
@@ -204,7 +204,7 @@ func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 
 	resultUserIDs := make([]string, 0)
 	for _, user := range users {
-		resultUserIDs = append(resultUserIDs, user.UserId)
+		resultUserIDs = append(resultUserIDs, user.UserID)
 	}
 
 	return resultUserIDs, nil
@@ -226,7 +226,7 @@ func rdbUpdateUser(db string, user *models.User) (*models.User, error) {
 	if *user.UnreadCount == 0 {
 		query := utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET unread_count=0 WHERE user_id=:userId;")
 		params := map[string]interface{}{
-			"userId": user.UserId,
+			"userId": user.UserID,
 		}
 		_, err := trans.Exec(query, params)
 		if err != nil {
@@ -329,7 +329,7 @@ func rdbSelectContacts(db, userID string) ([]*models.User, error) {
 		"SELECT ru.user_id FROM ", tableNameRoomUser, " as ru WHERE ru.user_id!=:userId AND ru.room_id IN (",
 		"SELECT ru.room_id FROM ", tableNameRoomUser, " as ru ",
 		"LEFT JOIN ", tableNameRoom, " as r ON ru.room_id = r.room_id ",
-		"WHERE ru.user_id=:userId AND r.type!=", strconv.Itoa(int(models.NOTICE_ROOM)),
+		"WHERE ru.user_id=:userId AND r.type!=", strconv.Itoa(int(models.NoticeRoom)),
 		")) ",
 		"AND u.is_show_users=1 ",
 		"AND u.deleted=0)",

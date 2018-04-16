@@ -47,18 +47,18 @@ func rdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
 	zero = 0
 	roomUsers := make([]*models.RoomUser, 0)
 	roomUser := &models.RoomUser{
-		RoomId:      room.RoomId,
-		UserId:      room.UserId,
+		RoomID:      room.RoomID,
+		UserID:      room.UserID,
 		UnreadCount: &zero,
 		MetaData:    []byte("{}"),
 		Created:     room.Created,
 		Modified:    room.Modified,
 	}
 	roomUsers = append(roomUsers, roomUser)
-	for _, userID := range room.RequestRoomUserIds.UserIds {
+	for _, userID := range room.RequestRoomUserIDs.UserIDs {
 		roomUsers = append(roomUsers, &models.RoomUser{
-			RoomId:      room.RoomId,
-			UserId:      userID,
+			RoomID:      room.RoomID,
+			UserID:      userID,
 			UnreadCount: &zero,
 			MetaData:    []byte("{}"),
 			Created:     room.Created,

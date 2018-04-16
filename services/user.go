@@ -22,7 +22,7 @@ func PostUser(ctx context.Context, post *models.User) (*models.User, *models.Pro
 
 	post.BeforePost()
 
-	user, err := datastore.Provider(ctx).SelectUser(post.UserId, true, true, true)
+	user, err := datastore.Provider(ctx).SelectUser(post.UserID, true, true, true)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -101,7 +101,7 @@ func GetUser(ctx context.Context, userID string) (*models.User, *models.ProblemD
 
 // PutUser is put user
 func PutUser(ctx context.Context, put *models.User) (*models.User, *models.ProblemDetail) {
-	user, pd := selectUser(ctx, put.UserId)
+	user, pd := selectUser(ctx, put.UserID)
 	if pd != nil {
 		return nil, pd
 	}
@@ -145,7 +145,7 @@ func DeleteUser(ctx context.Context, userID string) *models.ProblemDetail {
 	}
 	if devices != nil {
 		for _, device := range devices {
-			nRes := <-notification.Provider().DeleteEndpoint(device.NotificationDeviceId)
+			nRes := <-notification.Provider().DeleteEndpoint(device.NotificationDeviceID)
 			if nRes.ProblemDetail != nil {
 				return nRes.ProblemDetail
 			}
@@ -245,7 +245,7 @@ func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *m
 
 	isAuthorized := false
 	for _, contact := range contacts.Users {
-		if contact.UserId == resourceUserID {
+		if contact.UserID == resourceUserID {
 			isAuthorized = true
 			break
 		}

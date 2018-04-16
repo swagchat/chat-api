@@ -31,7 +31,7 @@ func rdbInsertBlockUsers(db string, blockUsers []*models.BlockUser) error {
 	}
 
 	for _, blockUser := range blockUsers {
-		bu, err := rdbSelectBlockUser(db, blockUser.UserId, blockUser.BlockUserId)
+		bu, err := rdbSelectBlockUser(db, blockUser.UserID, blockUser.BlockUserID)
 		if err != nil {
 			err = trans.Rollback()
 			return errors.Wrap(err, "An error occurred while getting block user")
