@@ -26,6 +26,10 @@ func (p *mysqlProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, erro
 	return rdbSelectUserIDsByUserIDs(p.database, userIDs)
 }
 
+func (p *mysqlProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
+	return rdbSelectUserIDsByRole(p.database, role)
+}
+
 func (p *mysqlProvider) UpdateUser(user *models.User) (*models.User, error) {
 	return rdbUpdateUser(p.database, user)
 }

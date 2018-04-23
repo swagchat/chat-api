@@ -135,7 +135,7 @@ func (rus *RequestRoomUserIDs) IsValid(method string, r *Room) *ProblemDetail {
 	// 	}
 	// }
 
-	if method == "POST" && *r.Type == OneOnOne {
+	if method == "POST" && r.Type == OneOnOne {
 		if len(rus.UserIDs) == 2 {
 			return &ProblemDetail{
 				Title:  "Request error",
@@ -150,7 +150,7 @@ func (rus *RequestRoomUserIDs) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if method == "PUT" && *r.Type == OneOnOne {
+	if method == "PUT" && r.Type == OneOnOne {
 		if len(r.Users) == 2 {
 			return &ProblemDetail{
 				Title:  "Request error",

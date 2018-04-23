@@ -232,19 +232,6 @@ func (u *User) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !(*u.Role > 0 && *u.Role < RoleEnd) {
-		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
-			InvalidParams: []InvalidParam{
-				InvalidParam{
-					Name:   "role",
-					Reason: "role is incorrect.",
-				},
-			},
-		}
-	}
-
 	return nil
 }
 

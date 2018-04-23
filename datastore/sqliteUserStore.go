@@ -26,6 +26,10 @@ func (p *sqliteProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, err
 	return rdbSelectUserIDsByUserIDs(p.sqlitePath, userIDs)
 }
 
+func (p *sqliteProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
+	return rdbSelectUserIDsByRole(p.sqlitePath, role)
+}
+
 func (p *sqliteProvider) UpdateUser(user *models.User) (*models.User, error) {
 	return rdbUpdateUser(p.sqlitePath, user)
 }

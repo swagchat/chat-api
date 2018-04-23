@@ -21,10 +21,24 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
+
 	post.BeforePost()
 	post.RequestRoomUserIDs.RemoveDuplicate()
 
-	if *post.Type == models.OneOnOne {
+	if post.Type == models.CustomerRoom {
+		userIds, err := datastore.Provider(ctx).SelectUserIDsByRole(models.Operator)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Room registration failed",
+				Status: http.StatusInternalServerError,
+				Error:  err,
+			}
+			return nil, pd
+		}
+		post.RequestRoomUserIDs.UserIDs = userIds
+	}
+
+	if post.Type == models.OneOnOne {
 		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.RequestRoomUserIDs.UserIDs[0])
 		if err != nil {
 			pd := &models.ProblemDetail{
@@ -358,7 +372,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *models.ProblemDetail
 		return pd
 	}
 
-	if *room.Type == models.PublicRoom {
+	if room.Type == models.PublicRoom {
 		return nil
 	}
 

@@ -18,6 +18,7 @@ const (
 	PrivateRoom
 	PublicRoom
 	NoticeRoom
+	CustomerRoom
 	RoomTypeEnd
 )
 
@@ -44,6 +45,8 @@ func (rt RoomType) String() string {
 		return "PublicRoom"
 	case NoticeRoom:
 		return "NoticeRoom"
+	case CustomerRoom:
+		return "CustomerRoom"
 	default:
 		return "Unknown"
 	}
@@ -63,7 +66,7 @@ type Room struct {
 	InformationURL        string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData              utils.JSONText `json:"metaData" db:"meta_data"`
 	AvailableMessageTypes string         `json:"availableMessageTypes,omitempty" db:"available_message_types"`
-	Type                  *RoomType      `json:"type,omitempty" db:"type,notnull"`
+	Type                  RoomType       `json:"type,omitempty" db:"type,notnull"`
 	LastMessage           string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated    int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
 	MessageCount          int64          `json:"messageCount" db:"-"`
@@ -117,7 +120,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		InformationURL        string         `json:"informationUrl,omitempty"`
 		MetaData              utils.JSONText `json:"metaData"`
 		AvailableMessageTypes []string       `json:"availableMessageTypes,omitempty"`
-		Type                  *RoomType      `json:"type"`
+		Type                  RoomType       `json:"type"`
 		LastMessage           string         `json:"lastMessage"`
 		LastMessageUpdated    string         `json:"lastMessageUpdated"`
 		MessageCount          int64          `json:"messageCount"`
@@ -224,7 +227,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.Type == nil {
+	if r.Type == 0 {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -237,7 +240,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !(*r.Type > 0 && *r.Type < RoomTypeEnd) {
+	if !(r.Type > 0 && r.Type < RoomTypeEnd) {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -250,7 +253,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.UserIDs == nil {
+	if r.Type != CustomerRoom && r.UserIDs == nil {
 		return &ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
@@ -332,8 +335,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.IsShowUsers != nil {
 		r.IsShowUsers = put.IsShowUsers
 	}
-	if put.Type != nil {
-		if *r.Type == OneOnOne && *put.Type != OneOnOne {
+	if put.Type != 0 {
+		if r.Type == OneOnOne && put.Type != OneOnOne {
 			return &ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,
@@ -344,7 +347,7 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 					},
 				},
 			}
-		} else if *r.Type != OneOnOne && *put.Type == OneOnOne {
+		} else if r.Type != OneOnOne && put.Type == OneOnOne {
 			return &ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,

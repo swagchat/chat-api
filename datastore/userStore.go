@@ -10,6 +10,7 @@ type userStore interface {
 	SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error)
 	SelectUsers() ([]*models.User, error)
 	SelectUserIDsByUserIDs(userIDs []string) ([]string, error)
+	SelectUserIDsByRole(role models.Role) ([]string, error)
 	UpdateUser(user *models.User) (*models.User, error)
 	UpdateUserDeleted(userID string) error
 	SelectContacts(userID string) ([]*models.User, error)

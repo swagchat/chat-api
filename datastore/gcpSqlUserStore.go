@@ -26,6 +26,10 @@ func (p *gcpSQLProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, err
 	return rdbSelectUserIDsByUserIDs(p.database, userIDs)
 }
 
+func (p *gcpSQLProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
+	return rdbSelectUserIDsByRole(p.database, role)
+}
+
 func (p *gcpSQLProvider) UpdateUser(user *models.User) (*models.User, error) {
 	return rdbUpdateUser(p.database, user)
 }

@@ -210,6 +210,29 @@ func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 	return resultUserIDs, nil
 }
 
+func rdbSelectUserIDsByRole(db string, role models.Role) ([]string, error) {
+	replica := RdbStore(db).replica()
+
+	var users []*models.User
+	query := utils.AppendStrings("SELECT user_id ",
+		"FROM ", tableNameUser,
+		" WHERE role=:role  AND deleted=0;")
+	params := map[string]interface{}{
+		"role": role,
+	}
+	_, err := replica.Select(&users, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting userIds")
+	}
+
+	resultUserIDs := make([]string, 0)
+	for _, user := range users {
+		resultUserIDs = append(resultUserIDs, user.UserID)
+	}
+
+	return resultUserIDs, nil
+}
+
 func rdbUpdateUser(db string, user *models.User) (*models.User, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
