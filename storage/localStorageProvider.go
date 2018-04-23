@@ -21,7 +21,7 @@ func (lp *localStorageProvider) Init() error {
 func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
 	err := os.MkdirAll(lp.localPath, 0775)
 	if err != nil {
-		return "", errors.Wrap(err, "make directory failure")
+		return "", errors.Wrap(err, fmt.Sprintf("make directory failure path=%s", lp.localPath))
 	}
 
 	data, err := ioutil.ReadAll(assetInfo.Data)

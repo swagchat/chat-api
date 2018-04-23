@@ -119,9 +119,6 @@ func run(ctx context.Context) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	for i, v := range r.Header {
-		log.Printf("%s=%s\n", i, v)
-	}
 	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", utils.AppName, utils.APIVersion, utils.BuildVersion))
 }
 
@@ -145,9 +142,11 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return colsHandler(
 		jwtHandler(
-			// datastoreHandler(
 			judgeAppClientHandler(
 				func(w http.ResponseWriter, r *http.Request) {
+					for i, v := range r.Header {
+						log.Printf("%s=%s\n", i, v)
+					}
 					fn(w, r)
 				})))
 }
@@ -170,27 +169,6 @@ func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 		fn(w, r.WithContext(ctx))
 	}
 }
-
-// func datastoreHandler(fn http.HandlerFunc) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		cfg := utils.Config()
-// 		dsCfg := cfg.Datastore
-
-// 		if cfg.Datastore.Dynamic {
-// 			dsCfg.Database = r.Header.Get(utils.HeaderRealm)
-// 		}
-
-// 		if dsCfg.Database == "" {
-// 			respondErr(w, r, http.StatusBadRequest, &models.ProblemDetail{
-// 				Title: "No realm",
-// 			})
-// 			return
-// 		}
-
-// 		ctx := context.WithValue(r.Context(), utils.CtxDsCfg, dsCfg)
-// 		fn(w, r.WithContext(ctx))
-// 	}
-// }
 
 func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

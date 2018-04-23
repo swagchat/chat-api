@@ -8,6 +8,17 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
+// Role is user role
+type Role int
+
+const (
+	General Role = iota + 1
+	Guest
+	Operator
+	External
+	RoleEnd
+)
+
 type Users struct {
 	Users []*User `json:"users"`
 }
@@ -20,7 +31,7 @@ type User struct {
 	InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
 	UnreadCount    *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
-	IsGuest        *bool          `json:"isGuest,omitempty" db:"is_guest,notnull"`
+	Role           *Role          `json:"role,omitempty" db:"role,notnull"`
 	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
 	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
@@ -29,7 +40,7 @@ type User struct {
 	Created        int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
 	Deleted        int64          `json:"-" db:"deleted,notnull"`
-	AccessToken    string         `json:"accessToken,omitempty"`
+	AccessToken    string         `json:"accessToken,omitempty" db:"-"`
 
 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices []*Device      `json:"devices,omitempty" db:"-"`
@@ -75,11 +86,6 @@ type UserUnreadCount struct {
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
-	isGuest := false
-	if u.IsGuest != nil {
-		isGuest = *u.IsGuest
-	}
-
 	isBot := false
 	if u.IsBot != nil {
 		isBot = *u.IsBot
@@ -107,7 +113,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationURL string         `json:"informationUrl"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsGuest        bool           `json:"isGuest"`
+		Role           *Role          `json:"role"`
 		IsBot          bool           `json:"isBot"`
 		IsPublic       bool           `json:"isPublic"`
 		IsCanBlock     bool           `json:"isCanBlock"`
@@ -126,7 +132,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		InformationURL: u.InformationURL,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
-		IsGuest:        isGuest,
+		Role:           u.Role,
 		IsBot:          isBot,
 		IsPublic:       isPublic,
 		IsCanBlock:     isCanBlock,
@@ -226,6 +232,19 @@ func (u *User) IsValidPost() *ProblemDetail {
 		}
 	}
 
+	if !(*u.Role > 0 && *u.Role < RoleEnd) {
+		return &ProblemDetail{
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
+			InvalidParams: []InvalidParam{
+				InvalidParam{
+					Name:   "role",
+					Reason: "role is incorrect.",
+				},
+			},
+		}
+	}
+
 	return nil
 }
 
@@ -242,9 +261,9 @@ func (u *User) BeforePost() {
 		u.MetaData = []byte("{}")
 	}
 
-	if u.IsGuest == nil {
-		isGuest := false
-		u.IsGuest = &isGuest
+	if u.Role == nil {
+		general := General
+		u.Role = &general
 	}
 
 	if u.IsBot == nil {
@@ -322,8 +341,8 @@ func (u *User) BeforeInsertGuest() {
 		u.MetaData = []byte("{}")
 	}
 
-	isGuest := true
-	u.IsGuest = &isGuest
+	guest := Guest
+	u.Role = &guest
 
 	isBot := false
 	u.IsBot = &isBot

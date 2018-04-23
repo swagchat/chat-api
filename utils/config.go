@@ -32,6 +32,10 @@ const (
 	HeaderUsername = "X-Preferred-Username"
 	// HeaderRealm is http header for realm
 	HeaderRealm = "X-Realm"
+	// HeaderRealmRoles is http header for realm roles
+	HeaderRealmRoles = "X-Realm-Roles"
+	// HeaderAccountRoles is http header for account roles
+	HeaderAccountRoles = "X-Account-Roles"
 
 	CtxDsCfg ctxKey = iota
 	CtxIsAppClient
@@ -68,7 +72,7 @@ type Storage struct {
 	Provider string
 
 	Local struct {
-		Path string `yaml:"localPath"`
+		Path string
 	}
 
 	GCS struct {
@@ -123,7 +127,7 @@ type RTM struct {
 	Provider string
 
 	Direct struct {
-		Endpoint string `yaml:"directEndpoint"`
+		Endpoint string
 	}
 
 	Kafka struct {
@@ -159,9 +163,15 @@ type IdP struct {
 
 	// Keycloak
 	Keycloak struct {
-		BaseEndpoint string `yaml:"baseEndpoint"`
-		ClientID     string `yaml:"clientId"`
-		ClientSecret string `yaml:"clientSecret"`
+		BaseEndpoint     string `yaml:"baseEndpoint"`
+		ManageUserClient struct {
+			ClientID     string `yaml:"clientId"`
+			ClientSecret string `yaml:"clientSecret"`
+		} `yaml:"manageUserClient"`
+		GuestUserClient struct {
+			ClientID     string `yaml:"clientId"`
+			ClientSecret string `yaml:"clientSecret"`
+		} `yaml:"guestUserClient"`
 	}
 }
 
@@ -464,11 +474,17 @@ func (c *config) loadEnvironment() {
 	if v = os.Getenv("SC_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
 		c.IdP.Keycloak.BaseEndpoint = v
 	}
-	if v = os.Getenv("SC_IDP_KEYCLOAK_CLIENTID"); v != "" {
-		c.IdP.Keycloak.ClientID = v
+	if v = os.Getenv("SC_IDP_KEYCLOAK_MANAGEUSERCLIENT_CLIENTID"); v != "" {
+		c.IdP.Keycloak.ManageUserClient.ClientID = v
 	}
-	if v = os.Getenv("SC_IDP_KEYCLOAK_CLIENTSECRET"); v != "" {
-		c.IdP.Keycloak.ClientSecret = v
+	if v = os.Getenv("SC_IDP_KEYCLOAK_MANAGEUSERCLIENT_CLIENTSECRET"); v != "" {
+		c.IdP.Keycloak.ManageUserClient.ClientSecret = v
+	}
+	if v = os.Getenv("SC_IDP_KEYCLOAK_GUESTUSERCLIENT_CLIENTID"); v != "" {
+		c.IdP.Keycloak.GuestUserClient.ClientID = v
+	}
+	if v = os.Getenv("SC_IDP_KEYCLOAK_GUESTUSERCLIENT_CLIENTSECRET"); v != "" {
+		c.IdP.Keycloak.GuestUserClient.ClientSecret = v
 	}
 }
 
@@ -663,8 +679,10 @@ func (c *config) parseFlag() {
 	// IdP
 	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
 	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
-	flag.StringVar(&c.IdP.Keycloak.ClientID, "idp.keycloak.clientId", c.IdP.Keycloak.ClientID, "")
-	flag.StringVar(&c.IdP.Keycloak.ClientSecret, "idp.keycloak.clientSecret", c.IdP.Keycloak.ClientSecret, "")
+	flag.StringVar(&c.IdP.Keycloak.ManageUserClient.ClientID, "idp.keycloak.manageUserClient.clientId", c.IdP.Keycloak.ManageUserClient.ClientID, "")
+	flag.StringVar(&c.IdP.Keycloak.ManageUserClient.ClientSecret, "idp.keycloak.manageUserClient.clientSecret", c.IdP.Keycloak.ManageUserClient.ClientSecret, "")
+	flag.StringVar(&c.IdP.Keycloak.GuestUserClient.ClientID, "idp.keycloak.guestUserClient.clientId", c.IdP.Keycloak.GuestUserClient.ClientID, "")
+	flag.StringVar(&c.IdP.Keycloak.GuestUserClient.ClientSecret, "idp.keycloak.guestUserClient.clientSecret", c.IdP.Keycloak.GuestUserClient.ClientSecret, "")
 }
 
 func (c *config) after() {
@@ -675,7 +693,7 @@ func (c *config) after() {
 	if c.Storage.Provider == "" {
 		c.Storage.Provider = "local"
 	}
-	if c.Storage.Provider == "" && c.Storage.Local.Path == "" {
+	if c.Storage.Provider == "local" && c.Storage.Local.Path == "" {
 		c.Storage.Local.Path = "data/assets"
 	}
 
