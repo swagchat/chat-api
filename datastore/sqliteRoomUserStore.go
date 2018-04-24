@@ -30,6 +30,10 @@ func (p *sqliteProvider) SelectRoomUsersByUserID(userID string) ([]*models.RoomU
 	return rdbSelectRoomUsersByUserID(p.sqlitePath, userID)
 }
 
+func (p *sqliteProvider) SelectRoomUserIDsByRoomID(roomID string) ([]string, error) {
+	return rdbSelectRoomUserIDsByRoomID(p.sqlitePath, roomID)
+}
+
 func (p *sqliteProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error) {
 	return rdbSelectRoomUsersByRoomIDAndUserIDs(p.sqlitePath, roomID, userIDs)
 }

@@ -30,6 +30,10 @@ func (p *mysqlProvider) SelectRoomUsersByUserID(userID string) ([]*models.RoomUs
 	return rdbSelectRoomUsersByUserID(p.database, userID)
 }
 
+func (p *mysqlProvider) SelectRoomUserIDsByRoomID(roomID string) ([]string, error) {
+	return rdbSelectRoomUserIDsByRoomID(p.database, roomID)
+}
+
 func (p *mysqlProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error) {
 	return rdbSelectRoomUsersByRoomIDAndUserIDs(p.database, roomID, userIDs)
 }

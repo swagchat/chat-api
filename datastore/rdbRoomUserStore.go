@@ -163,6 +163,22 @@ func rdbSelectRoomUsersByUserID(db, userID string) ([]*models.RoomUser, error) {
 	return roomUsers, nil
 }
 
+func rdbSelectRoomUserIDsByRoomID(db, roomID string) ([]string, error) {
+	replica := RdbStore(db).replica()
+
+	var roomUserIDs []string
+	query := utils.AppendStrings("SELECT user_id FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
+	params := map[string]interface{}{
+		"roomId": roomID,
+	}
+	_, err := replica.Select(&roomUserIDs, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting room users")
+	}
+
+	return roomUserIDs, nil
+}
+
 func rdbSelectRoomUsersByRoomIDAndUserIDs(db string, roomID *string, userIDs []string) ([]*models.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
