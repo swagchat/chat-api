@@ -268,6 +268,14 @@ func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*mo
 		return nil, pd
 	}
 	returnMessages.AllCount = count
+
+	go func() {
+		userID := ctx.Value(utils.CtxUserID).(string)
+		user, _ := selectUser(ctx, userID)
+		user.LastAccessRoomID = roomID
+		datastore.Provider(ctx).UpdateUser(user)
+	}()
+
 	return returnMessages, nil
 }
 
