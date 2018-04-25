@@ -4,12 +4,23 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
+const (
+	MessageEvent = "message"
+	UserJoin     = "userJoin"
+)
+
+type RTMEvent struct {
+	Type    string
+	Payload []byte
+	UserIDs []string
+}
+
 type MessagingInfo struct {
 	Message string
 }
 
 type provider interface {
-	PublishMessage(*MessagingInfo) error
+	Publish(*RTMEvent) error
 }
 
 func Provider() provider {

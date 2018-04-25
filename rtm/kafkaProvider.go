@@ -1,6 +1,7 @@
 package rtm
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -13,10 +14,10 @@ import (
 
 type kafkaProvider struct{}
 
-func (kp kafkaProvider) PublishMessage(mi *MessagingInfo) error {
-	rawIn := json.RawMessage(mi.Message)
-	input, err := rawIn.MarshalJSON()
+func (kp kafkaProvider) Publish(rtmEvent *RTMEvent) error {
 	cfg := utils.Config()
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(rtmEvent)
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.RTM.Kafka.Host, cfg.RTM.Kafka.Port),
@@ -50,11 +51,12 @@ func (kp kafkaProvider) PublishMessage(mi *MessagingInfo) error {
 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 	p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          input,
+		Value:          buffer.Bytes(),
 	}, nil)
 	// }
 
 	// Wait for message deliveries
 	p.Flush(15 * 1000)
+
 	return nil
 }

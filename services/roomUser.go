@@ -216,30 +216,29 @@ func publishUserJoin(ctx context.Context, roomID string) {
 		return
 	}
 
-	b, _ := json.Marshal(userForRooms)
-	buf := new(bytes.Buffer)
-	buf.Write(b)
+	go func() {
+		userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(roomID)
+		if err != nil {
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				Error: err,
+			})
+		}
 
-	message := &models.Message{
-		RoomID:    roomID,
-		EventName: "userJoin",
-		Payload:   utils.JSONText(buf.String()),
-	}
-	bytes, err := json.Marshal(message)
-	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
-	}
-	mi := &rtm.MessagingInfo{
-		Message: string(bytes),
-	}
-	err = rtm.Provider().PublishMessage(mi)
-	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
-	}
+		buffer := new(bytes.Buffer)
+		json.NewEncoder(buffer).Encode(userForRooms)
+		rtmEvent := &rtm.RTMEvent{
+			Type:    rtm.UserJoin,
+			Payload: buffer.Bytes(),
+			UserIDs: userIDs,
+		}
+		err = rtm.Provider().Publish(rtmEvent)
+		if err != nil {
+			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+				Error: err,
+			})
+		}
+	}()
+
 }
 
 func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {

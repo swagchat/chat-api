@@ -14,14 +14,15 @@ import (
 
 type directProvider struct{}
 
-func (dp directProvider) PublishMessage(mi *MessagingInfo) error {
-	rawIn := json.RawMessage(mi.Message)
-	input, err := rawIn.MarshalJSON()
+func (dp directProvider) Publish(rtmEvent *RTMEvent) error {
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(rtmEvent)
+
 	endpoint := fmt.Sprintf("%s/message", utils.Config().RTM.Direct.Endpoint)
 	resp, err := http.Post(
 		endpoint,
 		"application/json",
-		bytes.NewBuffer(input),
+		buffer,
 	)
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("direct post failure. HTTP Endpoint=[%s]", endpoint))

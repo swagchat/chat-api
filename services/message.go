@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -85,8 +86,29 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 		}
 
 		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
-		go publishMessage(post)
 		go postMessageToBotService(ctx, *user.IsBot, post)
+		go func() {
+			userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(room.RoomID)
+			if err != nil {
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					Error: err,
+				})
+			}
+
+			buffer := new(bytes.Buffer)
+			json.NewEncoder(buffer).Encode(post)
+			rtmEvent := &rtm.RTMEvent{
+				Type:    rtm.MessageEvent,
+				Payload: buffer.Bytes(),
+				UserIDs: userIDs,
+			}
+			err = rtm.Provider().Publish(rtmEvent)
+			if err != nil {
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					Error: err,
+				})
+			}
+		}()
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -129,25 +151,6 @@ func GetMessage(ctx context.Context, messageID string) (*models.Message, *models
 	}
 
 	return message, nil
-}
-
-func publishMessage(m *models.Message) {
-	m.EventName = "message"
-	bytes, err := json.Marshal(m)
-	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
-	}
-	mi := &rtm.MessagingInfo{
-		Message: string(bytes),
-	}
-	err = rtm.Provider().PublishMessage(mi)
-	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
-	}
 }
 
 func postMessageToBotService(ctx context.Context, isBot bool, m *models.Message) {

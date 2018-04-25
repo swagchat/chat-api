@@ -13,13 +13,13 @@ import (
 
 type nsqProvider struct{}
 
-func (np nsqProvider) PublishMessage(mi *MessagingInfo) error {
-	rawIn := json.RawMessage(mi.Message)
-	input, err := rawIn.MarshalJSON()
+func (np nsqProvider) Publish(rtmEvent *RTMEvent) error {
 	cfg := utils.Config()
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(rtmEvent)
 
 	url := utils.AppendStrings(cfg.RTM.NSQ.QueEndpoint, "/pub?topic=", cfg.RTM.NSQ.QueTopic)
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(input))
+	resp, err := http.Post(url, "application/json", buffer)
 	if err != nil {
 		return errors.Wrap(err, "NSQ post failure")
 	}
