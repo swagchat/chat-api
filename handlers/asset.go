@@ -44,8 +44,10 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	contentType := header.Header.Get("Content-Type")
+	width, _ := strconv.Atoi(r.FormValue("width"))
+	height, _ := strconv.Atoi(r.FormValue("height"))
 
-	asset, pd := services.PostAsset(r.Context(), contentType, file)
+	asset, pd := services.PostAsset(r.Context(), contentType, file, width, height)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

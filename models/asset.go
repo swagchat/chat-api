@@ -21,6 +21,8 @@ type Asset struct {
 	AssetID   string `json:"assetId" db:"asset_id,notnull"`
 	Extension string `json:"extension" db:"extension,notnull"`
 	Mime      string `json:"mime" db:"mime,notnull"`
+	Width     int    `json:"width" db:"width,notnull"`
+	Height    int    `json:"height" db:"height,notnull"`
 	URL       string `json:"url" db:"url"`
 	Created   int64  `json:"created" db:"created,notnull"`
 	Modified  int64  `json:"modified" db:"modified,notnull"`
@@ -34,6 +36,8 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 		AssetID   string `json:"assetId"`
 		Extension string `json:"extension"`
 		Mime      string `json:"mime"`
+		Width     int    `json:"width,omitempty"`
+		Height    int    `json:"height,omitempty"`
 		URL       string `json:"url"`
 		Created   string `json:"created"`
 		Modified  string `json:"modified"`
@@ -41,6 +45,8 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 		AssetID:   a.AssetID,
 		Extension: a.Extension,
 		Mime:      a.Mime,
+		Width:     a.Width,
+		Height:    a.Height,
 		URL:       a.URL,
 		Created:   time.Unix(a.Created, 0).In(l).Format(time.RFC3339),
 		Modified:  time.Unix(a.Modified, 0).In(l).Format(time.RFC3339),

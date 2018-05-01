@@ -13,9 +13,11 @@ import (
 )
 
 // PostAsset is post asset
-func PostAsset(ctx context.Context, contentType string, file io.Reader) (*models.Asset, *models.ProblemDetail) {
+func PostAsset(ctx context.Context, contentType string, file io.Reader, width, height int) (*models.Asset, *models.ProblemDetail) {
 	asset := &models.Asset{
-		Mime: contentType,
+		Mime:   contentType,
+		Width:  width,
+		Height: height,
 	}
 	pd := asset.IsValidPost()
 	if pd != nil {
