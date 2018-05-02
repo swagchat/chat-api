@@ -39,6 +39,7 @@ type User struct {
 	Lang             string         `json:"lang,omitempty" db:"lang,notnull"`
 	AccessToken      string         `json:"accessToken,omitempty" db:"-"`
 	LastAccessRoomID string         `json:"lastAccessRoomId,omitempty" db:"last_access_room_id"`
+	LastAccessed     int64          `json:"lastAccessed,omitempty" db:"last_accessed,notnull"`
 	Created          int64          `json:"created,omitempty" db:"created,notnull"`
 	Modified         int64          `json:"modified,omitempty" db:"modified,notnull"`
 	Deleted          int64          `json:"-" db:"deleted,notnull"`
@@ -49,11 +50,37 @@ type User struct {
 }
 
 type UserMini struct {
-	RoomID      string `json:"roomId" db:"room_id"`
-	UserID      string `json:"userId" db:"user_id"`
-	Name        string `json:"name" db:"name"`
-	PictureURL  string `json:"pictureUrl,omitempty" db:"picture_url"`
-	IsShowUsers *bool  `json:"isShowUsers,omitempty" db:"is_show_users"`
+	RoomID       string `json:"roomId" db:"room_id"`
+	UserID       string `json:"userId" db:"user_id"`
+	Name         string `json:"name" db:"name"`
+	PictureURL   string `json:"pictureUrl,omitempty" db:"picture_url"`
+	IsShowUsers  *bool  `json:"isShowUsers,omitempty" db:"is_show_users"`
+	LastAccessed int64  `json:"lastAccessed,omitempty" db:"last_accessed"`
+}
+
+func (um *UserMini) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+
+	isShowUsers := false
+	if um.IsShowUsers != nil {
+		isShowUsers = *um.IsShowUsers
+	}
+
+	return json.Marshal(&struct {
+		RoomID       string `json:"roomId"`
+		UserID       string `json:"userId"`
+		Name         string `json:"name"`
+		PictureURL   string `json:"pictureUrl"`
+		IsShowUsers  bool   `json:"isShowUsers"`
+		LastAccessed string `json:"lastAccessed"`
+	}{
+		RoomID:       um.RoomID,
+		UserID:       um.UserID,
+		Name:         um.Name,
+		PictureURL:   um.PictureURL,
+		IsShowUsers:  isShowUsers,
+		LastAccessed: time.Unix(um.LastAccessed, 0).In(l).Format(time.RFC3339),
+	})
 }
 
 type RoomForUser struct {
@@ -122,6 +149,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Lang             string         `json:"lang"`
 		AccessToken      string         `json:"accessToken"`
 		LastAccessRoomID string         `json:"lastAccessRoomId"`
+		LastAccessed     string         `json:"lastAccessed"`
 		Created          string         `json:"created"`
 		Modified         string         `json:"modified"`
 		Rooms            []*RoomForUser `json:"rooms"`
@@ -142,6 +170,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Lang:             u.Lang,
 		AccessToken:      u.AccessToken,
 		LastAccessRoomID: u.LastAccessRoomID,
+		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
 		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:         time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
 		Rooms:            u.Rooms,

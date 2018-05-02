@@ -143,12 +143,13 @@ func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return colsHandler(
 		jwtHandler(
 			judgeAppClientHandler(
-				func(w http.ResponseWriter, r *http.Request) {
-					for i, v := range r.Header {
-						log.Printf("%s=%s\n", i, v)
-					}
-					fn(w, r)
-				})))
+				updateLastAccessedHandler(
+					func(w http.ResponseWriter, r *http.Request) {
+						for i, v := range r.Header {
+							log.Printf("%s=%s\n", i, v)
+						}
+						fn(w, r)
+					}))))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
@@ -167,6 +168,36 @@ func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithValue(ctx, utils.CtxRealm, realm)
 
 		fn(w, r.WithContext(ctx))
+	}
+}
+
+func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fn(w, r)
+
+		ctx := r.Context()
+		userID := ctx.Value(utils.CtxUserID).(string)
+		if userID == "" {
+			return
+		}
+
+		go func() {
+			user, err := datastore.Provider(ctx).SelectUser(userID, false, false, false)
+			if err != nil {
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					Error: err,
+				})
+				return
+			}
+
+			user.LastAccessed = time.Now().Unix()
+			_, err = datastore.Provider(ctx).UpdateUser(user)
+			if err != nil {
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					Error: err,
+				})
+			}
+		}()
 	}
 }
 

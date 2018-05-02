@@ -58,7 +58,7 @@ func rdbInsertUser(db string, user *models.User) (*models.User, error) {
 	return user, nil
 }
 
-func rdbSelectUser(db, userID string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
+func rdbSelectUser(db, userID string, withRooms, withDevices, withBlocks bool) (*models.User, error) {
 	replica := RdbStore(db).replica()
 
 	var users []*models.User
@@ -68,90 +68,95 @@ func rdbSelectUser(db, userID string, isWithRooms, isWithDevices, isWithBlocks b
 		return nil, errors.Wrap(err, "An error occurred while getting user")
 	}
 	var user *models.User
-	if len(users) == 1 {
-		user = users[0]
-		if isWithRooms {
-			var rooms []*models.RoomForUser
-			query := utils.AppendStrings("SELECT ",
-				"r.room_id, ",
-				"r.user_id, ",
-				"r.name, ",
-				"r.picture_url, ",
-				"r.information_url, ",
-				"r.meta_data, ",
-				"r.type, ",
-				"r.last_message, ",
-				"r.last_message_updated, ",
-				"r.is_can_left, ",
-				"r.created, ",
-				"r.modified, ",
-				"ru.unread_count AS ru_unread_count, ",
-				"ru.meta_data AS ru_meta_data, ",
-				"ru.created AS ru_created, ",
-				"ru.modified AS ru_modified ",
-				"FROM ", tableNameRoomUser, " AS ru ",
-				"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
-				"WHERE ru.user_id=:userId AND r.deleted=0 ",
-				"ORDER BY r.last_message_updated DESC;")
-			params := map[string]interface{}{"userId": userID}
-			_, err := replica.Select(&rooms, query, params)
-			if err != nil {
-				return nil, errors.Wrap(err, "An error occurred while getting user rooms")
-			}
+	if len(users) != 1 {
+		return nil, nil
+	}
 
-			var userMinis []*models.UserMini
-			query = utils.AppendStrings("SELECT ",
-				"r.room_id, ",
-				"u.user_id, ",
-				"u.name, ",
-				"u.picture_url, ",
-				"u.is_show_users ",
-				"FROM ", tableNameRoomUser, " AS ru ",
-				"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
-				"LEFT JOIN ", tableNameUser, " AS u ON ru.user_id=u.user_id ",
-				"WHERE r.room_id IN ( ",
-				"SELECT room_id ",
-				"FROM ", tableNameRoomUser, " ",
-				"WHERE user_id=:userId ",
-				") ",
-				"ORDER BY ru.room_id",
-			)
-			params = map[string]interface{}{"userId": userID}
-			_, err = replica.Select(&userMinis, query, params)
-			if err != nil {
-				return nil, errors.Wrap(err, "An error occurred while getting user rooms")
-			}
+	user = users[0]
+	if withRooms {
+		var rooms []*models.RoomForUser
+		query := utils.AppendStrings("SELECT ",
+			"r.room_id, ",
+			"r.user_id, ",
+			"r.name, ",
+			"r.picture_url, ",
+			"r.information_url, ",
+			"r.meta_data, ",
+			"r.type, ",
+			"r.last_message, ",
+			"r.last_message_updated, ",
+			"r.is_can_left, ",
+			"r.created, ",
+			"r.modified, ",
+			"ru.unread_count AS ru_unread_count, ",
+			"ru.meta_data AS ru_meta_data, ",
+			"ru.created AS ru_created, ",
+			"ru.modified AS ru_modified ",
+			"FROM ", tableNameRoomUser, " AS ru ",
+			"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
+			"WHERE ru.user_id=:userId AND r.deleted=0 ",
+			"ORDER BY r.last_message_updated DESC;")
+		params := map[string]interface{}{"userId": userID}
+		_, err := replica.Select(&rooms, query, params)
+		if err != nil {
+			return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+		}
 
-			for _, room := range rooms {
-				room.Users = make([]*models.UserMini, 0)
-				for _, userMini := range userMinis {
-					if room.RoomID == userMini.RoomID {
-						room.Users = append(room.Users, userMini)
-					}
+		var userMinis []*models.UserMini
+		query = utils.AppendStrings("SELECT ",
+			"r.room_id, ",
+			"u.user_id, ",
+			"u.name, ",
+			"u.picture_url, ",
+			"u.is_show_users, ",
+			"u.last_accessed ",
+			"FROM ", tableNameRoomUser, " AS ru ",
+			"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
+			"LEFT JOIN ", tableNameUser, " AS u ON ru.user_id=u.user_id ",
+			"WHERE r.room_id IN ( ",
+			"SELECT room_id ",
+			"FROM ", tableNameRoomUser, " ",
+			"WHERE user_id=:userId ",
+			") ",
+			"AND ru.user_id!=:userId ",
+			"ORDER BY ru.room_id",
+		)
+		params = map[string]interface{}{"userId": userID}
+		_, err = replica.Select(&userMinis, query, params)
+		if err != nil {
+			return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+		}
+
+		for _, room := range rooms {
+			room.Users = make([]*models.UserMini, 0)
+			for _, userMini := range userMinis {
+				if room.RoomID == userMini.RoomID {
+					room.Users = append(room.Users, userMini)
 				}
 			}
-			user.Rooms = rooms
 		}
-
-		if isWithDevices {
-			var devices []*models.Device
-			query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", tableNameDevice, " WHERE user_id=:userId")
-			params := map[string]interface{}{"userId": userID}
-			_, err := replica.Select(&devices, query, params)
-			if err != nil {
-				return nil, errors.Wrap(err, "An error occurred while getting devices")
-			}
-			user.Devices = devices
-		}
-
-		if isWithBlocks {
-			userIds, err := rdbSelectBlockUsersByUserID(db, userID)
-			if err != nil {
-				return nil, errors.Wrap(err, "An error occurred while getting block users")
-			}
-			user.Blocks = userIds
-		}
+		user.Rooms = rooms
 	}
+
+	if withDevices {
+		var devices []*models.Device
+		query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", tableNameDevice, " WHERE user_id=:userId")
+		params := map[string]interface{}{"userId": userID}
+		_, err := replica.Select(&devices, query, params)
+		if err != nil {
+			return nil, errors.Wrap(err, "An error occurred while getting devices")
+		}
+		user.Devices = devices
+	}
+
+	if withBlocks {
+		userIds, err := rdbSelectBlockUsersByUserID(db, userID)
+		if err != nil {
+			return nil, errors.Wrap(err, "An error occurred while getting block users")
+		}
+		user.Blocks = userIds
+	}
+
 	return user, nil
 }
 
