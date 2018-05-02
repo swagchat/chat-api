@@ -43,11 +43,15 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	contentType := header.Header.Get("Content-Type")
+	contentType := r.FormValue("mime")
+	if contentType == "" {
+		contentType = header.Header.Get("Content-Type")
+	}
+	size := header.Size
 	width, _ := strconv.Atoi(r.FormValue("width"))
 	height, _ := strconv.Atoi(r.FormValue("height"))
 
-	asset, pd := services.PostAsset(r.Context(), contentType, file, width, height)
+	asset, pd := services.PostAsset(r.Context(), contentType, file, size, width, height)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

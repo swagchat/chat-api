@@ -13,9 +13,10 @@ import (
 )
 
 // PostAsset is post asset
-func PostAsset(ctx context.Context, contentType string, file io.Reader, width, height int) (*models.Asset, *models.ProblemDetail) {
+func PostAsset(ctx context.Context, contentType string, file io.Reader, size int64, width, height int) (*models.Asset, *models.ProblemDetail) {
 	asset := &models.Asset{
 		Mime:   contentType,
+		Size:   size,
 		Width:  width,
 		Height: height,
 	}
