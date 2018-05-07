@@ -20,6 +20,7 @@ var (
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document":   "docx",
 		"application/vnd.ms-powerpoint":                                             "ppt",
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+		"application/zip": "zip",
 	}
 )
 
