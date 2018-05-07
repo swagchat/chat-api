@@ -190,6 +190,10 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 
+			if user == nil {
+				return
+			}
+
 			user.LastAccessed = time.Now().Unix()
 			_, err = datastore.Provider(ctx).UpdateUser(user)
 			if err != nil {
