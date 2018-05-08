@@ -124,6 +124,7 @@ func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
 		"u.picture_url, ",
 		"u.information_url, ",
 		"u.meta_data, ",
+		"u.role, ",
 		"u.is_bot, ",
 		"u.is_can_block, ",
 		"u.is_show_users, ",

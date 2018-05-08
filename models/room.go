@@ -89,6 +89,7 @@ type UserForRoom struct {
 	PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
 	InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
+	Role           *Role          `json:"role,omitempty" db:"role,notnull"`
 	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
@@ -161,6 +162,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		PictureURL     string         `json:"pictureUrl,omitempty"`
 		InformationURL string         `json:"informationUrl,omitempty"`
 		MetaData       utils.JSONText `json:"metaData"`
+		Role           *Role          `json:"role,omitempty`
 		IsBot          *bool          `json:"isBot,omitempty"`
 		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
 		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
@@ -177,6 +179,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		PictureURL:     ufr.PictureURL,
 		InformationURL: ufr.InformationURL,
 		MetaData:       ufr.MetaData,
+		Role:           ufr.Role,
 		IsBot:          ufr.IsBot,
 		IsCanBlock:     ufr.IsCanBlock,
 		IsShowUsers:    ufr.IsShowUsers,

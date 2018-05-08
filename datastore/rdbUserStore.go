@@ -108,6 +108,7 @@ func rdbSelectUser(db, userID string, withRooms, withDevices, withBlocks bool) (
 			"u.user_id, ",
 			"u.name, ",
 			"u.picture_url, ",
+			"u.role, ",
 			"u.is_show_users, ",
 			"u.last_accessed ",
 			"FROM ", tableNameRoomUser, " AS ru ",

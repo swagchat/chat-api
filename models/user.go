@@ -54,6 +54,7 @@ type UserMini struct {
 	UserID       string `json:"userId" db:"user_id"`
 	Name         string `json:"name" db:"name"`
 	PictureURL   string `json:"pictureUrl,omitempty" db:"picture_url"`
+	Role         *Role  `json:"role,omitempty" db:"role"`
 	IsShowUsers  *bool  `json:"isShowUsers,omitempty" db:"is_show_users"`
 	LastAccessed int64  `json:"lastAccessed,omitempty" db:"last_accessed"`
 }
@@ -71,6 +72,7 @@ func (um *UserMini) MarshalJSON() ([]byte, error) {
 		UserID       string `json:"userId"`
 		Name         string `json:"name"`
 		PictureURL   string `json:"pictureUrl"`
+		Role         *Role  `json:"role,omitempty"`
 		IsShowUsers  bool   `json:"isShowUsers"`
 		LastAccessed string `json:"lastAccessed"`
 	}{
@@ -78,6 +80,7 @@ func (um *UserMini) MarshalJSON() ([]byte, error) {
 		UserID:       um.UserID,
 		Name:         um.Name,
 		PictureURL:   um.PictureURL,
+		Role: um.Role,
 		IsShowUsers:  isShowUsers,
 		LastAccessed: time.Unix(um.LastAccessed, 0).In(l).Format(time.RFC3339),
 	})
