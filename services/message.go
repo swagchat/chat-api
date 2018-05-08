@@ -86,7 +86,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 		}
 
 		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
-		go postMessageToBotService(ctx, *user.IsBot, post)
+		go postMessageToBotService(ctx, post, user)
 		go func() {
 			userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(room.RoomID)
 			if err != nil {
@@ -153,17 +153,20 @@ func GetMessage(ctx context.Context, messageID string) (*models.Message, *models
 	return message, nil
 }
 
-func postMessageToBotService(ctx context.Context, isBot bool, m *models.Message) {
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomID)
+func postMessageToBotService(ctx context.Context, m *models.Message, u *models.User) {
+	if *u.Role == models.Operator || *u.IsBot {
+		return
+	}
+	usersForRoom, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomID)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,
 		})
 	}
-	if len(userForRooms) > 0 {
-		for _, u := range userForRooms {
-			if !isBot && *u.IsBot && m.UserID != u.UserID {
-				bot, err := datastore.Provider(ctx).SelectBot(u.UserID)
+	if len(usersForRoom) > 0 {
+		for _, ufr := range usersForRoom {
+			if *ufr.IsBot && m.UserID != ufr.UserID {
+				bot, err := datastore.Provider(ctx).SelectBot(ufr.UserID)
 				if err != nil {
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 						Error: err,

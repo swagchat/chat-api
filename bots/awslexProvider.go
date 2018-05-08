@@ -63,6 +63,7 @@ func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONTex
 		UserID:  b.UserID,
 		Type:    "text",
 		Payload: textPayload,
+		EventName: "message",
 	}
 	posts := make([]*models.Message, 0)
 	posts = append(posts, post)

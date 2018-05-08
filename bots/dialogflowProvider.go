@@ -71,10 +71,11 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 	var textPayload utils.JSONText
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Result.Fulfillment.Speech+"\"}"), &textPayload)
 	post := &models.Message{
-		RoomID:  m.RoomID,
-		UserID:  b.UserID,
-		Type:    "text",
-		Payload: textPayload,
+		RoomID:    m.RoomID,
+		UserID:    b.UserID,
+		Type:      "text",
+		Payload:   textPayload,
+		EventName: "message",
 	}
 	posts := make([]*models.Message, 0)
 	posts = append(posts, post)

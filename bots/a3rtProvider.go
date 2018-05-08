@@ -68,10 +68,11 @@ func (ap *a3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText)
 	// A3RT
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Results[0].Reply+"\"}"), &textPayload)
 	post := &models.Message{
-		RoomID:  m.RoomID,
-		UserID:  b.UserID,
-		Type:    "text",
-		Payload: textPayload,
+		RoomID:    m.RoomID,
+		UserID:    b.UserID,
+		Type:      "text",
+		Payload:   textPayload,
+		EventName: "message",
 	}
 	posts := make([]*models.Message, 0)
 	posts = append(posts, post)
