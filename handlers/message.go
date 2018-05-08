@@ -9,8 +9,8 @@ import (
 )
 
 func setMessageMux() {
-	mux.PostFunc("/messages", commonHandler(postMessages))
-	mux.GetFunc("/messages/#messageId^[a-z0-9-]$", commonHandler(getMessage))
+	mux.PostFunc("/messages", commonHandler(updateLastAccessedHandler(postMessages)))
+	mux.GetFunc("/messages/#messageId^[a-z0-9-]$", commonHandler(updateLastAccessedHandler(getMessage)))
 }
 
 func postMessages(w http.ResponseWriter, r *http.Request) {

@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -140,16 +139,15 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return colsHandler(
+	return (colsHandler(
 		jwtHandler(
 			judgeAppClientHandler(
-				updateLastAccessedHandler(
-					func(w http.ResponseWriter, r *http.Request) {
-						for i, v := range r.Header {
-							log.Printf("%s=%s\n", i, v)
-						}
-						fn(w, r)
-					}))))
+				func(w http.ResponseWriter, r *http.Request) {
+					// for i, v := range r.Header {
+					// 	log.Printf("%s=%s\n", i, v)
+					// }
+					fn(w, r)
+				}))))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {

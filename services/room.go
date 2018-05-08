@@ -269,12 +269,7 @@ func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*mo
 	}
 	returnMessages.AllCount = count
 
-	go func() {
-		userID := ctx.Value(utils.CtxUserID).(string)
-		user, _ := selectUser(ctx, userID)
-		user.LastAccessRoomID = roomID
-		datastore.Provider(ctx).UpdateUser(user)
-	}()
+	updateLastAccessRoomID(ctx, roomID)
 
 	return returnMessages, nil
 }
@@ -411,4 +406,11 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *models.ProblemDetail
 	}
 
 	return nil
+}
+
+func updateLastAccessRoomID(ctx context.Context, roomID string) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, _ := selectUser(ctx, userID)
+	user.LastAccessRoomID = roomID
+	datastore.Provider(ctx).UpdateUser(user)
 }
