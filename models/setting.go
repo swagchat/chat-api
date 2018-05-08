@@ -29,3 +29,17 @@ func (s *Setting) MarshalJSON() ([]byte, error) {
 		Expired:  time.Unix(s.Expired, 0).In(l).Format(time.RFC3339),
 	})
 }
+
+type SettingValues struct {
+	Keycloak struct {
+		ManageUserClient struct {
+			ClientID     string `json:"clientId"`
+			ClientSecret string `json:"clientSecret"`
+		} `json:"manageUserClient"`
+		GuestUserClient struct {
+			ClientID     string `json:"clientId"`
+			ClientSecret string `json:"clientSecret"`
+		} `json:"guestUserClient"`
+		GuestRoleID string `json:"guestRoleId"`
+	} `json:"keycloak"`
+}

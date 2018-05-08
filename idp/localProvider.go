@@ -2,7 +2,9 @@ package idp
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/mattn/go-gimei"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
@@ -18,9 +20,10 @@ func (lp *localProvider) Init() error {
 
 func (lp *localProvider) Post(ctx context.Context) (*models.User, error) {
 	uuid := utils.GenerateUUID()
+	gimei := gimei.NewName()
 	user := &models.User{
 		UserID: uuid,
-		Name:   uuid,
+		Name:   fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana()),
 	}
 
 	user.BeforeInsertGuest()

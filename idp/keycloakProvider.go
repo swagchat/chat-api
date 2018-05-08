@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/mattn/go-gimei"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
@@ -48,8 +49,16 @@ func (kp *keycloakProvider) Init() error {
 }
 
 func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
-	cfg := utils.Config()
 	realm := ctx.Value(utils.CtxRealm)
+	gimei := gimei.NewName()
+	name := fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana())
+
+	setting, err := datastore.Provider(ctx).SelectLatestSetting()
+	if err != nil {
+		return nil, errors.Wrap(err, "")
+	}
+	var settingValues models.SettingValues
+	json.Unmarshal(setting.Values, &settingValues)
 
 	// Create keycloak user
 	kcUser := &kcUser{
@@ -69,7 +78,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	manageUserToken, err := kp.clientToken(ctx, cfg.IdP.Keycloak.ManageUserClient.ClientID, cfg.IdP.Keycloak.ManageUserClient.ClientSecret)
+	manageUserToken, err := kp.clientToken(ctx, settingValues.Keycloak.ManageUserClient.ClientID, settingValues.Keycloak.ManageUserClient.ClientSecret)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
@@ -91,7 +100,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	// Set guest role to keycloak user
 	kcRoleMappings := []*kcRoleMapping{
 		&kcRoleMapping{
-			ID:   "6b36daaa-2b37-432a-9451-634dc4767db5",
+			ID:   settingValues.Keycloak.GuestRoleID,
 			Name: "guest",
 		},
 	}
@@ -120,7 +129,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	// Create user
 	user := &models.User{
 		UserID: userID,
-		Name:   userID,
+		Name:   name,
 	}
 	user.BeforeInsertGuest()
 	user, err = datastore.Provider(ctx).InsertUser(user)
@@ -128,7 +137,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 		return nil, errors.Wrap(err, "")
 	}
 
-	guestUserToken, err := kp.clientToken(ctx, cfg.IdP.Keycloak.GuestUserClient.ClientID, cfg.IdP.Keycloak.GuestUserClient.ClientSecret)
+	guestUserToken, err := kp.clientToken(ctx, settingValues.Keycloak.GuestUserClient.ClientID, settingValues.Keycloak.GuestUserClient.ClientSecret)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
@@ -138,14 +147,19 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 }
 
 func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.User, error) {
-	cfg := utils.Config()
+	setting, err := datastore.Provider(ctx).SelectLatestSetting()
+	if err != nil {
+		return nil, errors.Wrap(err, "")
+	}
+	var settingValues models.SettingValues
+	json.Unmarshal(setting.Values, &settingValues)
 
 	user, err := datastore.Provider(ctx).SelectUser(userID, true, true, true)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
 
-	guestUserToken, err := kp.clientToken(ctx, cfg.IdP.Keycloak.GuestUserClient.ClientID, cfg.IdP.Keycloak.GuestUserClient.ClientSecret)
+	guestUserToken, err := kp.clientToken(ctx, settingValues.Keycloak.GuestUserClient.ClientID, settingValues.Keycloak.GuestUserClient.ClientSecret)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}

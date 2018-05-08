@@ -163,15 +163,7 @@ type IdP struct {
 
 	// Keycloak
 	Keycloak struct {
-		BaseEndpoint     string `yaml:"baseEndpoint"`
-		ManageUserClient struct {
-			ClientID     string `yaml:"clientId"`
-			ClientSecret string `yaml:"clientSecret"`
-		} `yaml:"manageUserClient"`
-		GuestUserClient struct {
-			ClientID     string `yaml:"clientId"`
-			ClientSecret string `yaml:"clientSecret"`
-		} `yaml:"guestUserClient"`
+		BaseEndpoint string `yaml:"baseEndpoint"`
 	}
 }
 
@@ -474,18 +466,6 @@ func (c *config) loadEnvironment() {
 	if v = os.Getenv("SC_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
 		c.IdP.Keycloak.BaseEndpoint = v
 	}
-	if v = os.Getenv("SC_IDP_KEYCLOAK_MANAGEUSERCLIENT_CLIENTID"); v != "" {
-		c.IdP.Keycloak.ManageUserClient.ClientID = v
-	}
-	if v = os.Getenv("SC_IDP_KEYCLOAK_MANAGEUSERCLIENT_CLIENTSECRET"); v != "" {
-		c.IdP.Keycloak.ManageUserClient.ClientSecret = v
-	}
-	if v = os.Getenv("SC_IDP_KEYCLOAK_GUESTUSERCLIENT_CLIENTID"); v != "" {
-		c.IdP.Keycloak.GuestUserClient.ClientID = v
-	}
-	if v = os.Getenv("SC_IDP_KEYCLOAK_GUESTUSERCLIENT_CLIENTSECRET"); v != "" {
-		c.IdP.Keycloak.GuestUserClient.ClientSecret = v
-	}
 }
 
 func (c *config) parseFlag() {
@@ -678,11 +658,9 @@ func (c *config) parseFlag() {
 
 	// IdP
 	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
+
+	// IdP Keycloak
 	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
-	flag.StringVar(&c.IdP.Keycloak.ManageUserClient.ClientID, "idp.keycloak.manageUserClient.clientId", c.IdP.Keycloak.ManageUserClient.ClientID, "")
-	flag.StringVar(&c.IdP.Keycloak.ManageUserClient.ClientSecret, "idp.keycloak.manageUserClient.clientSecret", c.IdP.Keycloak.ManageUserClient.ClientSecret, "")
-	flag.StringVar(&c.IdP.Keycloak.GuestUserClient.ClientID, "idp.keycloak.guestUserClient.clientId", c.IdP.Keycloak.GuestUserClient.ClientID, "")
-	flag.StringVar(&c.IdP.Keycloak.GuestUserClient.ClientSecret, "idp.keycloak.guestUserClient.clientSecret", c.IdP.Keycloak.GuestUserClient.ClientSecret, "")
 }
 
 func (c *config) after() {
