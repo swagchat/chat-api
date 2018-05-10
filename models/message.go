@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	MessageTypeText  = "text"
-	MessageTypeImage = "image"
+	MessageTypeText      = "text"
+	MessageTypeImage     = "image"
+	MessageTypeFile      = "file"
+	MessageTypeIndicator = "indicator"
 )
 
 type Messages struct {

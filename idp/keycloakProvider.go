@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/mattn/go-gimei"
+	"github.com/betchi/go-gimei"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
@@ -56,6 +56,9 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	setting, err := datastore.Provider(ctx).SelectLatestSetting()
 	if err != nil {
 		return nil, errors.Wrap(err, "")
+	}
+	if setting == nil {
+		return nil, errors.Wrap(err, "setting values is nil")
 	}
 	var settingValues models.SettingValues
 	json.Unmarshal(setting.Values, &settingValues)
@@ -151,6 +154,9 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.Use
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
+	if setting == nil {
+		return nil, errors.Wrap(err, "setting values is nil")
+	}
 	var settingValues models.SettingValues
 	json.Unmarshal(setting.Values, &settingValues)
 
@@ -170,6 +176,11 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.Use
 
 func (kp *keycloakProvider) clientToken(ctx context.Context, clientID, clientSecret string) (string, error) {
 	realm := ctx.Value(utils.CtxRealm)
+	if kp.baseEndpoint == "" || realm == "" || clientID == "" || clientSecret == "" {
+		return "", fmt.Errorf("[keycloak]Invalid params for create client accessToken. baseEndpoint=%s, realm=%s, ClientID=%s, ClientSecret=%s",
+			kp.baseEndpoint, realm, clientID, clientSecret)
+	}
+
 	endpoint := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", kp.baseEndpoint, realm)
 
 	values := url.Values{}
@@ -195,7 +206,7 @@ func (kp *keycloakProvider) clientToken(ctx context.Context, clientID, clientSec
 		return "", errors.Wrap(err, "")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("[keycloak]create client accessToken failure. HTTP Endpoint=%s, HTTP Status code=%d", endpoint, resp.StatusCode)
+		return "", fmt.Errorf("[keycloak]create client accessToken failure. HTTP Endpoint=%s, HTTP Status code=%d, ClientID=%s, ClientSecret=%s, Basic=%s", endpoint, resp.StatusCode, clientID, clientSecret, basicAuth)
 	}
 	defer resp.Body.Close()
 

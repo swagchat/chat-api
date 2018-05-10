@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/utils"
 )
 
 func setGuestMux() {
@@ -26,6 +28,17 @@ func postGuest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	jwtCookie := &http.Cookie{
+		Name:     "jwt",
+		Value:    user.AccessToken,
+		Domain:   r.Header.Get(utils.HeaderRealm),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(1 * time.Hour),
+	}
+	http.SetCookie(w, jwtCookie)
+
 	respond(w, r, http.StatusCreated, "application/json", user)
 }
 
@@ -37,6 +50,17 @@ func getGuest(w http.ResponseWriter, r *http.Request) {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
+
+	jwtCookie := &http.Cookie{
+		Name:     "jwt",
+		Value:    user.AccessToken,
+		Domain:   r.Header.Get(utils.HeaderRealm),
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		Expires:  time.Now().Add(1 * time.Hour),
+	}
+	http.SetCookie(w, jwtCookie)
 
 	respond(w, r, http.StatusOK, "application/json", user)
 }

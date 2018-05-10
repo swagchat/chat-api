@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"go.uber.org/zap/zapcore"
 
@@ -60,6 +62,15 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
+		if post.Type == models.MessageTypeIndicator {
+			messageID := fmt.Sprintf("indicator-%s", post.UserID)
+			messageIds = append(messageIds, messageID)
+			post.MessageID = messageID
+			post.Created = time.Now().Unix()
+			go rtmPublish(ctx, post)
+			continue
+		}
+
 		post.BeforeSave()
 
 		lastMessage, err := datastore.Provider(ctx).InsertMessage(post)
@@ -87,28 +98,8 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 
 		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
 		go postMessageToBotService(ctx, post, user)
-		go func() {
-			userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(room.RoomID)
-			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: err,
-				})
-			}
+		go rtmPublish(ctx, post)
 
-			buffer := new(bytes.Buffer)
-			json.NewEncoder(buffer).Encode(post)
-			rtmEvent := &rtm.RTMEvent{
-				Type:    rtm.MessageEvent,
-				Payload: buffer.Bytes(),
-				UserIDs: userIDs,
-			}
-			err = rtm.Provider().Publish(rtmEvent)
-			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: err,
-				})
-			}
-		}()
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -183,16 +174,35 @@ func postMessageToBotService(ctx context.Context, m *models.Message, u *models.U
 					cred := cm.Text.Credencial
 					res = p.Post(m, bot, cred)
 				case "image":
-					p := bots.Provider(cm.Image.Name)
-					cred := cm.Image.Credencial
-					res = p.Post(m, bot, cred)
+					continue
 				default:
-					p := bots.Provider(cm.Text.Name)
-					cred := cm.Text.Credencial
-					res = p.Post(m, bot, cred)
+					continue
 				}
 				PostMessage(ctx, res.Messages)
 			}
 		}
+	}
+}
+
+func rtmPublish(ctx context.Context, message *models.Message) {
+	userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(message.RoomID)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
+	}
+
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(message)
+	rtmEvent := &rtm.RTMEvent{
+		Type:    rtm.MessageEvent,
+		Payload: buffer.Bytes(),
+		UserIDs: userIDs,
+	}
+	err = rtm.Provider().Publish(rtmEvent)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
 }

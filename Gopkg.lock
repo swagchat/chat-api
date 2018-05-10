@@ -14,6 +14,12 @@
   version = "v1.13.24"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/betchi/go-gimei"
+  packages = ["."]
+  revision = "85fcd040ce98665bcb87643f3e273ce26e4274c8"
+
+[[projects]]
   name = "github.com/confluentinc/confluent-kafka-go"
   packages = ["kafka"]
   revision = "5e4d04e05fc319ce5996a867aafef29059f26862"
@@ -59,12 +65,6 @@
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "0b12d6b5"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/mattn/go-gimei"
-  packages = ["."]
-  revision = "a6cd1f3c71e01b1a25e9f4815949c4ae17cd03fc"
 
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
@@ -147,6 +147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4fca169d4188aef4eabe4ae92d5aaa61af3b73cb834c1896637653e7869157e1"
+  inputs-digest = "7f752333d1209c86cd623dacd9f2d655fabf7005df92a55fdbe931314a011fc8"
   solver-name = "gps-cdcl"
   solver-version = 1

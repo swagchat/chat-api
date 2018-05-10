@@ -2,6 +2,7 @@ package gimei_test
 
 import (
 	"fmt"
+
 	"github.com/mattn/go-gimei"
 )
 
@@ -35,7 +36,7 @@ func ExampleGimeiAddress() {
 	fmt.Println(address)
 	fmt.Println(address.Kanji())
 	fmt.Println(address.Hiragana())
-	fmt.Println(address.Katakana())
+	// fmt.Println(address.Katakana())
 	// Output:
 	// 岡山県大島郡大和村稲木町
 	// 岡山県大島郡大和村稲木町

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -266,7 +267,7 @@ func (r *Room) IsValidPost() *ProblemDetail {
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userIds",
-					Reason: "userIds is empty.",
+					Reason: fmt.Sprintf("When room type is %d, userIds is a required. ", r.Type),
 				},
 			},
 		}

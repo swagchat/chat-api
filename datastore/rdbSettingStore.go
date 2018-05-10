@@ -34,7 +34,7 @@ func rdbSelectLatestSetting(db string) (*models.Setting, error) {
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := utils.AppendStrings("SELECT * FROM ", tableNameSetting, " WHERE expired=0 OR expired>", nowTimestampString, " ORDER BY created DESC LIMIT 1;")
-	if _, err := replica.Select(&settings, query, nil); err != nil {
+	if _, err := replica.Select(&settings, query); err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting setting")
 	}
 	if len(settings) > 0 {

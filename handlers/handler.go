@@ -251,8 +251,9 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		if requestUserID != "" && resourceUserID != "" {
 			if requestUserID != resourceUserID {
 				respondErr(w, r, http.StatusUnauthorized, &models.ProblemDetail{
-					Title:  "Not your resource",
 					Status: http.StatusUnauthorized,
+					Title:  "Not your resource",
+					Detail: fmt.Sprintf("Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
 				})
 				return
 			}

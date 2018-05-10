@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mattn/go-gimei"
+	"github.com/betchi/go-gimei"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
