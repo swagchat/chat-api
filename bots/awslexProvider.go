@@ -56,13 +56,13 @@ func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONTex
 		return r
 	}
 
-	var textPayload utils.JSONText
+	var textPayload json.RawMessage
 	err = json.Unmarshal([]byte("{\"text\": \""+*output.Message+"\"}"), &textPayload)
 	post := &models.Message{
-		RoomID:  m.RoomID,
-		UserID:  b.UserID,
-		Type:    "text",
-		Payload: textPayload,
+		RoomID:    m.RoomID,
+		UserID:    b.UserID,
+		Type:      "text",
+		Payload:   textPayload,
 		EventName: "message",
 	}
 	posts := make([]*models.Message, 0)

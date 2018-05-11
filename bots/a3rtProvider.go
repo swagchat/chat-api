@@ -64,7 +64,7 @@ func (ap *a3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText)
 		})
 	}
 
-	var textPayload utils.JSONText
+	var textPayload json.RawMessage
 	// A3RT
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Results[0].Reply+"\"}"), &textPayload)
 	post := &models.Message{

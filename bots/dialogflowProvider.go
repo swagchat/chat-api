@@ -68,7 +68,7 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 		return r
 	}
 
-	var textPayload utils.JSONText
+	var textPayload json.RawMessage
 	err = json.Unmarshal([]byte("{\"text\": \""+res.Result.Fulfillment.Speech+"\"}"), &textPayload)
 	post := &models.Message{
 		RoomID:    m.RoomID,
