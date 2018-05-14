@@ -73,6 +73,15 @@ type PayloadImage struct {
 	ThumbnailUrl string `json:"thumbnailUrl"`
 }
 
+type PayloadButtons struct {
+	Title string `json:"title"`
+	Text  string `json:"text"`
+}
+
+type PayloadConfirm struct {
+	Text string `json:"text"`
+}
+
 type PayloadLocation struct {
 	Title     string  `json:"title"`
 	Address   string  `json:"address"`

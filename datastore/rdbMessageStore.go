@@ -82,6 +82,14 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		lastMessage = payloadText.Text
 	case "image":
 		lastMessage = "画像を受信しました"
+	case "buttons":
+		var payloadButtons models.PayloadButtons
+		json.Unmarshal(message.Payload, &payloadButtons)
+		lastMessage = payloadButtons.Title
+	case "confirm":
+		var payloadConfirm models.PayloadConfirm
+		json.Unmarshal(message.Payload, &payloadConfirm)
+		lastMessage = payloadConfirm.Text
 	default:
 		lastMessage = "メッセージを受信しました"
 	}

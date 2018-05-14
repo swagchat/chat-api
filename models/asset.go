@@ -22,6 +22,11 @@ var (
 		"application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
 		"application/zip": "zip",
 	}
+
+	ImageMimes = map[string]int{
+		"image/jpeg": 0,
+		"image/png":  0,
+	}
 )
 
 type Asset struct {
@@ -42,15 +47,15 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
 	return json.Marshal(&struct {
-		AssetID   string `json:"assetId"`
-		Extension string `json:"extension"`
-		Mime      string `json:"mime"`
-		Size      int64  `json:"size"`
+		AssetID   string `json:"assetId,omitempty"`
+		Extension string `json:"extension,omitempty"`
+		Mime      string `json:"mime,omitempty"`
+		Size      int64  `json:"size,omitempty"`
 		Width     int    `json:"width,omitempty"`
 		Height    int    `json:"height,omitempty"`
-		URL       string `json:"url"`
-		Created   string `json:"created"`
-		Modified  string `json:"modified"`
+		URL       string `json:"url,omitempty"`
+		Created   string `json:"created,omitempty"`
+		Modified  string `json:"modified,omitempty"`
 	}{
 		AssetID:   a.AssetID,
 		Extension: a.Extension,

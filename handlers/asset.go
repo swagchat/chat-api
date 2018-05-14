@@ -13,6 +13,7 @@ import (
 func setAssetMux() {
 	mux.PostFunc("/assets", commonHandler(postAsset))
 	mux.GetFunc("/assets/:filename", commonHandler(getAsset))
+	mux.GetFunc("/assets/:filename/info", commonHandler(getAssetInfo))
 }
 
 func postAsset(w http.ResponseWriter, r *http.Request) {
@@ -71,10 +72,34 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if asset == nil {
+		respondErr(w, r, http.StatusNotFound, nil)
+		return
+	}
+
 	setLastModified(w, asset.Modified)
 	// w.Header().Set("Cache-Control", "max-age:86400, public")
 	w.Header().Set("Content-Length", strconv.Itoa(len(bytes)))
 	w.Header().Set("Content-Type", http.DetectContentType(bytes))
 	w.WriteHeader(http.StatusOK)
 	w.Write(bytes)
+}
+
+func getAssetInfo(w http.ResponseWriter, r *http.Request) {
+	filename := bone.GetValue(r, "filename")
+	assetID := utils.GetFileNameWithoutExt(filename)
+	ifModifiedSince := r.Header.Get("If-Modified-Since")
+
+	_, asset, pd := services.GetAsset(r.Context(), assetID, ifModifiedSince)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	if asset == nil {
+		respondErr(w, r, http.StatusNotFound, nil)
+		return
+	}
+
+	respond(w, r, http.StatusOK, "application/json", asset)
 }
