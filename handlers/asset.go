@@ -90,7 +90,7 @@ func getAssetInfo(w http.ResponseWriter, r *http.Request) {
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
 
-	_, asset, pd := services.GetAsset(r.Context(), assetID, ifModifiedSince)
+	asset, pd := services.GetAssetInfo(r.Context(), assetID, ifModifiedSince)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

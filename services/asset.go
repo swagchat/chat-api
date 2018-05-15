@@ -69,20 +69,9 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 		}
 	}
 
-	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
-	if err != nil {
-		pd := &models.ProblemDetail{
-			Title:  "File download failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
-		}
+	asset, pd := selectAsset(ctx, assetID)
+	if pd != nil {
 		return nil, nil, pd
-	}
-	if asset == nil {
-		return nil, nil, &models.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
-		}
 	}
 
 	assetInfo := &storage.AssetInfo{
@@ -99,4 +88,33 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 	}
 
 	return bytes, asset, nil
+}
+
+// GetAssetInfo is get asset info
+func GetAssetInfo(ctx context.Context, assetID, ifModifiedSince string) (*models.Asset, *models.ProblemDetail) {
+	asset, pd := selectAsset(ctx, assetID)
+	if pd != nil {
+		return nil, pd
+	}
+
+	return asset, nil
+}
+
+func selectAsset(ctx context.Context, assetID string) (*models.Asset, *models.ProblemDetail) {
+	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File download failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
+	}
+	if asset == nil {
+		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
+			Status: http.StatusNotFound,
+		}
+	}
+	return asset, nil
 }
