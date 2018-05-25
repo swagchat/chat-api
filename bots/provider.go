@@ -16,7 +16,7 @@ type BotResult struct {
 }
 
 type provider interface {
-	Post(*models.Message, *models.Bot, utils.JSONText) BotResult
+	Post(*models.Message, *models.Bot, utils.JSONText) *BotResult
 }
 
 func Provider(serviceName string) provider {

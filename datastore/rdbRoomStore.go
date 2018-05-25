@@ -30,7 +30,7 @@ func rdbCreateRoomStore(db string) {
 	}
 }
 
-func rdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
+func rdbInsertRoom(db string, room *models.Room, opts ...interface{}) (*models.Room, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -39,38 +39,49 @@ func rdbInsertRoom(db string, room *models.Room) (*models.Room, error) {
 
 	err = trans.Insert(room)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return nil, errors.Wrap(err, "An error occurred while creating room")
 	}
 
-	var zero int64
-	zero = 0
-	roomUsers := make([]*models.RoomUser, 0)
-	roomUser := &models.RoomUser{
-		RoomID:      room.RoomID,
-		UserID:      room.UserID,
-		UnreadCount: &zero,
-		MetaData:    []byte("{}"),
-		Created:     room.Created,
-		Modified:    room.Modified,
-	}
-	roomUsers = append(roomUsers, roomUser)
-	for _, userID := range room.RequestRoomUserIDs.UserIDs {
-		roomUsers = append(roomUsers, &models.RoomUser{
-			RoomID:      room.RoomID,
-			UserID:      userID,
-			UnreadCount: &zero,
-			MetaData:    []byte("{}"),
-			Created:     room.Created,
-			Modified:    room.Modified,
-		})
-	}
+	// var zero int64
+	// zero = 0
+	// roomUsers := make([]*models.RoomUser, 0)
+	// roomUser := &models.RoomUser{
+	// 	RoomID:      room.RoomID,
+	// 	UserID:      room.UserID,
+	// 	UnreadCount: &zero,
+	// 	MetaData:    []byte("{}"),
+	// 	Created:     room.Created,
+	// 	Modified:    room.Modified,
+	// }
+	// roomUsers = append(roomUsers, roomUser)
 
-	for _, roomUser := range roomUsers {
-		err = trans.Insert(roomUser)
-		if err != nil {
-			err = trans.Rollback()
-			return nil, errors.Wrap(err, "An error occurred while creating room's users")
+	// for _, userID := range room.RequestRoomUserIDs.UserIDs {
+	// 	ru := &models.RoomUser{
+	// 		RoomID:      room.RoomID,
+	// 		UserID:      userID,
+	// 		UnreadCount: &zero,
+	// 		MetaData:    []byte("{}"),
+	// 		Created:     room.Created,
+	// 		Modified:    room.Modified,
+	// 	}
+	// 	if room.Type == models.CustomerRoom {
+	// 		ru.RoomName = "xxx"
+	// 	}
+	// 	roomUsers = append(roomUsers, ru)
+	// }
+
+	for _, v := range opts {
+		switch v.(type) {
+		case []*models.RoomUser:
+			rus := v.([]*models.RoomUser)
+			for _, ru := range rus {
+				err = trans.Insert(ru)
+				if err != nil {
+					err = trans.Rollback()
+					return nil, errors.Wrap(err, "An error occurred while creating room's users")
+				}
+			}
 		}
 	}
 
@@ -124,7 +135,6 @@ func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
 		"u.picture_url, ",
 		"u.information_url, ",
 		"u.meta_data, ",
-		"u.role, ",
 		"u.is_bot, ",
 		"u.is_can_block, ",
 		"u.is_show_users, ",

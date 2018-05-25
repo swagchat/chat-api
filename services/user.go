@@ -22,7 +22,7 @@ func PostUser(ctx context.Context, post *models.User) (*models.User, *models.Pro
 
 	post.BeforePost()
 
-	user, err := datastore.Provider(ctx).SelectUser(post.UserID, true, true, true)
+	user, err := datastore.Provider(ctx).SelectUser(post.UserID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "User registration failed",
@@ -69,7 +69,7 @@ func GetUsers(ctx context.Context) (*models.Users, *models.ProblemDetail) {
 
 // GetUser is get user
 func GetUser(ctx context.Context, userID string) (*models.User, *models.ProblemDetail) {
-	user, err := datastore.Provider(ctx).SelectUser(userID, true, true, true)
+	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",
@@ -207,8 +207,8 @@ func GetProfile(ctx context.Context, userID string) (*models.User, *models.Probl
 	return user, nil
 }
 
-func selectUser(ctx context.Context, userID string) (*models.User, *models.ProblemDetail) {
-	user, err := datastore.Provider(ctx).SelectUser(userID, false, false, false)
+func selectUser(ctx context.Context, userID string, opts ...interface{}) (*models.User, *models.ProblemDetail) {
+	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get user failed",

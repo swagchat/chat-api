@@ -115,6 +115,7 @@ func (p *mysqlProvider) init() {
 	p.createSettingStore()
 	p.createSubscriptionStore()
 	p.createUserStore()
+	p.createUserRoleStore()
 }
 
 func (p *mysqlProvider) DropDatabase() error {

@@ -22,19 +22,12 @@ type provider interface {
 	settingStore
 	subscriptionStore
 	userStore
+	userRoleStore
 }
 
 // Provider is get datastore provider
 func Provider(ctx context.Context) provider {
 	var p provider
-
-	// ctxDsCfg := ctx.Value(utils.CtxDsCfg)
-	// if ctxDsCfg == nil {
-	// 	logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-	// 		Message: "Database connect error. Database config is nil",
-	// 	})
-	// }
-	// dsCfg := ctxDsCfg.(*utils.Datastore)
 
 	cfg := utils.Config()
 	dsCfg := cfg.Datastore

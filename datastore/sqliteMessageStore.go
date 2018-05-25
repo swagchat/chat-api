@@ -14,12 +14,12 @@ func (p *sqliteProvider) SelectMessage(messageID string) (*models.Message, error
 	return rdbSelectMessage(p.sqlitePath, messageID)
 }
 
-func (p *sqliteProvider) SelectMessages(roomID string, limit, offset int, order string) ([]*models.Message, error) {
-	return rdbSelectMessages(p.sqlitePath, roomID, limit, offset, order)
+func (p *sqliteProvider) SelectMessages(roleIds []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+	return rdbSelectMessages(p.sqlitePath, roleIds, roomID, limit, offset, order)
 }
 
-func (p *sqliteProvider) SelectCountMessagesByRoomID(roomID string) (int64, error) {
-	return rdbSelectCountMessagesByRoomID(p.sqlitePath, roomID)
+func (p *sqliteProvider) SelectCountMessagesByRoomID(roleIDs []models.Role, roomID string) (int64, error) {
+	return rdbSelectCountMessagesByRoomID(p.sqlitePath, roleIDs, roomID)
 }
 
 func (p *sqliteProvider) UpdateMessage(message *models.Message) (*models.Message, error) {

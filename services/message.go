@@ -41,7 +41,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
-		user, pd := selectUser(ctx, post.UserID)
+		user, pd := selectUser(ctx, post.UserID, datastore.WithRoles(true))
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
 				Title:     "Request parameter error. (Create message item)",
@@ -71,8 +71,8 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
+		// save message
 		post.BeforeSave()
-
 		lastMessage, err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
 			pd := &models.ProblemDetail{
@@ -83,8 +83,9 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			errors = append(errors, pd)
 			continue
 		}
-
 		messageIds = append(messageIds, post.MessageID)
+
+		// notification
 		mi := &notification.MessageInfo{
 			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
 		}
@@ -95,11 +96,10 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 				mi.Badge = dBadgeCount
 			}
 		}
-
 		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
-		go postMessageToBotService(ctx, post, user)
-		go rtmPublish(ctx, post)
 
+		rtmPublish(ctx, post)
+		postMessageToBotService(ctx, post, user)
 	}
 
 	responseMessages := &models.ResponseMessages{
@@ -145,9 +145,10 @@ func GetMessage(ctx context.Context, messageID string) (*models.Message, *models
 }
 
 func postMessageToBotService(ctx context.Context, m *models.Message, u *models.User) {
-	if *u.Role == models.Operator || *u.IsBot {
+	if u.IsRole(models.RoleOperator) || u.IsRole(models.RoleBot) {
 		return
 	}
+
 	usersForRoom, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomID)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
@@ -167,7 +168,7 @@ func postMessageToBotService(ctx context.Context, m *models.Message, u *models.U
 				var cm models.CognitiveMap
 				json.Unmarshal(bot.Cognitive, &cm)
 
-				var res bots.BotResult
+				var res *bots.BotResult
 				switch m.Type {
 				case "text":
 					p := bots.Provider(cm.Text.Name)
@@ -178,14 +179,21 @@ func postMessageToBotService(ctx context.Context, m *models.Message, u *models.U
 				default:
 					continue
 				}
-				PostMessage(ctx, res.Messages)
+				if res != nil {
+					PostMessage(ctx, res.Messages)
+				}
 			}
 		}
 	}
 }
 
 func rtmPublish(ctx context.Context, message *models.Message) {
-	userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(message.RoomID)
+	var roles []models.Role
+	if message.SuggestMessageID != "" {
+		roles = []models.Role{models.RoleOperator}
+	}
+
+	userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(message.RoomID, roles)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,

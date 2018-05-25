@@ -24,7 +24,7 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 		return nil, pd
 	}
 
-	put.RemoveDuplicate()
+	// put.RemoveDuplicate()
 
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
 	if err != nil {
@@ -131,16 +131,16 @@ func PutRoomUser(ctx context.Context, put *models.RoomUser) (*models.RoomUser, *
 		return nil, pd
 	}
 
-	var p json.RawMessage
-	err = json.Unmarshal([]byte("{}"), &p)
-	m := &models.Message{
-		RoomID:    roomUser.RoomID,
-		UserID:    roomUser.UserID,
-		Type:      models.MessageTypeUpdateRoomUser,
-		EventName: "message",
-		Payload:   p,
-	}
-	rtmPublish(ctx, m)
+	// var p json.RawMessage
+	// err = json.Unmarshal([]byte("{}"), &p)
+	// m := &models.Message{
+	// 	RoomID:    roomUser.RoomID,
+	// 	UserID:    roomUser.UserID,
+	// 	Type:      models.MessageTypeUpdateRoomUser,
+	// 	EventName: "message",
+	// 	Payload:   p,
+	// }
+	// rtmPublish(ctx, m)
 
 	return roomUser, nil
 }

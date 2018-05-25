@@ -14,12 +14,12 @@ func (p *mysqlProvider) SelectMessage(messageID string) (*models.Message, error)
 	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *mysqlProvider) SelectMessages(roomID string, limit, offset int, order string) ([]*models.Message, error) {
-	return rdbSelectMessages(p.database, roomID, limit, offset, order)
+func (p *mysqlProvider) SelectMessages(roleIds []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+	return rdbSelectMessages(p.database, roleIds, roomID, limit, offset, order)
 }
 
-func (p *mysqlProvider) SelectCountMessagesByRoomID(roomID string) (int64, error) {
-	return rdbSelectCountMessagesByRoomID(p.database, roomID)
+func (p *mysqlProvider) SelectCountMessagesByRoomID(roleIDs []models.Role, roomID string) (int64, error) {
+	return rdbSelectCountMessagesByRoomID(p.database, roleIDs, roomID)
 }
 
 func (p *mysqlProvider) UpdateMessage(message *models.Message) (*models.Message, error) {

@@ -7,7 +7,7 @@ type messageStore interface {
 
 	InsertMessage(message *models.Message) (string, error)
 	SelectMessage(messageID string) (*models.Message, error)
-	SelectMessages(roomID string, limit, offset int, order string) ([]*models.Message, error)
-	SelectCountMessagesByRoomID(roomID string) (int64, error)
+	SelectMessages(roleIds []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error)
+	SelectCountMessagesByRoomID(roleIDs []models.Role, roomID string) (int64, error)
 	UpdateMessage(message *models.Message) (*models.Message, error)
 }

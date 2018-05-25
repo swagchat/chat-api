@@ -6,8 +6,8 @@ func (p *gcpSQLProvider) createRoomStore() {
 	rdbCreateRoomStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertRoom(room *models.Room) (*models.Room, error) {
-	return rdbInsertRoom(p.database, room)
+func (p *gcpSQLProvider) InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error) {
+	return rdbInsertRoom(p.database, room, opts...)
 }
 
 func (p *gcpSQLProvider) SelectRoom(roomID string) (*models.Room, error) {

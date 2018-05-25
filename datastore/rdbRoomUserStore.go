@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"log"
 	"time"
 
 	"github.com/pkg/errors"
@@ -163,14 +164,44 @@ func rdbSelectRoomUsersByUserID(db, userID string) ([]*models.RoomUser, error) {
 	return roomUsers, nil
 }
 
-func rdbSelectRoomUserIDsByRoomID(db, roomID string) ([]string, error) {
+func rdbSelectRoomUserIDsByRoomID(db string, roomID string, opts ...interface{}) ([]string, error) {
 	replica := RdbStore(db).replica()
 
 	var roomUserIDs []string
-	query := utils.AppendStrings("SELECT user_id FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
-	params := map[string]interface{}{
-		"roomId": roomID,
+	var roleIDs []models.Role
+	for _, v := range opts {
+		switch v.(type) {
+		case []models.Role:
+			roleIDs = v.([]models.Role)
+		}
 	}
+
+	var query string
+	var params map[string]interface{}
+	if roleIDs == nil {
+		query = utils.AppendStrings("SELECT ru.user_id ",
+			"FROM ", tableNameRoomUser, " AS ru ",
+			"LEFT JOIN ", tableNameUser, " AS u ",
+			"ON ru.user_id = u.user_id ",
+			"WHERE ru.room_id=:roomId;")
+		params = map[string]interface{}{
+			"roomId": roomID,
+		}
+	} else {
+		roleIDsQuery, pms := utils.MakePrepareForInExpression(roleIDs)
+		params = pms
+		query = utils.AppendStrings("SELECT ru.user_id ",
+			"FROM ", tableNameRoomUser, " AS ru ",
+			"LEFT JOIN ", tableNameUserRole, " AS ur ",
+			"ON ru.user_id = ur.user_id ",
+			"WHERE ru.room_id=:roomId ",
+			"AND role_id IN (", roleIDsQuery, ");")
+		params["roomId"] = roomID
+	}
+
+	log.Printf("%#v\n", query)
+	log.Printf("%#v\n", params)
+
 	_, err := replica.Select(&roomUserIDs, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room users")

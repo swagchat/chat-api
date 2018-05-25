@@ -6,8 +6,8 @@ func (p *sqliteProvider) createRoomStore() {
 	rdbCreateRoomStore(p.sqlitePath)
 }
 
-func (p *sqliteProvider) InsertRoom(room *models.Room) (*models.Room, error) {
-	return rdbInsertRoom(p.sqlitePath, room)
+func (p *sqliteProvider) InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error) {
+	return rdbInsertRoom(p.sqlitePath, room, opts...)
 }
 
 func (p *sqliteProvider) SelectRoom(roomID string) (*models.Room, error) {

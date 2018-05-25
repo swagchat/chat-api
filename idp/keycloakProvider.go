@@ -160,7 +160,7 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.Use
 	var settingValues models.SettingValues
 	json.Unmarshal(setting.Values, &settingValues)
 
-	user, err := datastore.Provider(ctx).SelectUser(userID, true, true, true)
+	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}

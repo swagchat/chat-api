@@ -30,8 +30,8 @@ func (p *gcpSQLProvider) SelectRoomUsersByUserID(userID string) ([]*models.RoomU
 	return rdbSelectRoomUsersByUserID(p.database, userID)
 }
 
-func (p *gcpSQLProvider) SelectRoomUserIDsByRoomID(roomID string) ([]string, error) {
-	return rdbSelectRoomUserIDsByRoomID(p.database, roomID)
+func (p *gcpSQLProvider) SelectRoomUserIDsByRoomID(roomID string, opts ...interface{}) ([]string, error) {
+	return rdbSelectRoomUserIDsByRoomID(p.database, roomID, opts...)
 }
 
 func (p *gcpSQLProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error) {

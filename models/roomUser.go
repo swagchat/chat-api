@@ -12,6 +12,7 @@ import (
 type RoomUser struct {
 	RoomID      string         `json:"roomId" db:"room_id,notnull"`
 	UserID      string         `json:"userId" db:"user_id,notnull"`
+	MainUserID  string         `json:"mainUserId" db:"main_user_id,notnull"`
 	UnreadCount *int64         `json:"unreadCount" db:"unread_count"`
 	MetaData    utils.JSONText `json:"metaData" db:"meta_data"`
 	Created     int64          `json:"created" db:"created,notnull"`
@@ -23,6 +24,7 @@ func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		RoomID      string         `json:"roomId"`
 		UserID      string         `json:"userId"`
+		MainUserID  string         `json:"mainUserID"`
 		UnreadCount *int64         `json:"unreadCount"`
 		MetaData    utils.JSONText `json:"metaData"`
 		Created     string         `json:"created"`
@@ -30,6 +32,7 @@ func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 	}{
 		RoomID:      ru.RoomID,
 		UserID:      ru.UserID,
+		MainUserID:  ru.MainUserID,
 		UnreadCount: ru.UnreadCount,
 		MetaData:    ru.MetaData,
 		Created:     time.Unix(ru.Created, 0).In(l).Format(time.RFC3339),
@@ -177,5 +180,7 @@ func (rus *RequestRoomUserIDs) IsValid(method string, r *Room) *ProblemDetail {
 }
 
 func (rus *RequestRoomUserIDs) RemoveDuplicate() {
-	rus.UserIDs = utils.RemoveDuplicate(rus.UserIDs)
+	if rus != nil {
+		rus.UserIDs = utils.RemoveDuplicate(rus.UserIDs)
+	}
 }

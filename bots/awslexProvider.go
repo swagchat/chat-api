@@ -16,8 +16,8 @@ import (
 type awslexProvider struct {
 }
 
-func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
-	r := BotResult{}
+func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) *BotResult {
+	var r BotResult
 
 	var message string
 	switch m.Type {
@@ -53,7 +53,7 @@ func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONTex
 			Message: "Amazon Lex post error",
 			Error:   err,
 		})
-		return r
+		return &r
 	}
 
 	var textPayload json.RawMessage
@@ -72,5 +72,5 @@ func (ap *awslexProvider) Post(m *models.Message, b *models.Bot, c utils.JSONTex
 	}
 	r.Messages = messages
 
-	return r
+	return &r
 }

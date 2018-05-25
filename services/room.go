@@ -18,28 +18,32 @@ import (
 
 // PostRoom is post room
 func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.ProblemDetail) {
+	user, pd := selectUser(ctx, post.UserID)
+	if pd != nil {
+		return nil, pd
+	}
+
 	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
 
 	post.BeforePost()
-	post.RequestRoomUserIDs.RemoveDuplicate()
 
 	if post.Type == models.CustomerRoom {
-		userIds, err := datastore.Provider(ctx).SelectUserIDsByRole(models.Operator)
+		operatorUserIDs, err := datastore.Provider(ctx).SelectUserIDsByRole(models.RoleOperator)
 		if err != nil {
 			pd := &models.ProblemDetail{
-				Title:  "Room registration failed",
+				Title:  "Get room userIds failed",
 				Status: http.StatusInternalServerError,
 				Error:  err,
 			}
 			return nil, pd
 		}
-		post.RequestRoomUserIDs.UserIDs = userIds
+		post.UserIDs = operatorUserIDs
 	}
 
 	if post.Type == models.OneOnOne {
-		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.RequestRoomUserIDs.UserIDs[0])
+		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.UserIDs[0])
 		if err != nil {
 			pd := &models.ProblemDetail{
 				Title:  "Room registration failed",
@@ -56,19 +60,50 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 		}
 	}
 
-	if pd := post.RequestRoomUserIDs.IsValid("POST", post); pd != nil {
+	// if pd := post.RequestRoomUserIDs.IsValid("POST", post); pd != nil {
+	// 	return nil, pd
+	// }
+
+	rus := make([]*models.RoomUser, 0)
+	if post.UserIDs != nil {
+		var zero int64
+		zero = 0
+		ru := &models.RoomUser{
+			RoomID:      post.RoomID,
+			UserID:      post.UserID,
+			MainUserID:  "",
+			UnreadCount: &zero,
+			MetaData:    []byte("{}"),
+			Created:     post.Created,
+			Modified:    post.Modified,
+		}
+		rus = append(rus, ru)
+
+		for _, userID := range post.UserIDs {
+			ru := &models.RoomUser{
+				RoomID:      post.RoomID,
+				UserID:      userID,
+				UnreadCount: &zero,
+				MetaData:    []byte("{}"),
+				Created:     post.Created,
+				Modified:    post.Modified,
+			}
+			if post.Type == models.CustomerRoom {
+				ru.MainUserID = user.UserID
+			}
+			rus = append(rus, ru)
+		}
+	}
+
+	// if post.UserIDs != nil {
+	notificationTopicID, pd := createTopic(post.RoomID)
+	if pd != nil {
 		return nil, pd
 	}
+	post.NotificationTopicID = notificationTopicID
+	// }
 
-	if post.RequestRoomUserIDs.UserIDs != nil {
-		notificationTopicID, pd := createTopic(post.RoomID)
-		if pd != nil {
-			return nil, pd
-		}
-		post.NotificationTopicID = notificationTopicID
-	}
-
-	room, err := datastore.Provider(ctx).InsertRoom(post)
+	room, err := datastore.Provider(ctx).InsertRoom(post, rus)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Room registration failed",
@@ -134,6 +169,12 @@ func GetRooms(ctx context.Context, values url.Values) (*models.Rooms, *models.Pr
 
 // GetRoom is get room
 func GetRoom(ctx context.Context, roomID string) (*models.Room, *models.ProblemDetail) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, pd := selectUser(ctx, userID, datastore.WithRoles(true))
+	if pd != nil {
+		return nil, pd
+	}
+
 	room, pd := selectRoom(ctx, roomID)
 	if pd != nil {
 		return nil, pd
@@ -150,7 +191,7 @@ func GetRoom(ctx context.Context, roomID string) (*models.Room, *models.ProblemD
 	}
 	room.Users = userForRooms
 
-	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(roomID)
+	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room failed",
@@ -240,12 +281,18 @@ func DeleteRoom(ctx context.Context, roomID string) *models.ProblemDetail {
 
 // GetRoomMessages is get room messages
 func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*models.Messages, *models.ProblemDetail) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, pd := selectUser(ctx, userID, datastore.WithRoles(true))
+	if pd != nil {
+		return nil, pd
+	}
+
 	limit, offset, order, pd := setPagingParams(params)
 	if pd != nil {
 		return nil, pd
 	}
 
-	messages, err := datastore.Provider(ctx).SelectMessages(roomID, limit, offset, order)
+	messages, err := datastore.Provider(ctx).SelectMessages(user.Roles, roomID, limit, offset, order)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room messages failed",
@@ -258,7 +305,7 @@ func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*mo
 		Messages: messages,
 	}
 
-	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(roomID)
+	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room messages failed",

@@ -6,8 +6,8 @@ func (p *mysqlProvider) createRoomStore() {
 	rdbCreateRoomStore(p.database)
 }
 
-func (p *mysqlProvider) InsertRoom(room *models.Room) (*models.Room, error) {
-	return rdbInsertRoom(p.database, room)
+func (p *mysqlProvider) InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error) {
+	return rdbInsertRoom(p.database, room, opts...)
 }
 
 func (p *mysqlProvider) SelectRoom(roomID string) (*models.Room, error) {

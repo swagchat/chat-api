@@ -82,6 +82,10 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		lastMessage = payloadText.Text
 	case "image":
 		lastMessage = "画像を受信しました"
+	case "textSuggest":
+		var p models.PayloadTextSuggest
+		json.Unmarshal(message.Payload, &p)
+		lastMessage = p.Text
 	case "buttons":
 		var payloadButtons models.PayloadButtons
 		json.Unmarshal(message.Payload, &payloadButtons)
@@ -174,22 +178,23 @@ func rdbSelectMessage(db, messageID string) (*models.Message, error) {
 	return nil, nil
 }
 
-func rdbSelectMessages(db, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+func rdbSelectMessages(db string, roleIDs []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error) {
 	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
+	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
 	query := utils.AppendStrings("SELECT * ",
 		"FROM ", tableNameMessage, " ",
 		"WHERE room_id = :roomId ",
+		"AND role IN (", roleIDsQuery, ") ",
 		"AND deleted = 0 ",
 		"ORDER BY created ", order, " ",
 		"LIMIT :limit ",
 		"OFFSET :offset;")
-	params := map[string]interface{}{
-		"roomId": roomID,
-		"limit":  limit,
-		"offset": offset,
-	}
+	params["roomId"] = roomID
+	params["limit"] = limit
+	params["offset"] = offset
+
 	_, err := replica.Select(&messages, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting messages")
@@ -198,16 +203,17 @@ func rdbSelectMessages(db, roomID string, limit, offset int, order string) ([]*m
 	return messages, nil
 }
 
-func rdbSelectCountMessagesByRoomID(db, roomID string) (int64, error) {
+func rdbSelectCountMessagesByRoomID(db string, roleIDs []models.Role, roomID string) (int64, error) {
 	replica := RdbStore(db).replica()
 
+	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
 	query := utils.AppendStrings("SELECT count(id) ",
 		"FROM ", tableNameMessage, " ",
 		"WHERE room_id = :roomId ",
+		"AND role IN (", roleIDsQuery, ") ",
 		"AND deleted = 0;")
-	params := map[string]interface{}{
-		"roomId": roomID,
-	}
+	params["roomId"] = roomID
+
 	count, err := replica.SelectInt(query, params)
 	if err != nil {
 		return 0, errors.Wrap(err, "An error occurred while getting message count")

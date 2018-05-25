@@ -11,7 +11,7 @@ type roomUserStore interface {
 	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*models.RoomUser, error)
 	SelectRoomUsersByRoomID(roomID string) ([]*models.RoomUser, error)
 	SelectRoomUsersByUserID(userID string) ([]*models.RoomUser, error)
-	SelectRoomUserIDsByRoomID(roomID string) ([]string, error)
+	SelectRoomUserIDsByRoomID(roomID string, opts ...interface{}) ([]string, error)
 	SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error)
 	UpdateRoomUser(*models.RoomUser) (*models.RoomUser, error)
 	DeleteRoomUser(roomID string, userIDs []string) error

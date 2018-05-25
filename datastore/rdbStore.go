@@ -21,6 +21,7 @@ var (
 	tableNameSetting      = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "setting")
 	tableNameSubscription = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "subscription")
 	tableNameUser         = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "user")
+	tableNameUserRole     = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "user_role")
 )
 
 type rdbStore struct {

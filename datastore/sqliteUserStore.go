@@ -6,12 +6,12 @@ func (p *sqliteProvider) createUserStore() {
 	rdbCreateUserStore(p.sqlitePath)
 }
 
-func (p *sqliteProvider) InsertUser(user *models.User) (*models.User, error) {
-	return rdbInsertUser(p.sqlitePath, user)
+func (p *sqliteProvider) InsertUser(user *models.User, opts ...interface{}) (*models.User, error) {
+	return rdbInsertUser(p.sqlitePath, user, opts...)
 }
 
-func (p *sqliteProvider) SelectUser(userID string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
-	return rdbSelectUser(p.sqlitePath, userID, isWithRooms, isWithDevices, isWithBlocks)
+func (p *sqliteProvider) SelectUser(userID string, opts ...interface{}) (*models.User, error) {
+	return rdbSelectUser(p.sqlitePath, userID, opts...)
 }
 
 func (p *sqliteProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error) {
@@ -24,10 +24,6 @@ func (p *sqliteProvider) SelectUsers() ([]*models.User, error) {
 
 func (p *sqliteProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
 	return rdbSelectUserIDsByUserIDs(p.sqlitePath, userIDs)
-}
-
-func (p *sqliteProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
-	return rdbSelectUserIDsByRole(p.sqlitePath, role)
 }
 
 func (p *sqliteProvider) UpdateUser(user *models.User) (*models.User, error) {

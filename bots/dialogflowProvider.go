@@ -1,6 +1,7 @@
 package bots
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -16,8 +17,34 @@ import (
 type dialogflowProvider struct {
 }
 
-func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
-	r := BotResult{}
+type dialogFlowCredencial struct {
+	ClientAccessToken string `json:"clientAccessToken"`
+}
+
+type dialogFlowResponse struct {
+	ID        string           `json:"id"`
+	Timestamp string           `json:"timestamp"`
+	Lang      string           `json:"lang"`
+	Result    dialogFlowResult `json:"result"`
+}
+
+type dialogFlowResult struct {
+	Fulfillment dialogFlowFulfillment `json:"fulfillment"`
+	Metadata    dialogFlowMetadata    `json:"metadata"`
+	Score       float64               `json:"score"`
+}
+
+type dialogFlowMetadata struct {
+	IntentID   string `json:"intentId"`
+	IntentName string `json:"intentName"`
+}
+
+type dialogFlowFulfillment struct {
+	Speech string
+}
+
+func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) *BotResult {
+	var r BotResult
 
 	var message string
 	switch m.Type {
@@ -31,7 +58,7 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 		message = "メッセージを受信しました"
 	}
 
-	var cred models.ApiAiCredencial
+	var cred dialogFlowCredencial
 	json.Unmarshal(c, &cred)
 
 	values := url.Values{}
@@ -53,7 +80,7 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 	resp, err := client.Do(req)
 	if err != nil {
 	}
-	var res models.ApiAiResponse
+	var res dialogFlowResponse
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -65,17 +92,34 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 			Message: "Dialogflow response body unmarshal error",
 			Error:   err,
 		})
-		return r
+		return &r
+	}
+
+	score := res.Result.Score
+	if res.Result.Metadata.IntentName == "Default Fallback Intent" {
+		score = 0
 	}
 
 	var textPayload json.RawMessage
-	err = json.Unmarshal([]byte("{\"text\": \""+res.Result.Fulfillment.Speech+"\"}"), &textPayload)
+	payload := fmt.Sprintf("{\"text\":\"%s\",\"score\":%f}", res.Result.Fulfillment.Speech, score)
+	err = json.Unmarshal([]byte(payload), &textPayload)
+	general := models.RoleGeneral
 	post := &models.Message{
 		RoomID:    m.RoomID,
 		UserID:    b.UserID,
-		Type:      "text",
+		Type:      "textSuggest",
 		Payload:   textPayload,
 		EventName: "message",
+		Role:      &general,
+	}
+	if b.Suggest {
+		postCreated := m.Created + 1
+		operator := models.RoleOperator
+
+		post.SuggestMessageID = m.MessageID
+		post.Role = &operator
+		post.Created = postCreated
+		post.Modified = postCreated
 	}
 	posts := make([]*models.Message, 0)
 	posts = append(posts, post)
@@ -84,5 +128,5 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 	}
 	r.Messages = messages
 
-	return r
+	return &r
 }

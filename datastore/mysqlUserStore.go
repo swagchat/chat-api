@@ -6,12 +6,12 @@ func (p *mysqlProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *mysqlProvider) InsertUser(user *models.User) (*models.User, error) {
-	return rdbInsertUser(p.database, user)
+func (p *mysqlProvider) InsertUser(user *models.User, opts ...interface{}) (*models.User, error) {
+	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *mysqlProvider) SelectUser(userID string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
-	return rdbSelectUser(p.database, userID, isWithRooms, isWithDevices, isWithBlocks)
+func (p *mysqlProvider) SelectUser(userID string, opts ...interface{}) (*models.User, error) {
+	return rdbSelectUser(p.database, userID, opts...)
 }
 
 func (p *mysqlProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error) {
@@ -24,10 +24,6 @@ func (p *mysqlProvider) SelectUsers() ([]*models.User, error) {
 
 func (p *mysqlProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
 	return rdbSelectUserIDsByUserIDs(p.database, userIDs)
-}
-
-func (p *mysqlProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
-	return rdbSelectUserIDsByRole(p.database, role)
 }
 
 func (p *mysqlProvider) UpdateUser(user *models.User) (*models.User, error) {

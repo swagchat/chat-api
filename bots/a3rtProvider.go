@@ -17,8 +17,8 @@ import (
 type a3rtProvider struct {
 }
 
-func (ap *a3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) BotResult {
-	r := BotResult{}
+func (ap *a3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText) *BotResult {
+	var r BotResult
 
 	var message string
 	switch m.Type {
@@ -81,5 +81,5 @@ func (ap *a3rtProvider) Post(m *models.Message, b *models.Bot, c utils.JSONText)
 	}
 	r.Messages = messages
 
-	return r
+	return &r
 }

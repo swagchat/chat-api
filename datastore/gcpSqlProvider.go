@@ -113,6 +113,7 @@ func (p *gcpSQLProvider) init() {
 	p.createSettingStore()
 	p.createSubscriptionStore()
 	p.createUserStore()
+	p.createUserRoleStore()
 }
 
 func (p *gcpSQLProvider) DropDatabase() error {

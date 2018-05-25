@@ -80,7 +80,8 @@ type Room struct {
 	Deleted               int64          `json:"-" db:"deleted,notnull"`
 
 	Users []*UserForRoom `json:"users,omitempty" db:"-"`
-	RequestRoomUserIDs
+	// *RequestRoomUserIDs
+	UserIDs []string `json:"userIds,omitempty" db:"-"`
 }
 
 type UserForRoom struct {
@@ -315,6 +316,10 @@ func (r *Room) BeforePost() {
 	if r.SpeechMode == nil {
 		speechMode := SpeechMode(SpeechModeNone)
 		r.SpeechMode = &speechMode
+	}
+
+	if r.UserIDs != nil {
+		r.UserIDs = utils.RemoveDuplicate(r.UserIDs)
 	}
 
 	nowTimestamp := time.Now().Unix()

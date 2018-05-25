@@ -6,12 +6,12 @@ func (p *gcpSQLProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertUser(user *models.User) (*models.User, error) {
-	return rdbInsertUser(p.database, user)
+func (p *gcpSQLProvider) InsertUser(user *models.User, opts ...interface{}) (*models.User, error) {
+	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *gcpSQLProvider) SelectUser(userID string, isWithRooms, isWithDevices, isWithBlocks bool) (*models.User, error) {
-	return rdbSelectUser(p.database, userID, isWithRooms, isWithDevices, isWithBlocks)
+func (p *gcpSQLProvider) SelectUser(userID string, opts ...interface{}) (*models.User, error) {
+	return rdbSelectUser(p.database, userID, opts...)
 }
 
 func (p *gcpSQLProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error) {
@@ -24,10 +24,6 @@ func (p *gcpSQLProvider) SelectUsers() ([]*models.User, error) {
 
 func (p *gcpSQLProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
 	return rdbSelectUserIDsByUserIDs(p.database, userIDs)
-}
-
-func (p *gcpSQLProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
-	return rdbSelectUserIDsByRole(p.database, role)
 }
 
 func (p *gcpSQLProvider) UpdateUser(user *models.User) (*models.User, error) {

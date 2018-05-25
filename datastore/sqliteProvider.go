@@ -59,6 +59,7 @@ func (p *sqliteProvider) init() {
 	p.createSettingStore()
 	p.createSubscriptionStore()
 	p.createUserStore()
+	p.createUserRoleStore()
 }
 
 func (p *sqliteProvider) DropDatabase() error {
