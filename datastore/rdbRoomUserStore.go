@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"log"
 	"time"
 
 	"github.com/pkg/errors"
@@ -37,21 +36,21 @@ func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*models.RoomUser) error 
 	params := map[string]interface{}{"roomId": roomUsers[0].RoomID}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while deleting room's users")
 	}
 
 	for _, roomUser := range roomUsers {
 		err = trans.Insert(roomUser)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while creating room's users")
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while commit creating room's users")
 	}
 
@@ -68,13 +67,13 @@ func rdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 	for _, roomUser := range roomUsers {
 		ru, err := rdbSelectRoomUser(db, roomUser.RoomID, roomUser.UserID)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while creating room's users")
 		}
 		if ru == nil {
 			err = trans.Insert(roomUser)
 			if err != nil {
-				err = trans.Rollback()
+				trans.Rollback()
 				return errors.Wrap(err, "An error occurred while creating room's user")
 			}
 		}
@@ -82,7 +81,7 @@ func rdbInsertRoomUsers(db string, roomUsers []*models.RoomUser) error {
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while commit creating room's user items")
 	}
 
@@ -199,9 +198,6 @@ func rdbSelectRoomUserIDsByRoomID(db string, roomID string, opts ...interface{})
 		params["roomId"] = roomID
 	}
 
-	log.Printf("%#v\n", query)
-	log.Printf("%#v\n", params)
-
 	_, err := replica.Select(&roomUserIDs, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room users")
@@ -273,7 +269,7 @@ func rdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 		query := utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return nil, errors.Wrap(err, "An error occurred while updating room's users")
 		}
 
@@ -287,7 +283,7 @@ func rdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 			}
 			_, err = trans.Exec(query, params)
 			if err != nil {
-				err = trans.Rollback()
+				trans.Rollback()
 				return nil, errors.Wrap(err, "An error occurred while updating user unread count")
 			}
 		}
@@ -295,7 +291,7 @@ func rdbUpdateRoomUser(db string, roomUser *models.RoomUser) (*models.RoomUser, 
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return nil, errors.New("An error occurred while commit updating room's user")
 	}
 
@@ -316,7 +312,7 @@ func rdbDeleteRoomUser(db, roomID string, userIDs []string) error {
 		params = map[string]interface{}{"roomId": roomID}
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while deleting room's users")
 		}
 
@@ -327,7 +323,7 @@ func rdbDeleteRoomUser(db, roomID string, userIDs []string) error {
 		}
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while updating subsctiptions")
 		}
 	} else {
@@ -337,7 +333,7 @@ func rdbDeleteRoomUser(db, roomID string, userIDs []string) error {
 		params["roomId"] = roomID
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while deleting room's users")
 		}
 
@@ -345,14 +341,14 @@ func rdbDeleteRoomUser(db, roomID string, userIDs []string) error {
 		params["deleted"] = time.Now().Unix()
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while updating subsctiptions")
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.New("An error occurred while commit deleting room's users")
 	}
 

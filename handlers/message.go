@@ -21,8 +21,13 @@ func postMessages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	mRes := services.PostMessage(r.Context(), &post)
-	if len(mRes.MessageIds) == 0 {
-		respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
+	// if len(mRes.MessageIds) == 0 {
+	// 	respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
+	// 	return
+	// }
+	if len(mRes.Errors) > 0 {
+		pd := mRes.Errors[0]
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 

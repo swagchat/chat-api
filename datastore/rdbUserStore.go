@@ -36,14 +36,14 @@ func rdbInsertUser(db string, user *models.User, opts ...interface{}) (*models.U
 
 	trans, err := master.Begin()
 	if err = trans.Insert(user); err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return nil, errors.Wrap(err, "An error occurred while insert user")
 	}
 
 	if user.Devices != nil {
 		for _, device := range user.Devices {
 			if err := trans.Insert(device); err != nil {
-				err = trans.Rollback()
+				trans.Rollback()
 				return nil, errors.Wrap(err, "An error occurred while insert user devices")
 			}
 		}
@@ -57,20 +57,20 @@ func rdbInsertUser(db string, user *models.User, opts ...interface{}) (*models.U
 			for _, ur := range urs {
 				bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
 				if err != nil {
-					err = trans.Rollback()
+					trans.Rollback()
 					return nil, errors.Wrap(err, "An error occurred while get user role")
 				}
 				if bu == nil {
 					err = trans.Insert(ur)
 					if err != nil {
-						err = trans.Rollback()
+						trans.Rollback()
 						return nil, errors.Wrap(err, "An error occurred while creating user role")
 					}
 				}
 			}
 
 			if err != nil {
-				err = trans.Rollback()
+				trans.Rollback()
 				return nil, errors.Wrap(err, "An error occurred while insert user roles")
 			}
 		}
@@ -78,7 +78,7 @@ func rdbInsertUser(db string, user *models.User, opts ...interface{}) (*models.U
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return nil, errors.Wrap(err, "An error occurred while commit insert user")
 	}
 

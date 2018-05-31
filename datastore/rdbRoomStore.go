@@ -78,7 +78,7 @@ func rdbInsertRoom(db string, room *models.Room, opts ...interface{}) (*models.R
 			for _, ru := range rus {
 				err = trans.Insert(ru)
 				if err != nil {
-					err = trans.Rollback()
+					trans.Rollback()
 					return nil, errors.Wrap(err, "An error occurred while creating room's users")
 				}
 			}
@@ -87,7 +87,7 @@ func rdbInsertRoom(db string, room *models.Room, opts ...interface{}) (*models.R
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return nil, errors.Wrap(err, "An error occurred while commit creating room")
 	}
 
@@ -196,7 +196,7 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while updating room")
 	}
 
@@ -207,7 +207,7 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
@@ -218,7 +218,7 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while updating room")
 	}
 

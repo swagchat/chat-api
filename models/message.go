@@ -12,7 +12,8 @@ const (
 	MessageTypeText           = "text"
 	MessageTypeImage          = "image"
 	MessageTypeFile           = "file"
-	MessageTypeIndicator      = "indicator"
+	MessageTypeIndicatorStart = "indicatorStart"
+	MessageTypeIndicatorEnd   = "indicatorEnd"
 	MessageTypeUpdateRoomUser = "updateRoomUser"
 )
 
@@ -22,33 +23,33 @@ type Messages struct {
 }
 
 type Message struct {
-	ID               uint64          `json:"-" db:"id"`
-	MessageID        string          `json:"messageId" db:"message_id,notnull"`
-	SuggestMessageID string          `json:"suggestMessageId" db:"suggest_message_id,notnull"`
-	RoomID           string          `json:"roomId" db:"room_id,notnull"`
-	UserID           string          `json:"userId" db:"user_id,notnull"`
-	Type             string          `json:"type,omitempty" db:"type"`
-	EventName        string          `json:"eventName,omitempty" db:"-"`
-	Payload          json.RawMessage `json:"payload" db:"payload"`
-	Role             *Role           `json:"role,omitempty" db:"role,notnull"`
-	Created          int64           `json:"created" db:"created,notnull"`
-	Modified         int64           `json:"modified" db:"modified,notnull"`
-	Deleted          int64           `json:"-" db:"deleted,notnull"`
+	ID               uint64         `json:"-" db:"id"`
+	MessageID        string         `json:"messageId" db:"message_id,notnull"`
+	SuggestMessageID string         `json:"suggestMessageId" db:"suggest_message_id,notnull"`
+	RoomID           string         `json:"roomId" db:"room_id,notnull"`
+	UserID           string         `json:"userId" db:"user_id,notnull"`
+	Type             string         `json:"type,omitempty" db:"type"`
+	EventName        string         `json:"eventName,omitempty" db:"-"`
+	Payload          utils.JSONText `json:"payload" db:"payload"`
+	Role             *Role          `json:"role,omitempty" db:"role,notnull"`
+	Created          int64          `json:"created" db:"created,notnull"`
+	Modified         int64          `json:"modified" db:"modified,notnull"`
+	Deleted          int64          `json:"-" db:"deleted,notnull"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		MessageID        string          `json:"messageId"`
-		SuggestMessageID string          `json:"suggestMessageId"`
-		RoomID           string          `json:"roomId"`
-		UserID           string          `json:"userId"`
-		Type             string          `json:"type"`
-		EventName        string          `json:"eventName,omitempty"`
-		Payload          json.RawMessage `json:"payload"`
-		Role             *Role           `json:"role"`
-		Created          string          `json:"created"`
-		Modified         string          `json:"modified"`
+		MessageID        string         `json:"messageId"`
+		SuggestMessageID string         `json:"suggestMessageId"`
+		RoomID           string         `json:"roomId"`
+		UserID           string         `json:"userId"`
+		Type             string         `json:"type"`
+		EventName        string         `json:"eventName,omitempty"`
+		Payload          utils.JSONText `json:"payload"`
+		Role             *Role          `json:"role"`
+		Created          string         `json:"created"`
+		Modified         string         `json:"modified"`
 	}{
 		MessageID:        m.MessageID,
 		SuggestMessageID: m.SuggestMessageID,

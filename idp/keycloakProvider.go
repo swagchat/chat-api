@@ -135,7 +135,18 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 		Name:   name,
 	}
 	user.BeforeInsertGuest()
-	user, err = datastore.Provider(ctx).InsertUser(user)
+
+	general := &models.UserRole{
+		UserID: user.UserID,
+		RoleID: models.RoleGeneral,
+	}
+	guest := &models.UserRole{
+		UserID: user.UserID,
+		RoleID: models.RoleGuest,
+	}
+	roles := []*models.UserRole{general, guest}
+
+	user, err = datastore.Provider(ctx).InsertUser(user, roles)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}

@@ -33,13 +33,13 @@ func rdbInsertBlockUsers(db string, blockUsers []*models.BlockUser) error {
 	for _, blockUser := range blockUsers {
 		bu, err := rdbSelectBlockUser(db, blockUser.UserID, blockUser.BlockUserID)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while getting block user")
 		}
 		if bu == nil {
 			err = trans.Insert(blockUser)
 			if err != nil {
-				err = trans.Rollback()
+				trans.Rollback()
 				return errors.Wrap(err, "An error occurred while creating block users")
 			}
 		}
@@ -47,7 +47,7 @@ func rdbInsertBlockUsers(db string, blockUsers []*models.BlockUser) error {
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while commit creating block users")
 	}
 

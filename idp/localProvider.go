@@ -28,7 +28,16 @@ func (lp *localProvider) Post(ctx context.Context) (*models.User, error) {
 
 	user.BeforeInsertGuest()
 
-	user, err := datastore.Provider(ctx).InsertUser(user)
+	general := &models.UserRole{
+		UserID: user.UserID,
+		RoleID: models.RoleGeneral,
+	}
+	guest := &models.UserRole{
+		UserID: user.UserID,
+		RoleID: models.RoleGuest,
+	}
+	roles := []*models.UserRole{general, guest}
+	user, err := datastore.Provider(ctx).InsertUser(user, roles)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
@@ -36,7 +45,7 @@ func (lp *localProvider) Post(ctx context.Context) (*models.User, error) {
 }
 
 func (lp *localProvider) Get(ctx context.Context, userID string) (*models.User, error) {
-	user, err := datastore.Provider(ctx).SelectUser(userID, true, true, true)
+	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}

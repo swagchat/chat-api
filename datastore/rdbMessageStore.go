@@ -58,7 +58,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 
 	err = trans.Insert(message)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while creating message")
 	}
 
@@ -66,7 +66,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	query := utils.AppendStrings("SELECT * FROM ", tableNameRoom, " WHERE room_id=:roomId AND deleted=0;")
 	params := map[string]interface{}{"roomId": message.RoomID}
 	if _, err = trans.Select(&rooms, query, params); err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while getting room")
 	}
 	if len(rooms) != 1 {
@@ -111,7 +111,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	room.LastMessageUpdated = time.Now().Unix()
 	_, err = trans.Update(room)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while updating room")
 	}
 
@@ -122,7 +122,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while updating room's user unread count")
 	}
 
@@ -135,7 +135,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	params = map[string]interface{}{"roomId": message.RoomID}
 	_, err = trans.Select(&users, query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while getting room's users")
 	}
 	for _, user := range users {
@@ -146,14 +146,14 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		params := map[string]interface{}{"userId": user.UserID}
 		_, err = trans.Exec(query, params)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return "", errors.Wrap(err, "An error occurred while updating user unread count")
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return "", errors.Wrap(err, "An error occurred while commit creating message")
 	}
 

@@ -123,7 +123,7 @@ func rdbUpdateDevice(db string, device *models.Device) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
@@ -136,13 +136,13 @@ func rdbUpdateDevice(db string, device *models.Device) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while updating device")
 	}
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while commit updating device")
 	}
 
@@ -164,7 +164,7 @@ func rdbDeleteDevice(db, userID string, platform int) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
@@ -175,13 +175,13 @@ func rdbDeleteDevice(db, userID string, platform int) error {
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while deleting device")
 	}
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while commit deleting device")
 	}
 

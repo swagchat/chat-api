@@ -62,8 +62,14 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
-		if post.Type == models.MessageTypeIndicator {
-			messageID := fmt.Sprintf("indicator-%s", post.UserID)
+		if post.Type == models.MessageTypeIndicatorStart || post.Type == models.MessageTypeIndicatorEnd {
+			messageID := ""
+			switch post.Type {
+			case models.MessageTypeIndicatorStart:
+				messageID = fmt.Sprintf("%s-%s", models.MessageTypeIndicatorStart, post.UserID)
+			case models.MessageTypeIndicatorEnd:
+				messageID = fmt.Sprintf("%s-%s", models.MessageTypeIndicatorEnd, post.UserID)
+			}
 			messageIds = append(messageIds, messageID)
 			post.MessageID = messageID
 			post.Created = time.Now().Unix()

@@ -33,13 +33,13 @@ func rdbInsertUserRoles(db string, userRoles []*models.UserRole) error {
 	for _, roleUser := range userRoles {
 		bu, err := rdbSelectUserRole(db, roleUser.UserID, roleUser.RoleID)
 		if err != nil {
-			err = trans.Rollback()
+			trans.Rollback()
 			return errors.Wrap(err, "An error occurred while getting user role")
 		}
 		if bu == nil {
 			err = trans.Insert(roleUser)
 			if err != nil {
-				err = trans.Rollback()
+				trans.Rollback()
 				return errors.Wrap(err, "An error occurred while creating user roles")
 			}
 		}
@@ -47,7 +47,7 @@ func rdbInsertUserRoles(db string, userRoles []*models.UserRole) error {
 
 	err = trans.Commit()
 	if err != nil {
-		err = trans.Rollback()
+		trans.Rollback()
 		return errors.Wrap(err, "An error occurred while commit creating user roles")
 	}
 

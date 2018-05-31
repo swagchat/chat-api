@@ -143,6 +143,17 @@ func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 		jwtHandler(
 			judgeAppClientHandler(
 				func(w http.ResponseWriter, r *http.Request) {
+					// log.Printf("url=%s\n", r.RequestURI)
+					// domain := r.Host
+					// referer := r.Header.Get("Referer")
+					// if referer != "" {
+					// 	url, err := url.Parse(referer)
+					// 	if err != nil {
+					// 		panic(err)
+					// 	}
+					// 	domain = url.Hostname()
+					// }
+					// log.Printf("domain=%s", domain)
 					// for i, v := range r.Header {
 					// 	log.Printf("%s=%s\n", i, v)
 					// }
@@ -180,7 +191,7 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 		}
 
 		go func() {
-			user, err := datastore.Provider(ctx).SelectUser(userID, false, false, false)
+			user, err := datastore.Provider(ctx).SelectUser(userID)
 			if err != nil {
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 					Error: err,

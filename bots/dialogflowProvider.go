@@ -100,7 +100,7 @@ func (dp *dialogflowProvider) Post(m *models.Message, b *models.Bot, c utils.JSO
 		score = 0
 	}
 
-	var textPayload json.RawMessage
+	var textPayload utils.JSONText
 	payload := fmt.Sprintf("{\"text\":\"%s\",\"score\":%f}", res.Result.Fulfillment.Speech, score)
 	err = json.Unmarshal([]byte(payload), &textPayload)
 	general := models.RoleGeneral
