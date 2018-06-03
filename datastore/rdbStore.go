@@ -22,6 +22,7 @@ var (
 	tableNameSubscription = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "subscription")
 	tableNameUser         = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "user")
 	tableNameUserRole     = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "user_role")
+	tableNameWebhook      = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "webhook")
 )
 
 type rdbStore struct {

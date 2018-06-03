@@ -58,7 +58,11 @@ func rdbSelectUserRole(db, userID string, roleID models.Role) (*models.UserRole,
 	replica := RdbStore(db).replica()
 
 	var userRoles []*models.UserRole
-	query := utils.AppendStrings("SELECT * FROM ", tableNameUserRole, " WHERE user_id=:userId AND role_id=:roleId;")
+	query := utils.AppendStrings("SELECT ur.user_id, ur.role_id ",
+		"FROM ", tableNameUserRole, " AS ur ",
+		"LEFT JOIN ", tableNameUser, " AS u ",
+		"ON ur.user_id = u.user_id ",
+		"WHERE ur.user_id=:userId AND ur.role_id=:roleId AND u.deleted=0;")
 	params := map[string]interface{}{
 		"userId": userID,
 		"roleId": roleID,
@@ -79,7 +83,11 @@ func rdbSelectUserRolesByUserID(db, userID string) ([]models.Role, error) {
 	replica := RdbStore(db).replica()
 
 	var roleIDs []models.Role
-	query := utils.AppendStrings("SELECT role_id FROM ", tableNameUserRole, " WHERE user_id=:userId;")
+	query := utils.AppendStrings("SELECT ur.role_id ",
+		"FROM ", tableNameUserRole, " AS ur ",
+		"LEFT JOIN ", tableNameUser, " AS u ",
+		"ON ur.user_id = u.user_id ",
+		"WHERE ur.user_id=:userId AND u.deleted=0;")
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -95,11 +103,13 @@ func rdbSelectUserIDsByRole(db string, role models.Role) ([]string, error) {
 	replica := RdbStore(db).replica()
 
 	var users []*models.User
-	query := utils.AppendStrings("SELECT user_id ",
-		"FROM ", tableNameUserRole,
-		" WHERE role_id=:role;")
+	query := utils.AppendStrings("SELECT ur.user_id ",
+		"FROM ", tableNameUserRole, " AS ur ",
+		"LEFT JOIN ", tableNameUser, " AS u ",
+		"ON ur.user_id = u.user_id ",
+		" WHERE ur.role_id=:roleId AND u.deleted=0;")
 	params := map[string]interface{}{
-		"role": role,
+		"roleId": role,
 	}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {

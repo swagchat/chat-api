@@ -23,6 +23,7 @@ type provider interface {
 	subscriptionStore
 	userStore
 	userRoleStore
+	webhookStore
 }
 
 // Provider is get datastore provider

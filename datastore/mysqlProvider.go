@@ -116,6 +116,7 @@ func (p *mysqlProvider) init() {
 	p.createSubscriptionStore()
 	p.createUserStore()
 	p.createUserRoleStore()
+	p.createWebhookStore()
 }
 
 func (p *mysqlProvider) DropDatabase() error {

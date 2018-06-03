@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/utils"
@@ -32,7 +31,7 @@ func (dp directProvider) Publish(rtmEvent *RTMEvent) error {
 		return errors.Wrap(err, "direct response body read failure")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(utils.AppendStrings("http status code[", strconv.Itoa(resp.StatusCode), "]"))
+		return fmt.Errorf("http status code[%d]", resp.StatusCode)
 	}
 	return nil
 }

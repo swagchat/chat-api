@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "protogen";
+
+message Room{
+  string roomId = 1;
+  string userId = 2;
+  string name = 3;
+  string pictureURL = 4;
+  string type = 5;
+  string WebhookToken = 6;
+  int64 created = 7;
+  int64 modified = 8;
+}
+
+message Messages{
+  int64 allCount = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string order = 4;
+  repeated Message messages = 5;
+}
+
+message Message{
+  string roomId = 1;
+  string userId = 2;
+  string type = 3;
+  string eventName = 4;
+  string text = 5;
+  string WebhookToken = 6;
+  int64 created = 7;
+  int64 modified = 8;
+}

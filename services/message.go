@@ -106,6 +106,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 
 		rtmPublish(ctx, post)
 		postMessageToBotService(ctx, post, user)
+		webhookMessage(ctx, post, user)
 	}
 
 	responseMessages := &models.ResponseMessages{

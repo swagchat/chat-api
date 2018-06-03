@@ -134,6 +134,7 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 		return nil, pd
 	}
 
+	go webhookRoom(ctx, room)
 	go subscribeByRoomUsers(ctx, roomUsers)
 	go publishUserJoin(ctx, room.RoomID)
 
