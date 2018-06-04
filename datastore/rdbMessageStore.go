@@ -76,36 +76,18 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	room := rooms[0]
 	var lastMessage string
 	switch message.Type {
-	case "text":
-		var payloadText models.PayloadText
-		json.Unmarshal(message.Payload, &payloadText)
-		lastMessage = payloadText.Text
 	case "image":
 		lastMessage = "画像を受信しました"
-	case "textSuggest":
-		var p models.PayloadTextSuggest
-		json.Unmarshal(message.Payload, &p)
-		lastMessage = p.Text
-	case "buttons":
-		var payloadButtons models.PayloadButtons
-		json.Unmarshal(message.Payload, &payloadButtons)
-		lastMessage = payloadButtons.Title
-	case "confirm":
-		var payloadConfirm models.PayloadConfirm
-		json.Unmarshal(message.Payload, &payloadConfirm)
-		lastMessage = payloadConfirm.Text
-	case "list":
-		var payloadList models.PayloadList
-		json.Unmarshal(message.Payload, &payloadList)
-		lastMessage = payloadList.Text
-	case "carousel":
-		var payloadCarousel models.PayloadCarousel
-		json.Unmarshal(message.Payload, &payloadCarousel)
-		lastMessage = payloadCarousel.Columns[0].Title
-	case "imageCarousel":
-		lastMessage = "画像を受信しました"
+	case "file":
+		lastMessage = "ファイルを受信しました"
 	default:
-		lastMessage = "メッセージを受信しました"
+		var payloadText models.PayloadText
+		json.Unmarshal(message.Payload, &payloadText)
+		if payloadText.Text == "" {
+			lastMessage = "メッセージを受信しました"
+		} else {
+			lastMessage = payloadText.Text
+		}
 	}
 	room.LastMessage = lastMessage
 	room.LastMessageUpdated = time.Now().Unix()

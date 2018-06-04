@@ -80,40 +80,6 @@ type PayloadImage struct {
 	ThumbnailUrl string `json:"thumbnailUrl"`
 }
 
-type PayloadTextSuggest struct {
-	Text  string  `json:"text"`
-	Score float64 `json:"score"`
-}
-
-type PayloadButtons struct {
-	Title string `json:"title"`
-	Text  string `json:"text"`
-}
-
-type PayloadConfirm struct {
-	Text string `json:"text"`
-}
-
-type PayloadList struct {
-	Text string `json:"text"`
-}
-
-type PayloadCarousel struct {
-	Columns []PayloadCarouselColumn `json:"columns"`
-}
-
-type PayloadCarouselColumn struct {
-	Title string `json:"title"`
-	Text  string `json:"text"`
-}
-
-type PayloadLocation struct {
-	Title     string  `json:"title"`
-	Address   string  `json:"address"`
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
-}
-
 type PayloadUsers struct {
 	Users []string `json:"users"`
 }
