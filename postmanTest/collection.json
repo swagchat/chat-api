@@ -250,7 +250,16 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"name\": \"{{randomUserName}}\"\n}"
@@ -346,7 +355,16 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"userID\": \"{{randomUserId}}\",\n  \"name\": \"{{randomUserName}}\"\n}"
@@ -397,8 +415,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-Preferred-Username",
-						"value": "{{xClientId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -482,8 +500,8 @@
 						"disabled": true
 					},
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -537,8 +555,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -618,8 +636,12 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -672,8 +694,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -712,8 +734,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -781,8 +803,12 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -825,8 +851,12 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -870,8 +900,8 @@
 				"method": "DELETE",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -927,8 +957,12 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -982,8 +1016,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-Preferred-Username",
-						"value": "{{xClientId}}"
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {},
@@ -1067,8 +1101,12 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -1158,8 +1196,12 @@
 				"method": "DELETE",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -1220,8 +1262,12 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {
@@ -1273,8 +1319,12 @@
 				"method": "DELETE",
 				"header": [
 					{
-						"key": "X-User-Id",
-						"value": "{{randomUserId}}"
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-Realm",
+						"value": "swagchat"
 					}
 				],
 				"body": {

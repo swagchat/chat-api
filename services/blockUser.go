@@ -1,95 +1,122 @@
 package services
 
 import (
+	"context"
+	"net/http"
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
 )
 
-func GetBlockUsers(userId string) (*models.BlockUsers, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+// GetBlockUsers is get block users
+func GetBlockUsers(ctx context.Context, userID string) (*models.BlockUsers, *models.ProblemDetail) {
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get block users failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	blockUsers := &models.BlockUsers{
-		BlockUsers: dRes.Data.([]string),
-	}
-	return blockUsers, nil
+	return &models.BlockUsers{
+		BlockUsers: blockUserIDs,
+	}, nil
 }
 
-func PutBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
-	_, pd := selectUser(userId)
+// PutBlockUsers is put block users
+func PutBlockUsers(ctx context.Context, userID string, reqUIDs *models.RequestBlockUserIDs) (*models.BlockUsers, *models.ProblemDetail) {
+	_, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return nil, pd
 	}
 
 	reqUIDs.RemoveDuplicate()
 
-	if pd := reqUIDs.IsValid(userId); pd != nil {
+	if pd := reqUIDs.IsValid(userID); pd != nil {
 		return nil, pd
 	}
 
-	bUIds, pd := getExistUserIds(reqUIDs.UserIds)
+	bUIDs, pd := getExistUserIDs(ctx, reqUIDs.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}
 
 	blockUsers := make([]*models.BlockUser, 0)
 	nowTimestamp := time.Now().Unix()
-	for _, bUId := range bUIds {
+	for _, bUID := range bUIDs {
 		blockUsers = append(blockUsers, &models.BlockUser{
-			UserId:      userId,
-			BlockUserId: bUId,
+			UserID:      userID,
+			BlockUserID: bUID,
 			Created:     nowTimestamp,
 		})
 	}
-	dRes := datastore.DatastoreProvider().InsertBlockUsers(blockUsers)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	err := datastore.Provider(ctx).InsertBlockUsers(blockUsers)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Block user registration failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	dRes = datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnBlockUsers := &models.BlockUsers{
-		BlockUsers: dRes.Data.([]string),
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Block user registration failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	return returnBlockUsers, nil
+	return &models.BlockUsers{
+		BlockUsers: blockUserIDs,
+	}, nil
 }
 
-func DeleteBlockUsers(userId string, reqUIDs *models.RequestBlockUserIds) (*models.BlockUsers, *models.ProblemDetail) {
-	_, pd := selectUser(userId)
+// DeleteBlockUsers is  delete block users
+func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *models.RequestBlockUserIDs) (*models.BlockUsers, *models.ProblemDetail) {
+	_, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return nil, pd
 	}
 
 	reqUIDs.RemoveDuplicate()
 
-	if pd := reqUIDs.IsValid(userId); pd != nil {
+	if pd := reqUIDs.IsValid(userID); pd != nil {
 		return nil, pd
 	}
 
-	bUIds, pd := getExistUserIds(reqUIDs.UserIds)
+	bUIDs, pd := getExistUserIDs(ctx, reqUIDs.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().DeleteBlockUser(userId, bUIds)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	err := datastore.Provider(ctx).DeleteBlockUser(userID, bUIDs)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete block user failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	dRes = datastore.DatastoreProvider().SelectBlockUsersByUserId(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	returnBlockUsers := &models.BlockUsers{
-		BlockUsers: dRes.Data.([]string),
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete block user failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	return returnBlockUsers, nil
+	return &models.BlockUsers{
+		BlockUsers: blockUserIDs,
+	}, nil
 }

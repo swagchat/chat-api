@@ -11,6 +11,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type ctxKey int
+
 const (
 	// AppName is Application name
 	AppName = "chat-api"
@@ -19,34 +21,47 @@ const (
 	// BuildVersion is API build version
 	BuildVersion = "0.9.1"
 
-	KeyLength       = 32
-	TokenLength     = 32
-	HeaderAPIKey    = "X-SwagChat-Api-Key"
-	HeaderAPISecret = "X-SwagChat-Api-Secret"
-	HeaderUserId    = "X-SwagChat-User-Id"
+	// KeyLength is key length
+	KeyLength = 32
+	// TokenLength is token length
+	TokenLength = 32
+
+	// HeaderUserID is http header for userID
+	HeaderUserID = "X-Sub"
+	// HeaderUsername is http header for username
+	HeaderUsername = "X-Preferred-Username"
+	// HeaderRealm is http header for realm
+	HeaderRealm = "X-Realm"
+	// HeaderRealmRoles is http header for realm roles
+	HeaderRealmRoles = "X-Realm-Roles"
+	// HeaderAccountRoles is http header for account roles
+	HeaderAccountRoles = "X-Account-Roles"
+
+	CtxDsCfg ctxKey = iota
+	CtxIsAppClient
+	CtxUserID
+	CtxRealm
+	CtxRoomUser
+	CtxSubscription
 )
 
 var (
-	cfg           *config = NewConfig()
+	cfg           = NewConfig()
 	IsShowVersion bool
 )
 
 type config struct {
 	Version      string
-	HttpPort     string `yaml:"httpPort"`
+	HTTPPort     string `yaml:"httpPort"`
 	Profiling    bool
 	DemoPage     bool `yaml:"demoPage"`
 	ErrorLogging bool `yaml:"errorLogging"`
-	Auth         *Auth
 	Logging      *Logging
 	Storage      *Storage
 	Datastore    *Datastore
 	RTM          *RTM
 	Notification *Notification
-}
-
-type Auth struct {
-	DefaultUsernameJWTClaimName string `yaml:"defaultUsernameJWTClaimName"`
+	IdP          *IdP
 }
 
 type Logging struct {
@@ -57,7 +72,7 @@ type Storage struct {
 	Provider string
 
 	Local struct {
-		Path string `yaml:"localPath"`
+		Path string
 	}
 
 	GCS struct {
@@ -69,7 +84,7 @@ type Storage struct {
 		ThumbnailDirectory string `yaml:"thumbnailDirectory"`
 	}
 
-	AWS struct {
+	AWSS3 struct {
 		Region             string `yaml:"region"`
 		AccessKeyID        string `yaml:"accessKeyId"`
 		SecretAccessKey    string `yaml:"secretAccessKey"`
@@ -81,6 +96,7 @@ type Storage struct {
 }
 
 type Datastore struct {
+	Dynamic  bool
 	Provider string
 
 	User              string
@@ -111,7 +127,7 @@ type RTM struct {
 	Provider string
 
 	Direct struct {
-		Endpoint string `yaml:"directEndpoint"`
+		Endpoint string
 	}
 
 	Kafka struct {
@@ -142,69 +158,60 @@ type Notification struct {
 	}
 }
 
+type IdP struct {
+	Provider string
+
+	// Keycloak
+	Keycloak struct {
+		BaseEndpoint string `yaml:"baseEndpoint"`
+	}
+}
+
 func NewConfig() *config {
 	log.SetFlags(log.Llongfile)
 
-	auth := &Auth{
-		DefaultUsernameJWTClaimName: "preferred_username",
-	}
-
-	logging := &Logging{
-		Level: "development",
-	}
-
-	storage := &Storage{
-		Provider: "local",
-	}
-	storage.Local.Path = "data/assets"
-
-	datastore := &Datastore{
-		Provider: "sqlite",
-	}
-
-	rtm := &RTM{}
-
-	notification := &Notification{}
-
 	c := &config{
 		Version:      "0",
-		HttpPort:     "8101",
+		HTTPPort:     "8101",
 		Profiling:    false,
 		DemoPage:     false,
 		ErrorLogging: false,
-		Auth:         auth,
-		Logging:      logging,
-		Storage:      storage,
-		Datastore:    datastore,
-		RTM:          rtm,
-		Notification: notification,
+		Logging:      &Logging{},
+		Storage:      &Storage{},
+		Datastore: &Datastore{
+			Dynamic: false,
+		},
+		RTM:          &RTM{},
+		Notification: &Notification{},
+		IdP:          &IdP{},
 	}
 
-	c.LoadYaml()
-	c.LoadEnvironment()
-	c.ParseFlag()
+	c.loadYaml()
+	c.loadEnvironment()
+	c.parseFlag()
 	c.after()
 
 	return c
 }
 
+// Config is get config
 func Config() *config {
 	return cfg
 }
 
-func (c *config) LoadYaml() {
+func (c *config) loadYaml() {
 	buf, _ := ioutil.ReadFile("config/app.yaml")
 	yaml.Unmarshal(buf, c)
 }
 
-func (c *config) LoadEnvironment() {
+func (c *config) loadEnvironment() {
 	var v string
 
 	if v = os.Getenv("HTTP_PORT"); v != "" {
-		c.HttpPort = v
+		c.HTTPPort = v
 	}
 	if v = os.Getenv("SC_PORT"); v != "" {
-		c.HttpPort = v
+		c.HTTPPort = v
 	}
 	if v = os.Getenv("SC_PROFILING"); v != "" {
 		if v == "true" {
@@ -226,11 +233,6 @@ func (c *config) LoadEnvironment() {
 		} else if v == "false" {
 			c.ErrorLogging = false
 		}
-	}
-
-	// Auth
-	if v = os.Getenv("SC_AUTH_DEFAULT_USERNAME_JWT_CLAIM_NAME"); v != "" {
-		c.Auth.DefaultUsernameJWTClaimName = v
 	}
 
 	// Logging
@@ -269,29 +271,36 @@ func (c *config) LoadEnvironment() {
 	}
 
 	// Storage - AWS S3
-	if v = os.Getenv("SC_STORAGE_AWS_REGION"); v != "" {
-		c.Storage.AWS.Region = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_REGION"); v != "" {
+		c.Storage.AWSS3.Region = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_ACCESS_KEY_ID"); v != "" {
-		c.Storage.AWS.AccessKeyID = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_ACCESS_KEY_ID"); v != "" {
+		c.Storage.AWSS3.AccessKeyID = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_SECRET_ACCESS_KEY"); v != "" {
-		c.Storage.AWS.SecretAccessKey = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_SECRET_ACCESS_KEY"); v != "" {
+		c.Storage.AWSS3.SecretAccessKey = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_UPLOAD_BUCKET"); v != "" {
-		c.Storage.AWS.UploadBucket = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_UPLOAD_BUCKET"); v != "" {
+		c.Storage.AWSS3.UploadBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_UPLOAD_DIRECTORY"); v != "" {
-		c.Storage.AWS.UploadDirectory = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_UPLOAD_DIRECTORY"); v != "" {
+		c.Storage.AWSS3.UploadDirectory = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_THUMBNAIL_BUCKET"); v != "" {
-		c.Storage.AWS.ThumbnailBucket = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_THUMBNAIL_BUCKET"); v != "" {
+		c.Storage.AWSS3.ThumbnailBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWS_THUMBNAIL_DIRECTORY"); v != "" {
-		c.Storage.AWS.ThumbnailDirectory = v
+	if v = os.Getenv("SC_STORAGE_AWSS3_THUMBNAIL_DIRECTORY"); v != "" {
+		c.Storage.AWSS3.ThumbnailDirectory = v
 	}
 
 	// Datastore
+	if v = os.Getenv("SC_DATASTORE_DYNAMIC"); v != "" {
+		if v == "true" {
+			c.Datastore.Dynamic = true
+		} else if v == "false" {
+			c.Datastore.Dynamic = false
+		}
+	}
 	if v = os.Getenv("SC_DATASTORE_PROVIDER"); v != "" {
 		c.Datastore.Provider = v
 	}
@@ -447,13 +456,23 @@ func (c *config) LoadEnvironment() {
 	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_ANDROID"); v != "" {
 		c.Notification.AmazonSNS.ApplicationArnAndroid = v
 	}
+
+	// IdP
+	if v = os.Getenv("SC_IDP_PROVIDER"); v != "" {
+		c.IdP.Provider = v
+	}
+
+	// IdP Keycloak
+	if v = os.Getenv("SC_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
+		c.IdP.Keycloak.BaseEndpoint = v
+	}
 }
 
-func (c *config) ParseFlag() {
+func (c *config) parseFlag() {
 	flag.BoolVar(&IsShowVersion, "v", false, "")
 	flag.BoolVar(&IsShowVersion, "version", false, "show version")
 
-	flag.StringVar(&c.HttpPort, "httpPort", c.HttpPort, "")
+	flag.StringVar(&c.HTTPPort, "httpPort", c.HTTPPort, "")
 
 	var profiling string
 	flag.StringVar(&profiling, "profiling", "", "")
@@ -463,9 +482,6 @@ func (c *config) ParseFlag() {
 
 	var errorLogging string
 	flag.StringVar(&errorLogging, "errorLogging", "", "false")
-
-	// Auth
-	flag.StringVar(&c.Auth.DefaultUsernameJWTClaimName, "auth.defaultUsernameJWTClaimName", c.Auth.DefaultUsernameJWTClaimName, "")
 
 	// Logging
 	flag.StringVar(&c.Logging.Level, "logging.level", c.Logging.Level, "")
@@ -485,15 +501,16 @@ func (c *config) ParseFlag() {
 	flag.StringVar(&c.Storage.GCS.ThumbnailDirectory, "storage.gcs.thumbnailDirectory", c.Storage.GCS.ThumbnailDirectory, "")
 
 	// Storage - AWS S3
-	flag.StringVar(&c.Storage.AWS.Region, "storage.aws.region", c.Storage.AWS.Region, "")
-	flag.StringVar(&c.Storage.AWS.AccessKeyID, "storage.aws.accessKeyId", c.Storage.AWS.AccessKeyID, "")
-	flag.StringVar(&c.Storage.AWS.SecretAccessKey, "storage.aws.secretAccessKey", c.Storage.AWS.SecretAccessKey, "")
-	flag.StringVar(&c.Storage.AWS.UploadBucket, "storage.aws.uploadBucket", c.Storage.AWS.UploadBucket, "")
-	flag.StringVar(&c.Storage.AWS.UploadDirectory, "storage.aws.uploadDirectory", c.Storage.AWS.UploadDirectory, "")
-	flag.StringVar(&c.Storage.AWS.ThumbnailBucket, "storage.aws.thumbnailBucket", c.Storage.AWS.ThumbnailBucket, "")
-	flag.StringVar(&c.Storage.AWS.ThumbnailDirectory, "storage.aws.thumbnailDirectory", c.Storage.AWS.ThumbnailDirectory, "")
+	flag.StringVar(&c.Storage.AWSS3.Region, "storage.awss3.region", c.Storage.AWSS3.Region, "")
+	flag.StringVar(&c.Storage.AWSS3.AccessKeyID, "storage.awss3.accessKeyId", c.Storage.AWSS3.AccessKeyID, "")
+	flag.StringVar(&c.Storage.AWSS3.SecretAccessKey, "storage.awss3.secretAccessKey", c.Storage.AWSS3.SecretAccessKey, "")
+	flag.StringVar(&c.Storage.AWSS3.UploadBucket, "storage.awss3.uploadBucket", c.Storage.AWSS3.UploadBucket, "")
+	flag.StringVar(&c.Storage.AWSS3.UploadDirectory, "storage.awss3.uploadDirectory", c.Storage.AWSS3.UploadDirectory, "")
+	flag.StringVar(&c.Storage.AWSS3.ThumbnailBucket, "storage.awss3.thumbnailBucket", c.Storage.AWSS3.ThumbnailBucket, "")
+	flag.StringVar(&c.Storage.AWSS3.ThumbnailDirectory, "storage.awss3.thumbnailDirectory", c.Storage.AWSS3.ThumbnailDirectory, "")
 
 	// Datastore
+	flag.BoolVar(&c.Datastore.Dynamic, "datastore.dynamic", c.Datastore.Dynamic, "")
 	flag.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
 	flag.StringVar(&c.Datastore.TableNamePrefix, "datastore.tableNamePrefix", c.Datastore.TableNamePrefix, "")
 	flag.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")
@@ -638,16 +655,46 @@ func (c *config) ParseFlag() {
 	} else if errorLogging == "false" {
 		c.ErrorLogging = false
 	}
+
+	// IdP
+	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
+
+	// IdP Keycloak
+	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
 }
 
 func (c *config) after() {
+	if c.Logging.Level == "" {
+		c.Logging.Level = "development"
+	}
+
+	if c.Storage.Provider == "" {
+		c.Storage.Provider = "local"
+	}
+	if c.Storage.Provider == "local" && c.Storage.Local.Path == "" {
+		c.Storage.Local.Path = "data/assets"
+	}
+
+	if c.Datastore.Provider == "" {
+		c.Datastore.Provider = "sqlite"
+	}
 	if c.Datastore.Provider == "sqlite" {
 		if c.Datastore.SQLite.Path == "" {
 			c.Datastore.SQLite.Path = "/tmp/swagchat.db"
 		}
+		c.Datastore.Database = c.Datastore.SQLite.Path
 	}
 
-	// MaxIdleConnection: "10",
-	// MaxOpenConnection: "10",
+	if c.Datastore.Provider == "mysql" {
+		if c.Datastore.MaxIdleConnection == "" {
+			c.Datastore.MaxIdleConnection = "10"
+		}
+		if c.Datastore.MaxIdleConnection == "" {
+			c.Datastore.MaxOpenConnection = "10"
+		}
+	}
 
+	if c.IdP.Provider == "" {
+		c.IdP.Provider = "local"
+	}
 }

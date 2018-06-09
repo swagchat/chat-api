@@ -1,11 +1,8 @@
 package rtm
 
-type NotUseProvider struct{}
+type notuseProvider struct{}
 
-func (provider NotUseProvider) Init() error {
-	return nil
-}
-
-func (provider NotUseProvider) PublishMessage(mi *MessagingInfo) error {
+func (np notuseProvider) Publish(rtmEvent *RTMEvent) error {
+	// Do not process anything
 	return nil
 }

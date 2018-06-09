@@ -1,319 +1,451 @@
 package datastore
 
 import (
-	"log"
 	"strconv"
 	"time"
 
+	"github.com/pkg/errors"
+	"go.uber.org/zap/zapcore"
+
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
 
-func RdbCreateUserStore() {
-	master := RdbStoreInstance().master()
-	tableMap := master.AddTableWithName(models.User{}, TABLE_NAME_USER)
+func rdbCreateUserStore(db string) {
+	master := RdbStore(db).master()
+
+	tableMap := master.AddTableWithName(models.User{}, tableNameUser)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "user_id" {
 			columnMap.SetUnique(true)
 		}
 	}
-	if err := master.CreateTablesIfNotExists(); err != nil {
-		log.Println(err)
+	err := master.CreateTablesIfNotExists()
+	if err != nil {
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Create user table error",
+			Error:   err,
+		})
 	}
 }
 
-func RdbInsertUser(user *models.User) StoreResult {
-	master := RdbStoreInstance().master()
-	result := StoreResult{}
+func rdbInsertUser(db string, user *models.User, opts ...interface{}) (*models.User, error) {
+	master := RdbStore(db).master()
+
 	trans, err := master.Begin()
 	if err = trans.Insert(user); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while creating user item.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback creating user item.", err)
-		}
-		return result
+		trans.Rollback()
+		return nil, errors.Wrap(err, "An error occurred while insert user")
 	}
 
-	if result.ProblemDetail == nil && user.Devices != nil {
+	if user.Devices != nil {
 		for _, device := range user.Devices {
 			if err := trans.Insert(device); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while creating device item.", err)
-				if err := trans.Rollback(); err != nil {
-					result.ProblemDetail = createProblemDetail("An error occurred while rollback creating user item.", err)
+				trans.Rollback()
+				return nil, errors.Wrap(err, "An error occurred while insert user devices")
+			}
+		}
+	}
+
+	for _, v := range opts {
+		switch v.(type) {
+		case []*models.UserRole:
+			urs := v.([]*models.UserRole)
+
+			for _, ur := range urs {
+				bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
+				if err != nil {
+					trans.Rollback()
+					return nil, errors.Wrap(err, "An error occurred while get user role")
 				}
-				return result
-			}
-		}
-	}
-
-	if result.ProblemDetail == nil {
-		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit creating user item.", err)
-		}
-	}
-	result.Data = user
-	return result
-}
-
-func RdbSelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
-	var users []*models.User
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND deleted=0;")
-	params := map[string]interface{}{"userId": userId}
-	if _, err := slave.Select(&users, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting user item.", err)
-		return result
-	}
-	var user *models.User
-	if len(users) == 1 {
-		user = users[0]
-		if isWithRooms {
-			var rooms []*models.RoomForUser
-			query := utils.AppendStrings("SELECT ",
-				"r.room_id, ",
-				"r.user_id, ",
-				"r.name, ",
-				"r.picture_url, ",
-				"r.information_url, ",
-				"r.meta_data, ",
-				"r.type, ",
-				"r.last_message, ",
-				"r.last_message_updated, ",
-				"r.is_can_left, ",
-				"r.created, ",
-				"r.modified, ",
-				"ru.unread_count AS ru_unread_count, ",
-				"ru.meta_data AS ru_meta_data, ",
-				"ru.created AS ru_created, ",
-				"ru.modified AS ru_modified ",
-				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ON ru.room_id=r.room_id ",
-				"WHERE ru.user_id=:userId AND r.deleted=0 ",
-				"ORDER BY r.last_message_updated DESC;")
-			params := map[string]interface{}{"userId": userId}
-			_, err := slave.Select(&rooms, query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
-				return result
-			}
-
-			var userMinis []*models.UserMini
-			query = utils.AppendStrings("SELECT ",
-				"r.room_id, ",
-				"u.user_id, ",
-				"u.name, ",
-				"u.picture_url, ",
-				"u.is_show_users ",
-				"FROM ", TABLE_NAME_ROOM_USER, " AS ru ",
-				"LEFT JOIN ", TABLE_NAME_ROOM, " AS r ON ru.room_id=r.room_id ",
-				"LEFT JOIN ", TABLE_NAME_USER, " AS u ON ru.user_id=u.user_id ",
-				"WHERE r.room_id IN ( ",
-				"SELECT room_id ",
-				"FROM ", TABLE_NAME_ROOM_USER, " ",
-				"WHERE user_id=:userId ",
-				") ",
-				"ORDER BY ru.room_id",
-			)
-			params = map[string]interface{}{"userId": userId}
-			_, err = slave.Select(&userMinis, query, params)
-			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while getting user's rooms.", err)
-				return result
-			}
-
-			for _, room := range rooms {
-				room.Users = make([]*models.UserMini, 0)
-				for _, userMini := range userMinis {
-					if room.RoomId == userMini.RoomId {
-						room.Users = append(room.Users, userMini)
+				if bu == nil {
+					err = trans.Insert(ur)
+					if err != nil {
+						trans.Rollback()
+						return nil, errors.Wrap(err, "An error occurred while creating user role")
 					}
 				}
 			}
-			user.Rooms = rooms
-		}
 
-		if isWithDevices {
-			var devices []*models.Device
-			query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", TABLE_NAME_DEVICE, " WHERE user_id=:userId")
-			params := map[string]interface{}{"userId": userId}
-			_, err := slave.Select(&devices, query, params)
 			if err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while getting device items.", err)
-				return result
+				trans.Rollback()
+				return nil, errors.Wrap(err, "An error occurred while insert user roles")
 			}
-			user.Devices = devices
 		}
-
-		if isWithBlocks {
-			dRes := RdbSelectBlockUsersByUserId(userId)
-			user.Blocks = dRes.Data.([]string)
-		}
-
-		result.Data = user
 	}
-	return result
+
+	err = trans.Commit()
+	if err != nil {
+		trans.Rollback()
+		return nil, errors.Wrap(err, "An error occurred while commit insert user")
+	}
+
+	return user, nil
 }
 
-func RdbSelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectUser(db, userID string, opts ...interface{}) (*models.User, error) {
+	replica := RdbStore(db).replica()
+
 	var users []*models.User
-	query := utils.AppendStrings("SELECT id FROM ", TABLE_NAME_USER, " WHERE user_id=:userId AND access_token=:accessToken AND deleted=0;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameUser, " WHERE user_id=:userId AND deleted=0;")
+	params := map[string]interface{}{"userId": userID}
+	if _, err := replica.Select(&users, query, params); err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting user")
+	}
+	var user *models.User
+	if len(users) != 1 {
+		return nil, nil
+	}
+
+	user = users[0]
+
+	for _, o := range opts {
+		switch v := o.(type) {
+		case WithBlocks:
+			if WithBlocks(v) {
+				userIDs, err := rdbSelectBlockUsersByUserID(db, userID)
+				if err != nil {
+					return nil, errors.Wrap(err, "An error occurred while getting block users")
+				}
+				user.Blocks = userIDs
+			}
+		case WithDevices:
+			if WithDevices(v) {
+				var devices []*models.Device
+				query = utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", tableNameDevice, " WHERE user_id=:userId")
+				params = map[string]interface{}{"userId": userID}
+				_, err := replica.Select(&devices, query, params)
+				if err != nil {
+					return nil, errors.Wrap(err, "An error occurred while getting devices")
+				}
+				user.Devices = devices
+			}
+		case WithRooms:
+			if WithRooms(v) {
+				var rooms []*models.RoomForUser
+				query := utils.AppendStrings("SELECT ",
+					"r.room_id, ",
+					"r.user_id, ",
+					"r.name, ",
+					"r.picture_url, ",
+					"r.information_url, ",
+					"r.meta_data, ",
+					"r.type, ",
+					"r.last_message, ",
+					"r.last_message_updated, ",
+					"r.is_can_left, ",
+					"r.created, ",
+					"r.modified, ",
+					"ru.main_user_id AS ru_main_user_id, ",
+					"ru.unread_count AS ru_unread_count, ",
+					"ru.meta_data AS ru_meta_data, ",
+					"ru.created AS ru_created, ",
+					"ru.modified AS ru_modified ",
+					"FROM ", tableNameRoomUser, " AS ru ",
+					"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
+					"WHERE ru.user_id=:userId AND r.deleted=0 ",
+					"ORDER BY r.last_message_updated DESC;")
+				params := map[string]interface{}{"userId": userID}
+				_, err := replica.Select(&rooms, query, params)
+				if err != nil {
+					return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+				}
+
+				var userMinis []*models.UserMini
+				query = utils.AppendStrings("SELECT ",
+					"r.room_id, ",
+					"u.user_id, ",
+					"u.name, ",
+					"u.picture_url, ",
+					"u.is_show_users, ",
+					"u.last_accessed ",
+					"FROM ", tableNameRoomUser, " AS ru ",
+					"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
+					"LEFT JOIN ", tableNameUser, " AS u ON ru.user_id=u.user_id ",
+					"WHERE r.room_id IN ( ",
+					"SELECT room_id ",
+					"FROM ", tableNameRoomUser, " ",
+					"WHERE user_id=:userId ",
+					") ",
+					"AND ru.user_id!=:userId ",
+					"ORDER BY ru.room_id",
+				)
+				params = map[string]interface{}{"userId": userID}
+				_, err = replica.Select(&userMinis, query, params)
+				if err != nil {
+					return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+				}
+
+				for _, room := range rooms {
+					room.Users = make([]*models.UserMini, 0)
+					for _, userMini := range userMinis {
+						if room.RoomID == userMini.RoomID {
+							room.Users = append(room.Users, userMini)
+						}
+					}
+				}
+				user.Rooms = rooms
+			}
+		case WithRoles:
+			if WithRoles(v) {
+				roleIDs, err := rdbSelectUserRolesByUserID(db, userID)
+				if err != nil {
+					return nil, errors.Wrap(err, "An error occurred while getting user roles")
+				}
+				user.Roles = roleIDs
+			}
+		default:
+			break
+		}
+	}
+
+	// if withRooms {
+	// var rooms []*models.RoomForUser
+	// query := utils.AppendStrings("SELECT ",
+	// 	"r.room_id, ",
+	// 	"r.user_id, ",
+	// 	"r.name, ",
+	// 	"r.picture_url, ",
+	// 	"r.information_url, ",
+	// 	"r.meta_data, ",
+	// 	"r.type, ",
+	// 	"r.last_message, ",
+	// 	"r.last_message_updated, ",
+	// 	"r.is_can_left, ",
+	// 	"r.created, ",
+	// 	"r.modified, ",
+	// 	"ru.unread_count AS ru_unread_count, ",
+	// 	"ru.meta_data AS ru_meta_data, ",
+	// 	"ru.created AS ru_created, ",
+	// 	"ru.modified AS ru_modified ",
+	// 	"FROM ", tableNameRoomUser, " AS ru ",
+	// 	"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
+	// 	"WHERE ru.user_id=:userId AND r.deleted=0 ",
+	// 	"ORDER BY r.last_message_updated DESC;")
+	// params := map[string]interface{}{"userId": userID}
+	// _, err := replica.Select(&rooms, query, params)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+	// }
+
+	// var userMinis []*models.UserMini
+	// query = utils.AppendStrings("SELECT ",
+	// 	"r.room_id, ",
+	// 	"u.user_id, ",
+	// 	"u.name, ",
+	// 	"u.picture_url, ",
+	// 	"u.role, ",
+	// 	"u.is_show_users, ",
+	// 	"u.last_accessed ",
+	// 	"FROM ", tableNameRoomUser, " AS ru ",
+	// 	"LEFT JOIN ", tableNameRoom, " AS r ON ru.room_id=r.room_id ",
+	// 	"LEFT JOIN ", tableNameUser, " AS u ON ru.user_id=u.user_id ",
+	// 	"WHERE r.room_id IN ( ",
+	// 	"SELECT room_id ",
+	// 	"FROM ", tableNameRoomUser, " ",
+	// 	"WHERE user_id=:userId ",
+	// 	") ",
+	// 	"AND ru.user_id!=:userId ",
+	// 	"ORDER BY ru.room_id",
+	// )
+	// params = map[string]interface{}{"userId": userID}
+	// _, err = replica.Select(&userMinis, query, params)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+	// }
+
+	// for _, room := range rooms {
+	// 	room.Users = make([]*models.UserMini, 0)
+	// 	for _, userMini := range userMinis {
+	// 		if room.RoomID == userMini.RoomID {
+	// 			room.Users = append(room.Users, userMini)
+	// 		}
+	// 	}
+	// }
+	// user.Rooms = rooms
+	// }
+
+	// if withDevices {
+	// var devices []*models.Device
+	// query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id from ", tableNameDevice, " WHERE user_id=:userId")
+	// params := map[string]interface{}{"userId": userID}
+	// _, err := replica.Select(&devices, query, params)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "An error occurred while getting devices")
+	// }
+	// user.Devices = devices
+	// }
+
+	// if withBlocks {
+	// userIds, err := rdbSelectBlockUsersByUserID(db, userID)
+	// if err != nil {
+	// 	return nil, errors.Wrap(err, "An error occurred while getting block users")
+	// }
+	// user.Blocks = userIds
+	// }
+
+	return user, nil
+}
+
+func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*models.User, error) {
+	replica := RdbStore(db).replica()
+
+	var users []*models.User
+	query := utils.AppendStrings("SELECT id FROM ", tableNameUser, " WHERE user_id=:userId AND access_token=:accessToken AND deleted=0;")
 	params := map[string]interface{}{
-		"userId":      userId,
+		"userId":      userID,
 		"accessToken": accessToken,
 	}
-	if _, err := slave.Select(&users, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting user item.", err)
+	_, err := replica.Select(&users, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting user")
 	}
+
 	if len(users) == 1 {
-		result.Data = users[0]
+		return users[0], nil
 	}
-	return result
+
+	return nil, nil
 }
 
-func RdbSelectUsers() StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectUsers(db string) ([]*models.User, error) {
+	replica := RdbStore(db).replica()
+
 	var users []*models.User
-	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_bot, is_public, is_can_block, is_show_users, created, modified FROM ", TABLE_NAME_USER, " WHERE deleted = 0 ORDER BY unread_count DESC;")
-	_, err := slave.Select(&users, query)
+	query := utils.AppendStrings("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, is_bot, is_public, is_can_block, is_show_users, created, modified FROM ", tableNameUser, " WHERE deleted = 0 ORDER BY unread_count DESC;")
+	_, err := replica.Select(&users, query)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting user items.", err)
+		return nil, errors.Wrap(err, "An error occurred while getting user list")
 	}
-	result.Data = users
-	return result
+
+	return users, nil
 }
 
-func RdbSelectUserIdsByUserIds(userIds []string) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
+	replica := RdbStore(db).replica()
+
 	var users []*models.User
-	userIdsQuery, params := utils.MakePrepareForInExpression(userIds)
+	userIdsQuery, params := utils.MakePrepareForInExpression(userIDs)
 	query := utils.AppendStrings("SELECT * ",
-		"FROM ", TABLE_NAME_USER,
+		"FROM ", tableNameUser,
 		" WHERE user_id in (", userIdsQuery, ") AND deleted = 0;")
-	_, err := slave.Select(&users, query, params)
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting userIds.", err)
+		return nil, errors.Wrap(err, "An error occurred while getting userIds")
 	}
 
-	resultUuserIds := make([]string, 0)
+	resultUserIDs := make([]string, 0)
 	for _, user := range users {
-		resultUuserIds = append(resultUuserIds, user.UserId)
+		resultUserIDs = append(resultUserIDs, user.UserID)
 	}
-	result.Data = resultUuserIds
-	return result
+
+	return resultUserIDs, nil
 }
 
-func RdbUpdateUser(user *models.User) StoreResult {
-	master := RdbStoreInstance().master()
+func rdbUpdateUser(db string, user *models.User) (*models.User, error) {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
-	result := StoreResult{}
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
+	}
+
 	_, err = trans.Update(user)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return nil, errors.Wrap(err, "An error occurred while updating user")
 	}
 
 	if *user.UnreadCount == 0 {
-		query := utils.AppendStrings("UPDATE ", TABLE_NAME_ROOM_USER, " SET unread_count=0 WHERE user_id=:userId;")
+		query := utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET unread_count=0 WHERE user_id=:userId;")
 		params := map[string]interface{}{
-			"userId": user.UserId,
+			"userId": user.UserID,
 		}
 		_, err := trans.Exec(query, params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while mark all as read.", err)
-			if err := trans.Rollback(); err != nil {
-				result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-			}
-			return result
+			err = trans.Rollback()
+			return nil, errors.Wrap(err, "An error occurred while updating room user")
 		}
 	}
 
-	if result.ProblemDetail == nil {
-		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit updating user item.", err)
-		}
+	err = trans.Commit()
+	if err != nil {
+		err = trans.Rollback()
+		return nil, errors.Wrap(err, "An error occurred while commit updating user")
 	}
-	result.Data = user
-	return result
+
+	return user, nil
 }
 
-func RdbUpdateUserDeleted(userId string) StoreResult {
-	master := RdbStoreInstance().master()
+func rdbUpdateUserDeleted(db, userID string) error {
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
-	result := StoreResult{}
-	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_ROOM_USER, " WHERE user_id=:userId;")
+
+	query := utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE user_id=:userId;")
 	params := map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while deleting room's user items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while deleting room's users")
 	}
 
-	query = utils.AppendStrings("DELETE FROM ", TABLE_NAME_DEVICE, " WHERE user_id=:userId;")
+	query = utils.AppendStrings("DELETE FROM ", tableNameDevice, " WHERE user_id=:userId;")
 	params = map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while deleting device items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while deleting devices")
 	}
 
-	query = utils.AppendStrings("UPDATE ", TABLE_NAME_SUBSCRIPTION, " SET deleted=:deleted WHERE user_id=:userId;")
+	query = utils.AppendStrings("DELETE FROM ", tableNameBlockUser, " WHERE user_id=:userId;")
 	params = map[string]interface{}{
-		"userId":  userId,
+		"userId": userID,
+	}
+	_, err = trans.Exec(query, params)
+	if err != nil {
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while deleting block users")
+	}
+
+	query = utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE user_id=:userId;")
+	params = map[string]interface{}{
+		"userId":  userID,
 		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating subscription items.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("UPDATE ", TABLE_NAME_USER, " SET deleted=:deleted WHERE user_id=:userId;")
+	query = utils.AppendStrings("UPDATE ", tableNameUser, " SET deleted=:deleted WHERE user_id=:userId;")
 	params = map[string]interface{}{
-		"userId":  userId,
+		"userId":  userID,
 		"deleted": time.Now().Unix(),
 	}
 	_, err = trans.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while updating user item.", err)
-		if err := trans.Rollback(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while rollback updating user item.", err)
-		}
-		return result
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while updating user")
 	}
 
-	if result.ProblemDetail == nil {
-		if err := trans.Commit(); err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while commit updating user item.", err)
-		}
+	err = trans.Commit()
+	if err != nil {
+		err = trans.Rollback()
+		return errors.Wrap(err, "An error occurred while commit updating user")
 	}
-	return result
+
+	return nil
 }
 
-func RdbSelectContacts(userId string) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectContacts(db, userID string) ([]*models.User, error) {
+	replica := RdbStore(db).replica()
+
 	var users []*models.User
 	query := utils.AppendStrings("SELECT ",
 		"u.user_id, ",
@@ -325,24 +457,24 @@ func RdbSelectContacts(userId string) StoreResult {
 		"u.is_public, ",
 		"u.created, ",
 		"u.modified ",
-		"FROM ", TABLE_NAME_USER, " as u ",
+		"FROM ", tableNameUser, " as u ",
 		"WHERE (u.is_public=1 AND u.user_id!=:userId AND u.deleted=0) OR (",
 		"u.user_id IN (",
-		"SELECT ru.user_id FROM ", TABLE_NAME_ROOM_USER, " as ru WHERE ru.user_id!=:userId AND ru.room_id IN (",
-		"SELECT ru.room_id FROM ", TABLE_NAME_ROOM_USER, " as ru ",
-		"LEFT JOIN ", TABLE_NAME_ROOM, " as r ON ru.room_id = r.room_id ",
-		"WHERE ru.user_id=:userId AND r.type!=", strconv.Itoa(int(models.NOTICE_ROOM)),
+		"SELECT ru.user_id FROM ", tableNameRoomUser, " as ru WHERE ru.user_id!=:userId AND ru.room_id IN (",
+		"SELECT ru.room_id FROM ", tableNameRoomUser, " as ru ",
+		"LEFT JOIN ", tableNameRoom, " as r ON ru.room_id = r.room_id ",
+		"WHERE ru.user_id=:userId AND r.type!=", strconv.Itoa(int(models.NoticeRoom)),
 		")) ",
 		"AND u.is_show_users=1 ",
 		"AND u.deleted=0)",
 		"GROUP BY u.user_id ORDER BY u.modified DESC")
 	params := map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
-	_, err := slave.Select(&users, query, params)
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting contact items.", err)
+		return nil, errors.Wrap(err, "An error occurred while getting contacts")
 	}
-	result.Data = users
-	return result
+
+	return users, nil
 }

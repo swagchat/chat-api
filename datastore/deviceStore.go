@@ -2,14 +2,14 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-type DeviceStore interface {
-	CreateDeviceStore()
+type deviceStore interface {
+	createDeviceStore()
 
-	InsertDevice(device *models.Device) StoreResult
-	SelectDevices(userId string) StoreResult
-	SelectDevice(userId string, platform int) StoreResult
-	SelectDevicesByUserId(userId string) StoreResult
-	SelectDevicesByToken(token string) StoreResult
-	UpdateDevice(device *models.Device) StoreResult
-	DeleteDevice(userId string, platform int) StoreResult
+	InsertDevice(device *models.Device) (*models.Device, error)
+	SelectDevices(userID string) ([]*models.Device, error)
+	SelectDevice(userID string, platform int) (*models.Device, error)
+	SelectDevicesByUserID(userID string) ([]*models.Device, error)
+	SelectDevicesByToken(token string) ([]*models.Device, error)
+	UpdateDevice(device *models.Device) error
+	DeleteDevice(userID string, platform int) error
 }

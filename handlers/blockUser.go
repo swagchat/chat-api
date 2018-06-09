@@ -8,15 +8,16 @@ import (
 	"github.com/swagchat/chat-api/services"
 )
 
-func SetBlockUserMux() {
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(GetBlockUsers)))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(PutBlockUsers)))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", colsHandler(userAuthHandler(DeleteBlockUsers)))
+func setBlockUserMux() {
+	mux.GetFunc("/users/#userId^[a-z0-9-]$/blocks", commonHandler(selfResourceAuthzHandler(getBlockUsers)))
+	mux.PutFunc("/users/#userId^[a-z0-9-]$/blocks", commonHandler(selfResourceAuthzHandler(putBlockUsers)))
+	mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blocks", commonHandler(selfResourceAuthzHandler(deleteBlockUsers)))
 }
 
-func GetBlockUsers(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	blockUsers, pd := services.GetBlockUsers(userId)
+func getBlockUsers(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
+
+	blockUsers, pd := services.GetBlockUsers(r.Context(), userID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -25,15 +26,16 @@ func GetBlockUsers(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", blockUsers)
 }
 
-func PutBlockUsers(w http.ResponseWriter, r *http.Request) {
-	var reqUIDs models.RequestBlockUserIds
+func putBlockUsers(w http.ResponseWriter, r *http.Request) {
+	var reqUIDs models.RequestBlockUserIDs
 	if err := decodeBody(r, &reqUIDs); err != nil {
-		respondJsonDecodeError(w, r, "Adding block user list")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	userId := bone.GetValue(r, "userId")
-	blockUsers, pd := services.PutBlockUsers(userId, &reqUIDs)
+	userID := bone.GetValue(r, "userId")
+
+	blockUsers, pd := services.PutBlockUsers(r.Context(), userID, &reqUIDs)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -42,15 +44,16 @@ func PutBlockUsers(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", blockUsers)
 }
 
-func DeleteBlockUsers(w http.ResponseWriter, r *http.Request) {
-	var reqUIDs models.RequestBlockUserIds
+func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
+	var reqUIDs models.RequestBlockUserIDs
 	if err := decodeBody(r, &reqUIDs); err != nil {
-		respondJsonDecodeError(w, r, "Deleting block user list")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	userId := bone.GetValue(r, "userId")
-	blockUsers, pd := services.DeleteBlockUsers(userId, &reqUIDs)
+	userID := bone.GetValue(r, "userId")
+
+	blockUsers, pd := services.DeleteBlockUsers(r.Context(), userID, &reqUIDs)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

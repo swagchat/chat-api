@@ -8,21 +8,22 @@ import (
 	"github.com/swagchat/chat-api/services"
 )
 
-func SetRoomUserMux() {
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(roomAuthHandler(PutRoomUsers)))
-	Mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", colsHandler(roomAuthHandler(PutRoomUser)))
-	Mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", colsHandler(roomAuthHandler(DeleteRoomUsers)))
+func setRoomUserMux() {
+	mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(putRoomUsers)))
+	mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", commonHandler(roomMemberAuthzHandler(putRoomUser)))
+	mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(deleteRoomUsers)))
 }
 
-func PutRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var put models.RequestRoomUserIds
+func putRoomUsers(w http.ResponseWriter, r *http.Request) {
+	var put models.RequestRoomUserIDs
 	if err := decodeBody(r, &put); err != nil {
-		respondJsonDecodeError(w, r, "Adding room's user list")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	roomId := bone.GetValue(r, "roomId")
-	roomUsers, pd := services.PutRoomUsers(roomId, &put)
+	roomID := bone.GetValue(r, "roomId")
+
+	roomUsers, pd := services.PutRoomUsers(r.Context(), roomID, &put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -31,16 +32,17 @@ func PutRoomUsers(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", roomUsers)
 }
 
-func PutRoomUser(w http.ResponseWriter, r *http.Request) {
+func putRoomUser(w http.ResponseWriter, r *http.Request) {
 	var put models.RoomUser
 	if err := decodeBody(r, &put); err != nil {
-		respondJsonDecodeError(w, r, "Update room's user item")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	put.RoomId = bone.GetValue(r, "roomId")
-	put.UserId = bone.GetValue(r, "userId")
-	roomUser, pd := services.PutRoomUser(&put)
+	put.RoomID = bone.GetValue(r, "roomId")
+	put.UserID = bone.GetValue(r, "userId")
+
+	roomUser, pd := services.PutRoomUser(r.Context(), &put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -50,15 +52,16 @@ func PutRoomUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", roomUser)
 }
 
-func DeleteRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var deleteRus models.RequestRoomUserIds
+func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
+	var deleteRus models.RequestRoomUserIDs
 	if err := decodeBody(r, &deleteRus); err != nil {
-		respondJsonDecodeError(w, r, "Deleting room's user list")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	roomId := bone.GetValue(r, "roomId")
-	roomUsers, pd := services.DeleteRoomUsers(roomId, &deleteRus)
+	roomID := bone.GetValue(r, "roomId")
+
+	roomUsers, pd := services.DeleteRoomUsers(r.Context(), roomID, &deleteRus)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

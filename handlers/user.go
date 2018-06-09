@@ -8,58 +8,25 @@ import (
 	"github.com/swagchat/chat-api/services"
 )
 
-func SetUserMux() {
-	Mux.PostFunc("/users", colsHandler(aclHandler(PostUser)))
-	Mux.GetFunc("/users", colsHandler(GetUsers))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(GetUser)))
-	Mux.GetFunc("/profiles/#userId^[a-z0-9-]$", colsHandler(contactsAuthHandler(GetProfile)))
-	Mux.PutFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(PutUser)))
-	Mux.DeleteFunc("/users/#userId^[a-z0-9-]$", colsHandler(userAuthHandler(DeleteUser)))
-	Mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", colsHandler(userAuthHandler(GetUserUnreadCount)))
+func setUserMux() {
+	mux.PostFunc("/users", commonHandler(postUser))
+	mux.GetFunc("/users", commonHandler(adminAuthzHandler(getUsers)))
+	mux.GetFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(getUser)))
+	mux.PutFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(putUser)))
+	mux.DeleteFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(deleteUser)))
+	mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", commonHandler(selfResourceAuthzHandler(getUserUnreadCount)))
+	mux.GetFunc("/users/#userId^[a-z0-9-]$/contacts", commonHandler(selfResourceAuthzHandler(getContacts)))
+	mux.GetFunc("/profiles/#userId^[a-z0-9-]$", commonHandler(contactsAuthzHandler(getProfile)))
 }
 
-func userAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		userID := bone.GetValue(r, "userId")
-		sub := r.Header.Get("X-Sub")
-		if userID != "" && sub != "" {
-			pd := services.UserAuth(userID, sub)
-			if pd != nil {
-				respondErr(w, r, pd.Status, pd)
-				return
-			}
-		}
-		fn(w, r)
-	}
-}
-
-func contactsAuthHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		userID := bone.GetValue(r, "userId")
-		sub := r.Header.Get("X-Sub")
-		if userID != "" && sub != "" {
-			pd := services.ContactsAuth(userID, sub)
-			if pd != nil {
-				respondErr(w, r, pd.Status, pd)
-				return
-			}
-		}
-		fn(w, r)
-	}
-}
-
-func PostUser(w http.ResponseWriter, r *http.Request) {
+func postUser(w http.ResponseWriter, r *http.Request) {
 	var post models.User
 	if err := decodeBody(r, &post); err != nil {
-		respondJsonDecodeError(w, r, "Create user item")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	jwt := &models.JWT{
-		Sub: r.Header.Get("X-Sub"),
-	}
-
-	user, pd := services.PostUser(&post, jwt)
+	user, pd := services.PostUser(r.Context(), &post)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -68,8 +35,8 @@ func PostUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusCreated, "application/json", user)
 }
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-	users, pd := services.GetUsers()
+func getUsers(w http.ResponseWriter, r *http.Request) {
+	users, pd := services.GetUsers(r.Context())
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -78,9 +45,10 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", users)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	user, pd := services.GetUser(userId)
+func getUser(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
+
+	user, pd := services.GetUser(r.Context(), userID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -89,27 +57,16 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", user)
 }
 
-func GetProfile(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	user, pd := services.GetProfile(userId)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "application/json", user)
-}
-
-func PutUser(w http.ResponseWriter, r *http.Request) {
+func putUser(w http.ResponseWriter, r *http.Request) {
 	var put models.User
 	if err := decodeBody(r, &put); err != nil {
-		respondJsonDecodeError(w, r, "Update user item")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	put.UserId = bone.GetValue(r, "userId")
+	put.UserID = bone.GetValue(r, "userId")
 
-	user, pd := services.PutUser(&put)
+	user, pd := services.PutUser(r.Context(), &put)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -118,9 +75,10 @@ func PutUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", user)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	pd := services.DeleteUser(userId)
+func deleteUser(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
+
+	pd := services.DeleteUser(r.Context(), userID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -129,13 +87,38 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNoContent, "", nil)
 }
 
-func GetUserUnreadCount(w http.ResponseWriter, r *http.Request) {
-	userId := bone.GetValue(r, "userId")
-	userUnreadCount, pd := services.GetUserUnreadCount(userId)
+func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
+
+	userUnreadCount, pd := services.GetUserUnreadCount(r.Context(), userID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
 	respond(w, r, http.StatusOK, "application/json", userUnreadCount)
+}
+
+func getContacts(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
+
+	contacts, pd := services.GetContacts(r.Context(), userID)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	respond(w, r, http.StatusOK, "application/json", contacts)
+}
+
+func getProfile(w http.ResponseWriter, r *http.Request) {
+	userID := bone.GetValue(r, "userId")
+
+	user, pd := services.GetProfile(r.Context(), userID)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	respond(w, r, http.StatusOK, "application/json", user)
 }

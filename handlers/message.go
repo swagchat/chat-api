@@ -8,30 +8,36 @@ import (
 	"github.com/swagchat/chat-api/services"
 )
 
-func SetMessageMux() {
-	Mux.PostFunc("/messages", colsHandler(PostMessages))
-	Mux.GetFunc("/messages/#messageId^[a-z0-9-]$", colsHandler(GetMessage))
+func setMessageMux() {
+	mux.PostFunc("/messages", commonHandler(updateLastAccessedHandler(postMessages)))
+	mux.GetFunc("/messages/#messageId^[a-z0-9-]$", commonHandler(updateLastAccessedHandler(getMessage)))
 }
 
-func PostMessages(w http.ResponseWriter, r *http.Request) {
+func postMessages(w http.ResponseWriter, r *http.Request) {
 	var post models.Messages
 	if err := decodeBody(r, &post); err != nil {
-		respondJsonDecodeError(w, r, "Create message item")
+		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	mRes := services.PostMessage(&post)
-	if len(mRes.MessageIds) == 0 {
-		respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
+	mRes := services.PostMessage(r.Context(), &post)
+	// if len(mRes.MessageIds) == 0 {
+	// 	respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
+	// 	return
+	// }
+	if len(mRes.Errors) > 0 {
+		pd := mRes.Errors[0]
+		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
 	respond(w, r, http.StatusCreated, "application/json", mRes)
 }
 
-func GetMessage(w http.ResponseWriter, r *http.Request) {
-	messageId := bone.GetValue(r, "messageId")
-	message, pd := services.GetMessage(messageId)
+func getMessage(w http.ResponseWriter, r *http.Request) {
+	messageID := bone.GetValue(r, "messageId")
+
+	message, pd := services.GetMessage(r.Context(), messageID)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

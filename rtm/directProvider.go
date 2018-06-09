@@ -3,33 +3,35 @@ package rtm
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/utils"
 )
 
-type DirectProvider struct{}
+type directProvider struct{}
 
-func (provider DirectProvider) Init() error {
-	return nil
-}
+func (dp directProvider) Publish(rtmEvent *RTMEvent) error {
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(rtmEvent)
 
-func (provider DirectProvider) PublishMessage(mi *MessagingInfo) error {
-	rawIn := json.RawMessage(mi.Message)
-	input, err := rawIn.MarshalJSON()
-	resp, err := http.Post(utils.AppendStrings(utils.Config().RTM.Direct.Endpoint, "/message"), "application/json", bytes.NewBuffer(input))
+	endpoint := fmt.Sprintf("%s/message", utils.Config().RTM.Direct.Endpoint)
+	resp, err := http.Post(
+		endpoint,
+		"application/json",
+		buffer,
+	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, fmt.Sprintf("direct post failure. HTTP Endpoint=[%s]", endpoint))
 	}
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "direct response body read failure")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(utils.AppendStrings("http status code[", strconv.Itoa(resp.StatusCode), "]"))
+		return fmt.Errorf("http status code[%d]", resp.StatusCode)
 	}
 	return nil
 }

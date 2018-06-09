@@ -2,16 +2,17 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-type RoomUserStore interface {
-	CreateRoomUserStore()
+type roomUserStore interface {
+	createRoomUserStore()
 
-	DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult
-	InsertRoomUsers(roomUsers []*models.RoomUser) StoreResult
-	SelectRoomUser(roomId, userId string) StoreResult
-	SelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult
-	SelectRoomUsersByRoomId(roomId string) StoreResult
-	SelectRoomUsersByUserId(userId string) StoreResult
-	SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult
-	UpdateRoomUser(*models.RoomUser) StoreResult
-	DeleteRoomUser(roomId string, userIds []string) StoreResult
+	DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) error
+	InsertRoomUsers(roomUsers []*models.RoomUser) error
+	SelectRoomUser(roomID, userID string) (*models.RoomUser, error)
+	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*models.RoomUser, error)
+	SelectRoomUsersByRoomID(roomID string) ([]*models.RoomUser, error)
+	SelectRoomUsersByUserID(userID string) ([]*models.RoomUser, error)
+	SelectRoomUserIDsByRoomID(roomID string, opts ...interface{}) ([]string, error)
+	SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error)
+	UpdateRoomUser(*models.RoomUser) (*models.RoomUser, error)
+	DeleteRoomUser(roomID string, userIDs []string) error
 }

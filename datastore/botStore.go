@@ -1,12 +1,9 @@
 package datastore
 
-type BotStore interface {
-	CreateBotStore()
+import "github.com/swagchat/chat-api/models"
 
-	//	InsertBot(bot *models.Bot) StoreResult
-	SelectBot(userId string) StoreResult
-	//	SelectBotByUserId(userId string) StoreResult
-	//	SelectBots() StoreResult
-	//	UpdateBot(bot *models.Bot) StoreResult
-	//	UpdateBotDeleted(botId string) StoreResult
+type botStore interface {
+	createBotStore()
+
+	SelectBot(userID string) (*models.Bot, error)
 }

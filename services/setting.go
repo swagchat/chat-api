@@ -3,23 +3,30 @@
 package services
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
 )
 
-func GetSetting() (*models.Setting, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectLatestSetting()
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+// GetSetting is get setting
+func GetSetting(ctx context.Context) (*models.Setting, *models.ProblemDetail) {
+	setting, err := datastore.Provider(ctx).SelectLatestSetting()
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get setting failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if setting == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
 
-	setting := dRes.Data.(*models.Setting)
 	return setting, nil
 }

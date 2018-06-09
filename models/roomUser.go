@@ -10,8 +10,9 @@ import (
 )
 
 type RoomUser struct {
-	RoomId      string         `json:"roomId" db:"room_id,notnull"`
-	UserId      string         `json:"userId" db:"user_id,notnull"`
+	RoomID      string         `json:"roomId" db:"room_id,notnull"`
+	UserID      string         `json:"userId" db:"user_id,notnull"`
+	MainUserID  string         `json:"mainUserId" db:"main_user_id,notnull"`
 	UnreadCount *int64         `json:"unreadCount" db:"unread_count"`
 	MetaData    utils.JSONText `json:"metaData" db:"meta_data"`
 	Created     int64          `json:"created" db:"created,notnull"`
@@ -21,15 +22,17 @@ type RoomUser struct {
 func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		RoomId      string         `json:"roomId"`
-		UserId      string         `json:"userId"`
+		RoomID      string         `json:"roomId"`
+		UserID      string         `json:"userId"`
+		MainUserID  string         `json:"mainUserID"`
 		UnreadCount *int64         `json:"unreadCount"`
 		MetaData    utils.JSONText `json:"metaData"`
 		Created     string         `json:"created"`
 		Modified    string         `json:"modified"`
 	}{
-		RoomId:      ru.RoomId,
-		UserId:      ru.UserId,
+		RoomID:      ru.RoomID,
+		UserID:      ru.UserID,
+		MainUserID:  ru.MainUserID,
 		UnreadCount: ru.UnreadCount,
 		MetaData:    ru.MetaData,
 		Created:     time.Unix(ru.Created, 0).In(l).Format(time.RFC3339),
@@ -38,7 +41,7 @@ func (ru *RoomUser) MarshalJSON() ([]byte, error) {
 }
 
 func (ru *RoomUser) IsValid() *ProblemDetail {
-	if ru.RoomId != "" && !utils.IsValidId(ru.RoomId) {
+	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room user item)",
 			Status:    http.StatusBadRequest,
@@ -52,7 +55,7 @@ func (ru *RoomUser) IsValid() *ProblemDetail {
 		}
 	}
 
-	if ru.UserId != "" && !utils.IsValidId(ru.UserId) {
+	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
 		return &ProblemDetail{
 			Title:     "Request parameter error. (Create room user item)",
 			Status:    http.StatusBadRequest,
@@ -96,20 +99,19 @@ type ResponseRoomUser struct {
 	Errors    []ErrorRoomUser `json:"errors,omitempty"`
 }
 
-type RequestRoomUserIds struct {
-	UserIds []string `json:"userIds,omitempty" db:"-"`
+type RequestRoomUserIDs struct {
+	UserIDs []string `json:"userIds,omitempty" db:"-"`
 }
 
 type RoomUsers struct {
 	RoomUsers []*RoomUser `json:"roomUsers"`
 }
 
-func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
-	if len(rus.UserIds) == 0 {
+func (rus *RequestRoomUserIDs) IsValid(method string, r *Room) *ProblemDetail {
+	if len(rus.UserIDs) == 0 {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room's user list)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userIds",
@@ -119,30 +121,28 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if *r.Type == ONE_ON_ONE {
-		for _, userId := range rus.UserIds {
-			if userId == r.UserId {
-				return &ProblemDetail{
-					Title:     "Request parameter error. (Create room's user list)",
-					Status:    http.StatusBadRequest,
-					ErrorName: ERROR_NAME_INVALID_PARAM,
-					InvalidParams: []InvalidParam{
-						InvalidParam{
-							Name:   "userIds",
-							Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
-						},
-					},
-				}
-			}
-		}
-	}
+	// if *r.Type == OneOnOne {
+	// 	for _, userId := range rus.UserIds {
+	// 		if userId == r.UserId {
+	// 			return &ProblemDetail{
+	// 				Title:  "Request error",
+	// 				Status: http.StatusBadRequest,
+	// 				InvalidParams: []InvalidParam{
+	// 					InvalidParam{
+	// 						Name:   "userIds",
+	// 						Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
+	// 					},
+	// 				},
+	// 			}
+	// 		}
+	// 	}
+	// }
 
-	if method == "POST" && *r.Type == ONE_ON_ONE {
-		if len(rus.UserIds) == 2 {
+	if method == "POST" && r.Type == OneOnOne {
+		if len(rus.UserIDs) == 2 {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create room's user list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",
@@ -153,12 +153,11 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if method == "PUT" && *r.Type == ONE_ON_ONE {
+	if method == "PUT" && r.Type == OneOnOne {
 		if len(r.Users) == 2 {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Create room's user list)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",
@@ -169,17 +168,19 @@ func (rus *RequestRoomUserIds) IsValid(method string, r *Room) *ProblemDetail {
 		}
 	}
 
-	if method == "DELETE" && *r.Type == ONE_ON_ONE {
-		return &ProblemDetail{
-			Title:     "Operation not permitted. (Delete room's user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_OPERATION_NOT_PERMITTED,
-		}
-	}
+	// if method == "DELETE" && *r.Type == OneOnOne {
+	// 	return &ProblemDetail{
+	// 		Title:     "Request error",
+	// 		Status:    http.StatusBadRequest,
+	// 		ErrorName: ERROR_NAME_OPERATION_NOT_PERMITTED,
+	// 	}
+	// }
 
 	return nil
 }
 
-func (rus *RequestRoomUserIds) RemoveDuplicate() {
-	rus.UserIds = utils.RemoveDuplicate(rus.UserIds)
+func (rus *RequestRoomUserIDs) RemoveDuplicate() {
+	if rus != nil {
+		rus.UserIDs = utils.RemoveDuplicate(rus.UserIDs)
+	}
 }

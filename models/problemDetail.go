@@ -11,12 +11,12 @@ const (
 
 type ProblemDetail struct {
 	Type          string         `json:"type,omitempty"`
-	Title         string         `json:"title"`
-	Status        int            `json:"status,omitempty"`
+	Title         string         `json:"title,omitempty"`
+	Status        int            `json:"-"`
 	Detail        string         `json:"detail,omitempty"`
 	Instance      string         `json:"instance,omitempty"`
-	ErrorName     string         `json:"errorName"`
 	InvalidParams []InvalidParam `json:"invalidParams,omitempty"`
+	ErrorName     string         `json:"errorName,omitempty"`
 	Error         error          `json:"-"`
 }
 

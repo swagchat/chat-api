@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *gcpSqlProvider) CreateRoomStore() {
-	RdbCreateRoomStore()
+func (p *gcpSQLProvider) createRoomStore() {
+	rdbCreateRoomStore(p.database)
 }
 
-func (p *gcpSqlProvider) InsertRoom(room *models.Room) StoreResult {
-	return RdbInsertRoom(room)
+func (p *gcpSQLProvider) InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error) {
+	return rdbInsertRoom(p.database, room, opts...)
 }
 
-func (p *gcpSqlProvider) SelectRoom(roomId string) StoreResult {
-	return RdbSelectRoom(roomId)
+func (p *gcpSQLProvider) SelectRoom(roomID string) (*models.Room, error) {
+	return rdbSelectRoom(p.database, roomID)
 }
 
-func (p *gcpSqlProvider) SelectRooms() StoreResult {
-	return RdbSelectRooms()
+func (p *gcpSQLProvider) SelectRooms() ([]*models.Room, error) {
+	return rdbSelectRooms(p.database)
 }
 
-func (p *gcpSqlProvider) SelectUsersForRoom(roomId string) StoreResult {
-	return RdbSelectUsersForRoom(roomId)
+func (p *gcpSQLProvider) SelectUsersForRoom(roomID string) ([]*models.UserForRoom, error) {
+	return rdbSelectUsersForRoom(p.database, roomID)
 }
 
-func (p *gcpSqlProvider) SelectCountRooms() StoreResult {
-	return RdbSelectCountRooms()
+func (p *gcpSQLProvider) SelectCountRooms() (int64, error) {
+	return rdbSelectCountRooms(p.database)
 }
 
-func (p *gcpSqlProvider) UpdateRoom(room *models.Room) StoreResult {
-	return RdbUpdateRoom(room)
+func (p *gcpSQLProvider) UpdateRoom(room *models.Room) (*models.Room, error) {
+	return rdbUpdateRoom(p.database, room)
 }
 
-func (p *gcpSqlProvider) UpdateRoomDeleted(roomId string) StoreResult {
-	return RdbUpdateRoomDeleted(roomId)
+func (p *gcpSQLProvider) UpdateRoomDeleted(roomID string) error {
+	return rdbUpdateRoomDeleted(p.database, roomID)
 }

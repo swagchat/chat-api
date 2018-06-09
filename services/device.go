@@ -2,79 +2,91 @@ package services
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/utils"
 )
 
-func GetDevices(userId string) (*models.Devices, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectDevices(userId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-
-	devices := &models.Devices{
-		Devices: dRes.Data.([]*models.Device),
-	}
-	return devices, nil
-}
-
-func GetDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
-	devide, pd := SelectDevice(userId, platform)
-	if devide == nil {
-		return nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
+// GetDevices is get devices
+func GetDevices(ctx context.Context, userID string) (*models.Devices, *models.ProblemDetail) {
+	devices, err := datastore.Provider(ctx).SelectDevices(userID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get device failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
+		return nil, pd
 	}
-	return devide, pd
+
+	return &models.Devices{
+		Devices: devices,
+	}, nil
 }
 
-func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
+// GetDevice is get device
+func GetDevice(ctx context.Context, userID string, platform int) (*models.Device, *models.ProblemDetail) {
+	device, pd := selectDevice(ctx, userID, platform)
+	if pd != nil {
+		return nil, pd
+	}
+
+	return device, nil
+}
+
+// PutDevice is put device
+func PutDevice(ctx context.Context, put *models.Device) (*models.Device, *models.ProblemDetail) {
 	if pd := put.IsValid(); pd != nil {
 		return nil, pd
 	}
 
 	// User existence check
-	_, pd := selectUser(put.UserId)
+	_, pd := selectUser(ctx, put.UserID)
 	if pd != nil {
 		return nil, pd
 	}
 
 	isExist := true
-	device, pd := SelectDevice(put.UserId, put.Platform)
+	device, pd := selectDevice(ctx, put.UserID, put.Platform)
 	if device == nil {
 		isExist = false
 	}
 
 	if !isExist || (device.Token != put.Token) {
-		ctx, _ := context.WithCancel(context.Background())
-
 		// When using another user on the same device, delete the notification information
 		// of the olderuser in order to avoid duplication of the device token
-		dRes := datastore.DatastoreProvider().SelectDevicesByToken(put.Token)
-		if dRes.ProblemDetail != nil {
-			return nil, dRes.ProblemDetail
+		deleteDevices, err := datastore.Provider(ctx).SelectDevicesByToken(put.Token)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Update device failed",
+				Status: http.StatusInternalServerError,
+				Error:  err,
+			}
+			return nil, pd
 		}
-		if dRes.Data != nil {
+		if deleteDevices != nil {
 			wg := &sync.WaitGroup{}
-			deleteDevices := dRes.Data.([]*models.Device)
 			for _, deleteDevice := range deleteDevices {
-				nRes := <-notification.NotificationProvider().DeleteEndpoint(deleteDevice.NotificationDeviceId)
+				nRes := <-notification.Provider().DeleteEndpoint(deleteDevice.NotificationDeviceID)
 				if nRes.ProblemDetail != nil {
 					return nil, nRes.ProblemDetail
 				}
-				dRes := datastore.DatastoreProvider().DeleteDevice(deleteDevice.UserId, deleteDevice.Platform)
-				if dRes.ProblemDetail != nil {
-					return nil, dRes.ProblemDetail
+				err := datastore.Provider(ctx).DeleteDevice(deleteDevice.UserID, deleteDevice.Platform)
+				if err != nil {
+					pd := &models.ProblemDetail{
+						Title:  "Update device failed",
+						Status: http.StatusInternalServerError,
+						Error:  err,
+					}
+					return nil, pd
 				}
 				wg.Add(1)
 				go unsubscribeByDevice(ctx, deleteDevice, wg)
@@ -82,21 +94,26 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 			wg.Wait()
 		}
 
-		nRes := <-notification.NotificationProvider().CreateEndpoint(put.UserId, put.Platform, put.Token)
+		nRes := <-notification.Provider().CreateEndpoint(put.UserID, put.Platform, put.Token)
 		if nRes.ProblemDetail != nil {
 			return nil, nRes.ProblemDetail
 		}
-		put.NotificationDeviceId = put.Token
+		put.NotificationDeviceID = put.Token
 		if nRes.Data != nil {
-			put.NotificationDeviceId = *nRes.Data.(*string)
+			put.NotificationDeviceID = *nRes.Data.(*string)
 		}
 
 		if isExist {
-			dRes := datastore.DatastoreProvider().UpdateDevice(put)
-			if dRes.ProblemDetail != nil {
-				return nil, dRes.ProblemDetail
+			err := datastore.Provider(ctx).UpdateDevice(put)
+			if err != nil {
+				pd := &models.ProblemDetail{
+					Title:  "Update device failed",
+					Status: http.StatusInternalServerError,
+					Error:  err,
+				}
+				return nil, pd
 			}
-			nRes = <-notification.NotificationProvider().DeleteEndpoint(device.NotificationDeviceId)
+			nRes = <-notification.Provider().DeleteEndpoint(device.NotificationDeviceID)
 			if nRes.ProblemDetail != nil {
 				return nil, nRes.ProblemDetail
 			}
@@ -108,69 +125,85 @@ func PutDevice(put *models.Device) (*models.Device, *models.ProblemDetail) {
 				go subscribeByDevice(ctx, put, nil)
 			}()
 		} else {
-			dRes := datastore.DatastoreProvider().InsertDevice(put)
-			if dRes.ProblemDetail != nil {
-				return nil, dRes.ProblemDetail
+			device, err = datastore.Provider(ctx).InsertDevice(put)
+			if err != nil {
+				pd := &models.ProblemDetail{
+					Title:  "Update device failed",
+					Status: http.StatusInternalServerError,
+					Error:  err,
+				}
+				return nil, pd
 			}
-			go subscribeByDevice(ctx, put, nil)
+			go subscribeByDevice(ctx, device, nil)
 		}
-		return put, nil
-	} else {
-		return nil, nil
+		return device, nil
 	}
+
+	return nil, nil
 }
 
-func DeleteDevice(userId string, platform int) *models.ProblemDetail {
+// DeleteDevice is delete device
+func DeleteDevice(ctx context.Context, userID string, platform int) *models.ProblemDetail {
 	// User existence check
-	_, pd := selectUser(userId)
+	_, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return pd
 	}
 
-	device, pd := SelectDevice(userId, platform)
+	device, pd := selectDevice(ctx, userID, platform)
 	if pd != nil {
 		return pd
 	}
 
-	np := notification.NotificationProvider()
-	nRes := <-np.DeleteEndpoint(device.NotificationDeviceId)
+	np := notification.Provider()
+	nRes := <-np.DeleteEndpoint(device.NotificationDeviceID)
 	if nRes.ProblemDetail != nil {
 		return nRes.ProblemDetail
 	}
 
-	dRes := datastore.DatastoreProvider().DeleteDevice(userId, platform)
-	if dRes.ProblemDetail != nil {
-		return dRes.ProblemDetail
+	err := datastore.Provider(ctx).DeleteDevice(userID, platform)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete device failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return pd
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
 	go unsubscribeByDevice(ctx, device, nil)
 
 	return nil
 }
 
-func SelectDevice(userId string, platform int) (*models.Device, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectDevice(userId, platform)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+func selectDevice(ctx context.Context, userID string, platform int) (*models.Device, *models.ProblemDetail) {
+	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get device failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	if dRes.Data == nil {
-		return nil, nil
+	if device == nil {
+		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
+			Status: http.StatusNotFound,
+		}
 	}
-	return dRes.Data.(*models.Device), nil
+	return device, nil
 }
 
 func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
-	dRes := datastore.DatastoreProvider().SelectRoomUsersByUserId(device.UserId)
-	if dRes.ProblemDetail != nil {
-		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-		utils.AppLogger.Error("",
-			zap.String("problemDetail", string(pdBytes)),
-			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-		)
+	roomUser, err := datastore.Provider(ctx).SelectRoomUsersByUserID(device.UserID)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
-	if dRes.Data != nil {
-		<-subscribe(ctx, dRes.Data.([]*models.RoomUser), device)
+	if roomUser != nil {
+		<-subscribe(ctx, roomUser, device)
 	}
 	if wg != nil {
 		wg.Done()
@@ -178,65 +211,71 @@ func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.Wait
 }
 
 func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
-	dRes := datastore.DatastoreProvider().SelectDeletedSubscriptionsByUserIdAndPlatform(device.UserId, device.Platform)
-	if dRes.ProblemDetail != nil {
-		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-		utils.AppLogger.Error("",
-			zap.String("problemDetail", string(pdBytes)),
-			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-		)
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserIDAndPlatform(device.UserID, device.Platform)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
-	<-unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	<-unsubscribe(ctx, subscriptions)
 	if wg != nil {
 		wg.Done()
 	}
 }
 
 func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models.Device) chan bool {
-	np := notification.NotificationProvider()
-	dp := datastore.DatastoreProvider()
+	np := notification.Provider()
+	dp := datastore.Provider(ctx)
 	doneCh := make(chan bool, 1)
 	pdCh := make(chan *models.ProblemDetail, 1)
 	finishCh := make(chan bool, 1)
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
-		ctx = context.WithValue(ctx, "roomUser", roomUser)
+		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value("roomUser").(*models.RoomUser)
-			dRes := dp.SelectRoom(ru.RoomId)
-			if dRes.ProblemDetail != nil {
-				pdCh <- dRes.ProblemDetail
+			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
+			room, pd := selectRoom(ctx, ru.RoomID)
+			if pd != nil {
+				pdCh <- pd
 			} else {
-				room := dRes.Data.(*models.Room)
-				if room.NotificationTopicId == "" {
-					notificationTopicId, pd := createTopic(room.RoomId)
+				if room.NotificationTopicID == "" {
+					notificationTopicID, pd := createTopic(room.RoomID)
 					if pd != nil {
 						pdCh <- pd
 					}
 
-					room.NotificationTopicId = notificationTopicId
+					room.NotificationTopicID = notificationTopicID
 					room.Modified = time.Now().Unix()
-					dRes := datastore.DatastoreProvider().UpdateRoom(room)
-					if dRes.ProblemDetail != nil {
-						pdCh <- dRes.ProblemDetail
+					_, err := datastore.Provider(ctx).UpdateRoom(room)
+					if err != nil {
+						pd := &models.ProblemDetail{
+							Status: http.StatusInternalServerError,
+							Title:  "Update room failed",
+						}
+						pdCh <- pd
 					}
 				}
-				nRes := <-np.Subscribe(room.NotificationTopicId, device.NotificationDeviceId)
+				nRes := <-np.Subscribe(room.NotificationTopicID, device.NotificationDeviceID)
 				if nRes.ProblemDetail != nil {
 					pdCh <- nRes.ProblemDetail
 				} else {
 					if nRes.Data != nil {
-						notificationSubscriptionId := nRes.Data.(*string)
+						notificationSubscriptionID := nRes.Data.(*string)
 						subscription := &models.Subscription{
-							RoomId:                     ru.RoomId,
-							UserId:                     ru.UserId,
+							RoomID:                     ru.RoomID,
+							UserID:                     ru.UserID,
 							Platform:                   device.Platform,
-							NotificationSubscriptionId: *notificationSubscriptionId,
+							NotificationSubscriptionID: *notificationSubscriptionID,
 						}
-						dRes := dp.InsertSubscription(subscription)
-						if dRes.ProblemDetail != nil {
-							pdCh <- dRes.ProblemDetail
+						subscription, err := dp.InsertSubscription(subscription)
+						if err != nil {
+							pd := &models.ProblemDetail{
+								Title:  "User registration failed",
+								Status: http.StatusInternalServerError,
+								Error:  err,
+							}
+							pdCh <- pd
 						} else {
 							doneCh <- true
 						}
@@ -250,11 +289,10 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 			case <-doneCh:
 				return
 			case pd := <-pdCh:
-				pdBytes, _ := json.Marshal(pd)
-				utils.AppLogger.Error("",
-					zap.String("problemDetail", string(pdBytes)),
-					zap.String("err", fmt.Sprintf("%+v", pd.Error)),
-				)
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					ProblemDetail: pd,
+					Error:         pd.Error,
+				})
 				return
 			}
 		})
@@ -265,24 +303,27 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 }
 
 func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan bool {
-	np := notification.NotificationProvider()
-	dp := datastore.DatastoreProvider()
+	np := notification.Provider()
+	dp := datastore.Provider(ctx)
 	doneCh := make(chan bool, 1)
 	pdCh := make(chan *models.ProblemDetail, 1)
 	finishCh := make(chan bool, 1)
 
 	d := utils.NewDispatcher(10)
 	for _, subscription := range subscriptions {
-		ctx = context.WithValue(ctx, "subscription", subscription)
+		ctx = context.WithValue(ctx, utils.CtxSubscription, subscription)
 		d.Work(ctx, func(ctx context.Context) {
-			targetSubscription := ctx.Value("subscription").(*models.Subscription)
-			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionId)
+			targetSubscription := ctx.Value(utils.CtxSubscription).(*models.Subscription)
+			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionID)
 			if nRes.ProblemDetail != nil {
 				pdCh <- nRes.ProblemDetail
 			}
-			dRes := dp.DeleteSubscription(targetSubscription)
-			if dRes.ProblemDetail != nil {
-				pdCh <- dRes.ProblemDetail
+			err := dp.DeleteSubscription(targetSubscription)
+			if err != nil {
+				pd := &models.ProblemDetail{
+					Error: err,
+				}
+				pdCh <- pd
 			} else {
 				doneCh <- true
 			}
@@ -293,11 +334,10 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan
 			case <-doneCh:
 				return
 			case pd := <-pdCh:
-				pdBytes, _ := json.Marshal(pd)
-				utils.AppLogger.Error("",
-					zap.String("problemDetail", string(pdBytes)),
-					zap.String("err", fmt.Sprintf("%+v", pd.Error)),
-				)
+				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					ProblemDetail: pd,
+					Error:         pd.Error,
+				})
 				return
 			}
 		})

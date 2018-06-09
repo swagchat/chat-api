@@ -1,7 +1,9 @@
 package datastore
 
-type SettingStore interface {
-	CreateSettingStore()
+import "github.com/swagchat/chat-api/models"
 
-	SelectLatestSetting() StoreResult
+type settingStore interface {
+	createSettingStore()
+
+	SelectLatestSetting() (*models.Setting, error)
 }

@@ -23,7 +23,7 @@ type NotificationResult struct {
 
 type NotificationChannel chan NotificationResult
 
-type Provider interface {
+type provider interface {
 	CreateTopic(string) NotificationChannel
 	DeleteTopic(string) NotificationChannel
 	CreateEndpoint(string, int, string) NotificationChannel
@@ -33,13 +33,13 @@ type Provider interface {
 	Publish(context.Context, string, string, *MessageInfo) NotificationChannel
 }
 
-func NotificationProvider() Provider {
+func Provider() provider {
 	cfg := utils.Config()
+	var p provider
 
-	var p Provider
 	switch cfg.Notification.Provider {
 	case "awsSns":
-		p = &AwsSnsProvider{
+		p = &awssnsProvider{
 			region:                cfg.Notification.AmazonSNS.Region,
 			accessKeyId:           cfg.Notification.AmazonSNS.AccessKeyID,
 			secretAccessKey:       cfg.Notification.AmazonSNS.SecretAccessKey,
@@ -48,8 +48,9 @@ func NotificationProvider() Provider {
 			applicationArnAndroid: cfg.Notification.AmazonSNS.ApplicationArnAndroid,
 		}
 	default:
-		p = &NotUseProvider{}
+		p = &notuseProvider{}
 	}
+
 	return p
 }
 

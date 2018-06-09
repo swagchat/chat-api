@@ -13,42 +13,76 @@ type Users struct {
 }
 
 type User struct {
-	Id             uint64         `json:"-" db:"id"`
-	UserId         string         `json:"userId" db:"user_id,notnull"`
+	ID             uint64         `json:"-" db:"id"`
+	UserID         string         `json:"userId" db:"user_id,notnull"`
 	Name           string         `json:"name" db:"name,notnull"`
-	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
+	PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
 	UnreadCount    *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
 	MetaData       utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
-	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
-	IsPublic       *bool          `json:"isPublic,omitempty" db:"is_public,notnull"`
-	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
-	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
-	Lang           string         `json:"lang,omitempty" db:"lang,notnull"`
-	Created        int64          `json:"created,omitempty" db:"created,notnull"`
-	Modified       int64          `json:"modified,omitempty" db:"modified,notnull"`
-	Deleted        int64          `json:"-" db:"deleted,notnull"`
+	// Role             *Role          `json:"role,omitempty" db:"role,notnull"`
+	IsBot            *bool  `json:"isBot,omitempty" db:"is_bot,notnull"`
+	IsPublic         *bool  `json:"isPublic,omitempty" db:"is_public,notnull"`
+	IsCanBlock       *bool  `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
+	IsShowUsers      *bool  `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
+	Lang             string `json:"lang,omitempty" db:"lang,notnull"`
+	AccessToken      string `json:"accessToken,omitempty" db:"-"`
+	LastAccessRoomID string `json:"lastAccessRoomId,omitempty" db:"last_access_room_id"`
+	LastAccessed     int64  `json:"lastAccessed,omitempty" db:"last_accessed,notnull"`
+	Created          int64  `json:"created,omitempty" db:"created,notnull"`
+	Modified         int64  `json:"modified,omitempty" db:"modified,notnull"`
+	Deleted          int64  `json:"-" db:"deleted,notnull"`
 
+	Roles   []Role         `json:"roles,omitempty" db:"-"`
 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices []*Device      `json:"devices,omitempty" db:"-"`
 	Blocks  []string       `json:"blocks,omitempty" db:"-"`
 }
 
 type UserMini struct {
-	RoomId      string `json:"roomId" db:"room_id"`
-	UserId      string `json:"userId" db:"user_id"`
-	Name        string `json:"name" db:"name"`
-	PictureUrl  string `json:"pictureUrl,omitempty" db:"picture_url"`
-	IsShowUsers *bool  `json:"isShowUsers,omitempty" db:"is_show_users"`
+	RoomID     string `json:"roomId" db:"room_id"`
+	UserID     string `json:"userId" db:"user_id"`
+	Name       string `json:"name" db:"name"`
+	PictureURL string `json:"pictureUrl,omitempty" db:"picture_url"`
+	// Role         *Role  `json:"role,omitempty" db:"role"`
+	IsShowUsers  *bool `json:"isShowUsers,omitempty" db:"is_show_users"`
+	LastAccessed int64 `json:"lastAccessed,omitempty" db:"last_accessed"`
+}
+
+func (um *UserMini) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+
+	isShowUsers := false
+	if um.IsShowUsers != nil {
+		isShowUsers = *um.IsShowUsers
+	}
+
+	return json.Marshal(&struct {
+		RoomID     string `json:"roomId"`
+		UserID     string `json:"userId"`
+		Name       string `json:"name"`
+		PictureURL string `json:"pictureUrl"`
+		// Role         *Role  `json:"role,omitempty"`
+		IsShowUsers  bool   `json:"isShowUsers"`
+		LastAccessed string `json:"lastAccessed"`
+	}{
+		RoomID:     um.RoomID,
+		UserID:     um.UserID,
+		Name:       um.Name,
+		PictureURL: um.PictureURL,
+		// Role:         um.Role,
+		IsShowUsers:  isShowUsers,
+		LastAccessed: time.Unix(um.LastAccessed, 0).In(l).Format(time.RFC3339),
+	})
 }
 
 type RoomForUser struct {
 	// from room
-	RoomId             string         `json:"roomId" db:"room_id"`
-	UserId             string         `json:"userId" db:"user_id"`
+	RoomID             string         `json:"roomId" db:"room_id"`
+	UserID             string         `json:"userId" db:"user_id"`
 	Name               string         `json:"name" db:"name"`
-	PictureUrl         string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl     string         `json:"informationUrl,omitempty" db:"information_url"`
+	PictureURL         string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL     string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData           utils.JSONText `json:"metaData" db:"meta_data"`
 	Type               *RoomType      `json:"type,omitempty" db:"type"`
 	LastMessage        string         `json:"lastMessage" db:"last_message"`
@@ -60,6 +94,7 @@ type RoomForUser struct {
 	Users []*UserMini `json:"users" db:"-"`
 
 	// from RoomUser
+	RuMainUserID  string         `json:"ruMainUserId" db:"ru_main_user_id"`
 	RuUnreadCount int64          `json:"ruUnreadCount" db:"ru_unread_count"`
 	RuMetaData    utils.JSONText `json:"ruMetaData" db:"ru_meta_data"`
 	RuCreated     int64          `json:"ruCreated" db:"ru_created"`
@@ -94,39 +129,49 @@ func (u *User) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(&struct {
-		UserId         string         `json:"userId"`
+		UserID         string         `json:"userId"`
 		Name           string         `json:"name"`
-		PictureUrl     string         `json:"pictureUrl"`
-		InformationUrl string         `json:"informationUrl"`
+		PictureURL     string         `json:"pictureUrl"`
+		InformationURL string         `json:"informationUrl"`
 		UnreadCount    *uint64        `json:"unreadCount"`
 		MetaData       utils.JSONText `json:"metaData"`
-		IsBot          bool           `json:"isBot"`
-		IsPublic       bool           `json:"isPublic"`
-		IsCanBlock     bool           `json:"isCanBlock"`
-		IsShowUsers    bool           `json:"isShowUsers"`
-		Lang           string         `json:"lang"`
-		Created        string         `json:"created"`
-		Modified       string         `json:"modified"`
-		Rooms          []*RoomForUser `json:"rooms"`
-		Devices        []*Device      `json:"devices"`
-		Blocks         []string       `json:"blocks"`
+		// Role             *Role          `json:"role"`
+		IsBot            bool           `json:"isBot"`
+		IsPublic         bool           `json:"isPublic"`
+		IsCanBlock       bool           `json:"isCanBlock"`
+		IsShowUsers      bool           `json:"isShowUsers"`
+		Lang             string         `json:"lang"`
+		AccessToken      string         `json:"accessToken"`
+		LastAccessRoomID string         `json:"lastAccessRoomId"`
+		LastAccessed     string         `json:"lastAccessed"`
+		Created          string         `json:"created"`
+		Modified         string         `json:"modified"`
+		Roles            []Role         `json:"roles"`
+		Rooms            []*RoomForUser `json:"rooms"`
+		Devices          []*Device      `json:"devices"`
+		Blocks           []string       `json:"blocks"`
 	}{
-		UserId:         u.UserId,
+		UserID:         u.UserID,
 		Name:           u.Name,
-		PictureUrl:     u.PictureUrl,
-		InformationUrl: u.InformationUrl,
+		PictureURL:     u.PictureURL,
+		InformationURL: u.InformationURL,
 		UnreadCount:    u.UnreadCount,
 		MetaData:       u.MetaData,
-		IsBot:          isBot,
-		IsPublic:       isPublic,
-		IsCanBlock:     isCanBlock,
-		IsShowUsers:    isShowUsers,
-		Lang:           u.Lang,
-		Created:        time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
-		Modified:       time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
-		Rooms:          u.Rooms,
-		Devices:        u.Devices,
-		Blocks:         u.Blocks,
+		// Role:             u.Role,
+		IsBot:            isBot,
+		IsPublic:         isPublic,
+		IsCanBlock:       isCanBlock,
+		IsShowUsers:      isShowUsers,
+		Lang:             u.Lang,
+		AccessToken:      u.AccessToken,
+		LastAccessRoomID: u.LastAccessRoomID,
+		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
+		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
+		Modified:         time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
+		Roles:            u.Roles,
+		Rooms:            u.Rooms,
+		Devices:          u.Devices,
+		Blocks:           u.Blocks,
 	})
 }
 
@@ -137,11 +182,11 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
-		RoomId             string         `json:"roomId"`
-		UserId             string         `json:"userId"`
+		RoomID             string         `json:"roomId"`
+		UserID             string         `json:"userId"`
 		Name               string         `json:"name"`
-		PictureUrl         string         `json:"pictureUrl,omitempty"`
-		InformationUrl     string         `json:"informationUrl,omitempty"`
+		PictureURL         string         `json:"pictureUrl,omitempty"`
+		InformationURL     string         `json:"informationUrl,omitempty"`
 		MetaData           utils.JSONText `json:"metaData"`
 		Type               *RoomType      `json:"type,omitempty"`
 		LastMessage        string         `json:"lastMessage"`
@@ -150,16 +195,17 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		Created            string         `json:"created"`
 		Modified           string         `json:"modified"`
 		Users              []*UserMini    `json:"users"`
+		RuMainUserID       string         `json:"ruMainUserId"`
 		RuUnreadCount      int64          `json:"ruUnreadCount"`
 		RuMetaData         utils.JSONText `json:"ruMetaData"`
 		RuCreated          string         `json:"ruCreated"`
 		RuModified         string         `json:"ruModified"`
 	}{
-		RoomId:             rfu.RoomId,
-		UserId:             rfu.UserId,
+		RoomID:             rfu.RoomID,
+		UserID:             rfu.UserID,
 		Name:               rfu.Name,
-		PictureUrl:         rfu.PictureUrl,
-		InformationUrl:     rfu.InformationUrl,
+		PictureURL:         rfu.PictureURL,
+		InformationURL:     rfu.InformationURL,
 		MetaData:           rfu.MetaData,
 		Type:               rfu.Type,
 		LastMessage:        rfu.LastMessage,
@@ -168,6 +214,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
 		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
 		Users:              rfu.Users,
+		RuMainUserID:       rfu.RuMainUserID,
 		RuUnreadCount:      rfu.RuUnreadCount,
 		RuMetaData:         rfu.RuMetaData,
 		RuCreated:          time.Unix(rfu.RuCreated, 0).In(l).Format(time.RFC3339),
@@ -176,11 +223,10 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 }
 
 func (u *User) IsValidPost() *ProblemDetail {
-	if u.UserId != "" && !utils.IsValidId(u.UserId) {
+	if u.UserID != "" && !utils.IsValidID(u.UserID) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -190,11 +236,10 @@ func (u *User) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if len(u.UserId) > 36 {
+	if len(u.UserID) > 36 {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -206,9 +251,8 @@ func (u *User) IsValidPost() *ProblemDetail {
 
 	if u.Name == "" {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "name",
@@ -225,18 +269,19 @@ func (u *User) IsValidPut() *ProblemDetail {
 	return nil
 }
 
-func (u *User) BeforePost(jwt *JWT) {
-	if jwt.Sub != "" {
-		u.UserId = jwt.Sub
-	}
-
-	if u.UserId == "" {
-		u.UserId = utils.CreateUuid()
+func (u *User) BeforePost() {
+	if u.UserID == "" {
+		u.UserID = utils.GenerateUUID()
 	}
 
 	if u.MetaData == nil {
 		u.MetaData = []byte("{}")
 	}
+
+	// if u.Role == nil {
+	// 	general := General
+	// 	u.Role = &general
+	// }
 
 	if u.IsBot == nil {
 		isBot := false
@@ -275,11 +320,11 @@ func (u *User) BeforePut(put *User) {
 	if put.Name != "" {
 		u.Name = put.Name
 	}
-	if put.PictureUrl != "" {
-		u.PictureUrl = put.PictureUrl
+	if put.PictureURL != "" {
+		u.PictureURL = put.PictureURL
 	}
-	if put.InformationUrl != "" {
-		u.InformationUrl = put.InformationUrl
+	if put.InformationURL != "" {
+		u.InformationURL = put.InformationURL
 	}
 	if put.UnreadCount != nil {
 		u.UnreadCount = put.UnreadCount
@@ -302,4 +347,59 @@ func (u *User) BeforePut(put *User) {
 	if put.Lang != "" {
 		u.Lang = put.Lang
 	}
+}
+
+func (u *User) BeforeInsertGuest() {
+	if u.UserID == "" {
+		u.UserID = utils.GenerateUUID()
+	}
+
+	if u.MetaData == nil {
+		u.MetaData = []byte("{}")
+	}
+
+	// guest := Guest
+	// u.Role = &guest
+
+	isBot := false
+	u.IsBot = &isBot
+
+	if u.IsPublic == nil {
+		isPublic := true
+		u.IsPublic = &isPublic
+	}
+
+	if u.IsCanBlock == nil {
+		isCanBlock := true
+		u.IsCanBlock = &isCanBlock
+	}
+
+	if u.IsShowUsers == nil {
+		isShowUsers := true
+		u.IsShowUsers = &isShowUsers
+	}
+
+	unreadCount := uint64(0)
+	u.UnreadCount = &unreadCount
+
+	u.Rooms = make([]*RoomForUser, 0)
+	u.Devices = make([]*Device, 0)
+	u.Blocks = make([]string, 0)
+	nowTimestamp := time.Now().Unix()
+	u.Created = nowTimestamp
+	u.Modified = nowTimestamp
+}
+
+func (u *User) IsRole(role Role) bool {
+	if u.Roles == nil {
+		return false
+	}
+
+	for _, r := range u.Roles {
+		if r == role {
+			return true
+		}
+	}
+
+	return false
 }

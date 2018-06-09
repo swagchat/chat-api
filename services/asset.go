@@ -1,9 +1,9 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,9 +12,13 @@ import (
 	"github.com/swagchat/chat-api/storage"
 )
 
-func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.ProblemDetail) {
+// PostAsset is post asset
+func PostAsset(ctx context.Context, contentType string, file io.Reader, size int64, width, height int) (*models.Asset, *models.ProblemDetail) {
 	asset := &models.Asset{
-		Mime: contentType,
+		Mime:   contentType,
+		Size:   size,
+		Width:  width,
+		Height: height,
 	}
 	pd := asset.IsValidPost()
 	if pd != nil {
@@ -23,52 +27,94 @@ func PostAsset(contentType string, file io.Reader) (*models.Asset, *models.Probl
 
 	asset.BeforePost()
 
-	storageProvider := storage.StorageProvider()
 	assetInfo := &storage.AssetInfo{
-		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
+		Filename: fmt.Sprintf("%s.%s", asset.AssetID, asset.Extension),
 		Data:     file,
 	}
 
-	url, pd := storageProvider.Post(assetInfo)
-	if pd != nil {
+	url, err := storage.Provider().Post(assetInfo)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File upload failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
 		return nil, pd
 	}
 	asset.URL = url
 
-	dRes := datastore.DatastoreProvider().InsertAsset(asset)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	asset, err = datastore.Provider(ctx).InsertAsset(asset)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File upload failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	return dRes.Data.(*models.Asset), nil
+	return asset, nil
 }
 
-func GetAsset(assetId, ifModifiedSince string) ([]byte, *models.Asset, *models.ProblemDetail) {
+// GetAsset is get asset
+func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *models.Asset, *models.ProblemDetail) {
 	if ifModifiedSince != "" {
-		t, err := time.Parse(http.TimeFormat, ifModifiedSince)
-		if err == nil {
-			log.Println("t=", t.Unix())
+		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Date format error [If-Modified-Since]",
+				Status: http.StatusInternalServerError,
+				Error:  err,
+			}
+			return nil, nil, pd
 		}
 	}
 
-	dRes := datastore.DatastoreProvider().SelectAsset(assetId)
-	if dRes.ProblemDetail != nil {
-		return nil, nil, dRes.ProblemDetail
-	}
-	if dRes.Data == nil {
-		return nil, nil, &models.ProblemDetail{
-			Status: http.StatusNotFound,
-		}
-	}
-
-	asset := dRes.Data.(*models.Asset)
-	storageProvider := storage.StorageProvider()
-	assetInfo := &storage.AssetInfo{
-		Filename: fmt.Sprintf("%s.%s", asset.AssetId, asset.Extension),
-	}
-	bytes, pd := storageProvider.Get(assetInfo)
+	asset, pd := selectAsset(ctx, assetID)
 	if pd != nil {
 		return nil, nil, pd
 	}
 
-	return bytes, dRes.Data.(*models.Asset), nil
+	assetInfo := &storage.AssetInfo{
+		Filename: fmt.Sprintf("%s.%s", asset.AssetID, asset.Extension),
+	}
+	bytes, err := storage.Provider().Get(assetInfo)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File download error",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, nil, pd
+	}
+
+	return bytes, asset, nil
+}
+
+// GetAssetInfo is get asset info
+func GetAssetInfo(ctx context.Context, assetID, ifModifiedSince string) (*models.Asset, *models.ProblemDetail) {
+	asset, pd := selectAsset(ctx, assetID)
+	if pd != nil {
+		return nil, pd
+	}
+
+	return asset, nil
+}
+
+func selectAsset(ctx context.Context, assetID string) (*models.Asset, *models.ProblemDetail) {
+	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "File download failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
+	}
+	if asset == nil {
+		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
+			Status: http.StatusNotFound,
+		}
+	}
+	return asset, nil
 }

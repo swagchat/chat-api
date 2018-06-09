@@ -1,39 +1,42 @@
 package rtm
 
 import (
-	"os"
-
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap"
 )
+
+const (
+	MessageEvent = "message"
+	UserJoin     = "userJoin"
+)
+
+type RTMEvent struct {
+	Type    string
+	Payload []byte
+	UserIDs []string
+}
 
 type MessagingInfo struct {
 	Message string
 }
 
-type Provider interface {
-	Init() error
-	PublishMessage(*MessagingInfo) error
+type provider interface {
+	Publish(*RTMEvent) error
 }
 
-func RTMProvider() Provider {
+func Provider() provider {
 	cfg := utils.Config()
+	var p provider
 
-	var p Provider
 	switch cfg.RTM.Provider {
 	case "":
-		p = &NotUseProvider{}
+		p = &notuseProvider{}
 	case "direct":
-		p = &DirectProvider{}
+		p = &directProvider{}
 	case "nsq":
-		p = &NsqProvider{}
+		p = &nsqProvider{}
 	case "kafka":
-		p = &KafkaProvider{}
-	default:
-		utils.AppLogger.Error("",
-			zap.String("msg", "RTM Provider is incorrect"),
-		)
-		os.Exit(0)
+		p = &kafkaProvider{}
 	}
+
 	return p
 }

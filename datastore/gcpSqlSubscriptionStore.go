@@ -2,30 +2,30 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *gcpSqlProvider) CreateSubscriptionStore() {
-	RdbCreateSubscriptionStore()
+func (p *gcpSQLProvider) createSubscriptionStore() {
+	rdbCreateSubscriptionStore(p.database)
 }
 
-func (p *gcpSqlProvider) InsertSubscription(room *models.Subscription) StoreResult {
-	return RdbInsertSubscription(room)
+func (p *gcpSQLProvider) InsertSubscription(room *models.Subscription) (*models.Subscription, error) {
+	return rdbInsertSubscription(p.database, room)
 }
 
-func (p *gcpSqlProvider) SelectSubscription(roomId, userId string, platform int) StoreResult {
-	return RdbSelectSubscription(roomId, userId, platform)
+func (p *gcpSQLProvider) SelectSubscription(roomID, userID string, platform int) (*models.Subscription, error) {
+	return rdbSelectSubscription(p.database, roomID, userID, platform)
 }
 
-func (p *gcpSqlProvider) SelectDeletedSubscriptionsByRoomId(roomId string) StoreResult {
-	return RdbSelectDeletedSubscriptionsByRoomId(roomId)
+func (p *gcpSQLProvider) SelectDeletedSubscriptionsByRoomID(roomID string) ([]*models.Subscription, error) {
+	return rdbSelectDeletedSubscriptionsByRoomID(p.database, roomID)
 }
 
-func (p *gcpSqlProvider) SelectDeletedSubscriptionsByUserId(userId string) StoreResult {
-	return RdbSelectDeletedSubscriptionsByUserId(userId)
+func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*models.Subscription, error) {
+	return rdbSelectDeletedSubscriptionsByUserID(p.database, userID)
 }
 
-func (p *gcpSqlProvider) SelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
-	return RdbSelectDeletedSubscriptionsByUserIdAndPlatform(userId, platform)
+func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int) ([]*models.Subscription, error) {
+	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.database, userID, platform)
 }
 
-func (p *gcpSqlProvider) DeleteSubscription(subscription *models.Subscription) StoreResult {
-	return RdbDeleteSubscription(subscription)
+func (p *gcpSQLProvider) DeleteSubscription(subscription *models.Subscription) error {
+	return rdbDeleteSubscription(p.database, subscription)
 }

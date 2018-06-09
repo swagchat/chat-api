@@ -1,29 +1,29 @@
 package rtm
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
-type KafkaProvider struct{}
+type kafkaProvider struct{}
 
-func (provider KafkaProvider) Init() error {
-	return nil
-}
-
-func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
-	rawIn := json.RawMessage(mi.Message)
-	input, err := rawIn.MarshalJSON()
+func (kp kafkaProvider) Publish(rtmEvent *RTMEvent) error {
 	cfg := utils.Config()
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(rtmEvent)
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
 		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.RTM.Kafka.Host, cfg.RTM.Kafka.Port),
 	})
 	if err != nil {
-		panic(err)
+		return errors.Wrap(err, "Kafka create producer failure")
 	}
 
 	// Delivery report handler for produced messages
@@ -32,9 +32,16 @@ func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					fmt.Printf("Delivery failed: %v\n", ev.TopicPartition)
+					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+						Kind:    "Kafka",
+						Message: fmt.Sprintf("Delivery failed: %v\n", ev.TopicPartition),
+						Error:   err,
+					})
 				} else {
-					fmt.Printf("Delivered message to %v\n", ev.TopicPartition)
+					logging.Log(zapcore.InfoLevel, &logging.AppLog{
+						Kind:    "Kafka",
+						Message: fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition),
+					})
 				}
 			}
 		}
@@ -45,11 +52,12 @@ func (provider KafkaProvider) PublishMessage(mi *MessagingInfo) error {
 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 	p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          input,
+		Value:          buffer.Bytes(),
 	}, nil)
 	// }
 
 	// Wait for message deliveries
 	p.Flush(15 * 1000)
+
 	return nil
 }

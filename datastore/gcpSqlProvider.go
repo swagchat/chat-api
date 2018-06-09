@@ -16,7 +16,7 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-type gcpSqlProvider struct {
+type gcpSQLProvider struct {
 	user              string
 	password          string
 	database          string
@@ -27,8 +27,12 @@ type gcpSqlProvider struct {
 	trace             bool
 }
 
-func (p *gcpSqlProvider) Connect() error {
-	rs := RdbStoreInstance()
+func (p *gcpSQLProvider) Connect(dsCfg *utils.Datastore) error {
+	if _, ok := rdbStores[dsCfg.Database]; ok {
+		return nil
+	}
+
+	rs := &rdbStore{}
 	if rs.master() == nil {
 		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
@@ -39,13 +43,14 @@ func (p *gcpSqlProvider) Connect() error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
-			fatal(err)
+			return err
 		}
 
 		mic, err := strconv.Atoi(p.maxIdleConnection)
 		if err == nil {
 			db.SetMaxIdleConns(mic)
 		}
+
 		moc, err := strconv.Atoi(p.maxOpenConnection)
 		if err == nil {
 			db.SetMaxOpenConns(moc)
@@ -56,7 +61,6 @@ func (p *gcpSqlProvider) Connect() error {
 		if p.trace {
 			master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
 		}
-
 		rs.setMaster(master)
 	}
 
@@ -71,51 +75,51 @@ func (p *gcpSqlProvider) Connect() error {
 				p.database)
 			db, err := p.openDb(ds, replicaSi)
 			if err != nil {
-				log.Println(err)
-				fatal(err)
+				return err
 			}
 
 			mic, err := strconv.Atoi(p.maxIdleConnection)
 			if err == nil {
 				db.SetMaxIdleConns(mic)
 			}
+
 			moc, err := strconv.Atoi(p.maxOpenConnection)
 			if err == nil {
 				db.SetMaxOpenConns(moc)
 			}
 
-			db.SetMaxIdleConns(mic)
-			db.SetMaxOpenConns(moc)
-
-			var slave *gorp.DbMap
-			slave = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
+			var replica *gorp.DbMap
+			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
 			if p.trace {
-				slave.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+				replica.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
 			}
-
-			rs.setReplica(slave)
+			rs.setReplica(replica)
 		}
 	}
+	rdbStores[dsCfg.Database] = rs
+	p.init()
 	return nil
 }
 
-func (p *gcpSqlProvider) Init() {
-	p.CreateApiStore()
-	p.CreateAssetStore()
-	p.CreateUserStore()
-	p.CreateBlockUserStore()
-	p.CreateBotStore()
-	p.CreateRoomStore()
-	p.CreateRoomUserStore()
-	p.CreateMessageStore()
-	p.CreateDeviceStore()
-	p.CreateSettingStore()
-	p.CreateSubscriptionStore()
+func (p *gcpSQLProvider) init() {
+	p.createAppClientStore()
+	p.createAssetStore()
+	p.createBlockUserStore()
+	p.createBotStore()
+	p.createDeviceStore()
+	p.createMessageStore()
+	p.createRoomStore()
+	p.createRoomUserStore()
+	p.createSettingStore()
+	p.createSubscriptionStore()
+	p.createUserStore()
+	p.createUserRoleStore()
+	p.createWebhookStore()
 }
 
-func (p *gcpSqlProvider) DropDatabase() error {
-	rs := RdbStoreInstance()
-	if rs.master() != nil {
+func (p *gcpSQLProvider) DropDatabase() error {
+	master := RdbStore(p.database).master()
+	if master != nil {
 		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
 			p.user,
@@ -136,7 +140,7 @@ func (p *gcpSqlProvider) DropDatabase() error {
 	return nil
 }
 
-func (p *gcpSqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB, error) {
+func (p *gcpSQLProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB, error) {
 	var err error
 	if si.ServerName != "" && si.ServerCaPath != "" && si.ClientCertPath != "" && si.ClientKeyPath != "" {
 		rootCertPool := x509.NewCertPool()

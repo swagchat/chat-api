@@ -2,23 +2,26 @@ package utils
 
 import (
 	"context"
-	"log"
 	"sync"
 )
 
+// Dispatcher is Dispatcher
 type Dispatcher struct {
 	semaphore chan struct{}
 	wg        sync.WaitGroup
 }
 
+// WorkFunc is WorkFunc
 type WorkFunc func(context.Context)
 
+// NewDispatcher is new dispatcher
 func NewDispatcher(max int) *Dispatcher {
 	return &Dispatcher{
 		semaphore: make(chan struct{}, max),
 	}
 }
 
+// Work is Work
 func (d *Dispatcher) Work(ctx context.Context, proc WorkFunc) {
 	d.wg.Add(1)
 	go func() {
@@ -30,7 +33,6 @@ func (d *Dispatcher) Work(ctx context.Context, proc WorkFunc) {
 func (d *Dispatcher) work(ctx context.Context, proc WorkFunc) {
 	select {
 	case <-ctx.Done():
-		log.Printf("cancel work")
 		return
 	case d.semaphore <- struct{}{}:
 		defer func() { <-d.semaphore }()
@@ -39,6 +41,7 @@ func (d *Dispatcher) work(ctx context.Context, proc WorkFunc) {
 	proc(ctx)
 }
 
+// Wait is Wait
 func (d *Dispatcher) Wait() {
 	d.wg.Wait()
 }

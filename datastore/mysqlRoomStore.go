@@ -2,34 +2,34 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *mysqlProvider) CreateRoomStore() {
-	RdbCreateRoomStore()
+func (p *mysqlProvider) createRoomStore() {
+	rdbCreateRoomStore(p.database)
 }
 
-func (p *mysqlProvider) InsertRoom(room *models.Room) StoreResult {
-	return RdbInsertRoom(room)
+func (p *mysqlProvider) InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error) {
+	return rdbInsertRoom(p.database, room, opts...)
 }
 
-func (p *mysqlProvider) SelectRoom(roomId string) StoreResult {
-	return RdbSelectRoom(roomId)
+func (p *mysqlProvider) SelectRoom(roomID string) (*models.Room, error) {
+	return rdbSelectRoom(p.database, roomID)
 }
 
-func (p *mysqlProvider) SelectRooms() StoreResult {
-	return RdbSelectRooms()
+func (p *mysqlProvider) SelectRooms() ([]*models.Room, error) {
+	return rdbSelectRooms(p.database)
 }
 
-func (p *mysqlProvider) SelectUsersForRoom(roomId string) StoreResult {
-	return RdbSelectUsersForRoom(roomId)
+func (p *mysqlProvider) SelectUsersForRoom(roomID string) ([]*models.UserForRoom, error) {
+	return rdbSelectUsersForRoom(p.database, roomID)
 }
 
-func (p *mysqlProvider) SelectCountRooms() StoreResult {
-	return RdbSelectCountRooms()
+func (p *mysqlProvider) SelectCountRooms() (int64, error) {
+	return rdbSelectCountRooms(p.database)
 }
 
-func (p *mysqlProvider) UpdateRoom(room *models.Room) StoreResult {
-	return RdbUpdateRoom(room)
+func (p *mysqlProvider) UpdateRoom(room *models.Room) (*models.Room, error) {
+	return rdbUpdateRoom(p.database, room)
 }
 
-func (p *mysqlProvider) UpdateRoomDeleted(roomId string) StoreResult {
-	return RdbUpdateRoomDeleted(roomId)
+func (p *mysqlProvider) UpdateRoomDeleted(roomID string) error {
+	return rdbUpdateRoomDeleted(p.database, roomID)
 }

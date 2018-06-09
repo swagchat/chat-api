@@ -2,14 +2,14 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-type RoomStore interface {
-	CreateRoomStore()
+type roomStore interface {
+	createRoomStore()
 
-	InsertRoom(room *models.Room) StoreResult
-	SelectRoom(roomId string) StoreResult
-	SelectRooms() StoreResult
-	SelectUsersForRoom(roomId string) StoreResult
-	SelectCountRooms() StoreResult
-	UpdateRoom(room *models.Room) StoreResult
-	UpdateRoomDeleted(roomId string) StoreResult
+	InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error)
+	SelectRoom(roomID string) (*models.Room, error)
+	SelectRooms() ([]*models.Room, error)
+	SelectUsersForRoom(roomID string) ([]*models.UserForRoom, error)
+	SelectCountRooms() (int64, error)
+	UpdateRoom(room *models.Room) (*models.Room, error)
+	UpdateRoomDeleted(roomID string) error
 }

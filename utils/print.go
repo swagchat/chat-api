@@ -10,16 +10,19 @@ import (
 
 var builderStr *StringBuilder
 
+// StringBuilder is StringBuilder
 type StringBuilder struct {
 	str *strings.Builder
 }
 
+// NewStringBuilder is new string builder
 func NewStringBuilder() *StringBuilder {
 	return &StringBuilder{
 		str: &strings.Builder{},
 	}
 }
 
+// PrintStruct is print struct
 func (b *StringBuilder) PrintStruct(name string, v interface{}) string {
 	r := reflect.ValueOf(v)
 	if r.IsValid() {
@@ -56,8 +59,6 @@ func (b *StringBuilder) PrintStruct(name string, v interface{}) string {
 				}
 				b.PrintStruct(printName, f.Value())
 			}
-		default:
-			fmt.Println(r.Kind())
 		}
 	}
 

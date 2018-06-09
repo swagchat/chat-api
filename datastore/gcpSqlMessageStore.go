@@ -2,26 +2,26 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *gcpSqlProvider) CreateMessageStore() {
-	RdbCreateMessageStore()
+func (p *gcpSQLProvider) createMessageStore() {
+	rdbCreateMessageStore(p.database)
 }
 
-func (p *gcpSqlProvider) InsertMessage(message *models.Message) StoreResult {
-	return RdbInsertMessage(message)
+func (p *gcpSQLProvider) InsertMessage(message *models.Message) (string, error) {
+	return rdbInsertMessage(p.database, message)
 }
 
-func (p *gcpSqlProvider) SelectMessage(messageId string) StoreResult {
-	return RdbSelectMessage(messageId)
+func (p *gcpSQLProvider) SelectMessage(messageID string) (*models.Message, error) {
+	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *gcpSqlProvider) SelectMessages(roomId string, limit, offset int, order string) StoreResult {
-	return RdbSelectMessages(roomId, limit, offset, order)
+func (p *gcpSQLProvider) SelectMessages(roleIds []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+	return rdbSelectMessages(p.database, roleIds, roomID, limit, offset, order)
 }
 
-func (p *gcpSqlProvider) SelectCountMessagesByRoomId(roomId string) StoreResult {
-	return RdbSelectCountMessagesByRoomId(roomId)
+func (p *gcpSQLProvider) SelectCountMessagesByRoomID(roleIDs []models.Role, roomID string) (int64, error) {
+	return rdbSelectCountMessagesByRoomID(p.database, roleIDs, roomID)
 }
 
-func (p *gcpSqlProvider) UpdateMessage(message *models.Message) StoreResult {
-	return RdbUpdateMessage(message)
+func (p *gcpSQLProvider) UpdateMessage(message *models.Message) (*models.Message, error) {
+	return rdbUpdateMessage(p.database, message)
 }

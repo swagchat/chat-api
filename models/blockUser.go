@@ -9,30 +9,29 @@ import (
 )
 
 type BlockUser struct {
-	UserId      string `json:"userId" db:"user_id,notnull"`
-	BlockUserId string `json:"blockUserId" db:"block_user_id,notnull"`
+	UserID      string `json:"userId" db:"user_id,notnull"`
+	BlockUserID string `json:"blockUserId" db:"block_user_id,notnull"`
 	Created     int64  `json:"created" db:"created,notnull"`
 }
 
-type RequestBlockUserIds struct {
-	UserIds []string `json:"userIds,omitempty"`
+type RequestBlockUserIDs struct {
+	UserIDs []string `json:"userIds,omitempty"`
 }
 
 type BlockUsers struct {
 	BlockUsers []string `json:"blockUsers"`
 }
 
-func (reqUIDs *RequestBlockUserIds) RemoveDuplicate() {
-	reqUIDs.UserIds = utils.RemoveDuplicate(reqUIDs.UserIds)
+func (reqUIDs *RequestBlockUserIDs) RemoveDuplicate() {
+	reqUIDs.UserIDs = utils.RemoveDuplicate(reqUIDs.UserIDs)
 }
 
-func (reqUIDs *RequestBlockUserIds) IsValid(userId string) *ProblemDetail {
-	for _, reqUID := range reqUIDs.UserIds {
+func (reqUIDs *RequestBlockUserIDs) IsValid(userId string) *ProblemDetail {
+	for _, reqUID := range reqUIDs.UserIDs {
 		if reqUID == userId {
 			return &ProblemDetail{
-				Title:     "Request parameter error.",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",
@@ -48,12 +47,12 @@ func (reqUIDs *RequestBlockUserIds) IsValid(userId string) *ProblemDetail {
 func (bu *BlockUser) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		UserId      string `json:"userId"`
-		BlockUserId string `json:"blockUserId"`
+		UserID      string `json:"userId"`
+		BlockUserID string `json:"blockUserId"`
 		Created     string `json:"created"`
 	}{
-		UserId:      bu.UserId,
-		BlockUserId: bu.BlockUserId,
+		UserID:      bu.UserID,
+		BlockUserID: bu.BlockUserID,
 		Created:     time.Unix(bu.Created, 0).In(l).Format(time.RFC3339),
 	})
 }

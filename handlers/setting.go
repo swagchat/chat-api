@@ -6,12 +6,12 @@ import (
 	"github.com/swagchat/chat-api/services"
 )
 
-func SetSettingMux() {
-	Mux.GetFunc("/setting", colsHandler(GetSetting))
+func setSettingMux() {
+	mux.GetFunc("/setting", commonHandler(getSetting))
 }
 
-func GetSetting(w http.ResponseWriter, r *http.Request) {
-	setting, pd := services.GetSetting()
+func getSetting(w http.ResponseWriter, r *http.Request) {
+	setting, pd := services.GetSetting(r.Context())
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

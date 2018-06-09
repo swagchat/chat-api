@@ -15,23 +15,23 @@ type BotResult struct {
 	ProblemDetail *models.ProblemDetail
 }
 
-type Provider interface {
-	Post(*models.Message, *models.Bot, utils.JSONText) BotResult
+type provider interface {
+	Post(*models.Message, *models.Bot, utils.JSONText) *BotResult
 }
 
-func GetProvider(serviceName string) Provider {
-	var provider Provider
+func Provider(serviceName string) provider {
+	var p provider
+
 	switch serviceName {
 	case "A3RT":
-		provider = &A3rtProvider{}
-	case "API_AI":
-		provider = &ApiAiProvider{}
+		p = &a3rtProvider{}
+	case "DIALOG_FLOW":
+		p = &dialogflowProvider{}
 	case "AWS_LEX":
-		provider = &AwsLexProvider{}
-	default:
-		//provider = &NotUseProvider{}
+		p = &awslexProvider{}
 	}
-	return provider
+
+	return p
 }
 
 func createProblemDetail(title string, err error) *models.ProblemDetail {

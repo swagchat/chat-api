@@ -2,8 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,104 +9,205 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-func PostRoom(post *models.Room) (*models.Room, *models.ProblemDetail) {
+// PostRoom is post room
+func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.ProblemDetail) {
+	user, pd := selectUser(ctx, post.UserID)
+	if pd != nil {
+		return nil, pd
+	}
+
 	if pd := post.IsValidPost(); pd != nil {
 		return nil, pd
 	}
-	post.BeforePost()
-	post.RequestRoomUserIds.RemoveDuplicate()
 
-	if *post.Type == models.ONE_ON_ONE {
-		dRes := datastore.DatastoreProvider().SelectRoomUserOfOneOnOne(post.UserId, post.RequestRoomUserIds.UserIds[0])
-		if dRes.ProblemDetail != nil {
-			return nil, dRes.ProblemDetail
+	post.BeforePost()
+
+	if post.Type == models.CustomerRoom {
+		operatorUserIDs, err := datastore.Provider(ctx).SelectUserIDsByRole(models.RoleOperator)
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Get room userIds failed",
+				Status: http.StatusInternalServerError,
+				Error:  err,
+			}
+			return nil, pd
 		}
-		if dRes.Data != nil {
+		post.UserIDs = operatorUserIDs
+	}
+
+	if post.Type == models.OneOnOne {
+		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.UserIDs[0])
+		if err != nil {
+			pd := &models.ProblemDetail{
+				Title:  "Room registration failed",
+				Status: http.StatusInternalServerError,
+				Error:  err,
+			}
+			return nil, pd
+		}
+		if roomUser != nil {
 			return nil, &models.ProblemDetail{
+				Title:  "Resource already exists",
 				Status: http.StatusConflict,
 			}
 		}
 	}
 
-	if pd := post.RequestRoomUserIds.IsValid("POST", post); pd != nil {
+	// if pd := post.RequestRoomUserIDs.IsValid("POST", post); pd != nil {
+	// 	return nil, pd
+	// }
+
+	rus := make([]*models.RoomUser, 0)
+	if post.UserIDs != nil {
+		var zero int64
+		zero = 0
+		ru := &models.RoomUser{
+			RoomID:      post.RoomID,
+			UserID:      post.UserID,
+			MainUserID:  "",
+			UnreadCount: &zero,
+			MetaData:    []byte("{}"),
+			Created:     post.Created,
+			Modified:    post.Modified,
+		}
+		rus = append(rus, ru)
+
+		for _, userID := range post.UserIDs {
+			ru := &models.RoomUser{
+				RoomID:      post.RoomID,
+				UserID:      userID,
+				UnreadCount: &zero,
+				MetaData:    []byte("{}"),
+				Created:     post.Created,
+				Modified:    post.Modified,
+			}
+			if post.Type == models.CustomerRoom {
+				ru.MainUserID = user.UserID
+			}
+			rus = append(rus, ru)
+		}
+	}
+
+	// if post.UserIDs != nil {
+	notificationTopicID, pd := createTopic(post.RoomID)
+	if pd != nil {
+		return nil, pd
+	}
+	post.NotificationTopicID = notificationTopicID
+	// }
+
+	room, err := datastore.Provider(ctx).InsertRoom(post, rus)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Room registration failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
 		return nil, pd
 	}
 
-	if post.RequestRoomUserIds.UserIds != nil {
-		notificationTopicId, pd := createTopic(post.RoomId)
-		if pd != nil {
-			return nil, pd
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's users failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
 		}
-		post.NotificationTopicId = notificationTopicId
+		return nil, pd
+	}
+	room.Users = userForRooms
+
+	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(room.RoomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's users failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().InsertRoom(post)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	room := dRes.Data.(*models.Room)
-
-	dRes = datastore.DatastoreProvider().SelectUsersForRoom(room.RoomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	room.Users = dRes.Data.([]*models.UserForRoom)
-
-	dRes = datastore.DatastoreProvider().SelectRoomUsersByRoomId(room.RoomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
-	}
-	roomUsers := dRes.Data.([]*models.RoomUser)
-
-	ctx, _ := context.WithCancel(context.Background())
+	go webhookRoom(ctx, room)
 	go subscribeByRoomUsers(ctx, roomUsers)
-	go publishUserJoin(room.RoomId)
+	go publishUserJoin(ctx, room.RoomID)
 
 	return room, nil
 }
 
-func GetRooms(values url.Values) (*models.Rooms, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectRooms()
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+// GetRooms is get rooms
+func GetRooms(ctx context.Context, values url.Values) (*models.Rooms, *models.ProblemDetail) {
+	rooms, err := datastore.Provider(ctx).SelectRooms()
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get rooms failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
 
-	rooms := &models.Rooms{
-		Rooms: dRes.Data.([]*models.Room),
+	count, err := datastore.Provider(ctx).SelectCountRooms()
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room count failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	dRes = datastore.DatastoreProvider().SelectCountRooms()
-	rooms.AllCount = dRes.Data.(int64)
-	return rooms, nil
+	return &models.Rooms{
+		Rooms:    rooms,
+		AllCount: count,
+	}, nil
 }
 
-func GetRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	room, pd := selectRoom(roomId)
+// GetRoom is get room
+func GetRoom(ctx context.Context, roomID string) (*models.Room, *models.ProblemDetail) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, pd := selectUser(ctx, userID, datastore.WithRoles(true))
 	if pd != nil {
 		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().SelectUsersForRoom(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	room, pd := selectRoom(ctx, roomID)
+	if pd != nil {
+		return nil, pd
 	}
-	room.Users = dRes.Data.([]*models.UserForRoom)
 
-	dRes = datastore.DatastoreProvider().SelectCountMessagesByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's users failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	room.MessageCount = dRes.Data.(int64)
+	room.Users = userForRooms
+
+	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
+	}
+	room.MessageCount = count
 	return room, nil
 }
 
-func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
-	room, pd := selectRoom(put.RoomId)
+// PutRoom is put room
+func PutRoom(ctx context.Context, put *models.Room) (*models.Room, *models.ProblemDetail) {
+	room, pd := selectRoom(ctx, put.RoomID)
 	if pd != nil {
 		return nil, pd
 	}
@@ -121,97 +220,135 @@ func PutRoom(put *models.Room) (*models.Room, *models.ProblemDetail) {
 		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().UpdateRoom(room)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	room, err := datastore.Provider(ctx).UpdateRoom(room)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Update room failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	room = dRes.Data.(*models.Room)
 
-	dRes = datastore.DatastoreProvider().SelectUsersForRoom(room.RoomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room's users failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	room.Users = dRes.Data.([]*models.UserForRoom)
+	room.Users = userForRooms
 	return room, nil
 }
 
-func DeleteRoom(roomId string) *models.ProblemDetail {
-	room, pd := selectRoom(roomId)
+// DeleteRoom is delete room
+func DeleteRoom(ctx context.Context, roomID string) *models.ProblemDetail {
+	room, pd := selectRoom(ctx, roomID)
 	if pd != nil {
 		return pd
 	}
 
-	if room.NotificationTopicId != "" {
-		nRes := <-notification.NotificationProvider().DeleteTopic(room.NotificationTopicId)
+	if room.NotificationTopicID != "" {
+		nRes := <-notification.Provider().DeleteTopic(room.NotificationTopicID)
 		if nRes.ProblemDetail != nil {
 			return nRes.ProblemDetail
 		}
 	}
 
 	room.Deleted = time.Now().Unix()
-	dRes := datastore.DatastoreProvider().UpdateRoomDeleted(roomId)
-	if dRes.ProblemDetail != nil {
-		return dRes.ProblemDetail
+	err := datastore.Provider(ctx).UpdateRoomDeleted(roomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Delete room failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return pd
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
 	go func() {
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
-		go unsubscribeByRoomId(ctx, roomId, wg)
+		go unsubscribeByRoomID(ctx, roomID, wg)
 		wg.Wait()
-		room.NotificationTopicId = ""
-		datastore.DatastoreProvider().UpdateRoom(room)
+		room.NotificationTopicID = ""
+		datastore.Provider(ctx).UpdateRoom(room)
 	}()
 
 	return nil
 }
 
-func GetRoomMessages(roomId string, params url.Values) (*models.Messages, *models.ProblemDetail) {
+// GetRoomMessages is get room messages
+func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*models.Messages, *models.ProblemDetail) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, pd := selectUser(ctx, userID, datastore.WithRoles(true))
+	if pd != nil {
+		return nil, pd
+	}
+
 	limit, offset, order, pd := setPagingParams(params)
 	if pd != nil {
 		return nil, pd
 	}
 
-	dRes := datastore.DatastoreProvider().SelectMessages(roomId, limit, offset, order)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	messages, err := datastore.Provider(ctx).SelectMessages(user.Roles, roomID, limit, offset, order)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room messages failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	messages := &models.Messages{
-		Messages: dRes.Data.([]*models.Message),
+	returnMessages := &models.Messages{
+		Messages: messages,
 	}
 
-	dRes = datastore.DatastoreProvider().SelectCountMessagesByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room messages failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	messages.AllCount = dRes.Data.(int64)
-	return messages, nil
+	returnMessages.AllCount = count
+
+	updateLastAccessRoomID(ctx, roomID)
+
+	return returnMessages, nil
 }
 
-func selectRoom(roomId string) (*models.Room, *models.ProblemDetail) {
-	dRes := datastore.DatastoreProvider().SelectRoom(roomId)
-	if dRes.ProblemDetail != nil {
-		return nil, dRes.ProblemDetail
+func selectRoom(ctx context.Context, roomID string) (*models.Room, *models.ProblemDetail) {
+	room, err := datastore.Provider(ctx).SelectRoom(roomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Title:  "Get room failed",
+			Status: http.StatusInternalServerError,
+			Error:  err,
+		}
+		return nil, pd
 	}
-	if dRes.Data == nil {
+	if room == nil {
 		return nil, &models.ProblemDetail{
+			Title:  "Resource not found",
 			Status: http.StatusNotFound,
 		}
 	}
-	return dRes.Data.(*models.Room), nil
+	return room, nil
 }
 
-func unsubscribeByRoomId(ctx context.Context, roomId string, wg *sync.WaitGroup) {
-	dRes := datastore.DatastoreProvider().SelectDeletedSubscriptionsByRoomId(roomId)
-	if dRes.ProblemDetail != nil {
-		pdBytes, _ := json.Marshal(dRes.ProblemDetail)
-		utils.AppLogger.Error("",
-			zap.String("problemDetail", string(pdBytes)),
-			zap.String("err", fmt.Sprintf("%+v", dRes.ProblemDetail.Error)),
-		)
+func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByRoomID(roomID)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
 	}
-	<-unsubscribe(ctx, dRes.Data.([]*models.Subscription))
+	<-unsubscribe(ctx, subscriptions)
 	if wg != nil {
 		wg.Done()
 	}
@@ -279,15 +416,30 @@ func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail
 	return limit, offset, order, nil
 }
 
-func RoomAuth(roomId, sub string) *models.ProblemDetail {
-	dRes := datastore.DatastoreProvider().SelectUsersForRoom(roomId)
-	if dRes.ProblemDetail != nil {
-		return dRes.ProblemDetail
+// RoomAuthz is room authorize
+func RoomAuthz(ctx context.Context, roomID, userID string) *models.ProblemDetail {
+	room, pd := selectRoom(ctx, roomID)
+	if pd != nil {
+		return pd
 	}
-	users := dRes.Data.([]*models.UserForRoom)
+
+	if room.Type == models.PublicRoom {
+		return nil
+	}
+
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
+	if err != nil {
+		pd := &models.ProblemDetail{
+			Status: http.StatusInternalServerError,
+			Title:  "Get room users failed",
+			Error:  err,
+		}
+		return pd
+	}
+
 	isAuthorized := false
-	for _, user := range users {
-		if user.UserId == sub {
+	for _, userForRoom := range userForRooms {
+		if userForRoom.UserID == userID {
 			isAuthorized = true
 			break
 		}
@@ -295,11 +447,18 @@ func RoomAuth(roomId, sub string) *models.ProblemDetail {
 
 	if !isAuthorized {
 		return &models.ProblemDetail{
-			Title:     "You do not have permission",
+			Title:     "You are not this room member",
 			Status:    http.StatusUnauthorized,
 			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
 		}
 	}
 
 	return nil
+}
+
+func updateLastAccessRoomID(ctx context.Context, roomID string) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, _ := selectUser(ctx, userID)
+	user.LastAccessRoomID = roomID
+	datastore.Provider(ctx).UpdateUser(user)
 }

@@ -2,11 +2,11 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-type BlockUserStore interface {
-	CreateBlockUserStore()
+type blockUserStore interface {
+	createBlockUserStore()
 
-	InsertBlockUsers(blockUsers []*models.BlockUser) StoreResult
-	SelectBlockUser(userId, blockUserId string) StoreResult
-	SelectBlockUsersByUserId(userId string) StoreResult
-	DeleteBlockUser(userId string, blockUserIds []string) StoreResult
+	InsertBlockUsers(blockUsers []*models.BlockUser) error
+	SelectBlockUser(userID, blockUserID string) (*models.BlockUser, error)
+	SelectBlockUsersByUserID(userID string) ([]string, error)
+	DeleteBlockUser(userID string, blockUserIDs []string) error
 }

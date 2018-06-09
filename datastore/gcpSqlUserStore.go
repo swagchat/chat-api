@@ -2,38 +2,38 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *gcpSqlProvider) CreateUserStore() {
-	RdbCreateUserStore()
+func (p *gcpSQLProvider) createUserStore() {
+	rdbCreateUserStore(p.database)
 }
 
-func (p *gcpSqlProvider) InsertUser(user *models.User) StoreResult {
-	return RdbInsertUser(user)
+func (p *gcpSQLProvider) InsertUser(user *models.User, opts ...interface{}) (*models.User, error) {
+	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *gcpSqlProvider) SelectUser(userId string, isWithRooms, isWithDevices, isWithBlocks bool) StoreResult {
-	return RdbSelectUser(userId, isWithRooms, isWithDevices, isWithBlocks)
+func (p *gcpSQLProvider) SelectUser(userID string, opts ...interface{}) (*models.User, error) {
+	return rdbSelectUser(p.database, userID, opts...)
 }
 
-func (p *gcpSqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
-	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
+func (p *gcpSQLProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*models.User, error) {
+	return rdbSelectUserByUserIDAndAccessToken(p.database, userID, accessToken)
 }
 
-func (p *gcpSqlProvider) SelectUsers() StoreResult {
-	return RdbSelectUsers()
+func (p *gcpSQLProvider) SelectUsers() ([]*models.User, error) {
+	return rdbSelectUsers(p.database)
 }
 
-func (p *gcpSqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
-	return RdbSelectUserIdsByUserIds(userIds)
+func (p *gcpSQLProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
+	return rdbSelectUserIDsByUserIDs(p.database, userIDs)
 }
 
-func (p *gcpSqlProvider) UpdateUser(user *models.User) StoreResult {
-	return RdbUpdateUser(user)
+func (p *gcpSQLProvider) UpdateUser(user *models.User) (*models.User, error) {
+	return rdbUpdateUser(p.database, user)
 }
 
-func (p *gcpSqlProvider) UpdateUserDeleted(userId string) StoreResult {
-	return RdbUpdateUserDeleted(userId)
+func (p *gcpSQLProvider) UpdateUserDeleted(userID string) error {
+	return rdbUpdateUserDeleted(p.database, userID)
 }
 
-func (p *gcpSqlProvider) SelectContacts(userId string) StoreResult {
-	return RdbSelectContacts(userId)
+func (p *gcpSQLProvider) SelectContacts(userID string) ([]*models.User, error) {
+	return rdbSelectContacts(p.database, userID)
 }

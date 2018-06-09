@@ -1,107 +1,121 @@
 package datastore
 
 import (
-	"log"
-
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
+	"go.uber.org/zap/zapcore"
 )
 
-func RdbCreateSubscriptionStore() {
-	master := RdbStoreInstance().master()
-	_ = master.AddTableWithName(models.Subscription{}, TABLE_NAME_SUBSCRIPTION)
-	if err := master.CreateTablesIfNotExists(); err != nil {
-		log.Println(err)
+func rdbCreateSubscriptionStore(db string) {
+	master := RdbStore(db).master()
+
+	_ = master.AddTableWithName(models.Subscription{}, tableNameSubscription)
+	err := master.CreateTablesIfNotExists()
+	if err != nil {
+		logging.Log(zapcore.FatalLevel, &logging.AppLog{
+			Message: "Create subscription table error",
+			Error:   err,
+		})
 	}
 }
 
-func RdbInsertSubscription(subscription *models.Subscription) StoreResult {
-	master := RdbStoreInstance().master()
-	result := StoreResult{}
-	if err := master.Insert(subscription); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while creating subscription item.", err)
+func rdbInsertSubscription(db string, subscription *models.Subscription) (*models.Subscription, error) {
+	master := RdbStore(db).master()
+
+	err := master.Insert(subscription)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while creating subscription")
 	}
-	result.Data = subscription
-	return result
+
+	return subscription, nil
 }
 
-func RdbSelectSubscription(roomId, userId string, platform int) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectSubscription(db, roomID, userID string, platform int) (*models.Subscription, error) {
+	replica := RdbStore(db).replica()
+
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform AND deleted=0;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform AND deleted=0;")
 	params := map[string]interface{}{
-		"roomId":   roomId,
-		"userId":   userId,
+		"roomId":   roomID,
+		"userId":   userID,
 		"platform": platform,
 	}
-	if _, err := slave.Select(&subscriptions, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting subscription item.", err)
+	_, err := replica.Select(&subscriptions, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting subscription")
 	}
+
 	if len(subscriptions) == 1 {
-		result.Data = subscriptions[0]
+		return subscriptions[0], nil
 	}
-	return result
+
+	return nil, nil
 }
 
-func RdbSelectDeletedSubscriptionsByRoomId(roomId string) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*models.Subscription, error) {
+	replica := RdbStore(db).replica()
+
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND deleted!=0;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE room_id=:roomId AND deleted!=0;")
 	params := map[string]interface{}{
-		"roomId": roomId,
+		"roomId": roomID,
 	}
-	if _, err := slave.Select(&subscriptions, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting subscription items.", err)
+	_, err := replica.Select(&subscriptions, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting subscriptions")
 	}
-	result.Data = subscriptions
-	return result
+
+	return subscriptions, nil
 }
 
-func RdbSelectDeletedSubscriptionsByUserId(userId string) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*models.Subscription, error) {
+	replica := RdbStore(db).replica()
+
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND deleted!=0;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE user_id=:userId AND deleted!=0;")
 	params := map[string]interface{}{
-		"userId": userId,
+		"userId": userID,
 	}
-	if _, err := slave.Select(&subscriptions, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting subscription items.", err)
+	_, err := replica.Select(&subscriptions, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting subscriptions")
 	}
-	result.Data = subscriptions
-	return result
+
+	return subscriptions, nil
 }
 
-func RdbSelectDeletedSubscriptionsByUserIdAndPlatform(userId string, platform int) StoreResult {
-	slave := RdbStoreInstance().replica()
-	result := StoreResult{}
+func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platform int) ([]*models.Subscription, error) {
+	replica := RdbStore(db).replica()
+
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE user_id=:userId AND platform=:platform AND deleted!=0;")
+	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE user_id=:userId AND platform=:platform AND deleted!=0;")
 	params := map[string]interface{}{
-		"userId":   userId,
+		"userId":   userID,
 		"platform": platform,
 	}
-	if _, err := slave.Select(&subscriptions, query, params); err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while getting subscription items.", err)
+	_, err := replica.Select(&subscriptions, query, params)
+	if err != nil {
+		return nil, errors.Wrap(err, "An error occurred while getting subscriptions")
 	}
-	result.Data = subscriptions
-	return result
+
+	return subscriptions, nil
 }
 
-func RdbDeleteSubscription(subscription *models.Subscription) StoreResult {
-	master := RdbStoreInstance().master()
-	result := StoreResult{}
-	query := utils.AppendStrings("DELETE FROM ", TABLE_NAME_SUBSCRIPTION, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;")
+func rdbDeleteSubscription(db string, subscription *models.Subscription) error {
+	master := RdbStore(db).master()
+
+	query := utils.AppendStrings("DELETE FROM ", tableNameSubscription, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;")
 	params := map[string]interface{}{
-		"roomId":   subscription.RoomId,
-		"userId":   subscription.UserId,
+		"roomId":   subscription.RoomID,
+		"userId":   subscription.UserID,
 		"platform": subscription.Platform,
 	}
 	_, err := master.Exec(query, params)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while deleting subscription item.", err)
+		return errors.Wrap(err, "An error occurred while deleting subscription")
 	}
-	return result
+
+	return nil
 }

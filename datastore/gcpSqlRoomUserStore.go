@@ -2,42 +2,46 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *gcpSqlProvider) CreateRoomUserStore() {
-	RdbCreateRoomUserStore()
+func (p *gcpSQLProvider) createRoomUserStore() {
+	rdbCreateRoomUserStore(p.database)
 }
 
-func (p *gcpSqlProvider) DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
-	return RdbDeleteAndInsertRoomUsers(roomUsers)
+func (p *gcpSQLProvider) DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) error {
+	return rdbDeleteAndInsertRoomUsers(p.database, roomUsers)
 }
 
-func (p *gcpSqlProvider) InsertRoomUsers(roomUsers []*models.RoomUser) StoreResult {
-	return RdbInsertRoomUsers(roomUsers)
+func (p *gcpSQLProvider) InsertRoomUsers(roomUsers []*models.RoomUser) error {
+	return rdbInsertRoomUsers(p.database, roomUsers)
 }
 
-func (p *gcpSqlProvider) SelectRoomUser(roomId, userId string) StoreResult {
-	return RdbSelectRoomUser(roomId, userId)
+func (p *gcpSQLProvider) SelectRoomUser(roomID, userID string) (*models.RoomUser, error) {
+	return rdbSelectRoomUser(p.database, roomID, userID)
 }
 
-func (p *gcpSqlProvider) SelectRoomUserOfOneOnOne(myUserId, opponentUserId string) StoreResult {
-	return RdbSelectRoomUserOfOneOnOne(myUserId, opponentUserId)
+func (p *gcpSQLProvider) SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*models.RoomUser, error) {
+	return rdbSelectRoomUserOfOneOnOne(p.database, myUserID, opponentUserID)
 }
 
-func (p *gcpSqlProvider) SelectRoomUsersByRoomId(roomId string) StoreResult {
-	return RdbSelectRoomUsersByRoomId(roomId)
+func (p *gcpSQLProvider) SelectRoomUsersByRoomID(roomID string) ([]*models.RoomUser, error) {
+	return rdbSelectRoomUsersByRoomID(p.database, roomID)
 }
 
-func (p *gcpSqlProvider) SelectRoomUsersByUserId(userId string) StoreResult {
-	return RdbSelectRoomUsersByUserId(userId)
+func (p *gcpSQLProvider) SelectRoomUsersByUserID(userID string) ([]*models.RoomUser, error) {
+	return rdbSelectRoomUsersByUserID(p.database, userID)
 }
 
-func (p *gcpSqlProvider) SelectRoomUsersByRoomIdAndUserIds(roomId *string, userIds []string) StoreResult {
-	return RdbSelectRoomUsersByRoomIdAndUserIds(roomId, userIds)
+func (p *gcpSQLProvider) SelectRoomUserIDsByRoomID(roomID string, opts ...interface{}) ([]string, error) {
+	return rdbSelectRoomUserIDsByRoomID(p.database, roomID, opts...)
 }
 
-func (p *gcpSqlProvider) UpdateRoomUser(roomUser *models.RoomUser) StoreResult {
-	return RdbUpdateRoomUser(roomUser)
+func (p *gcpSQLProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error) {
+	return rdbSelectRoomUsersByRoomIDAndUserIDs(p.database, roomID, userIDs)
 }
 
-func (p *gcpSqlProvider) DeleteRoomUser(roomId string, userIds []string) StoreResult {
-	return RdbDeleteRoomUser(roomId, userIds)
+func (p *gcpSQLProvider) UpdateRoomUser(roomUser *models.RoomUser) (*models.RoomUser, error) {
+	return rdbUpdateRoomUser(p.database, roomUser)
+}
+
+func (p *gcpSQLProvider) DeleteRoomUser(roomID string, userIDs []string) error {
+	return rdbDeleteRoomUser(p.database, roomID, userIDs)
 }

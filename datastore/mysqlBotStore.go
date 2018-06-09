@@ -1,37 +1,11 @@
 package datastore
 
-func (p *mysqlProvider) CreateBotStore() {
-	RdbCreateBotStore()
+import "github.com/swagchat/chat-api/models"
+
+func (p *mysqlProvider) createBotStore() {
+	rdbCreateBotStore(p.database)
 }
 
-//func (provider MysqlProvider) InsertUser(user *models.User) StoreResult {
-//	return RdbInsertUser(user)
-//}
-
-func (p *mysqlProvider) SelectBot(userId string) StoreResult {
-	return RdbSelectBot(userId)
+func (p *mysqlProvider) SelectBot(userID string) (*models.Bot, error) {
+	return rdbSelectBot(p.database, userID)
 }
-
-//func (provider MysqlProvider) SelectUserByUserIdAndAccessToken(userId, accessToken string) StoreResult {
-//	return RdbSelectUserByUserIdAndAccessToken(userId, accessToken)
-//}
-//
-//func (provider MysqlProvider) SelectUsers() StoreResult {
-//	return RdbSelectUsers()
-//}
-//
-//func (provider MysqlProvider) SelectUserIdsByUserIds(userIds []string) StoreResult {
-//	return RdbSelectUserIdsByUserIds(userIds)
-//}
-//
-//func (provider MysqlProvider) UpdateUser(user *models.User) StoreResult {
-//	return RdbUpdateUser(user)
-//}
-//
-//func (provider MysqlProvider) UpdateUserDeleted(userId string) StoreResult {
-//	return RdbUpdateUserDeleted(userId)
-//}
-//
-//func (provider MysqlProvider) SelectContacts(userId string) StoreResult {
-//	return RdbSelectContacts(userId)
-//}

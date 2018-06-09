@@ -13,6 +13,7 @@ import (
 	gorp "gopkg.in/gorp.v2"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -28,8 +29,12 @@ type mysqlProvider struct {
 	trace bool
 }
 
-func (p *mysqlProvider) Connect() error {
-	rs := RdbStoreInstance()
+func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
+	if _, ok := rdbStores[dsCfg.Database]; ok {
+		return nil
+	}
+
+	rs := &rdbStore{}
 	if rs.master() == nil {
 		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
@@ -40,13 +45,14 @@ func (p *mysqlProvider) Connect() error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
-			fatal(err)
+			return errors.Wrap(err, "Database open error")
 		}
 
 		mic, err := strconv.Atoi(p.maxIdleConnection)
 		if err == nil {
 			db.SetMaxIdleConns(mic)
 		}
+
 		moc, err := strconv.Atoi(p.maxOpenConnection)
 		if err == nil {
 			db.SetMaxOpenConns(moc)
@@ -57,7 +63,6 @@ func (p *mysqlProvider) Connect() error {
 		if p.trace {
 			master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
 		}
-
 		rs.setMaster(master)
 	}
 
@@ -72,50 +77,51 @@ func (p *mysqlProvider) Connect() error {
 				p.database)
 			db, err := p.openDb(ds, replicaSi)
 			if err != nil {
-				fatal(err)
+				return err
 			}
 
 			mic, err := strconv.Atoi(p.maxIdleConnection)
 			if err == nil {
 				db.SetMaxIdleConns(mic)
 			}
+
 			moc, err := strconv.Atoi(p.maxOpenConnection)
 			if err == nil {
 				db.SetMaxOpenConns(moc)
 			}
 
-			db.SetMaxIdleConns(mic)
-			db.SetMaxOpenConns(moc)
-
-			var slave *gorp.DbMap
-			slave = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
+			var replica *gorp.DbMap
+			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
 			if p.trace {
-				slave.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+				replica.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
 			}
-
-			rs.setReplica(slave)
+			rs.setReplica(replica)
 		}
 	}
+	rdbStores[dsCfg.Database] = rs
+	p.init()
 	return nil
 }
 
-func (p *mysqlProvider) Init() {
-	p.CreateApiStore()
-	p.CreateAssetStore()
-	p.CreateUserStore()
-	p.CreateBlockUserStore()
-	p.CreateBotStore()
-	p.CreateRoomStore()
-	p.CreateRoomUserStore()
-	p.CreateMessageStore()
-	p.CreateDeviceStore()
-	p.CreateSettingStore()
-	p.CreateSubscriptionStore()
+func (p *mysqlProvider) init() {
+	p.createAppClientStore()
+	p.createAssetStore()
+	p.createBlockUserStore()
+	p.createBotStore()
+	p.createDeviceStore()
+	p.createMessageStore()
+	p.createRoomStore()
+	p.createRoomUserStore()
+	p.createSettingStore()
+	p.createSubscriptionStore()
+	p.createUserStore()
+	p.createUserRoleStore()
+	p.createWebhookStore()
 }
 
 func (p *mysqlProvider) DropDatabase() error {
-	rs := RdbStoreInstance()
-	if rs.master() != nil {
+	master := RdbStore(p.database).master()
+	if master != nil {
 		ds := fmt.Sprintf(
 			"%s:%s@tcp(%s:%s)/%s",
 			p.user,

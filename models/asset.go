@@ -10,17 +10,33 @@ import (
 )
 
 var (
-	imageMimes []string = []string{
-		"image/jpeg",
-		"image/png",
+	acceptMimes map[string]string = map[string]string{
+		"image/jpeg":                                                                "jpg",
+		"image/png":                                                                 "png",
+		"application/pdf":                                                           "pdf",
+		"application/vnd.ms-excel":                                                  "xls",
+		"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":         "xlsx",
+		"application/msword":                                                        "doc",
+		"application/vnd.openxmlformats-officedocument.wordprocessingml.document":   "docx",
+		"application/vnd.ms-powerpoint":                                             "ppt",
+		"application/vnd.openxmlformats-officedocument.presentationml.presentation": "pptx",
+		"application/zip": "zip",
+	}
+
+	ImageMimes = map[string]int{
+		"image/jpeg": 0,
+		"image/png":  0,
 	}
 )
 
 type Asset struct {
-	Id        uint64 `json:"-" db:"id"`
-	AssetId   string `json:"assetId" db:"asset_id,notnull"`
+	ID        uint64 `json:"-" db:"id"`
+	AssetID   string `json:"assetId" db:"asset_id,notnull"`
 	Extension string `json:"extension" db:"extension,notnull"`
 	Mime      string `json:"mime" db:"mime,notnull"`
+	Size      int64  `json:"size" db:"size,notnull"`
+	Width     int    `json:"width" db:"width,notnull"`
+	Height    int    `json:"height" db:"height,notnull"`
 	URL       string `json:"url" db:"url"`
 	Created   int64  `json:"created" db:"created,notnull"`
 	Modified  int64  `json:"modified" db:"modified,notnull"`
@@ -31,16 +47,22 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
 	return json.Marshal(&struct {
-		AssetId   string `json:"assetId"`
-		Extension string `json:"extension"`
-		Mime      string `json:"mime"`
-		URL       string `json:"url"`
-		Created   string `json:"created"`
-		Modified  string `json:"modified"`
+		AssetID   string `json:"assetId,omitempty"`
+		Extension string `json:"extension,omitempty"`
+		Mime      string `json:"mime,omitempty"`
+		Size      int64  `json:"size,omitempty"`
+		Width     int    `json:"width,omitempty"`
+		Height    int    `json:"height,omitempty"`
+		URL       string `json:"url,omitempty"`
+		Created   string `json:"created,omitempty"`
+		Modified  string `json:"modified,omitempty"`
 	}{
-		AssetId:   a.AssetId,
+		AssetID:   a.AssetID,
 		Extension: a.Extension,
 		Mime:      a.Mime,
+		Size:      a.Size,
+		Width:     a.Width,
+		Height:    a.Height,
 		URL:       a.URL,
 		Created:   time.Unix(a.Created, 0).In(l).Format(time.RFC3339),
 		Modified:  time.Unix(a.Modified, 0).In(l).Format(time.RFC3339),
@@ -48,7 +70,7 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 }
 
 func (a *Asset) IsValidPost() *ProblemDetail {
-	if !utils.SearchStringValueInSlice(imageMimes, a.Mime) {
+	if _, ok := acceptMimes[a.Mime]; !ok {
 		return &ProblemDetail{
 			Title:     fmt.Sprintf("Content-Type is not allowed [%s]", a.Mime),
 			Status:    http.StatusBadRequest,
@@ -60,18 +82,8 @@ func (a *Asset) IsValidPost() *ProblemDetail {
 }
 
 func (a *Asset) BeforePost() {
-	a.AssetId = utils.CreateUuid()
-
-	var extension string
-	switch a.Mime {
-	case "image/jpeg":
-		extension = "jpg"
-	case "image/png":
-		extension = "png"
-	default:
-		extension = ""
-	}
-	a.Extension = extension
+	a.AssetID = utils.GenerateUUID()
+	a.Extension = acceptMimes[a.Mime]
 
 	nowTimestamp := time.Now().Unix()
 	a.Created = nowTimestamp

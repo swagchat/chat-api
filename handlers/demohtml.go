@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/swagchat/chat-api/utils"
 )
 
 var messengerHTMLData []byte
@@ -18,14 +20,14 @@ var baseMessengerHTMLData = `<!DOCTYPE html>
   </head>
   <body>
     <div id="swag" />
-    <script src="SWAG_API_ENDPOINT/static/SWAG_JS_FILE_NAME"></script>
+    <script src="http://localhost:8101/static/main.5785e4e6.js"></script>
     <script>
       Swag.renderMessenger({
         clientParams: {
-          apiEndpoint: 'SWAG_API_ENDPOINT',
-          wsEndpoint: 'SWAG_WS_ENDPOINT',
-          userId: 'SWAG_USER_ID',
-          username: 'SWAG_USER_NAME',
+          apiEndpoint: 'http://localhost:8101',
+          wsEndpoint: 'ws://localhost:8102',
+          userId: '958c775a-9d71-4b26-8b17-5a210926a75e',
+          username: 'demo user',
           paths: {
             roomListPath: '/rooms',
           }
@@ -37,11 +39,15 @@ var baseMessengerHTMLData = `<!DOCTYPE html>
 
 func messengerHTMLHandler(rw http.ResponseWriter, req *http.Request) {
 	if messengerHTMLData == nil {
-		tmpExHTML := strings.Replace(baseMessengerHTMLData, "SWAG_API_ENDPOINT", os.Getenv("SWAG_API_ENDPOINT"), -1)
-		tmpExHTML = strings.Replace(tmpExHTML, "SWAG_WS_ENDPOINT", os.Getenv("SWAG_WS_ENDPOINT"), -1)
-		tmpExHTML = strings.Replace(tmpExHTML, "SWAG_USER_ID", os.Getenv("SWAG_USER_ID"), -1)
-		tmpExHTML = strings.Replace(tmpExHTML, "SWAG_USER_NAME", os.Getenv("SWAG_USER_NAME"), -1)
-		tmpExHTML = strings.Replace(tmpExHTML, "SWAG_JS_FILE_NAME", os.Getenv("SWAG_JS_FILE_NAME"), -1)
+		tmpExHTML := strings.Replace(baseMessengerHTMLData, "SC_REACT_RTM_PROTOCOL", os.Getenv("SC_REACT_RTM_PROTOCOL"), 1)
+		tmpExHTML = strings.Replace(tmpExHTML, "SC_REACT_RTM_HOST", os.Getenv("SC_REACT_RTM_HOST"), 1)
+		tmpExHTML = strings.Replace(tmpExHTML, "SC_REACT_RTM_PATH", os.Getenv("SC_REACT_RTM_PATH"), 1)
+
+		chatEndpoint := os.Getenv("SC_REACT_CHAT_ENDPOINT")
+		if chatEndpoint == "" {
+			chatEndpoint = utils.AppendStrings("/", utils.APIVersion)
+		}
+		tmpExHTML = strings.Replace(tmpExHTML, "SC_REACT_CHAT_ENDPOINT", chatEndpoint, 1)
 
 		messengerHTMLData = []byte(tmpExHTML)
 	}

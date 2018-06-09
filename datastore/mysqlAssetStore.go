@@ -2,14 +2,14 @@ package datastore
 
 import "github.com/swagchat/chat-api/models"
 
-func (p *mysqlProvider) CreateAssetStore() {
-	RdbCreateAssetStore()
+func (p *mysqlProvider) createAssetStore() {
+	rdbCreateAssetStore(p.database)
 }
 
-func (p *mysqlProvider) InsertAsset(asset *models.Asset) StoreResult {
-	return RdbInsertAsset(asset)
+func (p *mysqlProvider) InsertAsset(asset *models.Asset) (*models.Asset, error) {
+	return rdbInsertAsset(p.database, asset)
 }
 
-func (p *mysqlProvider) SelectAsset(assetId string) StoreResult {
-	return RdbSelectAsset(assetId)
+func (p *mysqlProvider) SelectAsset(assetID string) (*models.Asset, error) {
+	return rdbSelectAsset(p.database, assetID)
 }

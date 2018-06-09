@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -10,38 +11,43 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
+// RoomType is room type
 type RoomType int
 
 const (
-	ONE_ON_ONE RoomType = iota + 1
-	PRIVATE_ROOM
-	PUBLIC_ROOM
-	NOTICE_ROOM
-	ROOM_TYPE_END
+	OneOnOne RoomType = iota + 1
+	PrivateRoom
+	PublicRoom
+	NoticeRoom
+	CustomerRoom
+	RoomTypeEnd
 )
 
+// SpeechMode is speech mode
 type SpeechMode int
 
 const (
-	SPEECH_MODE_NONE SpeechMode = iota + 1
-	SPEECH_MODE_WAKEUP_WEB_TO_WEB
-	SPEECH_MODE_WAKEUP_WEB_TO_CLOUD
-	SPEECH_MODE_WAKEUP_CLOUD_TO_CLOUD
-	SPEECH_MODE_ALWAYS
-	SPEECH_MODE_MANUAL
-	SPEECH_MODE_END
+	SpeechModeNone SpeechMode = iota + 1
+	SpeechModeWakeupWebToWeb
+	SpeechModeWakeupWebToCloud
+	SpeechModeWakeupCloudToCloud
+	SpeechModeAlways
+	SpeechModeManual
+	SpeechModeEnd
 )
 
 func (rt RoomType) String() string {
 	switch rt {
-	case ONE_ON_ONE:
-		return "ONE_ON_ONE"
-	case PRIVATE_ROOM:
-		return "PRIVATE_ROOM"
-	case PUBLIC_ROOM:
-		return "PUBLIC_ROOM"
-	case NOTICE_ROOM:
-		return "NOTICE_ROOM"
+	case OneOnOne:
+		return "OneOnOne"
+	case PrivateRoom:
+		return "PrivateRoom"
+	case PublicRoom:
+		return "PublicRoom"
+	case NoticeRoom:
+		return "NoticeRoom"
+	case CustomerRoom:
+		return "CustomerRoom"
 	default:
 		return "Unknown"
 	}
@@ -53,19 +59,19 @@ type Rooms struct {
 }
 
 type Room struct {
-	Id                    uint64         `json:"-" db:"id"`
-	RoomId                string         `json:"roomId" db:"room_id,notnull"`
-	UserId                string         `json:"userId" db:"user_id,notnull"`
+	ID                    uint64         `json:"-" db:"id"`
+	RoomID                string         `json:"roomId" db:"room_id,notnull"`
+	UserID                string         `json:"userId" db:"user_id,notnull"`
 	Name                  string         `json:"name" db:"name,notnull"`
-	PictureUrl            string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl        string         `json:"informationUrl,omitempty" db:"information_url"`
+	PictureURL            string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL        string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData              utils.JSONText `json:"metaData" db:"meta_data"`
 	AvailableMessageTypes string         `json:"availableMessageTypes,omitempty" db:"available_message_types"`
-	Type                  *RoomType      `json:"type,omitempty" db:"type,notnull"`
+	Type                  RoomType       `json:"type,omitempty" db:"type,notnull"`
 	LastMessage           string         `json:"lastMessage" db:"last_message"`
 	LastMessageUpdated    int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
 	MessageCount          int64          `json:"messageCount" db:"-"`
-	NotificationTopicId   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
+	NotificationTopicID   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
 	IsCanLeft             *bool          `json:"isCanLeft,omitempty" db:"is_can_left,notnull"`
 	IsShowUsers           *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
 	SpeechMode            *SpeechMode    `json:"speechMode,omitempty" db:"speech_mode,notnull"`
@@ -74,19 +80,22 @@ type Room struct {
 	Deleted               int64          `json:"-" db:"deleted,notnull"`
 
 	Users []*UserForRoom `json:"users,omitempty" db:"-"`
-	RequestRoomUserIds
+	// *RequestRoomUserIDs
+	UserIDs []string `json:"userIds,omitempty" db:"-"`
 }
 
 type UserForRoom struct {
 	// from User
-	UserId         string         `json:"userId" db:"user_id"`
+	UserID         string         `json:"userId" db:"user_id"`
 	Name           string         `json:"name" db:"name"`
-	PictureUrl     string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationUrl string         `json:"informationUrl,omitempty" db:"information_url"`
+	PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
 	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
+	Role           *Role          `json:"role,omitempty" db:"role,notnull"`
 	IsBot          *bool          `json:"isBot,omitempty" db:"is_bot,notnull"`
 	IsCanBlock     *bool          `json:"isCanBlock,omitempty" db:"is_can_block,notnull"`
 	IsShowUsers    *bool          `json:"isShowUsers,omitempty" db:"is_show_users,notnull"`
+	LastAccessed   int64          `json:"lastAccessed" db:"last_accessed"`
 	Created        int64          `json:"created" db:"created"`
 	Modified       int64          `json:"modified" db:"modified"`
 
@@ -108,18 +117,18 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		availableMessageTypesSlice = strings.Split(r.AvailableMessageTypes, ",")
 	}
 	return json.Marshal(&struct {
-		RoomId                string         `json:"roomId"`
-		UserId                string         `json:"userId"`
+		RoomID                string         `json:"roomId"`
+		UserID                string         `json:"userId"`
 		Name                  string         `json:"name"`
-		PictureUrl            string         `json:"pictureUrl,omitempty"`
-		InformationUrl        string         `json:"informationUrl,omitempty"`
+		PictureURL            string         `json:"pictureUrl,omitempty"`
+		InformationURL        string         `json:"informationUrl,omitempty"`
 		MetaData              utils.JSONText `json:"metaData"`
 		AvailableMessageTypes []string       `json:"availableMessageTypes,omitempty"`
-		Type                  *RoomType      `json:"type"`
+		Type                  RoomType       `json:"type"`
 		LastMessage           string         `json:"lastMessage"`
 		LastMessageUpdated    string         `json:"lastMessageUpdated"`
 		MessageCount          int64          `json:"messageCount"`
-		NotificationTopicId   string         `json:"notificationTopicId,omitempty"`
+		NotificationTopicID   string         `json:"notificationTopicId,omitempty"`
 		IsCanLeft             *bool          `json:"isCanLeft,omitempty"`
 		IsShowUsers           *bool          `json:"isShowUsers,omitempty"`
 		SpeechMode            *SpeechMode    `json:"speechMode,omitempty"`
@@ -127,11 +136,11 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		Modified              string         `json:"modified"`
 		Users                 []*UserForRoom `json:"users,omitempty"`
 	}{
-		RoomId:                r.RoomId,
-		UserId:                r.UserId,
+		RoomID:                r.RoomID,
+		UserID:                r.UserID,
 		Name:                  r.Name,
-		PictureUrl:            r.PictureUrl,
-		InformationUrl:        r.InformationUrl,
+		PictureURL:            r.PictureURL,
+		InformationURL:        r.InformationURL,
 		MetaData:              r.MetaData,
 		AvailableMessageTypes: availableMessageTypesSlice,
 		Type:               r.Type,
@@ -150,14 +159,16 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		UserId         string         `json:"userId"`
+		UserID         string         `json:"userId"`
 		Name           string         `json:"name"`
-		PictureUrl     string         `json:"pictureUrl,omitempty"`
-		InformationUrl string         `json:"informationUrl,omitempty"`
+		PictureURL     string         `json:"pictureUrl,omitempty"`
+		InformationURL string         `json:"informationUrl,omitempty"`
 		MetaData       utils.JSONText `json:"metaData"`
+		Role           *Role          `json:"role,omitempty`
 		IsBot          *bool          `json:"isBot,omitempty"`
 		IsCanBlock     *bool          `json:"isCanBlock,omitempty"`
 		IsShowUsers    *bool          `json:"isShowUsers,omitempty"`
+		LastAccessed   string         `json:"lastAccessed"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
 		RuUnreadCount  int64          `json:"ruUnreadCount"`
@@ -165,14 +176,16 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		RuCreated      string         `json:"ruCreated"`
 		RuModified     string         `json:"ruModified"`
 	}{
-		UserId:         ufr.UserId,
+		UserID:         ufr.UserID,
 		Name:           ufr.Name,
-		PictureUrl:     ufr.PictureUrl,
-		InformationUrl: ufr.InformationUrl,
+		PictureURL:     ufr.PictureURL,
+		InformationURL: ufr.InformationURL,
 		MetaData:       ufr.MetaData,
+		Role:           ufr.Role,
 		IsBot:          ufr.IsBot,
 		IsCanBlock:     ufr.IsCanBlock,
 		IsShowUsers:    ufr.IsShowUsers,
+		LastAccessed:   time.Unix(ufr.LastAccessed, 0).In(l).Format(time.RFC3339),
 		Created:        time.Unix(ufr.Created, 0).In(l).Format(time.RFC3339),
 		Modified:       time.Unix(ufr.Modified, 0).In(l).Format(time.RFC3339),
 		RuUnreadCount:  ufr.RuUnreadCount,
@@ -183,11 +196,10 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Room) IsValidPost() *ProblemDetail {
-	if r.RoomId != "" && !utils.IsValidId(r.RoomId) {
+	if r.RoomID != "" && !utils.IsValidID(r.RoomID) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "roomId",
@@ -197,11 +209,10 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.UserId == "" {
+	if r.UserID == "" {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -211,11 +222,10 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !utils.IsValidId(r.UserId) {
+	if !utils.IsValidID(r.UserID) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
@@ -225,11 +235,10 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.Type == nil {
+	if r.Type == 0 {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "type",
@@ -239,11 +248,10 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if !(*r.Type > 0 && *r.Type < ROOM_TYPE_END) {
+	if !(r.Type > 0 && r.Type < RoomTypeEnd) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "type",
@@ -253,25 +261,23 @@ func (r *Room) IsValidPost() *ProblemDetail {
 		}
 	}
 
-	if r.UserIds == nil {
+	if r.Type != CustomerRoom && r.UserIDs == nil {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userIds",
-					Reason: "userIds is empty.",
+					Reason: fmt.Sprintf("When room type is %d, userIds is a required. ", r.Type),
 				},
 			},
 		}
 	}
 
-	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SPEECH_MODE_END) {
+	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SpeechModeEnd) {
 		return &ProblemDetail{
-			Title:     "Request parameter error. (Create room item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: ERROR_NAME_INVALID_PARAM,
+			Title:  "Request error",
+			Status: http.StatusBadRequest,
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "speechMode",
@@ -289,8 +295,8 @@ func (r *Room) IsValidPut() *ProblemDetail {
 }
 
 func (r *Room) BeforePost() {
-	if r.RoomId == "" {
-		r.RoomId = utils.CreateUuid()
+	if r.RoomID == "" {
+		r.RoomID = utils.GenerateUUID()
 	}
 
 	if r.MetaData == nil {
@@ -308,8 +314,12 @@ func (r *Room) BeforePost() {
 	}
 
 	if r.SpeechMode == nil {
-		speechMode := SpeechMode(SPEECH_MODE_NONE)
+		speechMode := SpeechMode(SpeechModeNone)
 		r.SpeechMode = &speechMode
+	}
+
+	if r.UserIDs != nil {
+		r.UserIDs = utils.RemoveDuplicate(r.UserIDs)
 	}
 
 	nowTimestamp := time.Now().Unix()
@@ -322,11 +332,11 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.Name != "" {
 		r.Name = put.Name
 	}
-	if put.PictureUrl != "" {
-		r.PictureUrl = put.PictureUrl
+	if put.PictureURL != "" {
+		r.PictureURL = put.PictureURL
 	}
-	if put.InformationUrl != "" {
-		r.InformationUrl = put.InformationUrl
+	if put.InformationURL != "" {
+		r.InformationURL = put.InformationURL
 	}
 	if put.MetaData != nil {
 		r.MetaData = put.MetaData
@@ -337,12 +347,11 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.IsShowUsers != nil {
 		r.IsShowUsers = put.IsShowUsers
 	}
-	if put.Type != nil {
-		if *r.Type == ONE_ON_ONE && *put.Type != ONE_ON_ONE {
+	if put.Type != 0 {
+		if r.Type == OneOnOne && put.Type != OneOnOne {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Update room item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "type",
@@ -350,11 +359,10 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 					},
 				},
 			}
-		} else if *r.Type != ONE_ON_ONE && *put.Type == ONE_ON_ONE {
+		} else if r.Type != OneOnOne && put.Type == OneOnOne {
 			return &ProblemDetail{
-				Title:     "Request parameter error. (Update room item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: ERROR_NAME_INVALID_PARAM,
+				Title:  "Request error",
+				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "type",
