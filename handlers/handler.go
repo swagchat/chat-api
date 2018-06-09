@@ -123,6 +123,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowedMethods, ", "))
+
 	rHeaders := make([]string, 0, len(r.Header))
 	for k, v := range r.Header {
 		rHeaders = append(rHeaders, k)
@@ -130,7 +132,6 @@ func optionsHandler(w http.ResponseWriter, r *http.Request) {
 			rHeaders = append(rHeaders, strings.Join(v, ", "))
 		}
 	}
-	w.Header().Set("Access-Control-Allow-Methods", strings.Join(allowedMethods, ", "))
 	w.Header().Set("Access-Control-Allow-Headers", strings.Join(rHeaders, ", "))
 }
 

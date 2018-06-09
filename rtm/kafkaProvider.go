@@ -33,13 +33,14 @@ func (kp kafkaProvider) Publish(rtmEvent *RTMEvent) error {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+						Kind:    "Kafka",
 						Message: fmt.Sprintf("Delivery failed: %v\n", ev.TopicPartition),
 						Error:   err,
 					})
 				} else {
-					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+					logging.Log(zapcore.InfoLevel, &logging.AppLog{
+						Kind:    "Kafka",
 						Message: fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition),
-						Error:   err,
 					})
 				}
 			}

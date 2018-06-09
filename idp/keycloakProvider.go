@@ -93,7 +93,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 		return nil, errors.Wrap(err, "")
 	}
 	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("[keycloak]create uesr failure. HTTP Endpoint=%s, HTTP Status code=%d", endpoint, resp.StatusCode)
+		return nil, errors.Wrap(fmt.Errorf("[keycloak]create uesr failure. HTTP Endpoint=%s, HTTP Status code=%d", endpoint, resp.StatusCode), "")
 	}
 	defer resp.Body.Close()
 
@@ -126,7 +126,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 		return nil, errors.Wrap(err, "")
 	}
 	if resp.StatusCode != http.StatusNoContent {
-		return nil, fmt.Errorf("[keycloak]set role failure. HTTP Endpoint=%s, HTTP Status code=%d", endpoint, resp.StatusCode)
+		return nil, errors.Wrap(fmt.Errorf("[keycloak]set role failure. HTTP Endpoint=%s, HTTP Status code=%d", endpoint, resp.StatusCode), "")
 	}
 
 	// Create user
@@ -188,8 +188,8 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.Use
 func (kp *keycloakProvider) clientToken(ctx context.Context, clientID, clientSecret string) (string, error) {
 	realm := ctx.Value(utils.CtxRealm)
 	if kp.baseEndpoint == "" || realm == "" || clientID == "" || clientSecret == "" {
-		return "", fmt.Errorf("[keycloak]Invalid params for create client accessToken. baseEndpoint=%s, realm=%s, ClientID=%s, ClientSecret=%s",
-			kp.baseEndpoint, realm, clientID, clientSecret)
+		return "", errors.Wrap(fmt.Errorf("[keycloak]Invalid params for create client accessToken. baseEndpoint=%s, realm=%s, ClientID=%s, ClientSecret=%s",
+			kp.baseEndpoint, realm, clientID, clientSecret), "")
 	}
 
 	endpoint := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", kp.baseEndpoint, realm)
@@ -217,7 +217,7 @@ func (kp *keycloakProvider) clientToken(ctx context.Context, clientID, clientSec
 		return "", errors.Wrap(err, "")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("[keycloak]create client accessToken failure. HTTP Endpoint=%s, HTTP Status code=%d, ClientID=%s, ClientSecret=%s, Basic=%s", endpoint, resp.StatusCode, clientID, clientSecret, basicAuth)
+		return "", errors.Wrap(fmt.Errorf("[keycloak]create client accessToken failure. HTTP Endpoint=%s, HTTP Status code=%d, ClientID=%s, ClientSecret=%s, Basic=%s", endpoint, resp.StatusCode, clientID, clientSecret, basicAuth), "")
 	}
 	defer resp.Body.Close()
 
