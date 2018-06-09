@@ -1,8 +1,7 @@
 {
 	"info": {
-		"name": "[swagchat][test]chat-api",
 		"_postman_id": "bcec8999-6826-d645-c9b8-211dcdf7af7d",
-		"description": "",
+		"name": "[swagchat][test]chat-api",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -12,11 +11,11 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "4939670e-45aa-48f7-be50-995df67a0a66",
+						"id": "a4ae8606-1f7c-4f19-9756-7afff2b8c969",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Body matches string\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"swagchat Chat API version v0\");",
+							"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
 							"});"
 						]
 					}
@@ -24,7 +23,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "c4141845-ecce-47ab-91a0-3837db9e3800",
+						"id": "c22036c2-c76a-46c0-8b16-c93d428804dc",
 						"type": "text/javascript",
 						"exec": [
 							"const userSchema = {",
@@ -168,6 +167,7 @@
 							"};",
 							"postman.setEnvironmentVariable(\"blockUsersSchema\", JSON.stringify(blockUsersSchema));",
 							"",
+							"postman.setEnvironmentVariable(\"xClientId\", \"a6af7f1a6c9245bd8201b923db3d97e9\");",
 							""
 						]
 					}
@@ -182,8 +182,7 @@
 					"host": [
 						"{{apiEndpoint}}"
 					]
-				},
-				"description": null
+				}
 			},
 			"response": []
 		},
@@ -251,12 +250,7 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
+				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n  \"name\": \"{{randomUserName}}\"\n}"
@@ -352,15 +346,10 @@
 			],
 			"request": {
 				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
+				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"userID\": \"{{randomUserId}}\",\n\t\"name\": \"{{randomUserName}}\"\n}"
+					"raw": "{\n  \"userID\": \"{{randomUserId}}\",\n  \"name\": \"{{randomUserName}}\"\n}"
 				},
 				"url": {
 					"raw": "{{apiEndpoint}}/users",
@@ -406,7 +395,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-Preferred-Username",
+						"value": "{{xClientId}}"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users",
@@ -486,6 +480,10 @@
 						"key": "Accept",
 						"value": "application/json",
 						"disabled": true
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {},
@@ -498,8 +496,7 @@
 						"users",
 						"{{randomUserId}}"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -538,7 +535,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/unreadCount",
@@ -550,8 +552,7 @@
 						"{{randomUserId}}",
 						"unreadCount"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -617,8 +618,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -634,8 +635,7 @@
 						"users",
 						"{{randomUserId}}"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -670,7 +670,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices",
@@ -682,8 +687,7 @@
 						"{{randomUserId}}",
 						"devices"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -706,7 +710,12 @@
 			],
 			"request": {
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
@@ -719,8 +728,7 @@
 						"devices",
 						"1"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -773,8 +781,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -792,8 +800,7 @@
 						"devices",
 						"1"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -818,8 +825,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -861,7 +868,12 @@
 			],
 			"request": {
 				"method": "DELETE",
-				"header": [],
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
+					}
+				],
 				"body": {},
 				"url": {
 					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
@@ -874,8 +886,7 @@
 						"devices",
 						"1"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -885,7 +896,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "280d77f4-ad71-43ad-9d30-efaa34bd87cb",
+						"id": "f370d955-a744-40f2-b67b-ba27d34a1ce3",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -904,7 +915,6 @@
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
 							"pm.test('Data is valid', function() {",
-							"    console.log(res.blockUsers);",
 							"    pm.expect(res.blockUsers.length).to.eql(0);",
 							"});",
 							"",
@@ -917,8 +927,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -935,8 +945,58 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET_USERS_0002",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "6cfed53f-8845-4887-a9a5-d9e5e35dadcc",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"var res = JSON.parse(responseBody);",
+							"pm.environment.set(\"usersRes\", responseBody);",
+							"const usersSchemaString = pm.environment.get(\"usersSchema\");",
+							"const usersSchema = JSON.parse(usersSchemaString);",
+							"pm.test('Schema is valid', function() {",
+							"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
+							"});",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Preferred-Username",
+						"value": "{{xClientId}}"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "{{apiEndpoint}}/users",
+					"host": [
+						"{{apiEndpoint}}"
+					],
+					"path": [
+						"users"
+					]
 				},
-				"description": ""
+				"description": "No params"
 			},
 			"response": []
 		},
@@ -946,7 +1006,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "7f823d01-0de5-4aea-8ecf-a0f466388f19",
+						"id": "de0b3d4e-6751-49fc-94f2-ab462b5af92e",
 						"type": "text/javascript",
 						"exec": [
 							"const addBlockUserCount = 4;",
@@ -954,21 +1014,19 @@
 							"const randomUserId = pm.environment.get(\"randomUserId\");",
 							"",
 							"let addBlockUserIds = [];",
-							"pm.sendRequest(apiEndpoint + \"/users\", function (err, response) {",
-							"    let users = response.json();",
-							"    let i = 0;",
-							"    for (let user of users.users) {",
-							"        if (user.userId !== randomUserId) {",
-							"            addBlockUserIds.push(user.userId);",
-							"            i++;",
-							"        }",
-							"        if (i >= addBlockUserCount) {",
-							"            break;",
-							"        }",
+							"usersRes = pm.environment.get(\"usersRes\");",
+							"var users = JSON.parse(usersRes);",
+							"let i = 0;",
+							"for (let user of users.users) {",
+							"    if (user.userId !== randomUserId) {",
+							"        addBlockUserIds.push(user.userId);",
+							"        i++;",
 							"    }",
-							"    pm.environment.set(\"addBlockUserIds\", JSON.stringify(addBlockUserIds));",
-							"});",
-							"",
+							"    if (i >= addBlockUserCount) {",
+							"        break;",
+							"    }",
+							"}",
+							"pm.environment.set(\"addBlockUserIds\", JSON.stringify(addBlockUserIds));",
 							""
 						]
 					}
@@ -976,7 +1034,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "d5b6c746-0e59-408a-a8c3-36314a36e8c3",
+						"id": "ae003546-c23e-419f-8b1b-81165bfb01c4",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -994,8 +1052,10 @@
 							"pm.test('Schema is valid', function() {",
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(4);",
+							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
+							"var expectedCount = addBlockUserIds.length;",
+							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
 							"});",
 							"",
 							""
@@ -1007,8 +1067,8 @@
 				"method": "PUT",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -1025,8 +1085,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1036,7 +1095,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "ca6a5f0b-eb0b-4a7a-a8a8-a8005ba041f7",
+						"id": "7dacccec-cd71-41b1-965f-8706da31b097",
 						"type": "text/javascript",
 						"exec": [
 							"const deleteBlockUserCount = 1;",
@@ -1044,20 +1103,20 @@
 							"const randomUserId = pm.environment.get(\"randomUserId\");",
 							"",
 							"let deleteBlockUserIds = [];",
-							"pm.sendRequest(apiEndpoint + \"/users\", function (err, response) {",
-							"    let users = response.json();",
-							"    let i = 0;",
-							"    for (let user of users.users) {",
-							"        if (user.userId !== randomUserId) {",
-							"            deleteBlockUserIds.push(user.userId);",
-							"            i++;",
-							"        }",
-							"        if (i >= deleteBlockUserCount) {",
-							"            break;",
-							"        }",
+							"usersRes = pm.environment.get(\"usersRes\");",
+							"var users = JSON.parse(usersRes);",
+							"let i = 0;",
+							"for (let user of users.users) {",
+							"    if (user.userId !== randomUserId) {",
+							"        deleteBlockUserIds.push(user.userId);",
+							"        i++;",
 							"    }",
-							"    pm.environment.set(\"deleteBlockUserIds\", JSON.stringify(deleteBlockUserIds));",
-							"});",
+							"    if (i >= deleteBlockUserCount) {",
+							"        break;",
+							"    }",
+							"}",
+							"pm.environment.set(\"deleteBlockUserIds\", JSON.stringify(deleteBlockUserIds));",
+							"",
 							"",
 							""
 						]
@@ -1066,7 +1125,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "255b527a-d79e-45a3-b05c-68683639b27e",
+						"id": "990a6df6-8cc1-47fb-89e0-a35b9bcaa551",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -1084,8 +1143,10 @@
 							"pm.test('Schema is valid', function() {",
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(3);",
+							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
+							"var expectedCount = addBlockUserIds.length - 1;",
+							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
 							"});",
 							"",
 							""
@@ -1097,8 +1158,8 @@
 				"method": "DELETE",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -1115,8 +1176,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1126,7 +1186,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "9f5d2245-1e6f-47f4-946c-2a5e36386a78",
+						"id": "95513d2f-114a-4ad7-a10b-2e3f60a100c5",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
@@ -1144,8 +1204,11 @@
 							"pm.test('Schema is valid', function() {",
 							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
 							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(3);",
+							"",
+							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
+							"var expectedCount = addBlockUserIds.length - 1;",
+							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
+							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
 							"});",
 							"",
 							""
@@ -1157,8 +1220,8 @@
 				"method": "GET",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -1175,8 +1238,7 @@
 						"{{randomUserId}}",
 						"blocks"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1211,8 +1273,8 @@
 				"method": "DELETE",
 				"header": [
 					{
-						"key": "Content-Type",
-						"value": "application/json"
+						"key": "X-User-Id",
+						"value": "{{randomUserId}}"
 					}
 				],
 				"body": {
@@ -1228,8 +1290,7 @@
 						"users",
 						"{{randomUserId}}"
 					]
-				},
-				"description": ""
+				}
 			},
 			"response": []
 		},
@@ -1239,11 +1300,11 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "4939670e-45aa-48f7-be50-995df67a0a66",
+						"id": "56a46721-3350-4a3f-b44d-0c996890f66c",
 						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Body matches string\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"swagchat Chat API version v0\");",
+							"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
 							"});"
 						]
 					}
@@ -1251,7 +1312,7 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "e6ac8f67-3821-44ce-93a7-cd130ec89252",
+						"id": "4a17999e-f171-4d4b-8631-31802a673603",
 						"type": "text/javascript",
 						"exec": [
 							"pm.environment.unset(\"randomUserName\");",
@@ -1259,6 +1320,8 @@
 							"pm.environment.unset(\"randomDeviceToken\");",
 							"pm.environment.unset(\"addBlockUserIds\");",
 							"pm.environment.unset(\"deleteBlockUserIds\");",
+							"pm.environment.unset(\"xClientId\");",
+							"pm.environment.unset(\"xC\");",
 							""
 						]
 					}
@@ -1273,8 +1336,7 @@
 					"host": [
 						"{{apiEndpoint}}"
 					]
-				},
-				"description": null
+				}
 			},
 			"response": []
 		}

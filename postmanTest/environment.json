@@ -51,19 +51,43 @@
       "type": "text"
     },
     {
-      "key": "randomUserName",
-      "value": "efggafba",
+      "key": "users",
+      "value": "{\"users\":[{\"userId\":\"40a9af94-c4fc-49f2-b5c2-f3e9e370573d\",\"name\":\"ggebaabg\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-10T10:35:38Z\",\"modified\":\"2018-04-10T10:35:38Z\",\"rooms\":null,\"devices\":null,\"blocks\":null}]}\n",
       "enabled": true,
       "type": "text"
     },
     {
-      "key": "randomUserId",
-      "value": "apaenibhlrlmgpsgflma",
+      "key": "usersRes",
+      "value": "{\"users\":[{\"userId\":\"jnhikeldadretpbmnpkq\",\"name\":\"update-name\",\"pictureUrl\":\"http://example.com/update-picture.png\",\"informationUrl\":\"http://example.com/update-information.html\",\"unreadCount\":10,\"metaData\":{\"key\":\"value\"},\"isGuest\":false,\"isBot\":true,\"isPublic\":true,\"isCanBlock\":false,\"isShowUsers\":false,\"lang\":\"\",\"created\":\"2018-04-12T12:02:19Z\",\"modified\":\"2018-04-12T12:02:19Z\",\"rooms\":null,\"devices\":null,\"blocks\":null},{\"userId\":\"66115696-1051-4800-bb46-e95562c8c91b\",\"name\":\"gafceefh\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isGuest\":false,\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-12T10:50:13Z\",\"modified\":\"2018-04-12T10:50:13Z\",\"rooms\":null,\"devices\":null,\"blocks\":null},{\"userId\":\"29878746-742c-4bca-9e33-eda7dd445d57\",\"name\":\"hacgefae\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isGuest\":false,\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-12T10:53:07Z\",\"modified\":\"2018-04-12T10:53:07Z\",\"rooms\":null,\"devices\":null,\"blocks\":null},{\"userId\":\"2e825017-a96e-4612-be56-d9a2dcbbfc01\",\"name\":\"edecaeed\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isGuest\":false,\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-12T11:00:20Z\",\"modified\":\"2018-04-12T11:00:20Z\",\"rooms\":null,\"devices\":null,\"blocks\":null},{\"userId\":\"df6f0c58-dc9e-4055-9560-f49237595f24\",\"name\":\"efeedada\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isGuest\":false,\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-12T11:59:22Z\",\"modified\":\"2018-04-12T11:59:22Z\",\"rooms\":null,\"devices\":null,\"blocks\":null},{\"userId\":\"a77cd6a4-2a4b-4f40-a501-9a60bf96c9b3\",\"name\":\"bdccghgg\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isGuest\":false,\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-12T11:59:38Z\",\"modified\":\"2018-04-12T11:59:38Z\",\"rooms\":null,\"devices\":null,\"blocks\":null},{\"userId\":\"hbgnjemlfsomnhekgqkp\",\"name\":\"bggegdfb\",\"pictureUrl\":\"\",\"informationUrl\":\"\",\"unreadCount\":0,\"metaData\":{},\"isGuest\":false,\"isBot\":false,\"isPublic\":true,\"isCanBlock\":true,\"isShowUsers\":true,\"lang\":\"\",\"created\":\"2018-04-12T12:01:00Z\",\"modified\":\"2018-04-12T12:01:00Z\",\"rooms\":null,\"devices\":null,\"blocks\":null}]}\n",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "xUserId",
+      "value": "66115696-1051-4800-bb46-e95562c8c91b",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "xClientSecret",
+      "value": "NZFP~YqiU2J/h5j5kIGmSD+gfND.frX+",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "xClientId",
+      "value": "a6af7f1a6c9245bd8201b923db3d97e9",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "randomUserName",
+      "value": "ehehbfgd",
       "enabled": true,
       "type": "text"
     }
   ],
   "_postman_variable_scope": "environment",
-  "_postman_exported_at": "2018-02-26T03:50:20.844Z",
-  "_postman_exported_using": "Postman/6.0.6"
+  "_postman_exported_at": "2018-04-13T15:03:16.479Z",
+  "_postman_exported_using": "Postman/6.0.10"
 }
