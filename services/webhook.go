@@ -12,7 +12,7 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/protogen"
+	"github.com/swagchat/chat-api/protobuf"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
@@ -30,7 +30,7 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 		return
 	}
 
-	pbRoom := &protogen.Room{
+	pbRoom := &protobuf.Room{
 		RoomId: room.RoomID,
 	}
 
@@ -76,7 +76,7 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 			}
 			defer conn.Close()
 
-			c := protogen.NewChatClient(conn)
+			c := protobuf.NewChatClient(conn)
 			_, err = c.PostWebhookRoom(context.Background(), pbRoom)
 			if err != nil {
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
@@ -108,7 +108,7 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 
 	var p models.PayloadText
 	json.Unmarshal(message.Payload, &p)
-	pbMessage := &protogen.Message{
+	pbMessage := &protobuf.Message{
 		RoomId: message.RoomID,
 		UserId: message.UserID,
 		Type:   message.Type,
@@ -168,7 +168,7 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 			}
 			defer conn.Close()
 
-			c := protogen.NewChatClient(conn)
+			c := protobuf.NewChatClient(conn)
 			_, err = c.PostWebhookMessage(context.Background(), pbMessage)
 			if err != nil {
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
