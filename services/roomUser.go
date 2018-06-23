@@ -13,7 +13,7 @@ import (
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/rtm"
+	"github.com/swagchat/chat-api/pbroker"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -238,19 +238,18 @@ func publishUserJoin(ctx context.Context, roomID string) {
 
 		buffer := new(bytes.Buffer)
 		json.NewEncoder(buffer).Encode(userForRooms)
-		rtmEvent := &rtm.RTMEvent{
-			Type:    rtm.UserJoin,
+		rtmEvent := &pbroker.RTMEvent{
+			Type:    pbroker.UserJoin,
 			Payload: buffer.Bytes(),
 			UserIDs: userIDs,
 		}
-		err = rtm.Provider().Publish(rtmEvent)
+		err = pbroker.Provider().PublishMessage(rtmEvent)
 		if err != nil {
 			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 				Error: err,
 			})
 		}
 	}()
-
 }
 
 func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {

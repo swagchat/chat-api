@@ -12,7 +12,8 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/protobuf"
+	"github.com/swagchat/chat-api/utils"
+	"github.com/swagchat/protobuf"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
@@ -31,7 +32,8 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 	}
 
 	pbRoom := &protobuf.Room{
-		RoomId: room.RoomID,
+		Workspace: ctx.Value(utils.CtxRealm).(string),
+		RoomId:    room.RoomID,
 	}
 
 	for _, webhook := range webhooks {
@@ -76,7 +78,7 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 			}
 			defer conn.Close()
 
-			c := protobuf.NewChatClient(conn)
+			c := protobuf.NewChatOutgoingClient(conn)
 			_, err = c.PostWebhookRoom(context.Background(), pbRoom)
 			if err != nil {
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
@@ -108,11 +110,15 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 
 	var p models.PayloadText
 	json.Unmarshal(message.Payload, &p)
+
 	pbMessage := &protobuf.Message{
-		RoomId: message.RoomID,
-		UserId: message.UserID,
-		Type:   message.Type,
-		Text:   p.Text,
+		Workspace: ctx.Value(utils.CtxRealm).(string),
+		RoomId:    message.RoomID,
+		UserId:    message.UserID,
+		Type:      message.Type,
+		Payload: &protobuf.MessagePayload{
+			Text: p.Text,
+		},
 	}
 
 	for _, webhook := range webhooks {
@@ -168,7 +174,7 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 			}
 			defer conn.Close()
 
-			c := protobuf.NewChatClient(conn)
+			c := protobuf.NewChatOutgoingClient(conn)
 			_, err = c.PostWebhookMessage(context.Background(), pbMessage)
 			if err != nil {
 				logging.Log(zapcore.ErrorLevel, &logging.AppLog{

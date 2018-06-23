@@ -1,4 +1,4 @@
-package rtm
+package pbroker
 
 import (
 	"github.com/swagchat/chat-api/utils"
@@ -20,14 +20,14 @@ type MessagingInfo struct {
 }
 
 type provider interface {
-	Publish(*RTMEvent) error
+	PublishMessage(*RTMEvent) error
 }
 
 func Provider() provider {
 	cfg := utils.Config()
-	var p provider
 
-	switch cfg.RTM.Provider {
+	var p provider
+	switch cfg.PBroker.Provider {
 	case "":
 		p = &notuseProvider{}
 	case "direct":

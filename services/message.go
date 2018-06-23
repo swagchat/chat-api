@@ -16,7 +16,7 @@ import (
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/rtm"
+	"github.com/swagchat/chat-api/pbroker"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -73,7 +73,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			messageIds = append(messageIds, messageID)
 			post.MessageID = messageID
 			post.Created = time.Now().Unix()
-			go rtmPublish(ctx, post)
+			go publishMessage(ctx, post)
 			continue
 		}
 
@@ -104,7 +104,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 		}
 		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
 
-		rtmPublish(ctx, post)
+		publishMessage(ctx, post)
 		postMessageToBotService(ctx, post, user)
 		webhookMessage(ctx, post, user)
 	}
@@ -194,7 +194,7 @@ func postMessageToBotService(ctx context.Context, m *models.Message, u *models.U
 	}
 }
 
-func rtmPublish(ctx context.Context, message *models.Message) {
+func publishMessage(ctx context.Context, message *models.Message) {
 	var roles []models.Role
 	if message.SuggestMessageID != "" {
 		roles = []models.Role{models.RoleOperator}
@@ -209,12 +209,12 @@ func rtmPublish(ctx context.Context, message *models.Message) {
 
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(message)
-	rtmEvent := &rtm.RTMEvent{
-		Type:    rtm.MessageEvent,
+	rtmEvent := &pbroker.RTMEvent{
+		Type:    pbroker.MessageEvent,
 		Payload: buffer.Bytes(),
 		UserIDs: userIDs,
 	}
-	err = rtm.Provider().Publish(rtmEvent)
+	err = pbroker.Provider().PublishMessage(rtmEvent)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,

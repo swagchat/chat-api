@@ -1,4 +1,4 @@
-package rtm
+package pbroker
 
 import (
 	"bytes"
@@ -13,11 +13,11 @@ import (
 
 type directProvider struct{}
 
-func (dp directProvider) Publish(rtmEvent *RTMEvent) error {
+func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
-	endpoint := fmt.Sprintf("%s/message", utils.Config().RTM.Direct.Endpoint)
+	endpoint := fmt.Sprintf("%s/message", utils.Config().PBroker.Direct.Endpoint)
 	resp, err := http.Post(
 		endpoint,
 		"application/json",

@@ -36,6 +36,8 @@ type AppLog struct {
 	Error         error                 `json:"_"`
 	Stacktrace    string                `json:"stacktrace,omitempty"`
 	Timestamp     string                `json:"timestamp"`
+	File          string                `json:"file"`
+	Line          int                   `json:"line"`
 }
 
 func NewAppLogger() *zap.Logger {
@@ -137,6 +139,13 @@ func Log(level zapcore.Level, al *AppLog) {
 	}
 	if al.Stacktrace != "" {
 		fields = append(fields, zap.String("stacktrace", al.Stacktrace))
+	}
+
+	if al.File != "" {
+		fields = append(fields, zap.String("file", al.File))
+	}
+	if al.Line != 0 {
+		fields = append(fields, zap.Int("line", al.Line))
 	}
 
 	al.Timestamp = time.Unix(time.Now().Unix(), 0).In(locale).Format(time.RFC3339)

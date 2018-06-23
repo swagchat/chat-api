@@ -10,6 +10,8 @@ import (
 
 	"github.com/swagchat/chat-api/handlers"
 	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/sbroker"
+	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap/zapcore"
@@ -34,6 +36,9 @@ func main() {
 			Error: err,
 		})
 	}
+
+	go services.GrpcRun()
+	go sbroker.Provider().SubscribeMessage()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

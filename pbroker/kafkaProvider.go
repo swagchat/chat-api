@@ -1,4 +1,4 @@
-package rtm
+package pbroker
 
 import (
 	"bytes"
@@ -12,15 +12,17 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+var KafkaConsumer *kafka.Consumer
+
 type kafkaProvider struct{}
 
-func (kp kafkaProvider) Publish(rtmEvent *RTMEvent) error {
+func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	cfg := utils.Config()
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.RTM.Kafka.Host, cfg.RTM.Kafka.Port),
+		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.PBroker.Kafka.Host, cfg.PBroker.Kafka.Port),
 	})
 	if err != nil {
 		return errors.Wrap(err, "Kafka create producer failure")
@@ -48,7 +50,7 @@ func (kp kafkaProvider) Publish(rtmEvent *RTMEvent) error {
 	}()
 
 	// Produce messages to topic (asynchronously)
-	topic := cfg.RTM.Kafka.Topic
+	topic := cfg.PBroker.Kafka.Topic
 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 	p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},

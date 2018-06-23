@@ -53,19 +53,67 @@ var (
 type config struct {
 	Version      string
 	HTTPPort     string `yaml:"httpPort"`
+	GRPCPort     string `yaml:"gRPCPort"`
 	Profiling    bool
 	DemoPage     bool `yaml:"demoPage"`
 	ErrorLogging bool `yaml:"errorLogging"`
 	Logging      *Logging
+	PBroker      *PBroker
+	SBroker      *SBroker
 	Storage      *Storage
 	Datastore    *Datastore
-	RTM          *RTM
 	Notification *Notification
 	IdP          *IdP
 }
 
 type Logging struct {
 	Level string
+}
+
+type PBroker struct {
+	Provider string
+
+	Direct struct {
+		Endpoint string
+	}
+
+	Kafka struct {
+		Host    string
+		Port    string
+		GroupID string `yaml:"groupId"`
+		Topic   string
+	}
+
+	NSQ struct {
+		Port           string
+		NsqlookupdHost string
+		NsqlookupdPort string
+		NsqdHost       string
+		NsqdPort       string
+		Topic          string
+		Channel        string
+	}
+}
+
+type SBroker struct {
+	Provider string
+
+	Kafka struct {
+		Host    string
+		Port    string
+		GroupID string `yaml:"groupId"`
+		Topic   string
+	}
+
+	NSQ struct {
+		Port           string
+		NsqlookupdHost string
+		NsqlookupdPort string
+		NsqdHost       string
+		NsqdPort       string
+		Topic          string
+		Channel        string
+	}
 }
 
 type Storage struct {
@@ -110,7 +158,7 @@ type Datastore struct {
 
 	// SQLite
 	SQLite struct {
-		Path string `yaml:"path"`
+		DirPath string `yaml:"dirPath"`
 	} `yaml:"sqlite"`
 }
 
@@ -121,26 +169,6 @@ type ServerInfo struct {
 	ServerCaPath   string `yaml:"serverCaPath"`
 	ClientCertPath string `yaml:"clientCertPath"`
 	ClientKeyPath  string `yaml:"clientKeyPath"`
-}
-
-type RTM struct {
-	Provider string
-
-	Direct struct {
-		Endpoint string
-	}
-
-	Kafka struct {
-		Host    string
-		Port    string
-		GroupID string `yaml:"groupId"`
-		Topic   string
-	}
-
-	NSQ struct {
-		QueEndpoint string `yaml:"queEndpoint"`
-		QueTopic    string `yaml:"queTopic"`
-	}
 }
 
 type Notification struct {
@@ -173,15 +201,17 @@ func NewConfig() *config {
 	c := &config{
 		Version:      "0",
 		HTTPPort:     "8101",
+		GRPCPort:     "",
 		Profiling:    false,
 		DemoPage:     false,
 		ErrorLogging: false,
 		Logging:      &Logging{},
+		PBroker:      &PBroker{},
+		SBroker:      &SBroker{},
 		Storage:      &Storage{},
 		Datastore: &Datastore{
 			Dynamic: false,
 		},
-		RTM:          &RTM{},
 		Notification: &Notification{},
 		IdP:          &IdP{},
 	}
@@ -210,24 +240,28 @@ func (c *config) loadEnvironment() {
 	if v = os.Getenv("HTTP_PORT"); v != "" {
 		c.HTTPPort = v
 	}
-	if v = os.Getenv("SC_PORT"); v != "" {
+	if v = os.Getenv("SWAG_HTTP_PORT"); v != "" {
 		c.HTTPPort = v
 	}
-	if v = os.Getenv("SC_PROFILING"); v != "" {
+	if v = os.Getenv("SWAG_GRPC_PORT"); v != "" {
+		c.GRPCPort = v
+	}
+
+	if v = os.Getenv("SWAG_PROFILING"); v != "" {
 		if v == "true" {
 			c.Profiling = true
 		} else if v == "false" {
 			c.Profiling = false
 		}
 	}
-	if v = os.Getenv("SC_DEMO_PAGE"); v != "" {
+	if v = os.Getenv("SWAG_DEMO_PAGE"); v != "" {
 		if v == "true" {
 			c.DemoPage = true
 		} else if v == "false" {
 			c.DemoPage = false
 		}
 	}
-	if v = os.Getenv("SC_ERROR_LOGGING"); v != "" {
+	if v = os.Getenv("SWAG_ERROR_LOGGING"); v != "" {
 		if v == "true" {
 			c.ErrorLogging = true
 		} else if v == "false" {
@@ -236,106 +270,195 @@ func (c *config) loadEnvironment() {
 	}
 
 	// Logging
-	if v = os.Getenv("SC_LOGGING_LEVEL"); v != "" {
+	if v = os.Getenv("SWAG_LOGGING_LEVEL"); v != "" {
 		c.Logging.Level = v
 	}
 
+	// PBroker
+	if v = os.Getenv("SWAG_PBROKER_PROVIDER"); v != "" {
+		c.PBroker.Provider = v
+	}
+
+	// PBroker - Direct
+	if v = os.Getenv("SWAG_PBROKER_DIRECT_ENDPOINT"); v != "" {
+		c.PBroker.Direct.Endpoint = v
+	}
+
+	// PBroker - Kafka
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_HOST"); v != "" {
+		c.PBroker.Kafka.Host = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_PORT"); v != "" {
+		c.PBroker.Kafka.Port = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_GROUPID"); v != "" {
+		c.PBroker.Kafka.GroupID = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_TOPIC"); v != "" {
+		c.PBroker.Kafka.Topic = v
+	}
+
+	// PBroker - NSQ
+	if v = os.Getenv("SWAG_PBROKER_NSQ_PORT"); v != "" {
+		c.PBroker.NSQ.Port = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
+		c.PBroker.NSQ.NsqlookupdHost = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
+		c.PBroker.NSQ.NsqlookupdPort = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDHOST"); v != "" {
+		c.PBroker.NSQ.NsqdHost = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDPORT"); v != "" {
+		c.PBroker.NSQ.NsqdPort = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_TOPIC"); v != "" {
+		c.PBroker.NSQ.Topic = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_CHANNEL"); v != "" {
+		c.PBroker.NSQ.Channel = v
+	}
+
+	// SBroker
+	if v = os.Getenv("SWAG_SBROKER_PROVIDER"); v != "" {
+		c.SBroker.Provider = v
+	}
+
+	// SBroker - Kafka
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_HOST"); v != "" {
+		c.SBroker.Kafka.Host = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_PORT"); v != "" {
+		c.SBroker.Kafka.Port = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_GROUPID"); v != "" {
+		c.SBroker.Kafka.GroupID = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_TOPIC"); v != "" {
+		c.SBroker.Kafka.Topic = v
+	}
+
+	// SBroker - NSQ
+	if v = os.Getenv("SWAG_SBROKER_NSQ_PORT"); v != "" {
+		c.SBroker.NSQ.Port = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
+		c.SBroker.NSQ.NsqlookupdHost = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
+		c.SBroker.NSQ.NsqlookupdPort = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQDHOST"); v != "" {
+		c.SBroker.NSQ.NsqdHost = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQDPORT"); v != "" {
+		c.SBroker.NSQ.NsqdPort = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_TOPIC"); v != "" {
+		c.SBroker.NSQ.Topic = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_CHANNEL"); v != "" {
+		c.SBroker.NSQ.Channel = v
+	}
+
 	// Storage
-	if v = os.Getenv("SC_STORAGE_PROVIDER"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_PROVIDER"); v != "" {
 		c.Storage.Provider = v
 	}
 
 	// Storage - Local
-	if v = os.Getenv("SC_STORAGE_LOCAL_PATH"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_LOCAL_PATH"); v != "" {
 		c.Storage.Local.Path = v
 	}
 
 	// Storage - Google Cloud Storage
-	if v = os.Getenv("SC_STORAGE_GCS_PROJECT_ID"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_GCS_PROJECT_ID"); v != "" {
 		c.Storage.GCS.ProjectID = v
 	}
-	if v = os.Getenv("SC_STORAGE_GCS_JWT_PATH"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_GCS_JWT_PATH"); v != "" {
 		c.Storage.GCS.JwtPath = v
 	}
-	if v = os.Getenv("SC_STORAGE_GCS_UPLOAD_BUCKET"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_GCS_UPLOAD_BUCKET"); v != "" {
 		c.Storage.GCS.UploadBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_GCS_UPLOAD_DIRECTORY"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_GCS_UPLOAD_DIRECTORY"); v != "" {
 		c.Storage.GCS.UploadDirectory = v
 	}
-	if v = os.Getenv("SC_STORAGE_GCS_THUMBNAIL_BUCKET"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_GCS_THUMBNAIL_BUCKET"); v != "" {
 		c.Storage.GCS.ThumbnailBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_GCS_THUMBNAIL_DIRECTORY"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_GCS_THUMBNAIL_DIRECTORY"); v != "" {
 		c.Storage.GCS.ThumbnailDirectory = v
 	}
 
 	// Storage - AWS S3
-	if v = os.Getenv("SC_STORAGE_AWSS3_REGION"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_REGION"); v != "" {
 		c.Storage.AWSS3.Region = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWSS3_ACCESS_KEY_ID"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_ACCESS_KEY_ID"); v != "" {
 		c.Storage.AWSS3.AccessKeyID = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWSS3_SECRET_ACCESS_KEY"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_SECRET_ACCESS_KEY"); v != "" {
 		c.Storage.AWSS3.SecretAccessKey = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWSS3_UPLOAD_BUCKET"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_UPLOAD_BUCKET"); v != "" {
 		c.Storage.AWSS3.UploadBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWSS3_UPLOAD_DIRECTORY"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_UPLOAD_DIRECTORY"); v != "" {
 		c.Storage.AWSS3.UploadDirectory = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWSS3_THUMBNAIL_BUCKET"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_THUMBNAIL_BUCKET"); v != "" {
 		c.Storage.AWSS3.ThumbnailBucket = v
 	}
-	if v = os.Getenv("SC_STORAGE_AWSS3_THUMBNAIL_DIRECTORY"); v != "" {
+	if v = os.Getenv("SWAG_STORAGE_AWSS3_THUMBNAIL_DIRECTORY"); v != "" {
 		c.Storage.AWSS3.ThumbnailDirectory = v
 	}
 
 	// Datastore
-	if v = os.Getenv("SC_DATASTORE_DYNAMIC"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_DYNAMIC"); v != "" {
 		if v == "true" {
 			c.Datastore.Dynamic = true
 		} else if v == "false" {
 			c.Datastore.Dynamic = false
 		}
 	}
-	if v = os.Getenv("SC_DATASTORE_PROVIDER"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_PROVIDER"); v != "" {
 		c.Datastore.Provider = v
 	}
 
-	if v = os.Getenv("SC_DATASTORE_USER"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_USER"); v != "" {
 		c.Datastore.User = v
 	}
-	if v = os.Getenv("SC_DATASTORE_PASSWORD"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_PASSWORD"); v != "" {
 		c.Datastore.Password = v
 	}
-	if v = os.Getenv("SC_DATASTORE_DATABASE"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_DATABASE"); v != "" {
 		c.Datastore.Database = v
 	}
-	if v = os.Getenv("SC_DATASTORE_TABLE_NAME_PREFIX"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_TABLE_NAME_PREFIX"); v != "" {
 		c.Datastore.TableNamePrefix = v
 	}
-	if v = os.Getenv("SC_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
 		c.Datastore.MaxIdleConnection = v
 	}
-	if v = os.Getenv("SC_DATASTORE_MAX_OPEN_CONNECTION"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_MAX_OPEN_CONNECTION"); v != "" {
 		c.Datastore.MaxOpenConnection = v
 	}
 
 	var master *ServerInfo
-	mHost := os.Getenv("SC_DATASTORE_MASTER_HOST")
-	mPort := os.Getenv("SC_DATASTORE_MASTER_PORT")
+	mHost := os.Getenv("SWAG_DATASTORE_MASTER_HOST")
+	mPort := os.Getenv("SWAG_DATASTORE_MASTER_PORT")
 	if mHost != "" && mPort != "" {
 		master = &ServerInfo{}
 		master.Host = mHost
 		master.Port = mPort
 		c.Datastore.Master = master
-		mServerName := os.Getenv("SC_DATASTORE_MASTER_SERVER_NAME")
-		mServerCaPath := os.Getenv("SC_DATASTORE_MASTER_SERVER_CA_PATH")
-		mClientCertPath := os.Getenv("SC_DATASTORE_MASTER_CLIENT_CERT_PATH")
-		mClientKeyPath := os.Getenv("SC_DATASTORE_MASTER_CLIENT_KEY_PATH")
+		mServerName := os.Getenv("SWAG_DATASTORE_MASTER_SERVER_NAME")
+		mServerCaPath := os.Getenv("SWAG_DATASTORE_MASTER_SERVER_CA_PATH")
+		mClientCertPath := os.Getenv("SWAG_DATASTORE_MASTER_CLIENT_CERT_PATH")
+		mClientKeyPath := os.Getenv("SWAG_DATASTORE_MASTER_CLIENT_KEY_PATH")
 		if mServerName != "" && mServerCaPath != "" && mClientCertPath != "" && mClientKeyPath != "" {
 			master.ServerName = mServerName
 			master.ServerCaPath = mServerCaPath
@@ -352,22 +475,22 @@ func (c *config) loadEnvironment() {
 		rClientCertPath []string
 		rClientKeyPath  []string
 	)
-	if v = os.Getenv("SC_DATASTORE_REPLICA_HOSTS"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_REPLICA_HOSTS"); v != "" {
 		rHosts = strings.Split(v, ",")
 	}
-	if v = os.Getenv("SC_DATASTORE_REPLICA_PORTS"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_REPLICA_PORTS"); v != "" {
 		rPorts = strings.Split(v, ",")
 	}
-	if v = os.Getenv("SC_DATASTORE_REPLICA_SERVER_NAMES"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_REPLICA_SERVER_NAMES"); v != "" {
 		rServerName = strings.Split(v, ",")
 	}
-	if v = os.Getenv("SC_DATASTORE_REPLICA_SERVER_CA_PATHS"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_REPLICA_SERVER_CA_PATHS"); v != "" {
 		rServerCaPath = strings.Split(v, ",")
 	}
-	if v = os.Getenv("SC_DATASTORE_REPLICA_CLIENT_CERT_PATHS"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_REPLICA_CLIENT_CERT_PATHS"); v != "" {
 		rClientCertPath = strings.Split(v, ",")
 	}
-	if v = os.Getenv("SC_DATASTORE_REPLICA_CLIENT_KEY_PATHS"); v != "" {
+	if v = os.Getenv("SWAG_DATASTORE_REPLICA_CLIENT_KEY_PATHS"); v != "" {
 		rClientKeyPath = strings.Split(v, ",")
 	}
 	if rHosts != nil && len(rHosts) != 0 && rPorts != nil && len(rPorts) != 0 && len(rHosts) == len(rPorts) {
@@ -393,77 +516,45 @@ func (c *config) loadEnvironment() {
 	}
 
 	// Datastore - SQLite
-	if v = os.Getenv("SC_DATASTORE_SQLITE_PATH"); v != "" {
-		c.Datastore.SQLite.Path = v
-	}
-
-	// RTM
-	if v = os.Getenv("SC_RTM_PROVIDER"); v != "" {
-		c.RTM.Provider = v
-	}
-
-	// RTM - Direct
-	if v = os.Getenv("SC_RTM_DIRECT_ENDPOINT"); v != "" {
-		c.RTM.Direct.Endpoint = v
-	}
-
-	// RTM - Kafka
-	if v = os.Getenv("SC_RTM_KAFKA_HOST"); v != "" {
-		c.RTM.Kafka.Host = v
-	}
-	if v = os.Getenv("SC_RTM_KAFKA_PORT"); v != "" {
-		c.RTM.Kafka.Port = v
-	}
-	if v = os.Getenv("SC_RTM_KAFKA_GROUPID"); v != "" {
-		c.RTM.Kafka.GroupID = v
-	}
-	if v = os.Getenv("SC_RTM_KAFKA_TOPIC"); v != "" {
-		c.RTM.Kafka.Topic = v
-	}
-
-	// RTM - NSQ
-	if v = os.Getenv("SC_RTM_NSQ_QUEENDPOINT"); v != "" {
-		c.RTM.NSQ.QueEndpoint = v
-	}
-	if v = os.Getenv("SC_RTM_NSQ_QUETOPIC"); v != "" {
-		c.RTM.NSQ.QueTopic = v
+	if v = os.Getenv("SWAG_DATASTORE_SQLITE_DIRPATH"); v != "" {
+		c.Datastore.SQLite.DirPath = v
 	}
 
 	// Notification
-	if v = os.Getenv("SC_NOTIFICATION_PROVIDER"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_PROVIDER"); v != "" {
 		c.Notification.Provider = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_ROOM_TOPIC_NAME_PREFIX"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_ROOM_TOPIC_NAME_PREFIX"); v != "" {
 		c.Notification.RoomTopicNamePrefix = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_DEFAULT_BADGE_COUNT"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_DEFAULT_BADGE_COUNT"); v != "" {
 		c.Notification.DefaultBadgeCount = v
 	}
 
 	// Notification - Amazon SNS
-	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_REGION"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_AMAZONSNS_REGION"); v != "" {
 		c.Notification.AmazonSNS.Region = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_ACCESS_KEY_ID"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_AMAZONSNS_ACCESS_KEY_ID"); v != "" {
 		c.Notification.AmazonSNS.AccessKeyID = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_SECRET_ACCESS_KEY"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_AMAZONSNS_SECRET_ACCESS_KEY"); v != "" {
 		c.Notification.AmazonSNS.SecretAccessKey = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_IOS"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_IOS"); v != "" {
 		c.Notification.AmazonSNS.ApplicationArnIos = v
 	}
-	if v = os.Getenv("SC_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_ANDROID"); v != "" {
+	if v = os.Getenv("SWAG_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_ANDROID"); v != "" {
 		c.Notification.AmazonSNS.ApplicationArnAndroid = v
 	}
 
 	// IdP
-	if v = os.Getenv("SC_IDP_PROVIDER"); v != "" {
+	if v = os.Getenv("SWAG_IDP_PROVIDER"); v != "" {
 		c.IdP.Provider = v
 	}
 
 	// IdP Keycloak
-	if v = os.Getenv("SC_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
+	if v = os.Getenv("SWAG_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
 		c.IdP.Keycloak.BaseEndpoint = v
 	}
 }
@@ -473,6 +564,7 @@ func (c *config) parseFlag() {
 	flag.BoolVar(&IsShowVersion, "version", false, "show version")
 
 	flag.StringVar(&c.HTTPPort, "httpPort", c.HTTPPort, "")
+	flag.StringVar(&c.GRPCPort, "grpcPort", c.GRPCPort, "")
 
 	var profiling string
 	flag.StringVar(&profiling, "profiling", "", "")
@@ -485,6 +577,43 @@ func (c *config) parseFlag() {
 
 	// Logging
 	flag.StringVar(&c.Logging.Level, "logging.level", c.Logging.Level, "")
+
+	// PBroker
+	flag.StringVar(&c.PBroker.Provider, "pbroker.provider", c.PBroker.Provider, "")
+
+	// PBroker - Direct
+	flag.StringVar(&c.PBroker.Direct.Endpoint, "pbroker.direct.endpoint", c.PBroker.Direct.Endpoint, "")
+
+	// PBroker - kafka
+	flag.StringVar(&c.PBroker.Kafka.Host, "pbroker.kafka.host", c.PBroker.Kafka.Host, "")
+	flag.StringVar(&c.PBroker.Kafka.Port, "pbroker.kafka.port", c.PBroker.Kafka.Port, "")
+	flag.StringVar(&c.PBroker.Kafka.GroupID, "pbroker.kafka.groupId", c.PBroker.Kafka.GroupID, "")
+	flag.StringVar(&c.PBroker.Kafka.Topic, "pbroker.kafka.topic", c.PBroker.Kafka.Topic, "")
+
+	// PBroker - NSQ
+	flag.StringVar(&c.PBroker.NSQ.NsqlookupdHost, "pbroker.nsq.nsqlookupdHost", c.PBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flag.StringVar(&c.PBroker.NSQ.NsqlookupdPort, "pbroker.nsq.nsqlookupdPort", c.PBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flag.StringVar(&c.PBroker.NSQ.NsqdHost, "pbroker.nsq.nsqdHost", c.PBroker.NSQ.NsqdHost, "Host name of nsqd")
+	flag.StringVar(&c.PBroker.NSQ.NsqdPort, "pbroker.nsq.nsqdPort", c.PBroker.NSQ.NsqdPort, "Port no of nsqd")
+	flag.StringVar(&c.PBroker.NSQ.Topic, "pbroker.nsq.topic", c.PBroker.NSQ.Topic, "Topic name")
+	flag.StringVar(&c.PBroker.NSQ.Channel, "pbroker.nsq.channel", c.PBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+
+	// SBroker
+	flag.StringVar(&c.SBroker.Provider, "sbroker.provider", c.SBroker.Provider, "")
+
+	// SBroker - kafka
+	flag.StringVar(&c.SBroker.Kafka.Host, "sbroker.kafka.host", c.SBroker.Kafka.Host, "")
+	flag.StringVar(&c.SBroker.Kafka.Port, "sbroker.kafka.port", c.SBroker.Kafka.Port, "")
+	flag.StringVar(&c.SBroker.Kafka.GroupID, "sbroker.kafka.groupId", c.SBroker.Kafka.GroupID, "")
+	flag.StringVar(&c.SBroker.Kafka.Topic, "sbroker.kafka.topic", c.SBroker.Kafka.Topic, "")
+
+	// SBroker - NSQ
+	flag.StringVar(&c.SBroker.NSQ.NsqlookupdHost, "sbroker.nsq.nsqlookupdHost", c.SBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flag.StringVar(&c.SBroker.NSQ.NsqlookupdPort, "sbroker.nsq.nsqlookupdPort", c.SBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flag.StringVar(&c.SBroker.NSQ.NsqdHost, "sbroker.nsq.nsqdHost", c.SBroker.NSQ.NsqdHost, "Host name of nsqd")
+	flag.StringVar(&c.SBroker.NSQ.NsqdPort, "sbroker.nsq.nsqdPort", c.SBroker.NSQ.NsqdPort, "Port no of nsqd")
+	flag.StringVar(&c.SBroker.NSQ.Topic, "sbroker.nsq.topic", c.SBroker.NSQ.Topic, "Topic name")
+	flag.StringVar(&c.SBroker.NSQ.Channel, "sbroker.nsq.channel", c.SBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
 
 	// Storage
 	flag.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
@@ -608,23 +737,7 @@ func (c *config) parseFlag() {
 	}
 
 	// Datastore - SQLite
-	flag.StringVar(&c.Datastore.SQLite.Path, "datastore.sqlite.path", c.Datastore.SQLite.Path, "")
-
-	// RTM
-	flag.StringVar(&c.RTM.Provider, "rtm.provider", c.RTM.Provider, "")
-
-	// RTM - Direct
-	flag.StringVar(&c.RTM.Direct.Endpoint, "rtm.direct.endpoint", c.RTM.Direct.Endpoint, "")
-
-	// RTM - kafka
-	flag.StringVar(&c.RTM.Kafka.Host, "rtm.kafka.host", c.RTM.Kafka.Host, "")
-	flag.StringVar(&c.RTM.Kafka.Port, "rtm.kafka.port", c.RTM.Kafka.Port, "")
-	flag.StringVar(&c.RTM.Kafka.GroupID, "rtm.kafka.groupId", c.RTM.Kafka.GroupID, "")
-	flag.StringVar(&c.RTM.Kafka.Topic, "rtm.kafka.topic", c.RTM.Kafka.Topic, "")
-
-	// RTM - NSQ
-	flag.StringVar(&c.RTM.NSQ.QueEndpoint, "rtm.nsq.queEndpoint", c.RTM.NSQ.QueEndpoint, "")
-	flag.StringVar(&c.RTM.NSQ.QueTopic, "rtm.nsq.queTopic", c.RTM.NSQ.QueTopic, "")
+	flag.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
 
 	// Notification
 	flag.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")
@@ -679,10 +792,9 @@ func (c *config) after() {
 		c.Datastore.Provider = "sqlite"
 	}
 	if c.Datastore.Provider == "sqlite" {
-		if c.Datastore.SQLite.Path == "" {
-			c.Datastore.SQLite.Path = "/tmp/swagchat.db"
+		if c.Datastore.SQLite.DirPath == "" {
+			c.Datastore.SQLite.DirPath = "/tmp"
 		}
-		c.Datastore.Database = c.Datastore.SQLite.Path
 	}
 
 	if c.Datastore.Provider == "mysql" {
@@ -692,6 +804,10 @@ func (c *config) after() {
 		if c.Datastore.MaxIdleConnection == "" {
 			c.Datastore.MaxOpenConnection = "10"
 		}
+	}
+
+	if c.Datastore.Database == "" {
+		c.Datastore.Database = "swagchat"
 	}
 
 	if c.IdP.Provider == "" {
