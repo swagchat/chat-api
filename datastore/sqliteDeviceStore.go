@@ -3,33 +3,33 @@ package datastore
 import "github.com/swagchat/chat-api/models"
 
 func (p *sqliteProvider) createDeviceStore() {
-	rdbCreateDeviceStore(p.sqlitePath)
+	rdbCreateDeviceStore(p.database)
 }
 
 func (p *sqliteProvider) InsertDevice(device *models.Device) (*models.Device, error) {
-	return rdbInsertDevice(p.sqlitePath, device)
+	return rdbInsertDevice(p.database, device)
 }
 
 func (p *sqliteProvider) SelectDevices(userID string) ([]*models.Device, error) {
-	return rdbSelectDevices(p.sqlitePath, userID)
+	return rdbSelectDevices(p.database, userID)
 }
 
 func (p *sqliteProvider) SelectDevice(userID string, platform int) (*models.Device, error) {
-	return rdbSelectDevice(p.sqlitePath, userID, platform)
+	return rdbSelectDevice(p.database, userID, platform)
 }
 
 func (p *sqliteProvider) SelectDevicesByUserID(userID string) ([]*models.Device, error) {
-	return rdbSelectDevicesByUserID(p.sqlitePath, userID)
+	return rdbSelectDevicesByUserID(p.database, userID)
 }
 
 func (p *sqliteProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
-	return rdbSelectDevicesByToken(p.sqlitePath, token)
+	return rdbSelectDevicesByToken(p.database, token)
 }
 
 func (p *sqliteProvider) UpdateDevice(device *models.Device) error {
-	return rdbUpdateDevice(p.sqlitePath, device)
+	return rdbUpdateDevice(p.database, device)
 }
 
 func (p *sqliteProvider) DeleteDevice(userID string, platform int) error {
-	return rdbDeleteDevice(p.sqlitePath, userID, platform)
+	return rdbDeleteDevice(p.database, userID, platform)
 }

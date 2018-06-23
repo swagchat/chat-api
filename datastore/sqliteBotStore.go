@@ -3,9 +3,9 @@ package datastore
 import "github.com/swagchat/chat-api/models"
 
 func (p *sqliteProvider) createBotStore() {
-	rdbCreateBotStore(p.sqlitePath)
+	rdbCreateBotStore(p.database)
 }
 
 func (p *sqliteProvider) SelectBot(userID string) (*models.Bot, error) {
-	return rdbSelectBot(p.sqlitePath, userID)
+	return rdbSelectBot(p.database, userID)
 }

@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -13,9 +14,9 @@ import (
 )
 
 type sqliteProvider struct {
-	sqlitePath string
-	database   string
-	trace      bool
+	dirPath  string
+	database string
+	trace    bool
 }
 
 func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
@@ -28,7 +29,7 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 		return nil
 	}
 
-	db, err := sql.Open("sqlite3", p.sqlitePath)
+	db, err := sql.Open("sqlite3", fmt.Sprintf("%s/%s.db", p.dirPath, p.database))
 	if err != nil {
 		logging.Log(zapcore.FatalLevel, &logging.AppLog{
 			Message: "SQLite connect error",
@@ -42,7 +43,7 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 	}
 	rs.setMaster(master)
 
-	rdbStores[dsCfg.SQLite.Path] = rs
+	rdbStores[dsCfg.Database] = rs
 	p.init()
 	return nil
 }
@@ -64,7 +65,7 @@ func (p *sqliteProvider) init() {
 }
 
 func (p *sqliteProvider) DropDatabase() error {
-	if err := os.Remove(p.sqlitePath); err != nil {
+	if err := os.Remove(p.database); err != nil {
 		return errors.Wrap(err, "Drop database failure")
 	}
 	return nil

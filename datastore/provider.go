@@ -40,9 +40,9 @@ func Provider(ctx context.Context) provider {
 	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
-			sqlitePath: dsCfg.SQLite.Path,
-			database:   dsCfg.Database,
-			trace:      false,
+			dirPath:  dsCfg.SQLite.DirPath,
+			database: dsCfg.Database,
+			trace:    false,
 		}
 	case "mysql":
 		p = &mysqlProvider{
