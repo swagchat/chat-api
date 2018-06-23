@@ -996,11 +996,11 @@ func (s *GoogleCloudDialogflowV2EventInput) MarshalJSON() ([]byte, error) {
 // GoogleCloudDialogflowV2ExportAgentRequest: The request message for
 // Agents.ExportAgent.
 type GoogleCloudDialogflowV2ExportAgentRequest struct {
-	// AgentUri: Optional. The Google Cloud Storage URI to export the agent
-	// to.
-	// Note: The URI must start with
-	// "gs://". If left unspecified, the serialized agent is returned
-	// inline.
+	// AgentUri: Optional. The
+	// [Google Cloud Storage](https://cloud.google.com/storage/docs/)
+	// URI to export the agent to.
+	// The format of this URI must be `gs://<bucket-name>/<object-name>`.
+	// If left unspecified, the serialized agent is returned inline.
 	AgentUri string `json:"agentUri,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AgentUri") to
@@ -1196,16 +1196,22 @@ type GoogleCloudDialogflowV2InputAudioConfig struct {
 	// PhraseHints: Optional. The collection of phrase hints which are used
 	// to boost accuracy
 	// of speech recognition.
-	// Refer to [Cloud Speech API
-	// documentation](/speech/docs/basics#phrase-hints)
+	// Refer to
+	// [Cloud Speech
+	// API
+	// documentation](https://cloud.google.com/speech-to-text/docs/basics
+	// #phrase-hints)
 	// for more details.
 	PhraseHints []string `json:"phraseHints,omitempty"`
 
 	// SampleRateHertz: Required. Sample rate (in Hertz) of the audio
 	// content sent in the query.
-	// Refer to [Cloud Speech API documentation](/speech/docs/basics) for
-	// more
-	// details.
+	// Refer to
+	// [Cloud Speech
+	// API
+	// documentation](https://cloud.google.com/speech-to-text/docs/basics
+	// ) for
+	// more details.
 	SampleRateHertz int64 `json:"sampleRateHertz,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AudioEncoding") to
@@ -1235,6 +1241,7 @@ func (s *GoogleCloudDialogflowV2InputAudioConfig) MarshalJSON() ([]byte, error) 
 // Intents convert a number of user expressions or patterns into an
 // action. An
 // action is an extraction of a user command or sentence semantics.
+// Next available field number: 22.
 type GoogleCloudDialogflowV2Intent struct {
 	// Action: Optional. The name of the action associated with the intent.
 	Action string `json:"action,omitempty"`
@@ -1253,6 +1260,73 @@ type GoogleCloudDialogflowV2Intent struct {
 	//   "LINE" - Line.
 	//   "VIBER" - Viber.
 	//   "ACTIONS_ON_GOOGLE" - Actions on Google.
+	// When using Actions on Google, you can choose one of the
+	// specific
+	// Intent.Message types that mention support for Actions on Google,
+	// or you can use the advanced Intent.Message.payload field.
+	// The payload field provides access to AoG features not available in
+	// the
+	// specific message types.
+	// If using the Intent.Message.payload field, it should have a
+	// structure
+	// similar to the JSON message shown here. For more information,
+	// see
+	// [Actions on Google
+	// Webhook
+	// Format](https://developers.google.com/actions/dialogflow/webho
+	// ok)
+	// <pre>{
+	//   "expectUserResponse": true,
+	//   "isSsml": false,
+	//   "noInputPrompts": [],
+	//   "richResponse": {
+	//     "items": [
+	//       {
+	//         "simpleResponse": {
+	//           "displayText": "hi",
+	//           "textToSpeech": "hello"
+	//         }
+	//       }
+	//     ],
+	//     "suggestions": [
+	//       {
+	//         "title": "Say this"
+	//       },
+	//       {
+	//         "title": "or this"
+	//       }
+	//     ]
+	//   },
+	//   "systemIntent": {
+	//     "data": {
+	//       "@type":
+	// "type.googleapis.com/google.actions.v2.OptionValueSpec",
+	//       "listSelect": {
+	//         "items": [
+	//           {
+	//             "optionInfo": {
+	//               "key": "key1",
+	//               "synonyms": [
+	//                 "key one"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           },
+	//           {
+	//             "optionInfo": {
+	//               "key": "key2",
+	//               "synonyms": [
+	//                 "key two"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           }
+	//         ]
+	//       }
+	//     },
+	//     "intent": "actions.intent.OPTION"
+	//   }
+	// }</pre>
 	DefaultResponsePlatforms []string `json:"defaultResponsePlatforms,omitempty"`
 
 	// DisplayName: Required. The name of this intent.
@@ -1475,7 +1549,11 @@ type GoogleCloudDialogflowV2IntentMessage struct {
 	// ListSelect: The list card response for Actions on Google.
 	ListSelect *GoogleCloudDialogflowV2IntentMessageListSelect `json:"listSelect,omitempty"`
 
-	// Payload: The response containing a custom payload.
+	// Payload: Returns a response containing a custom, platform-specific
+	// payload.
+	// See the Intent.Message.Platform type for a description of
+	// the
+	// structure that may be required for your platform.
 	Payload googleapi.RawMessage `json:"payload,omitempty"`
 
 	// Platform: Optional. The platform that this message is intended for.
@@ -1490,6 +1568,73 @@ type GoogleCloudDialogflowV2IntentMessage struct {
 	//   "LINE" - Line.
 	//   "VIBER" - Viber.
 	//   "ACTIONS_ON_GOOGLE" - Actions on Google.
+	// When using Actions on Google, you can choose one of the
+	// specific
+	// Intent.Message types that mention support for Actions on Google,
+	// or you can use the advanced Intent.Message.payload field.
+	// The payload field provides access to AoG features not available in
+	// the
+	// specific message types.
+	// If using the Intent.Message.payload field, it should have a
+	// structure
+	// similar to the JSON message shown here. For more information,
+	// see
+	// [Actions on Google
+	// Webhook
+	// Format](https://developers.google.com/actions/dialogflow/webho
+	// ok)
+	// <pre>{
+	//   "expectUserResponse": true,
+	//   "isSsml": false,
+	//   "noInputPrompts": [],
+	//   "richResponse": {
+	//     "items": [
+	//       {
+	//         "simpleResponse": {
+	//           "displayText": "hi",
+	//           "textToSpeech": "hello"
+	//         }
+	//       }
+	//     ],
+	//     "suggestions": [
+	//       {
+	//         "title": "Say this"
+	//       },
+	//       {
+	//         "title": "or this"
+	//       }
+	//     ]
+	//   },
+	//   "systemIntent": {
+	//     "data": {
+	//       "@type":
+	// "type.googleapis.com/google.actions.v2.OptionValueSpec",
+	//       "listSelect": {
+	//         "items": [
+	//           {
+	//             "optionInfo": {
+	//               "key": "key1",
+	//               "synonyms": [
+	//                 "key one"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           },
+	//           {
+	//             "optionInfo": {
+	//               "key": "key2",
+	//               "synonyms": [
+	//                 "key two"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           }
+	//         ]
+	//       }
+	//     },
+	//     "intent": "actions.intent.OPTION"
+	//   }
+	// }</pre>
 	Platform string `json:"platform,omitempty"`
 
 	// QuickReplies: The quick replies response.
@@ -2489,9 +2634,7 @@ type GoogleCloudDialogflowV2OriginalDetectIntentRequest struct {
 
 	// Source: The source of this request, e.g., `google`, `facebook`,
 	// `slack`. It is set
-	// by Dialogflow-owned servers. Possible values of this field correspond
-	// to
-	// Intent.Message.Platform.
+	// by Dialogflow-owned servers.
 	Source string `json:"source,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Payload") to
@@ -2699,13 +2842,13 @@ type GoogleCloudDialogflowV2QueryResult struct {
 	// confidence
 	// was not set.
 	//
-	// You should not rely on this field as it isn't guaranteed to be
-	// accurate, or
-	// even set. In particular this field isn't set in Webhook calls and
-	// for
-	// StreamingDetectIntent since the streaming endpoint has separate
-	// confidence
-	// estimates per portion of the audio in StreamingRecognitionResult.
+	// This field is not guaranteed to be accurate or set. In particular
+	// this
+	// field isn't set for StreamingDetectIntent since the streaming
+	// endpoint has
+	// separate confidence estimates per portion of the audio
+	// in
+	// StreamingRecognitionResult.
 	SpeechRecognitionConfidence float64 `json:"speechRecognitionConfidence,omitempty"`
 
 	// WebhookPayload: If the query was fulfilled by a webhook call, this
@@ -3038,6 +3181,32 @@ type GoogleCloudDialogflowV2WebhookResponse struct {
 
 	// Payload: Optional. This value is passed directly to
 	// `QueryResult.webhook_payload`.
+	// See the related `fulfillment_messages[i].payload field`, which may be
+	// used
+	// as an alternative to this field.
+	//
+	// This field can be used for Actions on Google responses.
+	// It should have a structure similar to the JSON message shown here.
+	// For more
+	// information, see
+	// [Actions on Google
+	// Webhook
+	// Format](https://developers.google.com/actions/dialogflow/webho
+	// ok)
+	// <pre>{
+	//   "google": {
+	//     "expectUserResponse": true,
+	//     "richResponse": {
+	//       "items": [
+	//         {
+	//           "simpleResponse": {
+	//             "textToSpeech": "this is a simple response"
+	//           }
+	//         }
+	//       ]
+	//     }
+	//   }
+	// }</pre>
 	Payload googleapi.RawMessage `json:"payload,omitempty"`
 
 	// Source: Optional. This value is passed directly to
@@ -3400,6 +3569,7 @@ func (s *GoogleCloudDialogflowV2beta1ExportAgentResponse) MarshalJSON() ([]byte,
 // Intents convert a number of user expressions or patterns into an
 // action. An
 // action is an extraction of a user command or sentence semantics.
+// Next available field number: 22.
 type GoogleCloudDialogflowV2beta1Intent struct {
 	// Action: Optional. The name of the action associated with the intent.
 	Action string `json:"action,omitempty"`
@@ -3418,6 +3588,73 @@ type GoogleCloudDialogflowV2beta1Intent struct {
 	//   "LINE" - Line.
 	//   "VIBER" - Viber.
 	//   "ACTIONS_ON_GOOGLE" - Actions on Google.
+	// When using Actions on Google, you can choose one of the
+	// specific
+	// Intent.Message types that mention support for Actions on Google,
+	// or you can use the advanced Intent.Message.payload field.
+	// The payload field provides access to AoG features not available in
+	// the
+	// specific message types.
+	// If using the Intent.Message.payload field, it should have a
+	// structure
+	// similar to the JSON message shown here. For more information,
+	// see
+	// [Actions on Google
+	// Webhook
+	// Format](https://developers.google.com/actions/dialogflow/webho
+	// ok)
+	// <pre>{
+	//   "expectUserResponse": true,
+	//   "isSsml": false,
+	//   "noInputPrompts": [],
+	//   "richResponse": {
+	//     "items": [
+	//       {
+	//         "simpleResponse": {
+	//           "displayText": "hi",
+	//           "textToSpeech": "hello"
+	//         }
+	//       }
+	//     ],
+	//     "suggestions": [
+	//       {
+	//         "title": "Say this"
+	//       },
+	//       {
+	//         "title": "or this"
+	//       }
+	//     ]
+	//   },
+	//   "systemIntent": {
+	//     "data": {
+	//       "@type":
+	// "type.googleapis.com/google.actions.v2.OptionValueSpec",
+	//       "listSelect": {
+	//         "items": [
+	//           {
+	//             "optionInfo": {
+	//               "key": "key1",
+	//               "synonyms": [
+	//                 "key one"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           },
+	//           {
+	//             "optionInfo": {
+	//               "key": "key2",
+	//               "synonyms": [
+	//                 "key two"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           }
+	//         ]
+	//       }
+	//     },
+	//     "intent": "actions.intent.OPTION"
+	//   }
+	// }</pre>
 	DefaultResponsePlatforms []string `json:"defaultResponsePlatforms,omitempty"`
 
 	// DisplayName: Required. The name of this intent.
@@ -3468,9 +3705,9 @@ type GoogleCloudDialogflowV2beta1Intent struct {
 	// Also,
 	// auto-markup in the UI is turned off.
 	// DEPRECATED! Please use `ml_disabled` field instead.
-	// NOTE: If neither `ml_enabled` nor `ml_disabled` field is set, then
-	// the
-	// default value is determined as follows:
+	// NOTE: If both `ml_enabled` and `ml_disabled` are either not set or
+	// false,
+	// then the default value is determined as follows:
 	// - Before April 15th, 2018 the default is:
 	//   ml_enabled = false / ml_disabled = true.
 	// - After April 15th, 2018 the default is:
@@ -3624,7 +3861,11 @@ type GoogleCloudDialogflowV2beta1IntentMessage struct {
 	// ListSelect: Displays a list card for Actions on Google.
 	ListSelect *GoogleCloudDialogflowV2beta1IntentMessageListSelect `json:"listSelect,omitempty"`
 
-	// Payload: Returns a response containing a custom payload.
+	// Payload: Returns a response containing a custom, platform-specific
+	// payload.
+	// See the Intent.Message.Platform type for a description of
+	// the
+	// structure that may be required for your platform.
 	Payload googleapi.RawMessage `json:"payload,omitempty"`
 
 	// Platform: Optional. The platform that this message is intended for.
@@ -3639,6 +3880,73 @@ type GoogleCloudDialogflowV2beta1IntentMessage struct {
 	//   "LINE" - Line.
 	//   "VIBER" - Viber.
 	//   "ACTIONS_ON_GOOGLE" - Actions on Google.
+	// When using Actions on Google, you can choose one of the
+	// specific
+	// Intent.Message types that mention support for Actions on Google,
+	// or you can use the advanced Intent.Message.payload field.
+	// The payload field provides access to AoG features not available in
+	// the
+	// specific message types.
+	// If using the Intent.Message.payload field, it should have a
+	// structure
+	// similar to the JSON message shown here. For more information,
+	// see
+	// [Actions on Google
+	// Webhook
+	// Format](https://developers.google.com/actions/dialogflow/webho
+	// ok)
+	// <pre>{
+	//   "expectUserResponse": true,
+	//   "isSsml": false,
+	//   "noInputPrompts": [],
+	//   "richResponse": {
+	//     "items": [
+	//       {
+	//         "simpleResponse": {
+	//           "displayText": "hi",
+	//           "textToSpeech": "hello"
+	//         }
+	//       }
+	//     ],
+	//     "suggestions": [
+	//       {
+	//         "title": "Say this"
+	//       },
+	//       {
+	//         "title": "or this"
+	//       }
+	//     ]
+	//   },
+	//   "systemIntent": {
+	//     "data": {
+	//       "@type":
+	// "type.googleapis.com/google.actions.v2.OptionValueSpec",
+	//       "listSelect": {
+	//         "items": [
+	//           {
+	//             "optionInfo": {
+	//               "key": "key1",
+	//               "synonyms": [
+	//                 "key one"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           },
+	//           {
+	//             "optionInfo": {
+	//               "key": "key2",
+	//               "synonyms": [
+	//                 "key two"
+	//               ]
+	//             },
+	//             "title": "must not be empty, but unique"
+	//           }
+	//         ]
+	//       }
+	//     },
+	//     "intent": "actions.intent.OPTION"
+	//   }
+	// }</pre>
 	Platform string `json:"platform,omitempty"`
 
 	// QuickReplies: Displays quick replies.
@@ -3923,9 +4231,10 @@ func (s *GoogleCloudDialogflowV2beta1IntentMessageCarouselSelectItem) MarshalJSO
 // GoogleCloudDialogflowV2beta1IntentMessageImage: The image response
 // message.
 type GoogleCloudDialogflowV2beta1IntentMessageImage struct {
-	// AccessibilityText: Optional. A text description of the image to be
-	// used for accessibility,
-	// e.g., screen readers.
+	// AccessibilityText: A text description of the image to be used for
+	// accessibility,
+	// e.g., screen readers. Required if image_uri is set for
+	// CarouselSelect.
 	AccessibilityText string `json:"accessibilityText,omitempty"`
 
 	// ImageUri: Optional. The public URI to an image file.
@@ -4471,6 +4780,41 @@ func (s *GoogleCloudDialogflowV2beta1IntentTrainingPhrasePart) MarshalJSON() ([]
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GoogleCloudDialogflowV2beta1KnowledgeOperationMetadata: Metadata in
+// google::longrunning::Operation for Knowledge operations.
+type GoogleCloudDialogflowV2beta1KnowledgeOperationMetadata struct {
+	// State: Required. The current state of this operation.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - State unspecified.
+	//   "PENDING" - The operation has been created.
+	//   "RUNNING" - The operation is currently running.
+	//   "DONE" - The operation is done, either cancelled or completed.
+	State string `json:"state,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "State") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "State") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GoogleCloudDialogflowV2beta1KnowledgeOperationMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod GoogleCloudDialogflowV2beta1KnowledgeOperationMetadata
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GoogleCloudDialogflowV2beta1OriginalDetectIntentRequest: Represents
 // the contents of the original request that was passed to
 // the `[Streaming]DetectIntent` call.
@@ -4482,9 +4826,7 @@ type GoogleCloudDialogflowV2beta1OriginalDetectIntentRequest struct {
 
 	// Source: The source of this request, e.g., `google`, `facebook`,
 	// `slack`. It is set
-	// by Dialogflow-owned servers. Possible values of this field correspond
-	// to
-	// Intent.Message.Platform.
+	// by Dialogflow-owned servers.
 	Source string `json:"source,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Payload") to
@@ -4588,13 +4930,13 @@ type GoogleCloudDialogflowV2beta1QueryResult struct {
 	// confidence
 	// was not set.
 	//
-	// You should not rely on this field as it isn't guaranteed to be
-	// accurate, or
-	// even set. In particular this field isn't set in Webhook calls and
-	// for
-	// StreamingDetectIntent since the streaming endpoint has separate
-	// confidence
-	// estimates per portion of the audio in StreamingRecognitionResult.
+	// This field is not guaranteed to be accurate or set. In particular
+	// this
+	// field isn't set for StreamingDetectIntent since the streaming
+	// endpoint has
+	// separate confidence estimates per portion of the audio
+	// in
+	// StreamingRecognitionResult.
 	SpeechRecognitionConfidence float64 `json:"speechRecognitionConfidence,omitempty"`
 
 	// WebhookPayload: If the query was fulfilled by a webhook call, this
@@ -4720,6 +5062,32 @@ type GoogleCloudDialogflowV2beta1WebhookResponse struct {
 
 	// Payload: Optional. This value is passed directly to
 	// `QueryResult.webhook_payload`.
+	// See the related `fulfillment_messages[i].payload field`, which may be
+	// used
+	// as an alternative to this field.
+	//
+	// This field can be used for Actions on Google responses.
+	// It should have a structure similar to the JSON message shown here.
+	// For more
+	// information, see
+	// [Actions on Google
+	// Webhook
+	// Format](https://developers.google.com/actions/dialogflow/webho
+	// ok)
+	// <pre>{
+	//   "google": {
+	//     "expectUserResponse": true,
+	//     "richResponse": {
+	//       "items": [
+	//         {
+	//           "simpleResponse": {
+	//             "textToSpeech": "this is a simple response"
+	//           }
+	//         }
+	//       ]
+	//     }
+	//   }
+	// }</pre>
 	Payload googleapi.RawMessage `json:"payload,omitempty"`
 
 	// Source: Optional. This value is passed directly to

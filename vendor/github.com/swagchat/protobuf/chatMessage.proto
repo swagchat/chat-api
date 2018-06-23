@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+message Room{
+  string workspace = 1;
+  string roomId = 11;
+  string userId = 12;
+  string name = 13;
+  string pictureURL = 14;
+  string type = 15;
+  string WebhookToken = 16;
+  int64 created = 30;
+  int64 modified = 31;
+}
+
+message Messages{
+  int64 allCount = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string order = 4;
+  repeated Message messages = 5;
+}
+
+message Message{
+  string workspace = 1;
+  string endpoint = 2;
+  string authorization = 3;
+  string roomId = 11;
+  string userId = 12;
+  string type = 13;
+  string eventName = 14;
+  MessagePayload payload = 15;
+  int32 role = 16;
+  string WebhookToken = 17;
+  int64 created = 30;
+  int64 modified = 31;
+}
+
+message MessagePayload {
+  // text
+  string text = 1;
+
+  // image
+  string mime = 11;
+  string filename = 12;
+  string sourceUrl = 13;
+  string thumbnailUrl = 14;
+  int32 width = 15;
+  int32 height = 16;
+}

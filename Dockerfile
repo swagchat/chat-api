@@ -3,7 +3,7 @@ LABEL maintainer betchi
 
 RUN apk add --update --no-cache alpine-sdk bash python
 WORKDIR /root
-RUN git clone https://github.com/edenhill/librdkafka.git
+RUN git clone -b v0.11.4 https://github.com/edenhill/librdkafka.git
 WORKDIR /root/librdkafka
 RUN ./configure
 RUN make
@@ -29,5 +29,5 @@ COPY --from=build /usr/local/include/librdkafka /usr/local/include/librdkafka
 
 STOPSIGNAL SIGTERM
 
-EXPOSE 8101
+EXPOSE 8101 9101
 CMD /bin/sh -c "cd /app && ./chat-api"

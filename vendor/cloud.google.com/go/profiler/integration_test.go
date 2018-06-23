@@ -44,6 +44,7 @@ const (
 const startupTemplate = `
 #! /bin/bash
 
+(
 # Shut down the VM in 5 minutes after this script exits
 # to stop accounting the VM for billing and cores quota.
 trap "sleep 300 && poweroff" EXIT
@@ -55,8 +56,8 @@ set -eo pipefail
 set -x
 
 # Install git
-apt-get update
-apt-get -y -q install git-all
+apt-get update  >/dev/null
+apt-get -y -q install git >/dev/null
 
 # Install desired Go version
 mkdir -p /tmp/bin
@@ -73,20 +74,23 @@ export GOCLOUD_HOME=$GOPATH/src/cloud.google.com/go
 mkdir -p $GOCLOUD_HOME
 
 # Install agent
-git clone https://code.googlesource.com/gocloud $GOCLOUD_HOME
+git clone https://code.googlesource.com/gocloud $GOCLOUD_HOME >/dev/null
 
 cd $GOCLOUD_HOME/profiler/busybench
 git reset --hard {{.Commit}}
-go get -v
+go get >/dev/null
 
 # Run benchmark with agent
 go run busybench.go --service="{{.Service}}" --mutex_profiling="{{.MutexProfiling}}"
+
+# Write output to serial port 2 with timestamp.
+) 2>&1 | while read line; do echo "$(date): ${line}"; done >/dev/ttyS1
 `
 
 const dockerfileFmt = `FROM golang
 RUN git clone https://code.googlesource.com/gocloud /go/src/cloud.google.com/go \
     && cd /go/src/cloud.google.com/go/profiler/busybench && git reset --hard %s \
-    && go get -v && go install -v
+    && go get && go install
 CMD ["busybench", "--service", "%s"]
  `
 
@@ -165,6 +169,18 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
+				Name:        fmt.Sprintf("profiler-test-go110-%d", runID),
+				MachineType: "n1-standard-1",
+			},
+			name:             fmt.Sprintf("profiler-test-go110-%d-gce", runID),
+			wantProfileTypes: []string{"CPU", "HEAP", "THREADS", "CONTENTION"},
+			goVersion:        "1.10",
+			mutexProfiling:   true,
+		},
+		{
+			InstanceConfig: proftest.InstanceConfig{
+				ProjectID:   projectID,
+				Zone:        zone,
 				Name:        fmt.Sprintf("profiler-test-go19-%d", runID),
 				MachineType: "n1-standard-1",
 			},
@@ -229,7 +245,7 @@ func TestAgentIntegration(t *testing.T) {
 			timeoutCtx, cancel := context.WithTimeout(ctx, time.Minute*25)
 			defer cancel()
 			if err := gceTr.PollForSerialOutput(timeoutCtx, &tc.InstanceConfig, benchFinishString); err != nil {
-				t.Fatal(err)
+				t.Fatalf("PollForSerialOutput() got error: %v", err)
 			}
 
 			timeNow := time.Now()

@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"text/template"
@@ -54,6 +55,8 @@ type API struct {
 	path        string
 
 	BaseCrosslinkURL string
+
+	HasEventStream bool `json:"-"`
 }
 
 // A Metadata is the metadata about an API's definition.
@@ -69,6 +72,7 @@ type Metadata struct {
 	Protocol            string
 	UID                 string
 	EndpointsID         string
+	ServiceID           string
 
 	NoResolveEndpoint bool
 }
@@ -416,6 +420,28 @@ var tplServiceDoc = template.Must(template.New("service docs").Funcs(template.Fu
 // https://docs.aws.amazon.com/sdk-for-go/api/service/{{ .PackageName }}/#New
 `))
 
+var serviceIDRegex = regexp.MustCompile("[^a-zA-Z0-9 ]+")
+var prefixDigitRegex = regexp.MustCompile("^[0-9]+")
+
+// ServiceID will return a unique identifier specific to a service.
+func ServiceID(a *API) string {
+	if len(a.Metadata.ServiceID) > 0 {
+		return a.Metadata.ServiceID
+	}
+
+	name := a.Metadata.ServiceAbbreviation
+	if len(name) == 0 {
+		name = a.Metadata.ServiceFullName
+	}
+
+	name = strings.Replace(name, "Amazon", "", -1)
+	name = strings.Replace(name, "AWS", "", -1)
+	name = serviceIDRegex.ReplaceAllString(name, "")
+	name = prefixDigitRegex.ReplaceAllString(name, "")
+	name = strings.TrimSpace(name)
+	return name
+}
+
 // A tplService defines the template for the service generated code.
 var tplService = template.Must(template.New("service").Funcs(template.FuncMap{
 	"ServiceNameValue": func(a *API) string {
@@ -440,6 +466,14 @@ var tplService = template.Must(template.New("service").Funcs(template.FuncMap{
 
 		return "EndpointsID"
 	},
+	"ServiceIDVar": func(a *API) string {
+		if a.NoConstServiceNames {
+			return fmt.Sprintf("%q", ServiceID(a))
+		}
+
+		return "ServiceID"
+	},
+	"ServiceID": ServiceID,
 }).Parse(`
 // {{ .StructName }} provides the API operation methods for making requests to
 // {{ .Metadata.ServiceFullName }}. See this package's package overview docs
@@ -464,6 +498,7 @@ var initRequest func(*request.Request)
 const (
 	ServiceName = "{{ .Metadata.EndpointPrefix }}" // Service endpoint prefix API calls made to.
 	EndpointsID = {{ EndpointsIDConstValue . }} // Service ID for Regions and Endpoints metadata.
+	ServiceID = "{{ ServiceID . }}" // ServiceID is a unique identifer of a specific service
 )
 {{- end }}
 
@@ -504,6 +539,7 @@ func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegio
     		cfg,
     		metadata.ClientInfo{
 			ServiceName: {{ ServiceNameValue . }},
+			ServiceID : {{ ServiceIDVar . }},
 			SigningName: signingName,
 			SigningRegion: signingRegion,
 			Endpoint:     endpoint,
@@ -528,6 +564,9 @@ func newClient(cfg aws.Config, handlers request.Handlers, endpoint, signingRegio
 	svc.Handlers.Unmarshal.PushBackNamed({{ .ProtocolPackage }}.UnmarshalHandler)
 	svc.Handlers.UnmarshalMeta.PushBackNamed({{ .ProtocolPackage }}.UnmarshalMetaHandler)
 	svc.Handlers.UnmarshalError.PushBackNamed({{ .ProtocolPackage }}.UnmarshalErrorHandler)
+	{{ if .HasEventStream }}
+	svc.Handlers.UnmarshalStream.PushBackNamed({{ .ProtocolPackage }}.UnmarshalHandler)
+	{{ end }}
 
 	{{ if .UseInitMethods }}// Run custom client initialization if present
 	if initClient != nil {
@@ -801,4 +840,53 @@ func (a *API) APIErrorsGoCode() string {
 	}
 
 	return strings.TrimSpace(buf.String())
+}
+
+// removeOperation removes an operation, its input/output shapes, as well as
+// any references/shapes that are unique to this operation.
+func (a *API) removeOperation(name string) {
+	fmt.Println("removing operation,", name)
+	op := a.Operations[name]
+
+	delete(a.Operations, name)
+	delete(a.Examples, name)
+
+	a.removeShape(op.InputRef.Shape)
+	a.removeShape(op.OutputRef.Shape)
+}
+
+// removeShape removes the given shape, and all form member's reference target
+// shapes. Will also remove member reference targeted shapes if those shapes do
+// not have any additional references.
+func (a *API) removeShape(s *Shape) {
+	fmt.Println("removing shape,", s.ShapeName)
+
+	delete(a.Shapes, s.ShapeName)
+
+	for name, ref := range s.MemberRefs {
+		a.removeShapeRef(ref)
+		delete(s.MemberRefs, name)
+	}
+
+	for _, ref := range []*ShapeRef{&s.MemberRef, &s.KeyRef, &s.ValueRef} {
+		if ref.Shape == nil {
+			continue
+		}
+		a.removeShapeRef(ref)
+		*ref = ShapeRef{}
+	}
+}
+
+// removeShapeRef removes the shape reference from its target shape. If the
+// reference was the last reference to the target shape, the shape will also be
+// removed.
+func (a *API) removeShapeRef(ref *ShapeRef) {
+	if ref.Shape == nil {
+		return
+	}
+
+	ref.Shape.removeRef(ref)
+	if len(ref.Shape.refs) == 0 {
+		a.removeShape(ref.Shape)
+	}
 }

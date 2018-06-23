@@ -76,6 +76,7 @@ func newOutputService1ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice1protocoltest",
+				ServiceID:     "OutputService1ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -107,7 +108,7 @@ const opOutputService1TestCaseOperation1 = "OperationName"
 
 // OutputService1TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService1TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -299,6 +300,7 @@ func newOutputService2ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice2protocoltest",
+				ServiceID:     "OutputService2ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -330,7 +332,7 @@ const opOutputService2TestCaseOperation1 = "OperationName"
 
 // OutputService2TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService2TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -464,6 +466,7 @@ func newOutputService3ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice3protocoltest",
+				ServiceID:     "OutputService3ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -495,7 +498,7 @@ const opOutputService3TestCaseOperation1 = "OperationName"
 
 // OutputService3TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService3TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -627,6 +630,7 @@ func newOutputService4ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice4protocoltest",
+				ServiceID:     "OutputService4ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -658,7 +662,7 @@ const opOutputService4TestCaseOperation1 = "OperationName"
 
 // OutputService4TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService4TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -770,6 +774,7 @@ func newOutputService5ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice5protocoltest",
+				ServiceID:     "OutputService5ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -801,7 +806,7 @@ const opOutputService5TestCaseOperation1 = "OperationName"
 
 // OutputService5TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService5TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -925,6 +930,7 @@ func newOutputService6ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice6protocoltest",
+				ServiceID:     "OutputService6ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -956,7 +962,7 @@ const opOutputService6TestCaseOperation1 = "OperationName"
 
 // OutputService6TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService6TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1068,6 +1074,7 @@ func newOutputService7ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice7protocoltest",
+				ServiceID:     "OutputService7ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -1099,7 +1106,7 @@ const opOutputService7TestCaseOperation1 = "OperationName"
 
 // OutputService7TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService7TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1211,6 +1218,7 @@ func newOutputService8ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice8protocoltest",
+				ServiceID:     "OutputService8ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -1242,7 +1250,7 @@ const opOutputService8TestCaseOperation1 = "OperationName"
 
 // OutputService8TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService8TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1354,6 +1362,7 @@ func newOutputService9ProtocolTestClient(cfg aws.Config, handlers request.Handle
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice9protocoltest",
+				ServiceID:     "OutputService9ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -1385,7 +1394,7 @@ const opOutputService9TestCaseOperation1 = "OperationName"
 
 // OutputService9TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService9TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1505,6 +1514,7 @@ func newOutputService10ProtocolTestClient(cfg aws.Config, handlers request.Handl
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice10protocoltest",
+				ServiceID:     "OutputService10ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -1536,7 +1546,7 @@ const opOutputService10TestCaseOperation1 = "OperationName"
 
 // OutputService10TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService10TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1668,6 +1678,7 @@ func newOutputService11ProtocolTestClient(cfg aws.Config, handlers request.Handl
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice11protocoltest",
+				ServiceID:     "OutputService11ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -1699,7 +1710,7 @@ const opOutputService11TestCaseOperation1 = "OperationName"
 
 // OutputService11TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService11TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1811,6 +1822,7 @@ func newOutputService12ProtocolTestClient(cfg aws.Config, handlers request.Handl
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice12protocoltest",
+				ServiceID:     "OutputService12ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -1842,7 +1854,7 @@ const opOutputService12TestCaseOperation1 = "OperationName"
 
 // OutputService12TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService12TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1910,7 +1922,7 @@ const opOutputService12TestCaseOperation2 = "OperationName"
 
 // OutputService12TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the OutputService12TestCaseOperation2 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -1978,7 +1990,7 @@ const opOutputService12TestCaseOperation3 = "OperationName"
 
 // OutputService12TestCaseOperation3Request generates a "aws/request.Request" representing the
 // client's request for the OutputService12TestCaseOperation3 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -2114,6 +2126,7 @@ func newOutputService13ProtocolTestClient(cfg aws.Config, handlers request.Handl
 			cfg,
 			metadata.ClientInfo{
 				ServiceName:   "outputservice13protocoltest",
+				ServiceID:     "OutputService13ProtocolTest",
 				SigningName:   signingName,
 				SigningRegion: signingRegion,
 				Endpoint:      endpoint,
@@ -2145,7 +2158,7 @@ const opOutputService13TestCaseOperation1 = "OperationName"
 
 // OutputService13TestCaseOperation1Request generates a "aws/request.Request" representing the
 // client's request for the OutputService13TestCaseOperation1 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -2214,7 +2227,7 @@ const opOutputService13TestCaseOperation2 = "OperationName"
 
 // OutputService13TestCaseOperation2Request generates a "aws/request.Request" representing the
 // client's request for the OutputService13TestCaseOperation2 operation. The "output" return
-// value will be populated with the request's response once the request complets
+// value will be populated with the request's response once the request completes
 // successfuly.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
@@ -2442,10 +2455,10 @@ func TestOutputService3ProtocolTestTimestampMembersCase1(t *testing.T) {
 	if out == nil {
 		t.Errorf("expect not to be nil")
 	}
-	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.StructMember.Foo.String(); e != a {
+	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.StructMember.Foo.UTC().String(); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
-	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.TimeMember.String(); e != a {
+	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.TimeMember.UTC().String(); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
 
@@ -2564,10 +2577,10 @@ func TestOutputService7ProtocolTestComplexMapValuesCase1(t *testing.T) {
 	if out == nil {
 		t.Errorf("expect not to be nil")
 	}
-	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.MapMember["a"].String(); e != a {
+	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.MapMember["a"].UTC().String(); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
-	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.MapMember["b"].String(); e != a {
+	if e, a := time.Unix(1.398796238e+09, 0).UTC().String(), out.MapMember["b"].UTC().String(); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
 

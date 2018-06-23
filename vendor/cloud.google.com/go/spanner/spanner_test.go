@@ -101,6 +101,13 @@ var (
 			) PRIMARY KEY (a)`,
 	}
 	simpleDBTableColumns = []string{"a", "b"}
+
+	ctsDBStatements = []string{
+		`CREATE TABLE TestTable (
+		    Key  STRING(MAX) NOT NULL,
+		    Ts   TIMESTAMP OPTIONS (allow_commit_timestamp = true),
+	    ) PRIMARY KEY (Key)`,
+	}
 )
 
 const (
@@ -176,7 +183,7 @@ func prepare(ctx context.Context, t *testing.T, statements []string) (client *Cl
 	}
 	return client, dbPath, func() {
 		client.Close()
-		if err := admin.DropDatabase(ctx, &adminpb.DropDatabaseRequest{dbPath}); err != nil {
+		if err := admin.DropDatabase(ctx, &adminpb.DropDatabaseRequest{Database: dbPath}); err != nil {
 			t.Logf("failed to drop database %s (error %v), might need a manual removal",
 				dbPath, err)
 		}
@@ -665,11 +672,10 @@ func TestReadWriteTransaction(t *testing.T) {
 				}
 				bf--
 				bb++
-				tx.BufferWrite([]*Mutation{
+				return tx.BufferWrite([]*Mutation{
 					Update("Accounts", []string{"AccountId", "Balance"}, []interface{}{int64(1), bf}),
 					Update("Accounts", []string{"AccountId", "Balance"}, []interface{}{int64(2), bb}),
 				})
-				return nil
 			})
 			if err != nil {
 				t.Fatalf("%d: failed to execute transaction: %v", iter, err)
@@ -917,7 +923,7 @@ func TestNestedTransaction(t *testing.T) {
 	ctx := context.Background()
 	client, _, tearDown := prepare(ctx, t, singerDBStatements)
 	defer tearDown()
-	client.ReadWriteTransaction(ctx, func(ctx context.Context, tx *ReadWriteTransaction) error {
+	_, err := client.ReadWriteTransaction(ctx, func(ctx context.Context, tx *ReadWriteTransaction) error {
 		_, err := client.ReadWriteTransaction(ctx,
 			func(context.Context, *ReadWriteTransaction) error { return nil })
 		if ErrCode(err) != codes.FailedPrecondition {
@@ -935,6 +941,9 @@ func TestNestedTransaction(t *testing.T) {
 		}
 		return nil
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 // Test client recovery on database recreation.
@@ -946,7 +955,7 @@ func TestDbRemovalRecovery(t *testing.T) {
 	defer tearDown()
 
 	// Drop the testing database.
-	if err := admin.DropDatabase(ctx, &adminpb.DropDatabaseRequest{dbPath}); err != nil {
+	if err := admin.DropDatabase(ctx, &adminpb.DropDatabaseRequest{Database: dbPath}); err != nil {
 		t.Fatalf("failed to drop testing database %v: %v", dbPath, err)
 	}
 
@@ -1519,8 +1528,11 @@ func TestTransactionRunner(t *testing.T) {
 			}
 			// txn 1 can abort, in that case we skip closing the channel on retry.
 			once.Do(func() { close(cTxn1Start) })
-			tx.BufferWrite([]*Mutation{
+			e = tx.BufferWrite([]*Mutation{
 				Update("Accounts", []string{"AccountId", "Balance"}, []interface{}{int64(1), int64(b + 1)})})
+			if e != nil {
+				return e
+			}
 			// Wait for second transaction.
 			<-cTxn2Start
 			return nil
@@ -1556,9 +1568,8 @@ func TestTransactionRunner(t *testing.T) {
 			if b2, e = readBalance(tx, 2, true); e != nil {
 				return e
 			}
-			tx.BufferWrite([]*Mutation{
+			return tx.BufferWrite([]*Mutation{
 				Update("Accounts", []string{"AccountId", "Balance"}, []interface{}{int64(2), int64(b1 + b2)})})
-			return nil
 		})
 		if e != nil {
 			t.Errorf("Transaction 2 commit, got %v, want nil.", e)
@@ -1800,5 +1811,73 @@ func TestBROTNormal(t *testing.T) {
 	}
 	if err = row.Columns(&i); err != nil {
 		t.Errorf("failed to parse row %v", err)
+	}
+}
+
+func TestCommitTimestamp(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
+	defer cancel()
+	client, _, tearDown := prepare(ctx, t, ctsDBStatements)
+	defer tearDown()
+
+	type testTableRow struct {
+		Key string
+		Ts  NullTime
+	}
+
+	var (
+		cts1, cts2, ts1, ts2 time.Time
+		err                  error
+	)
+
+	// Apply mutation in sequence, expect to see commit timestamp in good order, check also the commit timestamp returned
+	for _, it := range []struct {
+		k string
+		t *time.Time
+	}{
+		{"a", &cts1},
+		{"b", &cts2},
+	} {
+		tt := testTableRow{Key: it.k, Ts: NullTime{CommitTimestamp, true}}
+		m, err := InsertStruct("TestTable", tt)
+		if err != nil {
+			t.Fatal(err)
+		}
+		*it.t, err = client.Apply(ctx, []*Mutation{m}, ApplyAtLeastOnce())
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	txn := client.ReadOnlyTransaction()
+	for _, it := range []struct {
+		k string
+		t *time.Time
+	}{
+		{"a", &ts1},
+		{"b", &ts2},
+	} {
+		if r, e := txn.ReadRow(ctx, "TestTable", Key{it.k}, []string{"Ts"}); e != nil {
+			t.Fatal(err)
+		} else {
+			var got testTableRow
+			if err := r.ToStruct(&got); err != nil {
+				t.Fatal(err)
+			}
+			*it.t = got.Ts.Time
+		}
+	}
+	if !cts1.Equal(ts1) {
+		t.Errorf("Expect commit timestamp returned and read to match for txn1, got %v and %v.", cts1, ts1)
+	}
+	if !cts2.Equal(ts2) {
+		t.Errorf("Expect commit timestamp returned and read to match for txn2, got %v and %v.", cts2, ts2)
+	}
+
+	// Try writing a timestamp in the future to commit timestamp, expect error
+	_, err = client.Apply(ctx, []*Mutation{InsertOrUpdate("TestTable", []string{"Key", "Ts"}, []interface{}{"a", time.Now().Add(time.Hour)})}, ApplyAtLeastOnce())
+	if msg, ok := matchError(err, codes.FailedPrecondition, "Cannot write timestamps in the future"); !ok {
+		t.Error(msg)
 	}
 }
