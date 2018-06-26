@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -49,7 +50,7 @@ func (kp *keycloakProvider) Init() error {
 }
 
 func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
-	realm := ctx.Value(utils.CtxRealm)
+	workspace := ctx.Value(utils.CtxWorkspace)
 	gimei := gimei.NewName()
 	name := fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana())
 
@@ -70,7 +71,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	}
 	kcUserByte, err := json.Marshal(kcUser)
 
-	endpoint := fmt.Sprintf("%s/auth/admin/realms/%s/users", kp.baseEndpoint, realm)
+	endpoint := fmt.Sprintf("%s/auth/admin/realms/%s/users", kp.baseEndpoint, workspace)
 	req, err := http.NewRequest(
 		"POST",
 		endpoint,
@@ -109,7 +110,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	}
 	kcRoleMappingsByte, _ := json.Marshal(kcRoleMappings)
 
-	endpoint = fmt.Sprintf("%s/auth/admin/realms/%s/users/%s/role-mappings/realm", kp.baseEndpoint, realm, userID)
+	endpoint = fmt.Sprintf("%s/auth/admin/realms/%s/users/%s/role-mappings/realm", kp.baseEndpoint, workspace, userID)
 	req, err = http.NewRequest(
 		"POST",
 		endpoint,
@@ -136,15 +137,15 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	}
 	user.BeforeInsertGuest()
 
-	general := &models.UserRole{
+	general := &protobuf.UserRole{
 		UserID: user.UserID,
-		RoleID: models.RoleGeneral,
+		RoleID: utils.RoleGeneral,
 	}
-	guest := &models.UserRole{
+	guest := &protobuf.UserRole{
 		UserID: user.UserID,
-		RoleID: models.RoleGuest,
+		RoleID: utils.RoleGuest,
 	}
-	roles := []*models.UserRole{general, guest}
+	roles := []*protobuf.UserRole{general, guest}
 
 	user, err = datastore.Provider(ctx).InsertUser(user, roles)
 	if err != nil {
@@ -186,13 +187,13 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.Use
 }
 
 func (kp *keycloakProvider) clientToken(ctx context.Context, clientID, clientSecret string) (string, error) {
-	realm := ctx.Value(utils.CtxRealm)
-	if kp.baseEndpoint == "" || realm == "" || clientID == "" || clientSecret == "" {
+	workspace := ctx.Value(utils.CtxWorkspace)
+	if kp.baseEndpoint == "" || workspace == "" || clientID == "" || clientSecret == "" {
 		return "", errors.Wrap(fmt.Errorf("[keycloak]Invalid params for create client accessToken. baseEndpoint=%s, realm=%s, ClientID=%s, ClientSecret=%s",
-			kp.baseEndpoint, realm, clientID, clientSecret), "")
+			kp.baseEndpoint, workspace, clientID, clientSecret), "")
 	}
 
-	endpoint := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", kp.baseEndpoint, realm)
+	endpoint := fmt.Sprintf("%s/auth/realms/%s/protocol/openid-connect/token", kp.baseEndpoint, workspace)
 
 	values := url.Values{}
 	values.Set("grant_type", "client_credentials")
@@ -234,42 +235,3 @@ func (kp *keycloakProvider) clientToken(ctx context.Context, clientID, clientSec
 
 	return kcToken.AccessToken, nil
 }
-
-// func (kp *keycloakProvider) userToken(ctx context.Context, userID string) (string, error) {
-// 	cfg := utils.Config()
-// 	realm := ctx.Value(utils.CtxRealm)
-// 	endpoint := fmt.Sprintf("%s/auth/admin/realms/%s/users/%s/impersonation", kp.baseEndpoint, realm, userID)
-
-// 	req, err := http.NewRequest(
-// 		"POST",
-// 		endpoint,
-// 		nil,
-// 	)
-// 	if err != nil {
-// 		return "", errors.Wrap(err, "")
-// 	}
-
-// 	token, err := kp.clientToken(ctx, cfg.IdP.Keycloak.GuestUserClient.ClientID, cfg.IdP.Keycloak.GuestUserClient.ClientSecret)
-// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
-
-// 	client := &http.Client{}
-// 	resp, err := client.Do(req)
-// 	if err != nil {
-// 		return "", errors.Wrap(err, "")
-// 	}
-// 	if resp.StatusCode != http.StatusOK {
-// 		return "", fmt.Errorf("[keycloak]user not found")
-// 	}
-// 	defer resp.Body.Close()
-
-// 	var userToken string
-// 	cookies := resp.Cookies()
-// 	for _, v := range cookies {
-// 		if v.Name == "KEYCLOAK_IDENTITY" && v.Value != "" {
-// 			userToken = v.Value
-// 			break
-// 		}
-// 	}
-
-// 	return userToken, nil
-// }

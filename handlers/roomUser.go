@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/services"
 )
 
@@ -15,15 +15,15 @@ func setRoomUserMux() {
 }
 
 func putRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var put models.RequestRoomUserIDs
-	if err := decodeBody(r, &put); err != nil {
+	var req protobuf.PostRoomUserReq
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	roomID := bone.GetValue(r, "roomId")
+	req.RoomID = bone.GetValue(r, "roomId")
 
-	roomUsers, pd := services.PutRoomUsers(r.Context(), roomID, &put)
+	roomUsers, pd := services.PutRoomUsers(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -33,7 +33,7 @@ func putRoomUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func putRoomUser(w http.ResponseWriter, r *http.Request) {
-	var put models.RoomUser
+	var put protobuf.RoomUser
 	if err := decodeBody(r, &put); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -48,20 +48,19 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	setLastModified(w, roomUser.Modified)
 	respond(w, r, http.StatusOK, "application/json", roomUser)
 }
 
 func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var deleteRus models.RequestRoomUserIDs
-	if err := decodeBody(r, &deleteRus); err != nil {
+	var req protobuf.DeleteRoomUserReq
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	roomID := bone.GetValue(r, "roomId")
+	req.RoomID = bone.GetValue(r, "roomId")
 
-	roomUsers, pd := services.DeleteRoomUsers(r.Context(), roomID, &deleteRus)
+	roomUsers, pd := services.DeleteRoomUsers(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

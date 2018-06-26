@@ -1,18 +1,20 @@
 package datastore
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"go.uber.org/zap/zapcore"
 
 	"github.com/swagchat/chat-api/logging"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateUserRoleStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.UserRole{}, tableNameUserRole)
+	tableMap := master.AddTableWithName(protobuf.UserRole{}, tableNameUserRole)
 	tableMap.SetUniqueTogether("user_id", "role_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
@@ -23,25 +25,23 @@ func rdbCreateUserRoleStore(db string) {
 	}
 }
 
-func rdbInsertUserRoles(db string, userRoles []*models.UserRole) error {
+func rdbInsertUserRole(db string, ur *protobuf.UserRole) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	for _, roleUser := range userRoles {
-		bu, err := rdbSelectUserRole(db, roleUser.UserID, roleUser.RoleID)
+	bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
+	if err != nil {
+		trans.Rollback()
+		return errors.Wrap(err, "An error occurred while getting user role")
+	}
+	if bu == nil {
+		err = trans.Insert(ur)
 		if err != nil {
 			trans.Rollback()
-			return errors.Wrap(err, "An error occurred while getting user role")
-		}
-		if bu == nil {
-			err = trans.Insert(roleUser)
-			if err != nil {
-				trans.Rollback()
-				return errors.Wrap(err, "An error occurred while creating user roles")
-			}
+			return errors.Wrap(err, "An error occurred while creating user roles")
 		}
 	}
 
@@ -54,10 +54,10 @@ func rdbInsertUserRoles(db string, userRoles []*models.UserRole) error {
 	return nil
 }
 
-func rdbSelectUserRole(db, userID string, roleID models.Role) (*models.UserRole, error) {
+func rdbSelectUserRole(db, userID string, roleID int32) (*protobuf.UserRole, error) {
 	replica := RdbStore(db).replica()
 
-	var userRoles []*models.UserRole
+	var userRoles []*protobuf.UserRole
 	query := utils.AppendStrings("SELECT ur.user_id, ur.role_id ",
 		"FROM ", tableNameUserRole, " AS ur ",
 		"LEFT JOIN ", tableNameUser, " AS u ",
@@ -79,10 +79,10 @@ func rdbSelectUserRole(db, userID string, roleID models.Role) (*models.UserRole,
 	return nil, nil
 }
 
-func rdbSelectUserRolesByUserID(db, userID string) ([]models.Role, error) {
+func rdbSelectRoleIDsOfUserRole(db, userID string) ([]int32, error) {
 	replica := RdbStore(db).replica()
 
-	var roleIDs []models.Role
+	var roleIDs []int32
 	query := utils.AppendStrings("SELECT ur.role_id ",
 		"FROM ", tableNameUserRole, " AS ur ",
 		"LEFT JOIN ", tableNameUser, " AS u ",
@@ -99,38 +99,39 @@ func rdbSelectUserRolesByUserID(db, userID string) ([]models.Role, error) {
 	return roleIDs, nil
 }
 
-func rdbSelectUserIDsByRole(db string, role models.Role) ([]string, error) {
+func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.User
+	var userIDs []string
 	query := utils.AppendStrings("SELECT ur.user_id ",
 		"FROM ", tableNameUserRole, " AS ur ",
 		"LEFT JOIN ", tableNameUser, " AS u ",
 		"ON ur.user_id = u.user_id ",
 		" WHERE ur.role_id=:roleId AND u.deleted=0;")
 	params := map[string]interface{}{
-		"roleId": role,
+		"roleId": roleID,
 	}
-	_, err := replica.Select(&users, query, params)
+	_, err := replica.Select(&userIDs, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting userIds")
 	}
 
-	resultUserIDs := make([]string, 0)
-	for _, user := range users {
-		resultUserIDs = append(resultUserIDs, user.UserID)
-	}
+	// resultUserIDs := make([]string, 0)
+	// for _, userID := range userIDs {
+	// 	resultUserIDs = append(resultUserIDs, userID)
+	// }
 
-	return resultUserIDs, nil
+	return userIDs, nil
 }
 
-func rdbDeleteUserRole(db, userID string, roleIDs []models.Role) error {
+func rdbDeleteUserRole(db string, ur *protobuf.UserRole) error {
 	master := RdbStore(db).master()
 
-	var roleIDsQuery string
-	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
-	query := utils.AppendStrings("DELETE FROM ", tableNameUserRole, " WHERE user_id=:userId AND role_id IN (", roleIDsQuery, ");")
-	params["userId"] = userID
+	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND role_id=:roleId", tableNameUserRole)
+	params := map[string]interface{}{
+		"userId": ur.UserID,
+		"roleId": ur.RoleID,
+	}
 	_, err := master.Exec(query, params)
 	if err != nil {
 		return errors.Wrap(err, "An error occurred while deleting user role ids")

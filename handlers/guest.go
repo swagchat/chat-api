@@ -31,7 +31,7 @@ func postGuest(w http.ResponseWriter, r *http.Request) {
 	jwtCookie := &http.Cookie{
 		Name:     "jwt",
 		Value:    user.AccessToken,
-		Domain:   r.Header.Get(utils.HeaderRealm),
+		Domain:   r.Header.Get(utils.HeaderWorkspace),
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,
@@ -54,7 +54,7 @@ func getGuest(w http.ResponseWriter, r *http.Request) {
 	jwtCookie := &http.Cookie{
 		Name:     "jwt",
 		Value:    user.AccessToken,
-		Domain:   r.Header.Get(utils.HeaderRealm),
+		Domain:   r.Header.Get(utils.HeaderWorkspace),
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   true,

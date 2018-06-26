@@ -8,6 +8,7 @@ import (
 
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -43,38 +44,10 @@ func rdbInsertRoom(db string, room *models.Room, opts ...interface{}) (*models.R
 		return nil, errors.Wrap(err, "An error occurred while creating room")
 	}
 
-	// var zero int64
-	// zero = 0
-	// roomUsers := make([]*models.RoomUser, 0)
-	// roomUser := &models.RoomUser{
-	// 	RoomID:      room.RoomID,
-	// 	UserID:      room.UserID,
-	// 	UnreadCount: &zero,
-	// 	MetaData:    []byte("{}"),
-	// 	Created:     room.Created,
-	// 	Modified:    room.Modified,
-	// }
-	// roomUsers = append(roomUsers, roomUser)
-
-	// for _, userID := range room.RequestRoomUserIDs.UserIDs {
-	// 	ru := &models.RoomUser{
-	// 		RoomID:      room.RoomID,
-	// 		UserID:      userID,
-	// 		UnreadCount: &zero,
-	// 		MetaData:    []byte("{}"),
-	// 		Created:     room.Created,
-	// 		Modified:    room.Modified,
-	// 	}
-	// 	if room.Type == models.CustomerRoom {
-	// 		ru.RoomName = "xxx"
-	// 	}
-	// 	roomUsers = append(roomUsers, ru)
-	// }
-
 	for _, v := range opts {
 		switch v.(type) {
-		case []*models.RoomUser:
-			rus := v.([]*models.RoomUser)
+		case []*protobuf.RoomUser:
+			rus := v.([]*protobuf.RoomUser)
 			for _, ru := range rus {
 				err = trans.Insert(ru)
 				if err != nil {
@@ -135,16 +108,11 @@ func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
 		"u.picture_url, ",
 		"u.information_url, ",
 		"u.meta_data, ",
-		"u.is_bot, ",
-		"u.is_can_block, ",
-		"u.is_show_users, ",
+		"u.can_block, ",
 		"u.last_accessed, ",
 		"u.created, ",
 		"u.modified, ",
-		"ru.unread_count AS ru_unread_count, ",
-		"ru.meta_data AS ru_meta_data, ",
-		"ru.created AS ru_created, ",
-		"ru.modified AS ru_modified ",
+		"ru.display AS ru_display ",
 		"FROM ", tableNameRoomUser, " AS ru ",
 		"LEFT JOIN ", tableNameUser, " AS u ",
 		"ON ru.user_id = u.user_id ",

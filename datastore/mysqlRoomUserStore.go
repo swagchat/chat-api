@@ -1,32 +1,34 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import (
+	"github.com/swagchat/chat-api/protobuf"
+)
 
 func (p *mysqlProvider) createRoomUserStore() {
 	rdbCreateRoomUserStore(p.database)
 }
 
-func (p *mysqlProvider) DeleteAndInsertRoomUsers(roomUsers []*models.RoomUser) error {
+func (p *mysqlProvider) DeleteAndInsertRoomUsers(roomUsers []*protobuf.RoomUser) error {
 	return rdbDeleteAndInsertRoomUsers(p.database, roomUsers)
 }
 
-func (p *mysqlProvider) InsertRoomUsers(roomUsers []*models.RoomUser) error {
+func (p *mysqlProvider) InsertRoomUsers(roomUsers []*protobuf.RoomUser) error {
 	return rdbInsertRoomUsers(p.database, roomUsers)
 }
 
-func (p *mysqlProvider) SelectRoomUser(roomID, userID string) (*models.RoomUser, error) {
+func (p *mysqlProvider) SelectRoomUser(roomID, userID string) (*protobuf.RoomUser, error) {
 	return rdbSelectRoomUser(p.database, roomID, userID)
 }
 
-func (p *mysqlProvider) SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*models.RoomUser, error) {
+func (p *mysqlProvider) SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*protobuf.RoomUser, error) {
 	return rdbSelectRoomUserOfOneOnOne(p.database, myUserID, opponentUserID)
 }
 
-func (p *mysqlProvider) SelectRoomUsersByRoomID(roomID string) ([]*models.RoomUser, error) {
+func (p *mysqlProvider) SelectRoomUsersByRoomID(roomID string) ([]*protobuf.RoomUser, error) {
 	return rdbSelectRoomUsersByRoomID(p.database, roomID)
 }
 
-func (p *mysqlProvider) SelectRoomUsersByUserID(userID string) ([]*models.RoomUser, error) {
+func (p *mysqlProvider) SelectRoomUsersByUserID(userID string) ([]*protobuf.RoomUser, error) {
 	return rdbSelectRoomUsersByUserID(p.database, userID)
 }
 
@@ -34,11 +36,11 @@ func (p *mysqlProvider) SelectRoomUserIDsByRoomID(roomID string, opts ...interfa
 	return rdbSelectRoomUserIDsByRoomID(p.database, roomID, opts...)
 }
 
-func (p *mysqlProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*models.RoomUser, error) {
+func (p *mysqlProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*protobuf.RoomUser, error) {
 	return rdbSelectRoomUsersByRoomIDAndUserIDs(p.database, roomID, userIDs)
 }
 
-func (p *mysqlProvider) UpdateRoomUser(roomUser *models.RoomUser) (*models.RoomUser, error) {
+func (p *mysqlProvider) UpdateRoomUser(roomUser *protobuf.RoomUser) (*protobuf.RoomUser, error) {
 	return rdbUpdateRoomUser(p.database, roomUser)
 }
 

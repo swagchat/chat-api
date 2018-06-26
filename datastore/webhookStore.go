@@ -9,7 +9,7 @@ const (
 type webhookOptions struct {
 	roomID      string
 	triggerWord string
-	roleID      models.Role
+	roleID      int32
 }
 
 type WebhookOption func(*webhookOptions)
@@ -26,7 +26,7 @@ func WithTriggerWord(triggerWord string) WebhookOption {
 	}
 }
 
-func WithRole(roleID models.Role) WebhookOption {
+func WithRole(roleID int32) WebhookOption {
 	return func(ops *webhookOptions) {
 		ops.roleID = roleID
 	}

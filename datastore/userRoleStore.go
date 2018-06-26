@@ -1,13 +1,15 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import (
+	"github.com/swagchat/chat-api/protobuf"
+)
 
 type userRoleStore interface {
 	createUserRoleStore()
 
-	InsertUserRoles(userRoles []*models.UserRole) error
-	SelectUserRole(userID string, roleID models.Role) (*models.UserRole, error)
-	SelectUserRolesByUserID(userID string) ([]models.Role, error)
-	SelectUserIDsByRole(role models.Role) ([]string, error)
-	DeleteUserRole(userID string, roleIDs []models.Role) error
+	InsertUserRole(userRole *protobuf.UserRole) error
+	SelectUserRole(userID string, roleID int32) (*protobuf.UserRole, error)
+	SelectRoleIDsOfUserRole(userID string) ([]int32, error)
+	SelectUserIDsOfUserRole(roleID int32) ([]string, error)
+	DeleteUserRole(userRole *protobuf.UserRole) error
 }

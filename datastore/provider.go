@@ -34,7 +34,7 @@ func Provider(ctx context.Context) provider {
 	dsCfg := cfg.Datastore
 
 	if cfg.Datastore.Dynamic {
-		dsCfg.Database = ctx.Value(utils.CtxRealm).(string)
+		dsCfg.Database = ctx.Value(utils.CtxWorkspace).(string)
 	}
 
 	switch dsCfg.Provider {

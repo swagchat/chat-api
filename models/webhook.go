@@ -27,7 +27,7 @@ type Webhook struct {
 	WebhookID   string           `json:"webhookId" db:"webhook_id,notnull"`
 	Event       WebhookEventType `json:"event" db:"event,notnull"`
 	RoomID      string           `json:"roomId" db:"room_id,notnull"`
-	RoleID      Role             `json:"roleId" db:"role_id,notnull"`
+	RoleID      int32            `json:"roleId" db:"role_id,notnull"`
 	TriggerWord string           `json:"triggerWord,omitempty" db:"trigger_word"`
 	Protocol    WebhookProtocol  `json:"protocol" db:"protocol,notnull"`
 	Endpoint    string           `json:"endpoint" db:"endpoint,notnull"`
@@ -43,7 +43,7 @@ func (w *Webhook) MarshalJSON() ([]byte, error) {
 		WebhookID   string           `json:"webhookId"`
 		Event       WebhookEventType `json:"event"`
 		RoomID      string           `json:"roomId"`
-		RoleID      Role             `json:"roleId,omitempty"`
+		RoleID      int32            `json:"roleId,omitempty"`
 		TriggerWord string           `json:"triggerWord,omitempty"`
 		Protocol    WebhookProtocol  `json:"protocol"`
 		Endpoint    string           `json:"endpoint"`

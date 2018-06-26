@@ -11,7 +11,6 @@ import (
 
 	"go.uber.org/zap/zapcore"
 
-	"github.com/swagchat/chat-api/bots"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
@@ -105,7 +104,6 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
 
 		publishMessage(ctx, post)
-		postMessageToBotService(ctx, post, user)
 		webhookMessage(ctx, post, user)
 	}
 
@@ -151,56 +149,8 @@ func GetMessage(ctx context.Context, messageID string) (*models.Message, *models
 	return message, nil
 }
 
-func postMessageToBotService(ctx context.Context, m *models.Message, u *models.User) {
-	if u.IsRole(models.RoleOperator) || u.IsRole(models.RoleBot) {
-		return
-	}
-
-	usersForRoom, err := datastore.Provider(ctx).SelectUsersForRoom(m.RoomID)
-	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
-	}
-	if len(usersForRoom) > 0 {
-		for _, ufr := range usersForRoom {
-			if *ufr.IsBot && m.UserID != ufr.UserID {
-				bot, err := datastore.Provider(ctx).SelectBot(ufr.UserID)
-				if err != nil {
-					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-						Error: err,
-					})
-				}
-
-				var cm models.CognitiveMap
-				json.Unmarshal(bot.Cognitive, &cm)
-
-				var res *bots.BotResult
-				switch m.Type {
-				case "text":
-					p := bots.Provider(cm.Text.Name)
-					cred := cm.Text.Credencial
-					res = p.Post(m, bot, cred)
-				case "image":
-					continue
-				default:
-					continue
-				}
-				if res != nil {
-					PostMessage(ctx, res.Messages)
-				}
-			}
-		}
-	}
-}
-
 func publishMessage(ctx context.Context, message *models.Message) {
-	var roles []models.Role
-	if message.SuggestMessageID != "" {
-		roles = []models.Role{models.RoleOperator}
-	}
-
-	userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(message.RoomID, roles)
+	userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(message.RoomID)
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,

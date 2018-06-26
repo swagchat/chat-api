@@ -174,8 +174,8 @@ func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 		userID := r.Header.Get(utils.HeaderUserID)
 		ctx := context.WithValue(r.Context(), utils.CtxUserID, userID)
 
-		realm := r.Header.Get(utils.HeaderRealm)
-		ctx = context.WithValue(ctx, utils.CtxRealm, realm)
+		workspace := r.Header.Get(utils.HeaderWorkspace)
+		ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
 
 		fn(w, r.WithContext(ctx))
 	}

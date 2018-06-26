@@ -1,27 +1,29 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import (
+	"github.com/swagchat/chat-api/protobuf"
+)
 
 func (p *mysqlProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.database)
 }
 
-func (p *mysqlProvider) InsertUserRoles(userRoles []*models.UserRole) error {
-	return rdbInsertUserRoles(p.database, userRoles)
+func (p *mysqlProvider) InsertUserRole(ur *protobuf.UserRole) error {
+	return rdbInsertUserRole(p.database, ur)
 }
 
-func (p *mysqlProvider) SelectUserRole(userID string, roleID models.Role) (*models.UserRole, error) {
+func (p *mysqlProvider) SelectUserRole(userID string, roleID int32) (*protobuf.UserRole, error) {
 	return rdbSelectUserRole(p.database, userID, roleID)
 }
 
-func (p *mysqlProvider) SelectUserRolesByUserID(userID string) ([]models.Role, error) {
-	return rdbSelectUserRolesByUserID(p.database, userID)
+func (p *mysqlProvider) SelectRoleIDsOfUserRole(userID string) ([]int32, error) {
+	return rdbSelectRoleIDsOfUserRole(p.database, userID)
 }
 
-func (p *mysqlProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
-	return rdbSelectUserIDsByRole(p.database, role)
+func (p *mysqlProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error) {
+	return rdbSelectUserIDsOfUserRole(p.database, roleID)
 }
 
-func (p *mysqlProvider) DeleteUserRole(userID string, roleIDs []models.Role) error {
-	return rdbDeleteUserRole(p.database, userID, roleIDs)
+func (p *mysqlProvider) DeleteUserRole(ur *protobuf.UserRole) error {
+	return rdbDeleteUserRole(p.database, ur)
 }

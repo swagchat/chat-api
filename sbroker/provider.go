@@ -13,7 +13,7 @@ func Provider() provider {
 	cfg := utils.Config()
 
 	var p provider
-	switch cfg.PBroker.Provider {
+	switch cfg.SBroker.Provider {
 	case "":
 		p = &notuseProvider{}
 	case "nsq":

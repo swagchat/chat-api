@@ -160,7 +160,7 @@ func rdbSelectMessage(db, messageID string) (*models.Message, error) {
 	return nil, nil
 }
 
-func rdbSelectMessages(db string, roleIDs []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset int, order string) ([]*models.Message, error) {
 	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
@@ -185,7 +185,7 @@ func rdbSelectMessages(db string, roleIDs []models.Role, roomID string, limit, o
 	return messages, nil
 }
 
-func rdbSelectCountMessagesByRoomID(db string, roleIDs []models.Role, roomID string) (int64, error) {
+func rdbSelectCountMessagesByRoomID(db string, roleIDs []int32, roomID string) (int64, error) {
 	replica := RdbStore(db).replica()
 
 	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)

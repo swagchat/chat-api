@@ -109,12 +109,6 @@
   revision = "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/swagchat/protobuf"
-  packages = ["."]
-  revision = "6238d3f40d74a705471cb79efa37ed4201f8d25e"
-
-[[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
   revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
@@ -189,6 +183,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "200ef604024175b5f4d8c828fec073eaa0f28e719ba7d1570eb3186ec7e50258"
+  inputs-digest = "45ba0f6aa3a6b1bf7cd6ea077ca4c52f009e48b74380bb779667a99f31262936"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -14,19 +14,20 @@ import (
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
 // PutRoomUsers is put room users
-func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUserIDs) (*models.RoomUsers, *models.ProblemDetail) {
-	room, pd := selectRoom(ctx, roomID)
+func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf.RoomUsers, *models.ProblemDetail) {
+	room, pd := selectRoom(ctx, put.RoomID)
 	if pd != nil {
 		return nil, pd
 	}
 
-	// put.RemoveDuplicate()
+	put.RemoveDuplicate()
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(put.RoomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Status: http.StatusInternalServerError,
@@ -65,18 +66,16 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 		}
 	}
 
-	var zero int64
-	zero = 0
-	roomUsers := make([]*models.RoomUser, 0)
-	nowTimestamp := time.Now().Unix()
+	// var zero int
+	// zero = 0
+	roomUsers := make([]*protobuf.RoomUser, 0)
 	for _, userID := range userIds {
-		roomUsers = append(roomUsers, &models.RoomUser{
-			RoomID:      roomID,
-			UserID:      userID,
-			UnreadCount: &zero,
-			MetaData:    []byte("{}"),
-			Created:     nowTimestamp,
-			Modified:    nowTimestamp,
+		roomUsers = append(roomUsers, &protobuf.RoomUser{
+			RoomID: put.RoomID,
+			UserID: userID,
+			// UnreadCount: &zero,
+			UnreadCount: 0,
+			Display:     put.Display,
 		})
 	}
 	err = datastore.Provider(ctx).InsertRoomUsers(roomUsers)
@@ -89,7 +88,7 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 		return nil, pd
 	}
 
-	roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(roomID)
+	roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(put.RoomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's user list failed",
@@ -98,18 +97,18 @@ func PutRoomUsers(ctx context.Context, roomID string, put *models.RequestRoomUse
 		}
 		return nil, pd
 	}
-	returnRoomUsers := &models.RoomUsers{
+	returnRoomUsers := &protobuf.RoomUsers{
 		RoomUsers: roomUsers,
 	}
 
 	go subscribeByRoomUsers(ctx, roomUsers)
-	go publishUserJoin(ctx, roomID)
+	go publishUserJoin(ctx, put.RoomID)
 
 	return returnRoomUsers, nil
 }
 
 // PutRoomUser is put room user
-func PutRoomUser(ctx context.Context, put *models.RoomUser) (*models.RoomUser, *models.ProblemDetail) {
+func PutRoomUser(ctx context.Context, put *protobuf.RoomUser) (*protobuf.RoomUser, *models.ProblemDetail) {
 	roomUser, pd := selectRoomUser(ctx, put.RoomID, put.UserID)
 	if pd != nil {
 		return nil, pd
@@ -146,24 +145,20 @@ func PutRoomUser(ctx context.Context, put *models.RoomUser) (*models.RoomUser, *
 }
 
 // DeleteRoomUsers is delete room users
-func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.RequestRoomUserIDs) (*models.RoomUsers, *models.ProblemDetail) {
-	room, pd := selectRoom(ctx, roomID)
+func DeleteRoomUsers(ctx context.Context, req *protobuf.DeleteRoomUserReq) (*protobuf.RoomUsers, *models.ProblemDetail) {
+	_, pd := selectRoom(ctx, req.RoomID)
 	if pd != nil {
 		return nil, pd
 	}
 
-	deleteUserIds.RemoveDuplicate()
+	req.RemoveDuplicate()
 
-	if pd := deleteUserIds.IsValid("DELETE", room); pd != nil {
-		return nil, pd
-	}
-
-	userIds, pd := getExistUserIDs(ctx, deleteUserIds.UserIDs)
+	userIds, pd := getExistUserIDs(ctx, req.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}
 
-	err := datastore.Provider(ctx).DeleteRoomUser(roomID, userIds)
+	err := datastore.Provider(ctx).DeleteRoomUser(req.RoomID, userIds)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete room's user failed",
@@ -173,7 +168,7 @@ func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.R
 		return nil, pd
 	}
 
-	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomIDAndUserIDs(&roomID, userIds)
+	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomIDAndUserIDs(&req.RoomID, userIds)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Delete room's user failed",
@@ -185,7 +180,7 @@ func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.R
 
 	go unsubscribeByRoomUsers(ctx, roomUsers)
 
-	roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(roomID)
+	roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(req.RoomID)
 	if err != nil {
 		pd := &models.ProblemDetail{
 			Title:  "Get room's users failed",
@@ -195,12 +190,12 @@ func DeleteRoomUsers(ctx context.Context, roomID string, deleteUserIds *models.R
 		return nil, pd
 	}
 
-	return &models.RoomUsers{
+	return &protobuf.RoomUsers{
 		RoomUsers: roomUsers,
 	}, nil
 }
 
-func selectRoomUser(ctx context.Context, roomID, userID string) (*models.RoomUser, *models.ProblemDetail) {
+func selectRoomUser(ctx context.Context, roomID, userID string) (*protobuf.RoomUser, *models.ProblemDetail) {
 	roomUser, err := datastore.Provider(ctx).SelectRoomUser(roomID, userID)
 	if err != nil {
 		pd := &models.ProblemDetail{
@@ -252,7 +247,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 	}()
 }
 
-func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
+func subscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser) {
 	doneChan := make(chan bool, 1)
 	pdChan := make(chan *models.ProblemDetail, 1)
 
@@ -260,7 +255,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 	for _, roomUser := range roomUsers {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
+			ru := ctx.Value(utils.CtxRoomUser).(*protobuf.RoomUser)
 
 			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
@@ -291,7 +286,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 								}
 							}
 						}
-						go subscribe(ctx, []*models.RoomUser{ru}, d)
+						go subscribe(ctx, []*protobuf.RoomUser{ru}, d)
 					}
 				}
 			}
@@ -315,7 +310,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 	return
 }
 
-func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
+func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser) {
 	doneChan := make(chan bool, 1)
 	pdChan := make(chan *models.ProblemDetail, 1)
 
@@ -323,7 +318,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*models.RoomUser) {
 	for _, roomUser := range roomUsers {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
+			ru := ctx.Value(utils.CtxRoomUser).(*protobuf.RoomUser)
 			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomID, []string{ru.UserID})
 			if err != nil {
 				pd := &models.ProblemDetail{

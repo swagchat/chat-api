@@ -12,8 +12,8 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
-	"github.com/swagchat/protobuf"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
@@ -32,7 +32,7 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 	}
 
 	pbRoom := &protobuf.Room{
-		Workspace: ctx.Value(utils.CtxRealm).(string),
+		Workspace: ctx.Value(utils.CtxWorkspace).(string),
 		RoomId:    room.RoomID,
 	}
 
@@ -112,7 +112,7 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 	json.Unmarshal(message.Payload, &p)
 
 	pbMessage := &protobuf.Message{
-		Workspace: ctx.Value(utils.CtxRealm).(string),
+		Workspace: ctx.Value(utils.CtxWorkspace).(string),
 		RoomId:    message.RoomID,
 		UserId:    message.UserID,
 		Type:      message.Type,

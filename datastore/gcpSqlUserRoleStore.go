@@ -1,27 +1,29 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import (
+	"github.com/swagchat/chat-api/protobuf"
+)
 
 func (p *gcpSQLProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertUserRoles(userRoles []*models.UserRole) error {
-	return rdbInsertUserRoles(p.database, userRoles)
+func (p *gcpSQLProvider) InsertUserRole(ur *protobuf.UserRole) error {
+	return rdbInsertUserRole(p.database, ur)
 }
 
-func (p *gcpSQLProvider) SelectUserRole(userID string, roleID models.Role) (*models.UserRole, error) {
+func (p *gcpSQLProvider) SelectUserRole(userID string, roleID int32) (*protobuf.UserRole, error) {
 	return rdbSelectUserRole(p.database, userID, roleID)
 }
 
-func (p *gcpSQLProvider) SelectUserRolesByUserID(userID string) ([]models.Role, error) {
-	return rdbSelectUserRolesByUserID(p.database, userID)
+func (p *gcpSQLProvider) SelectRoleIDsOfUserRole(userID string) ([]int32, error) {
+	return rdbSelectRoleIDsOfUserRole(p.database, userID)
 }
 
-func (p *gcpSQLProvider) SelectUserIDsByRole(role models.Role) ([]string, error) {
-	return rdbSelectUserIDsByRole(p.database, role)
+func (p *gcpSQLProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error) {
+	return rdbSelectUserIDsOfUserRole(p.database, roleID)
 }
 
-func (p *gcpSQLProvider) DeleteUserRole(userID string, roleIDs []models.Role) error {
-	return rdbDeleteUserRole(p.database, userID, roleIDs)
+func (p *gcpSQLProvider) DeleteUserRole(ur *protobuf.UserRole) error {
+	return rdbDeleteUserRole(p.database, ur)
 }

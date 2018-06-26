@@ -12,6 +12,7 @@ import (
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -223,7 +224,7 @@ func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.Wa
 	}
 }
 
-func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models.Device) chan bool {
+func subscribe(ctx context.Context, roomUsers []*protobuf.RoomUser, device *models.Device) chan bool {
 	np := notification.Provider()
 	dp := datastore.Provider(ctx)
 	doneCh := make(chan bool, 1)
@@ -234,7 +235,7 @@ func subscribe(ctx context.Context, roomUsers []*models.RoomUser, device *models
 	for _, roomUser := range roomUsers {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*models.RoomUser)
+			ru := ctx.Value(utils.CtxRoomUser).(*protobuf.RoomUser)
 			room, pd := selectRoom(ctx, ru.RoomID)
 			if pd != nil {
 				pdCh <- pd

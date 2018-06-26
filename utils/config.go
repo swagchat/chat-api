@@ -30,9 +30,9 @@ const (
 	HeaderUserID = "X-Sub"
 	// HeaderUsername is http header for username
 	HeaderUsername = "X-Preferred-Username"
-	// HeaderRealm is http header for realm
-	HeaderRealm = "X-Realm"
-	// HeaderRealmRoles is http header for realm roles
+	// HeaderWorkspace is http header for workspace
+	HeaderWorkspace = "X-Realm"
+	// HeaderRealmRoles is http header for roles
 	HeaderRealmRoles = "X-Realm-Roles"
 	// HeaderAccountRoles is http header for account roles
 	HeaderAccountRoles = "X-Account-Roles"
@@ -40,9 +40,12 @@ const (
 	CtxDsCfg ctxKey = iota
 	CtxIsAppClient
 	CtxUserID
-	CtxRealm
+	CtxWorkspace
 	CtxRoomUser
 	CtxSubscription
+
+	RoleGeneral int32 = 1
+	RoleGuest   int32 = 2
 )
 
 var (

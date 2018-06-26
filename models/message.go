@@ -23,44 +23,41 @@ type Messages struct {
 }
 
 type Message struct {
-	ID               uint64         `json:"-" db:"id"`
-	MessageID        string         `json:"messageId" db:"message_id,notnull"`
-	SuggestMessageID string         `json:"suggestMessageId" db:"suggest_message_id,notnull"`
-	RoomID           string         `json:"roomId" db:"room_id,notnull"`
-	UserID           string         `json:"userId" db:"user_id,notnull"`
-	Type             string         `json:"type,omitempty" db:"type"`
-	EventName        string         `json:"eventName,omitempty" db:"-"`
-	Payload          utils.JSONText `json:"payload" db:"payload"`
-	Role             *Role          `json:"role,omitempty" db:"role,notnull"`
-	Created          int64          `json:"created" db:"created,notnull"`
-	Modified         int64          `json:"modified" db:"modified,notnull"`
-	Deleted          int64          `json:"-" db:"deleted,notnull"`
+	ID        uint64         `json:"-" db:"id"`
+	MessageID string         `json:"messageId" db:"message_id,notnull"`
+	RoomID    string         `json:"roomId" db:"room_id,notnull"`
+	UserID    string         `json:"userId" db:"user_id,notnull"`
+	Type      string         `json:"type,omitempty" db:"type"`
+	EventName string         `json:"eventName,omitempty" db:"-"`
+	Payload   utils.JSONText `json:"payload" db:"payload"`
+	Role      int32          `json:"role,omitempty" db:"role,notnull"`
+	Created   int64          `json:"created" db:"created,notnull"`
+	Modified  int64          `json:"modified" db:"modified,notnull"`
+	Deleted   int64          `json:"-" db:"deleted,notnull"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		MessageID        string         `json:"messageId"`
-		SuggestMessageID string         `json:"suggestMessageId"`
-		RoomID           string         `json:"roomId"`
-		UserID           string         `json:"userId"`
-		Type             string         `json:"type"`
-		EventName        string         `json:"eventName,omitempty"`
-		Payload          utils.JSONText `json:"payload"`
-		Role             *Role          `json:"role"`
-		Created          string         `json:"created"`
-		Modified         string         `json:"modified"`
+		MessageID string         `json:"messageId"`
+		RoomID    string         `json:"roomId"`
+		UserID    string         `json:"userId"`
+		Type      string         `json:"type"`
+		EventName string         `json:"eventName,omitempty"`
+		Payload   utils.JSONText `json:"payload"`
+		Role      int32          `json:"role"`
+		Created   string         `json:"created"`
+		Modified  string         `json:"modified"`
 	}{
-		MessageID:        m.MessageID,
-		SuggestMessageID: m.SuggestMessageID,
-		RoomID:           m.RoomID,
-		UserID:           m.UserID,
-		Type:             m.Type,
-		EventName:        m.EventName,
-		Payload:          m.Payload,
-		Role:             m.Role,
-		Created:          time.Unix(m.Created, 0).In(l).Format(time.RFC3339),
-		Modified:         time.Unix(m.Modified, 0).In(l).Format(time.RFC3339),
+		MessageID: m.MessageID,
+		RoomID:    m.RoomID,
+		UserID:    m.UserID,
+		Type:      m.Type,
+		EventName: m.EventName,
+		Payload:   m.Payload,
+		Role:      m.Role,
+		Created:   time.Unix(m.Created, 0).In(l).Format(time.RFC3339),
+		Modified:  time.Unix(m.Modified, 0).In(l).Format(time.RFC3339),
 	})
 }
 
@@ -166,9 +163,8 @@ func (m *Message) BeforeSave() {
 		m.MessageID = utils.GenerateUUID()
 	}
 
-	if m.Role == nil {
-		general := RoleGeneral
-		m.Role = &general
+	if m.Role == 0 {
+		m.Role = utils.RoleGeneral
 	}
 
 	nowTimestamp := time.Now().Unix()

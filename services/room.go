@@ -12,13 +12,14 @@ import (
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 	"go.uber.org/zap/zapcore"
 )
 
 // PostRoom is post room
 func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.ProblemDetail) {
-	user, pd := selectUser(ctx, post.UserID)
+	_, pd := selectUser(ctx, post.UserID)
 	if pd != nil {
 		return nil, pd
 	}
@@ -28,19 +29,6 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 	}
 
 	post.BeforePost()
-
-	if post.Type == models.CustomerRoom {
-		operatorUserIDs, err := datastore.Provider(ctx).SelectUserIDsByRole(models.RoleOperator)
-		if err != nil {
-			pd := &models.ProblemDetail{
-				Title:  "Get room userIds failed",
-				Status: http.StatusInternalServerError,
-				Error:  err,
-			}
-			return nil, pd
-		}
-		post.UserIDs = operatorUserIDs
-	}
 
 	if post.Type == models.OneOnOne {
 		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.UserIDs[0])
@@ -60,48 +48,32 @@ func PostRoom(ctx context.Context, post *models.Room) (*models.Room, *models.Pro
 		}
 	}
 
-	// if pd := post.RequestRoomUserIDs.IsValid("POST", post); pd != nil {
-	// 	return nil, pd
-	// }
+	userIDs := post.UserIDs
+	if userIDs == nil {
+		userIDs = make([]string, 0)
+	}
+	userIDs = append(userIDs, post.UserID)
+	userIDs = utils.RemoveDuplicate(userIDs)
 
-	rus := make([]*models.RoomUser, 0)
-	if post.UserIDs != nil {
-		var zero int64
-		zero = 0
-		ru := &models.RoomUser{
+	rus := make([]*protobuf.RoomUser, 0)
+
+	for _, userID := range userIDs {
+		ru := &protobuf.RoomUser{
 			RoomID:      post.RoomID,
-			UserID:      post.UserID,
-			MainUserID:  "",
-			UnreadCount: &zero,
-			MetaData:    []byte("{}"),
-			Created:     post.Created,
-			Modified:    post.Modified,
+			UserID:      userID,
+			UnreadCount: 0,
+			Display:     true,
 		}
 		rus = append(rus, ru)
+	}
 
-		for _, userID := range post.UserIDs {
-			ru := &models.RoomUser{
-				RoomID:      post.RoomID,
-				UserID:      userID,
-				UnreadCount: &zero,
-				MetaData:    []byte("{}"),
-				Created:     post.Created,
-				Modified:    post.Modified,
-			}
-			if post.Type == models.CustomerRoom {
-				ru.MainUserID = user.UserID
-			}
-			rus = append(rus, ru)
+	if post.UserIDs != nil {
+		notificationTopicID, pd := createTopic(post.RoomID)
+		if pd != nil {
+			return nil, pd
 		}
+		post.NotificationTopicID = notificationTopicID
 	}
-
-	// if post.UserIDs != nil {
-	notificationTopicID, pd := createTopic(post.RoomID)
-	if pd != nil {
-		return nil, pd
-	}
-	post.NotificationTopicID = notificationTopicID
-	// }
 
 	room, err := datastore.Provider(ctx).InsertRoom(post, rus)
 	if err != nil {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"runtime"
@@ -14,9 +13,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logging"
 	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -101,7 +100,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 					Line:    line + 1,
 				})
 
-				var sm *scpb.Message
+				var sm *protobuf.Message
 				err := json.Unmarshal(e.Value, &sm)
 				if err != nil {
 					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
@@ -109,12 +108,10 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 						Error: errors.Wrap(err, ""),
 					})
 				}
-				log.Printf("%#v\n", sm)
+
 				ctx := context.Background()
-				ctx = context.WithValue(ctx, utils.CtxRealm, sm.Workspace)
+				ctx = context.WithValue(ctx, utils.CtxWorkspace, sm.Workspace)
 				ctx = context.WithValue(ctx, utils.CtxUserID, sm.UserId)
-				realm := ctx.Value(utils.CtxRealm).(string)
-				userID := ctx.Value(utils.CtxUserID).(string)
 
 				var msg *models.Message
 				err = json.Unmarshal(e.Value, &msg)

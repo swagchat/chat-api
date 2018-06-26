@@ -14,11 +14,11 @@ func (p *gcpSQLProvider) SelectMessage(messageID string) (*models.Message, error
 	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *gcpSQLProvider) SelectMessages(roleIds []models.Role, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+func (p *gcpSQLProvider) SelectMessages(roleIds []int32, roomID string, limit, offset int, order string) ([]*models.Message, error) {
 	return rdbSelectMessages(p.database, roleIds, roomID, limit, offset, order)
 }
 
-func (p *gcpSQLProvider) SelectCountMessagesByRoomID(roleIDs []models.Role, roomID string) (int64, error) {
+func (p *gcpSQLProvider) SelectCountMessagesByRoomID(roleIDs []int32, roomID string) (int64, error) {
 	return rdbSelectCountMessagesByRoomID(p.database, roleIDs, roomID)
 }
 
