@@ -14,7 +14,6 @@ type provider interface {
 	appClientStore
 	assetStore
 	blockUserStore
-	botStore
 	deviceStore
 	messageStore
 	roomStore

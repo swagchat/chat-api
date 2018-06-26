@@ -105,7 +105,6 @@ func (p *gcpSQLProvider) init() {
 	p.createAppClientStore()
 	p.createAssetStore()
 	p.createBlockUserStore()
-	p.createBotStore()
 	p.createDeviceStore()
 	p.createMessageStore()
 	p.createRoomStore()

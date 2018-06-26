@@ -52,7 +52,6 @@ func (p *sqliteProvider) init() {
 	p.createAppClientStore()
 	p.createAssetStore()
 	p.createBlockUserStore()
-	p.createBotStore()
 	p.createDeviceStore()
 	p.createMessageStore()
 	p.createRoomStore()
