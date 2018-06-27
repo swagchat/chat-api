@@ -150,7 +150,7 @@ func GetMessage(ctx context.Context, messageID string) (*models.Message, *models
 }
 
 func publishMessage(ctx context.Context, message *models.Message) {
-	userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(message.RoomID)
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID, datastore.WithRoleIDs([]int32{message.Role}))
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 			Error: err,

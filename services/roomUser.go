@@ -224,7 +224,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 	}
 
 	go func() {
-		userIDs, err := datastore.Provider(ctx).SelectRoomUserIDsByRoomID(roomID)
+		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(roomID)
 		if err != nil {
 			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
 				Error: err,
@@ -408,4 +408,18 @@ func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *m
 	}
 
 	return existUserIDs, nil
+}
+
+func selectUserIDsOfRoomUser(ctx context.Context, in *protobuf.GetUserIDsOfRoomUserReq) (*protobuf.UserIDs, error) {
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(in.RoomID, datastore.WithRoleIDs(in.RoleIDs))
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Message: "Get userIDs error",
+			Error:   err,
+		})
+		return nil, err
+	}
+	return &protobuf.UserIDs{
+		UserIDs: userIDs,
+	}, nil
 }

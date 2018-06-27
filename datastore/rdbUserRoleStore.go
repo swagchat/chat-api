@@ -103,23 +103,19 @@ func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 	replica := RdbStore(db).replica()
 
 	var userIDs []string
+
 	query := utils.AppendStrings("SELECT ur.user_id ",
 		"FROM ", tableNameUserRole, " AS ur ",
-		"LEFT JOIN ", tableNameUser, " AS u ",
-		"ON ur.user_id = u.user_id ",
+		"LEFT JOIN ", tableNameUser, " AS u ON ur.user_id = u.user_id ",
 		" WHERE ur.role_id=:roleId AND u.deleted=0;")
 	params := map[string]interface{}{
 		"roleId": roleID,
 	}
 	_, err := replica.Select(&userIDs, query, params)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting userIds")
 	}
-
-	// resultUserIDs := make([]string, 0)
-	// for _, userID := range userIDs {
-	// 	resultUserIDs = append(resultUserIDs, userID)
-	// }
 
 	return userIDs, nil
 }

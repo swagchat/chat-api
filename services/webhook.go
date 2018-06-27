@@ -91,6 +91,14 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 }
 
 func webhookMessage(ctx context.Context, message *models.Message, user *models.User) {
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID)
+	if err != nil {
+		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
+			Error: err,
+		})
+		return
+	}
+
 	webhooks, err := datastore.Provider(ctx).SelectWebhooks(models.WebhookEventTypeMessage, datastore.WithRoomID(datastore.RoomIDAll))
 	if err != nil {
 		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
@@ -113,6 +121,7 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 
 	pbMessage := &protobuf.Message{
 		Workspace: ctx.Value(utils.CtxWorkspace).(string),
+		UserIds:   userIDs,
 		RoomId:    message.RoomID,
 		UserId:    message.UserID,
 		Type:      message.Type,

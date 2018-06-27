@@ -165,21 +165,19 @@ func rdbSelectRoomUsersByUserID(db, userID string) ([]*protobuf.RoomUser, error)
 	return roomUsers, nil
 }
 
-func rdbSelectRoomUserIDsByRoomID(db string, roomID string, opts ...interface{}) ([]string, error) {
+func rdbSelectUserIDsOfRoomUser(db string, roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
 	replica := RdbStore(db).replica()
 
-	var roomUserIDs []string
-	var roleIDs []int32
-	for _, v := range opts {
-		switch v.(type) {
-		case []int32:
-			roleIDs = v.([]int32)
-		}
+	opt := selectUserIDsOfRoomUserOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
+
+	var userIDs []string
 
 	var query string
 	var params map[string]interface{}
-	if roleIDs == nil {
+	if opt.roleIDs == nil {
 		query = utils.AppendStrings("SELECT ru.user_id ",
 			"FROM ", tableNameRoomUser, " AS ru ",
 			"LEFT JOIN ", tableNameUser, " AS u ",
@@ -189,7 +187,7 @@ func rdbSelectRoomUserIDsByRoomID(db string, roomID string, opts ...interface{})
 			"roomId": roomID,
 		}
 	} else {
-		roleIDsQuery, pms := utils.MakePrepareForInExpression(roleIDs)
+		roleIDsQuery, pms := utils.MakePrepareForInExpression(opt.roleIDs)
 		params = pms
 		query = utils.AppendStrings("SELECT ru.user_id ",
 			"FROM ", tableNameRoomUser, " AS ru ",
@@ -200,12 +198,12 @@ func rdbSelectRoomUserIDsByRoomID(db string, roomID string, opts ...interface{})
 		params["roomId"] = roomID
 	}
 
-	_, err := replica.Select(&roomUserIDs, query, params)
+	_, err := replica.Select(&userIDs, query, params)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting room users")
 	}
 
-	return roomUserIDs, nil
+	return userIDs, nil
 }
 
 func rdbSelectRoomUsersByRoomIDAndUserIDs(db string, roomID *string, userIDs []string) ([]*protobuf.RoomUser, error) {

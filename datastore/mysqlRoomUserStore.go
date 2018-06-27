@@ -32,8 +32,8 @@ func (p *mysqlProvider) SelectRoomUsersByUserID(userID string) ([]*protobuf.Room
 	return rdbSelectRoomUsersByUserID(p.database, userID)
 }
 
-func (p *mysqlProvider) SelectRoomUserIDsByRoomID(roomID string, opts ...interface{}) ([]string, error) {
-	return rdbSelectRoomUserIDsByRoomID(p.database, roomID, opts...)
+func (p *mysqlProvider) SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
+	return rdbSelectUserIDsOfRoomUser(p.database, roomID, opts...)
 }
 
 func (p *mysqlProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*protobuf.RoomUser, error) {

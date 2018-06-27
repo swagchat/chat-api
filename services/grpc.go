@@ -53,6 +53,10 @@ func (urs *roomUserServiceServer) PostRoomUser(ctx context.Context, in *protobuf
 	return &empty.Empty{}, nil
 }
 
+func (urs *roomUserServiceServer) GetUserIDsOfRoomUser(ctx context.Context, in *protobuf.GetUserIDsOfRoomUserReq) (*protobuf.UserIDs, error) {
+	return selectUserIDsOfRoomUser(ctx, in)
+}
+
 func (urs *roomUserServiceServer) DeleteRoomUser(ctx context.Context, in *protobuf.DeleteRoomUserReq) (*empty.Empty, error) {
 	_, pd := DeleteRoomUsers(ctx, in)
 	if pd != nil {
