@@ -171,5 +171,7 @@ func (m *Message) BeforeSave() {
 	if m.Created == 0 {
 		m.Created = nowTimestamp
 	}
-	m.Modified = nowTimestamp
+	if m.Modified == 0 {
+		m.Modified = nowTimestamp
+	}
 }

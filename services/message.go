@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"go.uber.org/zap/zapcore"
 
@@ -61,23 +59,23 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 			continue
 		}
 
+		// save message
+		post.BeforeSave()
+
 		if post.Type == models.MessageTypeIndicatorStart || post.Type == models.MessageTypeIndicatorEnd {
-			messageID := ""
-			switch post.Type {
-			case models.MessageTypeIndicatorStart:
-				messageID = fmt.Sprintf("%s-%s", models.MessageTypeIndicatorStart, post.UserID)
-			case models.MessageTypeIndicatorEnd:
-				messageID = fmt.Sprintf("%s-%s", models.MessageTypeIndicatorEnd, post.UserID)
-			}
-			messageIds = append(messageIds, messageID)
-			post.MessageID = messageID
-			post.Created = time.Now().Unix()
+			messageIds = append(messageIds, post.MessageID)
 			go publishMessage(ctx, post)
 			continue
 		}
 
-		// save message
-		post.BeforeSave()
+		m, _ := datastore.Provider(ctx).SelectMessage(post.MessageID)
+		if m != nil {
+			errors = append(errors, &models.ProblemDetail{
+				Title:  "messageId is already exist",
+				Status: http.StatusConflict,
+			})
+		}
+
 		lastMessage, err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
 			pd := &models.ProblemDetail{
