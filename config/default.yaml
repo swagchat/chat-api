@@ -1,0 +1,21 @@
+#################################################
+#             Chat API settings                 #
+#################################################
+httpPort: 8101
+profiling: false
+demoPage: false
+
+logger:
+  enableConsole: true
+  consoleFormat: text
+  consoleLevel: debug
+
+storage:
+  provider: local
+  local:
+    path: data/assets
+
+datastore:
+  provider: sqlite
+  tableNamePrefix: swag_
+  database: swagchat

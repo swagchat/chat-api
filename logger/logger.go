@@ -2,6 +2,7 @@ package logger
 
 import (
 	"github.com/betchi/zapper"
+	"github.com/swagchat/chat-api/utils"
 )
 
 var (
@@ -18,10 +19,14 @@ var (
 )
 
 func newLogger() *zapper.Logger {
+	cfg := utils.Config()
 	return zapper.NewLogger(&zapper.Config{
-		EnableConsole: true,
-		ConsoleFormat: "text",
-		ConsoleLevel:  "debug",
-		EnableFile:    false,
+		EnableConsole: cfg.Logger.EnableConsole,
+		ConsoleFormat: cfg.Logger.ConsoleFormat,
+		ConsoleLevel:  cfg.Logger.ConsoleLevel,
+		EnableFile:    cfg.Logger.EnableFile,
+		FileFormat:    cfg.Logger.FileFormat,
+		FileLevel:     cfg.Logger.FileLevel,
+		Filepath:      cfg.Logger.FilePath,
 	})
 }

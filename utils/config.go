@@ -59,69 +59,35 @@ var (
 )
 
 type config struct {
-	Version      string
 	HTTPPort     string `yaml:"httpPort"`
 	GRPCPort     string `yaml:"gRPCPort"`
 	Profiling    bool
 	DemoPage     bool `yaml:"demoPage"`
-	ErrorLogging bool `yaml:"errorLogging"`
-	Logging      *Logging
-	PBroker      *PBroker
-	SBroker      *SBroker
+	Logger       *Logger
 	Storage      *Storage
 	Datastore    *Datastore
+	PBroker      *PBroker `yaml:"pBroker"`
+	SBroker      *SBroker `yaml:"sBroker"`
 	Notification *Notification
 	IdP          *IdP
 }
 
-type Logging struct {
-	Level string
-}
-
-type PBroker struct {
-	Provider string
-
-	Direct struct {
-		Endpoint string
-	}
-
-	Kafka struct {
-		Host    string
-		Port    string
-		GroupID string `yaml:"groupId"`
-		Topic   string
-	}
-
-	NSQ struct {
-		Port           string
-		NsqlookupdHost string
-		NsqlookupdPort string
-		NsqdHost       string
-		NsqdPort       string
-		Topic          string
-		Channel        string
-	}
-}
-
-type SBroker struct {
-	Provider string
-
-	Kafka struct {
-		Host    string
-		Port    string
-		GroupID string `yaml:"groupId"`
-		Topic   string
-	}
-
-	NSQ struct {
-		Port           string
-		NsqlookupdHost string
-		NsqlookupdPort string
-		NsqdHost       string
-		NsqdPort       string
-		Topic          string
-		Channel        string
-	}
+// Logger is settings of logger
+type Logger struct {
+	// EnableConsole is a flag for enable console log.
+	EnableConsole bool `yaml:"enableConsole"`
+	// ConsoleFormat is a format for console log.
+	ConsoleFormat string `yaml:"consoleFormat"`
+	// ConsoleLevel is a level for console log.
+	ConsoleLevel string `yaml:"consoleLevel"`
+	// EnableFile is a flag for enable file log.
+	EnableFile bool `yaml:"enableFile"`
+	// FileFormat is a format for file log.
+	FileFormat string `yaml:"fileFormat"`
+	// FileLevel is a log level for file log.
+	FileLevel string `yaml:"fileLevel"`
+	// FilePath is a file path for file log.
+	FilePath string `yaml:"filePath"`
 }
 
 type Storage struct {
@@ -179,6 +145,52 @@ type ServerInfo struct {
 	ClientKeyPath  string `yaml:"clientKeyPath"`
 }
 
+type PBroker struct {
+	Provider string
+
+	Direct struct {
+		Endpoint string
+	}
+
+	Kafka struct {
+		Host    string
+		Port    string
+		GroupID string `yaml:"groupId"`
+		Topic   string
+	}
+
+	NSQ struct {
+		Port           string
+		NsqlookupdHost string `yaml:"nsqLookupdHost"`
+		NsqlookupdPort string `yaml:"nsqLookupdPort"`
+		NsqdHost       string `yaml:"nsqdHost"`
+		NsqdPort       string `yaml:"nsqdPort"`
+		Topic          string
+		Channel        string
+	}
+}
+
+type SBroker struct {
+	Provider string
+
+	Kafka struct {
+		Host    string
+		Port    string
+		GroupID string `yaml:"groupId"`
+		Topic   string
+	}
+
+	NSQ struct {
+		Port           string
+		NsqlookupdHost string `yaml:"nsqLookupdHost"`
+		NsqlookupdPort string `yaml:"nsqLookupdPort"`
+		NsqdHost       string `yaml:"nsqdHost"`
+		NsqdPort       string `yaml:"nsqdPort"`
+		Topic          string
+		Channel        string
+	}
+}
+
 type Notification struct {
 	Provider            string
 	RoomTopicNamePrefix string `yaml:"roomTopicNamePrefix"`
@@ -233,17 +245,16 @@ func Config() *config {
 
 func defaultSetting() *config {
 	return &config{
-		Version:      "0",
-		HTTPPort:     "8101",
-		GRPCPort:     "",
-		Profiling:    false,
-		DemoPage:     false,
-		ErrorLogging: false,
-		Logging: &Logging{
-			Level: "development",
+		HTTPPort:  "8101",
+		GRPCPort:  "",
+		Profiling: false,
+		DemoPage:  false,
+		Logger: &Logger{
+			EnableConsole: true,
+			ConsoleFormat: "text",
+			ConsoleLevel:  "debug",
+			EnableFile:    false,
 		},
-		PBroker: &PBroker{},
-		SBroker: &SBroker{},
 		Storage: &Storage{
 			Provider: "local",
 			Local: struct {
@@ -255,12 +266,15 @@ func defaultSetting() *config {
 		Datastore: &Datastore{
 			Dynamic:  false,
 			Provider: "sqlite",
+			Database: "swagchat",
 			SQLite: struct {
 				DirPath string `yaml:"dirPath"`
 			}{
 				DirPath: "",
 			},
 		},
+		PBroker:      &PBroker{},
+		SBroker:      &SBroker{},
 		Notification: &Notification{},
 		IdP:          &IdP{},
 	}
@@ -297,106 +311,28 @@ func (c *config) loadEnv() {
 			c.DemoPage = false
 		}
 	}
-	if v = os.Getenv("SWAG_ERROR_LOGGING"); v != "" {
-		if v == "true" {
-			c.ErrorLogging = true
-		} else if v == "false" {
-			c.ErrorLogging = false
-		}
-	}
 
-	// Logging
-	if v = os.Getenv("SWAG_LOGGING_LEVEL"); v != "" {
-		c.Logging.Level = v
+	// Logger
+	if v = os.Getenv("SWAG_LOGGER_ENABLE_CONSOLE"); v == "true" {
+		c.Logger.EnableConsole = true
 	}
-
-	// PBroker
-	if v = os.Getenv("SWAG_PBROKER_PROVIDER"); v != "" {
-		c.PBroker.Provider = v
+	if v = os.Getenv("SWAG_LOGGER_CONSOLE_FORMAT"); v != "" {
+		c.Logger.ConsoleFormat = v
 	}
-
-	// PBroker - Direct
-	if v = os.Getenv("SWAG_PBROKER_DIRECT_ENDPOINT"); v != "" {
-		c.PBroker.Direct.Endpoint = v
+	if v = os.Getenv("SWAG_LOGGER_CONSOLE_LEVEL"); v != "" {
+		c.Logger.ConsoleLevel = v
 	}
-
-	// PBroker - Kafka
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_HOST"); v != "" {
-		c.PBroker.Kafka.Host = v
+	if v = os.Getenv("SWAG_LOGGER_ENABLE_FILE"); v == "true" {
+		c.Logger.EnableFile = true
 	}
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_PORT"); v != "" {
-		c.PBroker.Kafka.Port = v
+	if v = os.Getenv("SWAG_LOGGER_FILE_FORMAT"); v != "" {
+		c.Logger.FileFormat = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_GROUPID"); v != "" {
-		c.PBroker.Kafka.GroupID = v
+	if v = os.Getenv("SWAG_LOGGER_FILE_LEVEL"); v != "" {
+		c.Logger.FileLevel = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_TOPIC"); v != "" {
-		c.PBroker.Kafka.Topic = v
-	}
-
-	// PBroker - NSQ
-	if v = os.Getenv("SWAG_PBROKER_NSQ_PORT"); v != "" {
-		c.PBroker.NSQ.Port = v
-	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
-		c.PBroker.NSQ.NsqlookupdHost = v
-	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
-		c.PBroker.NSQ.NsqlookupdPort = v
-	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDHOST"); v != "" {
-		c.PBroker.NSQ.NsqdHost = v
-	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDPORT"); v != "" {
-		c.PBroker.NSQ.NsqdPort = v
-	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_TOPIC"); v != "" {
-		c.PBroker.NSQ.Topic = v
-	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_CHANNEL"); v != "" {
-		c.PBroker.NSQ.Channel = v
-	}
-
-	// SBroker
-	if v = os.Getenv("SWAG_SBROKER_PROVIDER"); v != "" {
-		c.SBroker.Provider = v
-	}
-
-	// SBroker - Kafka
-	if v = os.Getenv("SWAG_SBROKER_KAFKA_HOST"); v != "" {
-		c.SBroker.Kafka.Host = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_KAFKA_PORT"); v != "" {
-		c.SBroker.Kafka.Port = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_KAFKA_GROUPID"); v != "" {
-		c.SBroker.Kafka.GroupID = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_KAFKA_TOPIC"); v != "" {
-		c.SBroker.Kafka.Topic = v
-	}
-
-	// SBroker - NSQ
-	if v = os.Getenv("SWAG_SBROKER_NSQ_PORT"); v != "" {
-		c.SBroker.NSQ.Port = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
-		c.SBroker.NSQ.NsqlookupdHost = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
-		c.SBroker.NSQ.NsqlookupdPort = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQDHOST"); v != "" {
-		c.SBroker.NSQ.NsqdHost = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQDPORT"); v != "" {
-		c.SBroker.NSQ.NsqdPort = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_NSQ_TOPIC"); v != "" {
-		c.SBroker.NSQ.Topic = v
-	}
-	if v = os.Getenv("SWAG_SBROKER_NSQ_CHANNEL"); v != "" {
-		c.SBroker.NSQ.Channel = v
+	if v = os.Getenv("SWAG_LOGGER_FILE_PATH"); v != "" {
+		c.Logger.FilePath = v
 	}
 
 	// Storage
@@ -556,6 +492,95 @@ func (c *config) loadEnv() {
 		c.Datastore.SQLite.DirPath = v
 	}
 
+	// PBroker
+	if v = os.Getenv("SWAG_PBROKER_PROVIDER"); v != "" {
+		c.PBroker.Provider = v
+	}
+
+	// PBroker - Direct
+	if v = os.Getenv("SWAG_PBROKER_DIRECT_ENDPOINT"); v != "" {
+		c.PBroker.Direct.Endpoint = v
+	}
+
+	// PBroker - Kafka
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_HOST"); v != "" {
+		c.PBroker.Kafka.Host = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_PORT"); v != "" {
+		c.PBroker.Kafka.Port = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_GROUPID"); v != "" {
+		c.PBroker.Kafka.GroupID = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_KAFKA_TOPIC"); v != "" {
+		c.PBroker.Kafka.Topic = v
+	}
+
+	// PBroker - NSQ
+	if v = os.Getenv("SWAG_PBROKER_NSQ_PORT"); v != "" {
+		c.PBroker.NSQ.Port = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
+		c.PBroker.NSQ.NsqlookupdHost = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
+		c.PBroker.NSQ.NsqlookupdPort = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDHOST"); v != "" {
+		c.PBroker.NSQ.NsqdHost = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDPORT"); v != "" {
+		c.PBroker.NSQ.NsqdPort = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_TOPIC"); v != "" {
+		c.PBroker.NSQ.Topic = v
+	}
+	if v = os.Getenv("SWAG_PBROKER_NSQ_CHANNEL"); v != "" {
+		c.PBroker.NSQ.Channel = v
+	}
+
+	// SBroker
+	if v = os.Getenv("SWAG_SBROKER_PROVIDER"); v != "" {
+		c.SBroker.Provider = v
+	}
+
+	// SBroker - Kafka
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_HOST"); v != "" {
+		c.SBroker.Kafka.Host = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_PORT"); v != "" {
+		c.SBroker.Kafka.Port = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_GROUPID"); v != "" {
+		c.SBroker.Kafka.GroupID = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_KAFKA_TOPIC"); v != "" {
+		c.SBroker.Kafka.Topic = v
+	}
+
+	// SBroker - NSQ
+	if v = os.Getenv("SWAG_SBROKER_NSQ_PORT"); v != "" {
+		c.SBroker.NSQ.Port = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
+		c.SBroker.NSQ.NsqlookupdHost = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
+		c.SBroker.NSQ.NsqlookupdPort = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQDHOST"); v != "" {
+		c.SBroker.NSQ.NsqdHost = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_NSQDPORT"); v != "" {
+		c.SBroker.NSQ.NsqdPort = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_TOPIC"); v != "" {
+		c.SBroker.NSQ.Topic = v
+	}
+	if v = os.Getenv("SWAG_SBROKER_NSQ_CHANNEL"); v != "" {
+		c.SBroker.NSQ.Channel = v
+	}
+
 	// Notification
 	if v = os.Getenv("SWAG_NOTIFICATION_PROVIDER"); v != "" {
 		c.Notification.Provider = v
@@ -617,48 +642,14 @@ func (c *config) parseFlag(args []string) error {
 	var demoPage string
 	flag.StringVar(&demoPage, "demoPage", "", "false")
 
-	var errorLogging string
-	flag.StringVar(&errorLogging, "errorLogging", "", "false")
-
 	// Logging
-	flag.StringVar(&c.Logging.Level, "logging.level", c.Logging.Level, "")
-
-	// PBroker
-	flag.StringVar(&c.PBroker.Provider, "pbroker.provider", c.PBroker.Provider, "")
-
-	// PBroker - Direct
-	flag.StringVar(&c.PBroker.Direct.Endpoint, "pbroker.direct.endpoint", c.PBroker.Direct.Endpoint, "")
-
-	// PBroker - kafka
-	flag.StringVar(&c.PBroker.Kafka.Host, "pbroker.kafka.host", c.PBroker.Kafka.Host, "")
-	flag.StringVar(&c.PBroker.Kafka.Port, "pbroker.kafka.port", c.PBroker.Kafka.Port, "")
-	flag.StringVar(&c.PBroker.Kafka.GroupID, "pbroker.kafka.groupId", c.PBroker.Kafka.GroupID, "")
-	flag.StringVar(&c.PBroker.Kafka.Topic, "pbroker.kafka.topic", c.PBroker.Kafka.Topic, "")
-
-	// PBroker - NSQ
-	flag.StringVar(&c.PBroker.NSQ.NsqlookupdHost, "pbroker.nsq.nsqlookupdHost", c.PBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
-	flag.StringVar(&c.PBroker.NSQ.NsqlookupdPort, "pbroker.nsq.nsqlookupdPort", c.PBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
-	flag.StringVar(&c.PBroker.NSQ.NsqdHost, "pbroker.nsq.nsqdHost", c.PBroker.NSQ.NsqdHost, "Host name of nsqd")
-	flag.StringVar(&c.PBroker.NSQ.NsqdPort, "pbroker.nsq.nsqdPort", c.PBroker.NSQ.NsqdPort, "Port no of nsqd")
-	flag.StringVar(&c.PBroker.NSQ.Topic, "pbroker.nsq.topic", c.PBroker.NSQ.Topic, "Topic name")
-	flag.StringVar(&c.PBroker.NSQ.Channel, "pbroker.nsq.channel", c.PBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
-
-	// SBroker
-	flag.StringVar(&c.SBroker.Provider, "sbroker.provider", c.SBroker.Provider, "")
-
-	// SBroker - kafka
-	flag.StringVar(&c.SBroker.Kafka.Host, "sbroker.kafka.host", c.SBroker.Kafka.Host, "")
-	flag.StringVar(&c.SBroker.Kafka.Port, "sbroker.kafka.port", c.SBroker.Kafka.Port, "")
-	flag.StringVar(&c.SBroker.Kafka.GroupID, "sbroker.kafka.groupId", c.SBroker.Kafka.GroupID, "")
-	flag.StringVar(&c.SBroker.Kafka.Topic, "sbroker.kafka.topic", c.SBroker.Kafka.Topic, "")
-
-	// SBroker - NSQ
-	flag.StringVar(&c.SBroker.NSQ.NsqlookupdHost, "sbroker.nsq.nsqlookupdHost", c.SBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
-	flag.StringVar(&c.SBroker.NSQ.NsqlookupdPort, "sbroker.nsq.nsqlookupdPort", c.SBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
-	flag.StringVar(&c.SBroker.NSQ.NsqdHost, "sbroker.nsq.nsqdHost", c.SBroker.NSQ.NsqdHost, "Host name of nsqd")
-	flag.StringVar(&c.SBroker.NSQ.NsqdPort, "sbroker.nsq.nsqdPort", c.SBroker.NSQ.NsqdPort, "Port no of nsqd")
-	flag.StringVar(&c.SBroker.NSQ.Topic, "sbroker.nsq.topic", c.SBroker.NSQ.Topic, "Topic name")
-	flag.StringVar(&c.SBroker.NSQ.Channel, "sbroker.nsq.channel", c.SBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+	flags.BoolVar(&c.Logger.EnableConsole, "logger.enableConsole", c.Logger.EnableConsole, "")
+	flags.StringVar(&c.Logger.ConsoleFormat, "logger.consoleFormat", c.Logger.ConsoleFormat, "")
+	flags.StringVar(&c.Logger.ConsoleLevel, "logger.consoleLevel", c.Logger.ConsoleLevel, "")
+	flags.BoolVar(&c.Logger.EnableFile, "logger.enableFile", c.Logger.EnableFile, "")
+	flags.StringVar(&c.Logger.FileFormat, "logger.fileFormat", c.Logger.FileFormat, "")
+	flags.StringVar(&c.Logger.FileLevel, "logger.fileLevel", c.Logger.FileLevel, "")
+	flags.StringVar(&c.Logger.FilePath, "logger.filePath", c.Logger.FilePath, "")
 
 	// Storage
 	flag.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
@@ -784,6 +775,43 @@ func (c *config) parseFlag(args []string) error {
 	// Datastore - SQLite
 	flag.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
 
+	// PBroker
+	flag.StringVar(&c.PBroker.Provider, "pbroker.provider", c.PBroker.Provider, "")
+
+	// PBroker - Direct
+	flag.StringVar(&c.PBroker.Direct.Endpoint, "pbroker.direct.endpoint", c.PBroker.Direct.Endpoint, "")
+
+	// PBroker - kafka
+	flag.StringVar(&c.PBroker.Kafka.Host, "pbroker.kafka.host", c.PBroker.Kafka.Host, "")
+	flag.StringVar(&c.PBroker.Kafka.Port, "pbroker.kafka.port", c.PBroker.Kafka.Port, "")
+	flag.StringVar(&c.PBroker.Kafka.GroupID, "pbroker.kafka.groupId", c.PBroker.Kafka.GroupID, "")
+	flag.StringVar(&c.PBroker.Kafka.Topic, "pbroker.kafka.topic", c.PBroker.Kafka.Topic, "")
+
+	// PBroker - NSQ
+	flag.StringVar(&c.PBroker.NSQ.NsqlookupdHost, "pbroker.nsq.nsqlookupdHost", c.PBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flag.StringVar(&c.PBroker.NSQ.NsqlookupdPort, "pbroker.nsq.nsqlookupdPort", c.PBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flag.StringVar(&c.PBroker.NSQ.NsqdHost, "pbroker.nsq.nsqdHost", c.PBroker.NSQ.NsqdHost, "Host name of nsqd")
+	flag.StringVar(&c.PBroker.NSQ.NsqdPort, "pbroker.nsq.nsqdPort", c.PBroker.NSQ.NsqdPort, "Port no of nsqd")
+	flag.StringVar(&c.PBroker.NSQ.Topic, "pbroker.nsq.topic", c.PBroker.NSQ.Topic, "Topic name")
+	flag.StringVar(&c.PBroker.NSQ.Channel, "pbroker.nsq.channel", c.PBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+
+	// SBroker
+	flag.StringVar(&c.SBroker.Provider, "sbroker.provider", c.SBroker.Provider, "")
+
+	// SBroker - kafka
+	flag.StringVar(&c.SBroker.Kafka.Host, "sbroker.kafka.host", c.SBroker.Kafka.Host, "")
+	flag.StringVar(&c.SBroker.Kafka.Port, "sbroker.kafka.port", c.SBroker.Kafka.Port, "")
+	flag.StringVar(&c.SBroker.Kafka.GroupID, "sbroker.kafka.groupId", c.SBroker.Kafka.GroupID, "")
+	flag.StringVar(&c.SBroker.Kafka.Topic, "sbroker.kafka.topic", c.SBroker.Kafka.Topic, "")
+
+	// SBroker - NSQ
+	flag.StringVar(&c.SBroker.NSQ.NsqlookupdHost, "sbroker.nsq.nsqlookupdHost", c.SBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flag.StringVar(&c.SBroker.NSQ.NsqlookupdPort, "sbroker.nsq.nsqlookupdPort", c.SBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flag.StringVar(&c.SBroker.NSQ.NsqdHost, "sbroker.nsq.nsqdHost", c.SBroker.NSQ.NsqdHost, "Host name of nsqd")
+	flag.StringVar(&c.SBroker.NSQ.NsqdPort, "sbroker.nsq.nsqdPort", c.SBroker.NSQ.NsqdPort, "Port no of nsqd")
+	flag.StringVar(&c.SBroker.NSQ.Topic, "sbroker.nsq.topic", c.SBroker.NSQ.Topic, "Topic name")
+	flag.StringVar(&c.SBroker.NSQ.Channel, "sbroker.nsq.channel", c.SBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+
 	// Notification
 	flag.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")
 	flag.StringVar(&c.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", c.Notification.RoomTopicNamePrefix, "")
@@ -842,12 +870,6 @@ func (c *config) parseFlag(args []string) error {
 		c.DemoPage = false
 	}
 
-	if errorLogging == "true" {
-		c.ErrorLogging = true
-	} else if errorLogging == "false" {
-		c.ErrorLogging = false
-	}
-
 	return nil
 }
 
@@ -858,6 +880,32 @@ func isExists(name string) bool {
 
 func (c *config) validate() error {
 	// TODO validate config
+	// Logger
+	if c.Logger.EnableConsole {
+		f := c.Logger.ConsoleFormat
+		if f == "" || !(f == "text" || f == "json") {
+			return errors.New("Please set logger.consoleFormat to \"text\" or \"json\"")
+		}
+		l := c.Logger.ConsoleLevel
+		if l == "" || !(l == "debug" || l == "info" || l == "warn" || l == "error") {
+			return errors.New("Please set logger.consoleLevel to \"debug\" or \"info\" or \"warn\" or \"error\"")
+		}
+	}
+	if c.Logger.EnableFile {
+		f := c.Logger.FileFormat
+		if f == "" || !(f == "text" || f == "json") {
+			return errors.New("Please set logger.fileFormat to \"text\" or \"json\"")
+		}
+		l := c.Logger.FileLevel
+		if l == "" || !(l == "debug" || l == "info" || l == "warn" || l == "error") {
+			return errors.New("Please set logger.fileLevel to \"debug\" or \"info\" or \"warn\" or \"error\"")
+		}
+		if c.Logger.FilePath == "" {
+			return errors.New("Please set logger.filePath")
+		}
+	}
+
+	// Idp
 	if c.IdP.Provider == "keycloak" {
 		if c.IdP.Keycloak.BaseEndpoint == "" {
 			return errors.Wrap(errors.New("keycloak base endpoint is empty"), "")
