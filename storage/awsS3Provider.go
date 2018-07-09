@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -9,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/utils"
 )
 
 type awss3Provider struct {
@@ -60,7 +60,7 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 	}
 
 	data := bytes.NewReader(byteData)
-	filePath := utils.AppendStrings(ap.uploadDirectory, "/", assetInfo.Filename)
+	filePath := fmt.Sprintf("%s/%s", ap.uploadDirectory, assetInfo.Filename)
 	_, err = awsS3Client.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(ap.uploadBucket),
 		Key:    aws.String(filePath),
@@ -71,7 +71,7 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 		return "", errors.Wrap(err, "AWS S3 put object failure")
 	}
 
-	sourceUrl := utils.AppendStrings("https://s3-ap-northeast-1.amazonaws.com/", ap.uploadBucket, "/", filePath)
+	sourceUrl := fmt.Sprintf("https://s3-ap-northeast-1.amazonaws.com/%s/%s", ap.uploadBucket, filePath)
 	return sourceUrl, nil
 }
 

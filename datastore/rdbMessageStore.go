@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -30,9 +31,9 @@ func rdbCreateMessageStore(db string) {
 
 	var addIndexQuery string
 	if utils.Config().Datastore.Provider == "sqlite" {
-		addIndexQuery = utils.AppendStrings("CREATE INDEX room_id_deleted_created ON ", tableNameMessage, "(room_id, deleted, created)")
+		addIndexQuery = fmt.Sprintf("CREATE INDEX room_id_deleted_created ON %s(room_id, deleted, created)", tableNameMessage)
 	} else {
-		addIndexQuery = utils.AppendStrings("ALTER TABLE ", tableNameMessage, " ADD INDEX room_id_deleted_created (room_id, deleted, created)")
+		addIndexQuery = fmt.Sprintf("ALTER TABLE %s ADD INDEX room_id_deleted_created (room_id, deleted, created)", tableNameMessage)
 		_, err = master.Exec(addIndexQuery)
 		if err != nil {
 			errMessage := err.Error()
@@ -58,7 +59,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	}
 
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT * FROM ", tableNameRoom, " WHERE room_id=:roomId AND deleted=0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": message.RoomID}
 	if _, err = trans.Select(&rooms, query, params); err != nil {
 		trans.Rollback()
@@ -92,7 +93,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		return "", errors.Wrap(err, "An error occurred while updating room")
 	}
 
-	query = utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;")
+	query = fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;", tableNameRoomUser)
 	params = map[string]interface{}{
 		"roomId": message.RoomID,
 		"userId": message.UserID,
@@ -104,11 +105,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	}
 
 	var users []*models.User
-	query = utils.AppendStrings("SELECT u.* ",
-		"FROM ", tableNameRoomUser, " AS ru ",
-		"LEFT JOIN ", tableNameUser, " AS u ",
-		"ON ru.user_id = u.user_id ",
-		"WHERE room_id = :roomId;")
+	query = fmt.Sprintf("SELECT u.* FROM %s AS ru LEFT JOIN AS u ON ru.user_id = u.user_id WHERE room_id = :roomId;", tableNameRoomUser, tableNameUser)
 	params = map[string]interface{}{"roomId": message.RoomID}
 	_, err = trans.Select(&users, query, params)
 	if err != nil {
@@ -119,7 +116,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		if user.UserID == message.UserID {
 			continue
 		}
-		query := utils.AppendStrings("UPDATE ", tableNameUser, " SET unread_count=unread_count+1 WHERE user_id=:userId;")
+		query := fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE user_id=:userId;", tableNameUser)
 		params := map[string]interface{}{"userId": user.UserID}
 		_, err = trans.Exec(query, params)
 		if err != nil {
@@ -141,7 +138,7 @@ func rdbSelectMessage(db, messageID string) (*models.Message, error) {
 	replica := RdbStore(db).replica()
 
 	var messages []*models.Message
-	query := utils.AppendStrings("SELECT * FROM ", tableNameMessage, " WHERE message_id=:messageId;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE message_id=:messageId;", tableNameMessage)
 	params := map[string]interface{}{"messageId": messageID}
 	_, err := replica.Select(&messages, query, params)
 	if err != nil {
@@ -160,14 +157,7 @@ func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset 
 
 	var messages []*models.Message
 	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
-	query := utils.AppendStrings("SELECT * ",
-		"FROM ", tableNameMessage, " ",
-		"WHERE room_id = :roomId ",
-		"AND role IN (", roleIDsQuery, ") ",
-		"AND deleted = 0 ",
-		"ORDER BY created ", order, " ",
-		"LIMIT :limit ",
-		"OFFSET :offset;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id = :roomId AND role IN (%s) AND deleted = 0 ORDER BY created %s LIMIT :limit OFFSET :offset;", tableNameMessage, roleIDsQuery, order)
 	params["roomId"] = roomID
 	params["limit"] = limit
 	params["offset"] = offset
@@ -184,11 +174,7 @@ func rdbSelectCountMessagesByRoomID(db string, roleIDs []int32, roomID string) (
 	replica := RdbStore(db).replica()
 
 	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
-	query := utils.AppendStrings("SELECT count(id) ",
-		"FROM ", tableNameMessage, " ",
-		"WHERE room_id = :roomId ",
-		"AND role IN (", roleIDsQuery, ") ",
-		"AND deleted = 0;")
+	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE room_id = :roomId AND role IN (%s) AND deleted = 0;", tableNameMessage, roleIDsQuery)
 	params["roomId"] = roomID
 
 	count, err := replica.SelectInt(query, params)

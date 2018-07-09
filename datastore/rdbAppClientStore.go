@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"fmt"
 	"strconv"
 
 	"time"
@@ -56,7 +57,7 @@ func rdbSelectLatestAppClientByName(db, name string) (*models.AppClient, error) 
 	var appClients []*models.AppClient
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
-	query := utils.AppendStrings("SELECT * FROM ", tableNameAppClient, " WHERE name=:name AND (expired=0 OR expired>", nowTimestampString, ") ORDER BY created DESC LIMIT 1;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE name=:name AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", tableNameAppClient, nowTimestampString)
 	params := map[string]interface{}{"name": name}
 	_, err := replica.Select(&appClients, query, params)
 	if err != nil {
@@ -76,7 +77,7 @@ func rdbSelectLatestAppClientByClientID(db, clientID string) (*models.AppClient,
 	var appClients []*models.AppClient
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
-	query := utils.AppendStrings("SELECT * FROM ", tableNameAppClient, " WHERE client_id=:clientID AND (expired=0 OR expired>", nowTimestampString, ") ORDER BY created DESC LIMIT 1;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE client_id=:clientID AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", tableNameAppClient, nowTimestampString)
 	params := map[string]interface{}{"clientID": clientID}
 	_, err := replica.Select(&appClients, query, params)
 	if err != nil {

@@ -76,7 +76,7 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 
 		client := ap.newSnsClient()
 		params := &sns.CreateTopicInput{
-			Name: aws.String(utils.AppendStrings(utils.Config().Notification.RoomTopicNamePrefix, roomId)),
+			Name: aws.String(fmt.Sprintf("%s%s", utils.Config().Notification.RoomTopicNamePrefix, roomId)),
 		}
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {

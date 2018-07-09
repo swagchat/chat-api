@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/swagchat/chat-api/utils"
 )
 
 var messengerHTMLData []byte
@@ -45,7 +43,7 @@ func messengerHTMLHandler(rw http.ResponseWriter, req *http.Request) {
 
 		chatEndpoint := os.Getenv("SC_REACT_CHAT_ENDPOINT")
 		if chatEndpoint == "" {
-			chatEndpoint = utils.AppendStrings("/", utils.APIVersion)
+			chatEndpoint = "/"
 		}
 		tmpExHTML = strings.Replace(tmpExHTML, "SC_REACT_CHAT_ENDPOINT", chatEndpoint, 1)
 

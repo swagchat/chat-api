@@ -131,7 +131,7 @@ func (p *gcpSQLProvider) DropDatabase() error {
 			return err
 		}
 		defer db.Close()
-		_, err = db.Exec(utils.AppendStrings("DROP DATABASE ", p.database))
+		_, err = db.Exec(fmt.Sprintf("DROP DATABASE %s", p.database))
 		if err != nil {
 			return err
 		}
@@ -162,7 +162,7 @@ func (p *gcpSQLProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.D
 			ServerName:         si.ServerName,
 			InsecureSkipVerify: false,
 		})
-		dataSource = utils.AppendStrings(dataSource, "?tls=config")
+		dataSource = fmt.Sprintf("%s?tls=config", dataSource)
 	}
 	db, err := sql.Open("mysql", dataSource)
 	if err != nil {

@@ -1,10 +1,11 @@
 package datastore
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateAssetStore(db string) {
@@ -38,7 +39,7 @@ func rdbSelectAsset(db, assetID string) (*models.Asset, error) {
 	replica := RdbStore(db).replica()
 
 	var assets []*models.Asset
-	query := utils.AppendStrings("SELECT * FROM ", tableNameAsset, " WHERE asset_id=:assetId AND deleted = 0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE asset_id=:assetId AND deleted = 0;", tableNameAsset)
 	params := map[string]interface{}{"assetId": assetID}
 	_, err := replica.Select(&assets, query, params)
 	if err != nil {

@@ -1,10 +1,11 @@
 package datastore
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateSubscriptionStore(db string) {
@@ -33,7 +34,7 @@ func rdbSelectSubscription(db, roomID, userID string, platform int) (*models.Sub
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform AND deleted=0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform AND deleted=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"roomId":   roomID,
 		"userId":   userID,
@@ -55,7 +56,7 @@ func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*models.Subscri
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE room_id=:roomId AND deleted!=0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted!=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"roomId": roomID,
 	}
@@ -71,7 +72,7 @@ func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*models.Subscri
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE user_id=:userId AND deleted!=0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND deleted!=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -87,7 +88,7 @@ func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platfor
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*models.Subscription
-	query := utils.AppendStrings("SELECT * FROM ", tableNameSubscription, " WHERE user_id=:userId AND platform=:platform AND deleted!=0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND platform=:platform AND deleted!=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"userId":   userID,
 		"platform": platform,
@@ -103,7 +104,7 @@ func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platfor
 func rdbDeleteSubscription(db string, subscription *models.Subscription) error {
 	master := RdbStore(db).master()
 
-	query := utils.AppendStrings("DELETE FROM ", tableNameSubscription, " WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;")
+	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;", tableNameSubscription)
 	params := map[string]interface{}{
 		"roomId":   subscription.RoomID,
 		"userId":   subscription.UserID,

@@ -7,7 +7,6 @@ import (
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/protobuf"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateUserRoleStore(db string) {
@@ -55,11 +54,7 @@ func rdbSelectUserRole(db, userID string, roleID int32) (*protobuf.UserRole, err
 	replica := RdbStore(db).replica()
 
 	var userRoles []*protobuf.UserRole
-	query := utils.AppendStrings("SELECT ur.user_id, ur.role_id ",
-		"FROM ", tableNameUserRole, " AS ur ",
-		"LEFT JOIN ", tableNameUser, " AS u ",
-		"ON ur.user_id = u.user_id ",
-		"WHERE ur.user_id=:userId AND ur.role_id=:roleId AND u.deleted=0;")
+	query := fmt.Sprintf("SELECT ur.user_id, ur.role_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND ur.role_id=:roleId AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
 		"userId": userID,
 		"roleId": roleID,
@@ -80,11 +75,7 @@ func rdbSelectRoleIDsOfUserRole(db, userID string) ([]int32, error) {
 	replica := RdbStore(db).replica()
 
 	var roleIDs []int32
-	query := utils.AppendStrings("SELECT ur.role_id ",
-		"FROM ", tableNameUserRole, " AS ur ",
-		"LEFT JOIN ", tableNameUser, " AS u ",
-		"ON ur.user_id = u.user_id ",
-		"WHERE ur.user_id=:userId AND u.deleted=0;")
+	query := fmt.Sprintf("SELECT ur.role_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -101,10 +92,7 @@ func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 
 	var userIDs []string
 
-	query := utils.AppendStrings("SELECT ur.user_id ",
-		"FROM ", tableNameUserRole, " AS ur ",
-		"LEFT JOIN ", tableNameUser, " AS u ON ur.user_id = u.user_id ",
-		" WHERE ur.role_id=:roleId AND u.deleted=0;")
+	query := fmt.Sprintf("SELECT ur.user_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id  WHERE ur.role_id=:roleId AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
 		"roleId": roleID,
 	}

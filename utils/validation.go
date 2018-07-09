@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 )
 
 // IsURL is url
@@ -19,4 +20,10 @@ func IsURL(checkURL string) error {
 		}
 	}
 	return errors.New("url is not http or https.")
+}
+
+// IsValidID is valid ID
+func IsValidID(ID string) bool {
+	r := regexp.MustCompile(`(?m)^[0-9a-zA-Z-]+$`)
+	return r.MatchString(ID)
 }

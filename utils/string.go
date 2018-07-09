@@ -5,27 +5,11 @@ import (
 	"fmt"
 	"math/rand"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
 )
-
-// AppendStrings is append strings
-func AppendStrings(strings ...string) string {
-	buf := make([]byte, 0)
-	for _, str := range strings {
-		buf = append(buf, str...)
-	}
-	return string(buf)
-}
-
-// IsValidID is valid ID
-func IsValidID(ID string) bool {
-	r := regexp.MustCompile(`(?m)^[0-9a-zA-Z-]+$`)
-	return r.MatchString(ID)
-}
 
 var token68Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~+/")
 

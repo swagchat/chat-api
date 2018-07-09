@@ -1,12 +1,12 @@
 package datastore
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateDeviceStore(db string) {
@@ -40,7 +40,7 @@ func rdbSelectDevices(db, userID string) ([]*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT user_id, platform, token, notification_device_id FROM ", tableNameDevice, " WHERE user_id=:userId;")
+	query := fmt.Sprintf("SELECT user_id, platform, token, notification_device_id FROM %s WHERE user_id=:userId;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -56,7 +56,7 @@ func rdbSelectDevice(db, userID string, platform int) (*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", tableNameDevice, " WHERE user_id=:userId AND platform=:platform;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId":   userID,
 		"platform": platform,
@@ -77,7 +77,7 @@ func rdbSelectDevicesByUserID(db, userID string) ([]*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", tableNameDevice, " WHERE user_id=:userId;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -93,7 +93,7 @@ func rdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
 	replica := RdbStore(db).replica()
 
 	var devices []*models.Device
-	query := utils.AppendStrings("SELECT * FROM ", tableNameDevice, " WHERE token=:token;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE token=:token;", tableNameDevice)
 	params := map[string]interface{}{
 		"token": token,
 	}
@@ -112,7 +112,7 @@ func rdbUpdateDevice(db string, device *models.Device) error {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
+	query := fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;", tableNameSubscription)
 	params := map[string]interface{}{
 		"userId":   device.UserID,
 		"platform": device.Platform,
@@ -124,7 +124,7 @@ func rdbUpdateDevice(db string, device *models.Device) error {
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("UPDATE ", tableNameDevice, " SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;")
+	query = fmt.Sprintf("UPDATE %s SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
 	params = map[string]interface{}{
 		"token":                device.Token,
 		"notificationDeviceId": device.NotificationDeviceID,
@@ -153,7 +153,7 @@ func rdbDeleteDevice(db, userID string, platform int) error {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;")
+	query := fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;", tableNameSubscription)
 	params := map[string]interface{}{
 		"userId":   userID,
 		"platform": platform,
@@ -165,7 +165,7 @@ func rdbDeleteDevice(db, userID string, platform int) error {
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("DELETE FROM ", tableNameDevice, " WHERE user_id=:userId AND platform=:platform;")
+	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
 	params = map[string]interface{}{
 		"userId":   userID,
 		"platform": platform,

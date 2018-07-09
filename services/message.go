@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -86,7 +87,7 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 
 		// notification
 		mi := &notification.MessageInfo{
-			Text: utils.AppendStrings("[", room.Name, "]", lastMessage),
+			Text: fmt.Sprintf("[%s]%s", room.Name, lastMessage),
 		}
 		cfg := utils.Config()
 		if cfg.Notification.DefaultBadgeCount != "" {

@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"strconv"
 	"unsafe"
 
 	nsq "github.com/nsqio/go-nsq"
@@ -41,7 +40,7 @@ func (np nsqProvider) PublishMessage(rtmEvent *RTMEvent) error {
 		return errors.Wrap(err, "NSQ response body read failure")
 	}
 	if resp.StatusCode != http.StatusOK {
-		return errors.New(utils.AppendStrings("http status code[", strconv.Itoa(resp.StatusCode), "]"))
+		return errors.Wrap(fmt.Errorf("http status code[%d]", resp.StatusCode), "")
 	}
 
 	return nil

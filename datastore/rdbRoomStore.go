@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -8,7 +9,6 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/protobuf"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateRoomStore(db string) {
@@ -68,7 +68,7 @@ func rdbSelectRoom(db, roomID string) (*models.Room, error) {
 	replica := RdbStore(db).replica()
 
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT * FROM ", tableNameRoom, " WHERE room_id=:roomId AND deleted=0;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
@@ -86,7 +86,20 @@ func rdbSelectRooms(db string) ([]*models.Room, error) {
 	replica := RdbStore(db).replica()
 
 	var rooms []*models.Room
-	query := utils.AppendStrings("SELECT room_id, user_id, name, picture_url, information_url, meta_data, type, last_message, last_message_updated, created, modified FROM ", tableNameRoom, " WHERE deleted = 0;")
+	query := fmt.Sprintf(`SELECT
+room_id,
+user_id,
+name,
+picture_url,
+information_url,
+meta_data,
+type,
+last_message,
+last_message_updated,
+created,
+modified
+FROM %s
+WHERE deleted = 0;`, tableNameRoom)
 	_, err := replica.Select(&rooms, query)
 	if err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting rooms")
@@ -99,22 +112,21 @@ func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
 	replica := RdbStore(db).replica()
 
 	var users []*models.UserForRoom
-	query := utils.AppendStrings("SELECT ",
-		"u.user_id, ",
-		"u.name, ",
-		"u.picture_url, ",
-		"u.information_url, ",
-		"u.meta_data, ",
-		"u.can_block, ",
-		"u.last_accessed, ",
-		"u.created, ",
-		"u.modified, ",
-		"ru.display AS ru_display ",
-		"FROM ", tableNameRoomUser, " AS ru ",
-		"LEFT JOIN ", tableNameUser, " AS u ",
-		"ON ru.user_id = u.user_id ",
-		"WHERE ru.room_id = :roomId AND u.deleted = 0 ",
-		"ORDER BY u.created;")
+	query := fmt.Sprintf(`SELECT
+u.user_id,
+u.name,
+u.picture_url,
+u.information_url,
+u.meta_data,
+u.can_block,
+u.last_accessed,
+u.created,
+u.modified,
+ru.display AS ru_display
+FROM %s AS ru 
+LEFT JOIN %s AS u ON ru.user_id = u.user_id 
+WHERE ru.room_id = :roomId AND u.deleted = 0 
+ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
@@ -127,8 +139,7 @@ func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
 func rdbSelectCountRooms(db string) (int64, error) {
 	replica := RdbStore(db).replica()
 
-	query := utils.AppendStrings("SELECT count(id) ",
-		"FROM ", tableNameRoom, " WHERE deleted = 0;")
+	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
 	count, err := replica.SelectInt(query)
 	if err != nil {
 		return 0, errors.Wrap(err, "An error occurred while getting room count")
@@ -155,7 +166,7 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 		return errors.Wrap(err, "An error occurred while transaction beginning")
 	}
 
-	query := utils.AppendStrings("DELETE FROM ", tableNameRoomUser, " WHERE room_id=:roomId;")
+	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
 	params := map[string]interface{}{
 		"roomId": roomID,
 	}
@@ -165,7 +176,7 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 		return errors.Wrap(err, "An error occurred while updating room")
 	}
 
-	query = utils.AppendStrings("UPDATE ", tableNameSubscription, " SET deleted=:deleted WHERE room_id=:roomId;")
+	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameSubscription)
 	params = map[string]interface{}{
 		"roomId":  roomID,
 		"deleted": time.Now().Unix(),
@@ -176,7 +187,7 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 		return errors.Wrap(err, "An error occurred while updating subscriptions")
 	}
 
-	query = utils.AppendStrings("UPDATE ", tableNameRoom, " SET deleted=:deleted WHERE room_id=:roomId;")
+	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameRoom)
 	params = map[string]interface{}{
 		"roomId":  roomID,
 		"deleted": time.Now().Unix(),

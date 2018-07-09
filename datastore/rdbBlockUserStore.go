@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
@@ -55,7 +57,7 @@ func rdbSelectBlockUser(db, userID, blockUserID string) (*models.BlockUser, erro
 	replica := RdbStore(db).replica()
 
 	var blockUsers []*models.BlockUser
-	query := utils.AppendStrings("SELECT * FROM ", tableNameBlockUser, " WHERE user_id=:userId AND block_user_id=:blockUserId;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND block_user_id=:blockUserId;", tableNameBlockUser)
 	params := map[string]interface{}{
 		"userId":      userID,
 		"blockUserId": blockUserID,
@@ -76,7 +78,7 @@ func rdbSelectBlockUsersByUserID(db, userID string) ([]string, error) {
 	replica := RdbStore(db).replica()
 
 	var blockUserIDs []string
-	query := utils.AppendStrings("SELECT block_user_id FROM ", tableNameBlockUser, " WHERE user_id=:userId;")
+	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE user_id=:userId;", tableNameBlockUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -93,7 +95,7 @@ func rdbDeleteBlockUser(db, userID string, blockUserIDs []string) error {
 
 	var blockUserIDsQuery string
 	blockUserIDsQuery, params := utils.MakePrepareForInExpression(blockUserIDs)
-	query := utils.AppendStrings("DELETE FROM ", tableNameBlockUser, " WHERE user_id=:userId AND block_user_id IN (", blockUserIDsQuery, ");")
+	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND block_user_id IN (%s);", tableNameBlockUser, blockUserIDsQuery)
 	params["userId"] = userID
 	_, err := master.Exec(query, params)
 	if err != nil {

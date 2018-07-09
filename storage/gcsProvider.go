@@ -7,7 +7,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 
 	"golang.org/x/oauth2/google"
 
@@ -51,7 +50,7 @@ func (gp *gcsProvider) Init() error {
 }
 
 func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
-	filePath := utils.AppendStrings(gp.uploadDirectory, "/", assetInfo.Filename)
+	filePath := fmt.Sprintf("%s/%s", gp.uploadDirectory, assetInfo.Filename)
 	object := &storage.Object{
 		Name: filePath,
 	}

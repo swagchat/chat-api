@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateSettingStore(db string) {
@@ -29,7 +29,7 @@ func rdbSelectLatestSetting(db string) (*models.Setting, error) {
 	var settings []*models.Setting
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
-	query := utils.AppendStrings("SELECT * FROM ", tableNameSetting, " WHERE expired=0 OR expired>", nowTimestampString, " ORDER BY created DESC LIMIT 1;")
+	query := fmt.Sprintf("SELECT * FROM %s WHERE expired=0 OR expired>%s ORDER BY created DESC LIMIT 1;", tableNameSetting, nowTimestampString)
 	if _, err := replica.Select(&settings, query); err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting setting")
 	}
