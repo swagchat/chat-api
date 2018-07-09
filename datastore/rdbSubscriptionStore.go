@@ -5,13 +5,13 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 )
 
 func rdbCreateSubscriptionStore(db string) {
 	master := RdbStore(db).master()
 
-	_ = master.AddTableWithName(models.Subscription{}, tableNameSubscription)
+	_ = master.AddTableWithName(model.Subscription{}, tableNameSubscription)
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
 		logger.Error(err.Error())
@@ -19,7 +19,7 @@ func rdbCreateSubscriptionStore(db string) {
 	}
 }
 
-func rdbInsertSubscription(db string, subscription *models.Subscription) (*models.Subscription, error) {
+func rdbInsertSubscription(db string, subscription *model.Subscription) (*model.Subscription, error) {
 	master := RdbStore(db).master()
 
 	err := master.Insert(subscription)
@@ -30,10 +30,10 @@ func rdbInsertSubscription(db string, subscription *models.Subscription) (*model
 	return subscription, nil
 }
 
-func rdbSelectSubscription(db, roomID, userID string, platform int) (*models.Subscription, error) {
+func rdbSelectSubscription(db, roomID, userID string, platform int) (*model.Subscription, error) {
 	replica := RdbStore(db).replica()
 
-	var subscriptions []*models.Subscription
+	var subscriptions []*model.Subscription
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform AND deleted=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"roomId":   roomID,
@@ -52,10 +52,10 @@ func rdbSelectSubscription(db, roomID, userID string, platform int) (*models.Sub
 	return nil, nil
 }
 
-func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*models.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*model.Subscription, error) {
 	replica := RdbStore(db).replica()
 
-	var subscriptions []*models.Subscription
+	var subscriptions []*model.Subscription
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted!=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"roomId": roomID,
@@ -68,10 +68,10 @@ func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*models.Subscri
 	return subscriptions, nil
 }
 
-func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*models.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*model.Subscription, error) {
 	replica := RdbStore(db).replica()
 
-	var subscriptions []*models.Subscription
+	var subscriptions []*model.Subscription
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND deleted!=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"userId": userID,
@@ -84,10 +84,10 @@ func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*models.Subscri
 	return subscriptions, nil
 }
 
-func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platform int) ([]*models.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platform int) ([]*model.Subscription, error) {
 	replica := RdbStore(db).replica()
 
-	var subscriptions []*models.Subscription
+	var subscriptions []*model.Subscription
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND platform=:platform AND deleted!=0;", tableNameSubscription)
 	params := map[string]interface{}{
 		"userId":   userID,
@@ -101,7 +101,7 @@ func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platfor
 	return subscriptions, nil
 }
 
-func rdbDeleteSubscription(db string, subscription *models.Subscription) error {
+func rdbDeleteSubscription(db string, subscription *model.Subscription) error {
 	master := RdbStore(db).master()
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;", tableNameSubscription)

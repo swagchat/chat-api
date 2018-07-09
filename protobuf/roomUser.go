@@ -3,17 +3,17 @@ package protobuf
 import (
 	"net/http"
 
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
-func (ru *RoomUser) IsValid() *models.ProblemDetail {
+func (ru *RoomUser) IsValid() *model.ProblemDetail {
 	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
-		return &models.ProblemDetail{
+		return &model.ProblemDetail{
 			Title:  "Request parameter error. (Create room user item)",
 			Status: http.StatusBadRequest,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
+			InvalidParams: []model.InvalidParam{
+				model.InvalidParam{
 					Name:   "roomId",
 					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -22,11 +22,11 @@ func (ru *RoomUser) IsValid() *models.ProblemDetail {
 	}
 
 	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
-		return &models.ProblemDetail{
+		return &model.ProblemDetail{
 			Title:  "Request parameter error. (Create room user item)",
 			Status: http.StatusBadRequest,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
+			InvalidParams: []model.InvalidParam{
+				model.InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -55,8 +55,8 @@ func (ru *RoomUser) Put(put *RoomUser) {
 }
 
 type ErrorRoomUser struct {
-	UserId string                `json:"userId,omitempty"`
-	Error  *models.ProblemDetail `json:"error"`
+	UserId string               `json:"userId,omitempty"`
+	Error  *model.ProblemDetail `json:"error"`
 }
 
 type ResponseRoomUser struct {
@@ -72,13 +72,13 @@ type RoomUsers struct {
 	RoomUsers []*RoomUser `json:"roomUsers"`
 }
 
-func (rus *PostRoomUserReq) IsValid(method string, r *models.Room) *models.ProblemDetail {
+func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.ProblemDetail {
 	if len(rus.UserIDs) == 0 {
-		return &models.ProblemDetail{
+		return &model.ProblemDetail{
 			Title:  "Request error",
 			Status: http.StatusBadRequest,
-			InvalidParams: []models.InvalidParam{
-				models.InvalidParam{
+			InvalidParams: []model.InvalidParam{
+				model.InvalidParam{
 					Name:   "userIds",
 					Reason: "Not set.",
 				},
@@ -89,11 +89,11 @@ func (rus *PostRoomUserReq) IsValid(method string, r *models.Room) *models.Probl
 	// if *r.Type == OneOnOne {
 	// 	for _, userId := range rus.UserIds {
 	// 		if userId == r.UserId {
-	// 			return &models.ProblemDetail{
+	// 			return &model.ProblemDetail{
 	// 				Title:  "Request error",
 	// 				Status: http.StatusBadRequest,
-	// 				models.InvalidParams: []models.InvalidParam{
-	// 					models.InvalidParam{
+	// 				model.InvalidParams: []model.InvalidParam{
+	// 					model.InvalidParam{
 	// 						Name:   "userIds",
 	// 						Reason: "In case of 1-on-1 room type, it must always set one userId different from this room's userId.",
 	// 					},
@@ -103,13 +103,13 @@ func (rus *PostRoomUserReq) IsValid(method string, r *models.Room) *models.Probl
 	// 	}
 	// }
 
-	if method == "POST" && r.Type == models.OneOnOne {
+	if method == "POST" && r.Type == model.OneOnOne {
 		if len(rus.UserIDs) == 2 {
-			return &models.ProblemDetail{
+			return &model.ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,
-				InvalidParams: []models.InvalidParam{
-					models.InvalidParam{
+				InvalidParams: []model.InvalidParam{
+					model.InvalidParam{
 						Name:   "userIds",
 						Reason: "In case of 1-on-1 room type, It can only update once.",
 					},
@@ -118,13 +118,13 @@ func (rus *PostRoomUserReq) IsValid(method string, r *models.Room) *models.Probl
 		}
 	}
 
-	if method == "PUT" && r.Type == models.OneOnOne {
+	if method == "PUT" && r.Type == model.OneOnOne {
 		if len(r.Users) == 2 {
-			return &models.ProblemDetail{
+			return &model.ProblemDetail{
 				Title:  "Request error",
 				Status: http.StatusBadRequest,
-				InvalidParams: []models.InvalidParam{
-					models.InvalidParam{
+				InvalidParams: []model.InvalidParam{
+					model.InvalidParam{
 						Name:   "userIds",
 						Reason: "In case of 1-on-1 room type, It can only update once.",
 					},
@@ -134,7 +134,7 @@ func (rus *PostRoomUserReq) IsValid(method string, r *models.Room) *models.Probl
 	}
 
 	// if method == "DELETE" && *r.Type == OneOnOne {
-	// 	return &models.ProblemDetail{
+	// 	return &model.ProblemDetail{
 	// 		Title:     "Request error",
 	// 		Status:    http.StatusBadRequest,
 	// 		ErrorName: ERROR_NAME_OPERATION_NOT_PERMITTED,

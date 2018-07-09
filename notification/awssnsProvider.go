@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -120,9 +120,9 @@ func (ap *awssnsProvider) CreateEndpoint(userId string, platform int, deviceToke
 
 		var platformApplicationArn string
 		switch platform {
-		case models.PlatformIOS:
+		case model.PlatformIOS:
 			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnIos
-		case models.PlatformAndroid:
+		case model.PlatformAndroid:
 			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnAndroid
 		default:
 			// TODO new error

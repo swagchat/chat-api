@@ -10,10 +10,10 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
-	"github.com/swagchat/chat-api/handlers"
+	"github.com/swagchat/chat-api/handler"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/sbroker"
-	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -46,9 +46,9 @@ func main() {
 	defer cancel()
 
 	if cfg.GRPCPort == "" {
-		handlers.StartServer(ctx)
+		handler.StartServer(ctx)
 	} else {
-		go services.GrpcRun(ctx)
-		handlers.StartServer(ctx)
+		go service.GrpcRun(ctx)
+		handler.StartServer(ctx)
 	}
 }

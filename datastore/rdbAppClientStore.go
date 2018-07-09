@@ -8,14 +8,14 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateAppClientStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.AppClient{}, tableNameAppClient)
+	tableMap := master.AddTableWithName(model.AppClient{}, tableNameAppClient)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "client_id" {
@@ -33,10 +33,10 @@ func rdbCreateAppClientStore(db string) {
 	}
 }
 
-func rdbInsertAppClient(db, name string) (*models.AppClient, error) {
+func rdbInsertAppClient(db, name string) (*model.AppClient, error) {
 	master := RdbStore(db).master()
 
-	appClient := &models.AppClient{
+	appClient := &model.AppClient{
 		Name:         name,
 		ClientID:     utils.GenerateClientID(),
 		ClientSecret: utils.GenerateClientSecret(utils.TokenLength),
@@ -51,10 +51,10 @@ func rdbInsertAppClient(db, name string) (*models.AppClient, error) {
 	return appClient, nil
 }
 
-func rdbSelectLatestAppClientByName(db, name string) (*models.AppClient, error) {
+func rdbSelectLatestAppClientByName(db, name string) (*model.AppClient, error) {
 	replica := RdbStore(db).replica()
 
-	var appClients []*models.AppClient
+	var appClients []*model.AppClient
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE name=:name AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", tableNameAppClient, nowTimestampString)
@@ -71,10 +71,10 @@ func rdbSelectLatestAppClientByName(db, name string) (*models.AppClient, error) 
 	return nil, nil
 }
 
-func rdbSelectLatestAppClientByClientID(db, clientID string) (*models.AppClient, error) {
+func rdbSelectLatestAppClientByClientID(db, clientID string) (*model.AppClient, error) {
 	replica := RdbStore(db).replica()
 
-	var appClients []*models.AppClient
+	var appClients []*model.AppClient
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE client_id=:clientID AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", tableNameAppClient, nowTimestampString)

@@ -1,15 +1,15 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 type deviceStore interface {
 	createDeviceStore()
 
-	InsertDevice(device *models.Device) (*models.Device, error)
-	SelectDevices(userID string) ([]*models.Device, error)
-	SelectDevice(userID string, platform int) (*models.Device, error)
-	SelectDevicesByUserID(userID string) ([]*models.Device, error)
-	SelectDevicesByToken(token string) ([]*models.Device, error)
-	UpdateDevice(device *models.Device) error
+	InsertDevice(device *model.Device) (*model.Device, error)
+	SelectDevices(userID string) ([]*model.Device, error)
+	SelectDevice(userID string, platform int) (*model.Device, error)
+	SelectDevicesByUserID(userID string) ([]*model.Device, error)
+	SelectDevicesByToken(token string) ([]*model.Device, error)
+	UpdateDevice(device *model.Device) error
 	DeleteDevice(userID string, platform int) error
 }

@@ -1,6 +1,6 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 const (
 	RoomIDAll = "ALL"
@@ -35,5 +35,5 @@ func WithRole(roleID int32) WebhookOption {
 type webhookStore interface {
 	createWebhookStore()
 
-	SelectWebhooks(event models.WebhookEventType, opts ...WebhookOption) ([]*models.Webhook, error)
+	SelectWebhooks(event model.WebhookEventType, opts ...WebhookOption) ([]*model.Webhook, error)
 }

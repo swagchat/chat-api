@@ -9,13 +9,13 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 )
 
 func rdbCreateSettingStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Setting{}, tableNameSetting)
+	tableMap := master.AddTableWithName(model.Setting{}, tableNameSetting)
 	tableMap.SetKeys(true, "id")
 	if err := master.CreateTablesIfNotExists(); err != nil {
 		logger.Error(err.Error())
@@ -23,10 +23,10 @@ func rdbCreateSettingStore(db string) {
 	}
 }
 
-func rdbSelectLatestSetting(db string) (*models.Setting, error) {
+func rdbSelectLatestSetting(db string) (*model.Setting, error) {
 	replica := RdbStore(db).replica()
 
-	var settings []*models.Setting
+	var settings []*model.Setting
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE expired=0 OR expired>%s ORDER BY created DESC LIMIT 1;", tableNameSetting, nowTimestampString)

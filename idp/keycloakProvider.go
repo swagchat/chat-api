@@ -13,7 +13,7 @@ import (
 	"github.com/betchi/go-gimei"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -49,7 +49,7 @@ func (kp *keycloakProvider) Init() error {
 	return nil
 }
 
-func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
+func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	workspace := ctx.Value(utils.CtxWorkspace)
 	gimei := gimei.NewName()
 	name := fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana())
@@ -61,7 +61,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	if setting == nil {
 		return nil, errors.Wrap(err, "setting values is nil")
 	}
-	var settingValues models.SettingValues
+	var settingValues model.SettingValues
 	json.Unmarshal(setting.Values, &settingValues)
 
 	// Create keycloak user
@@ -131,7 +131,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	}
 
 	// Create user
-	user := &models.User{
+	user := &model.User{
 		UserID: userID,
 		Name:   name,
 	}
@@ -161,7 +161,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*models.User, error) {
 	return user, nil
 }
 
-func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.User, error) {
+func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*model.User, error) {
 	setting, err := datastore.Provider(ctx).SelectLatestSetting()
 	if err != nil {
 		return nil, errors.Wrap(err, "")
@@ -169,7 +169,7 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*models.Use
 	if setting == nil {
 		return nil, errors.Wrap(err, "setting values is nil")
 	}
-	var settingValues models.SettingValues
+	var settingValues model.SettingValues
 	json.Unmarshal(setting.Values, &settingValues)
 
 	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))

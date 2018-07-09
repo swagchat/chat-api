@@ -5,13 +5,13 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 )
 
 func rdbCreateAssetStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Asset{}, tableNameAsset)
+	tableMap := master.AddTableWithName(model.Asset{}, tableNameAsset)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "key" {
@@ -25,7 +25,7 @@ func rdbCreateAssetStore(db string) {
 	}
 }
 
-func rdbInsertAsset(db string, asset *models.Asset) (*models.Asset, error) {
+func rdbInsertAsset(db string, asset *model.Asset) (*model.Asset, error) {
 	master := RdbStore(db).master()
 
 	if err := master.Insert(asset); err != nil {
@@ -35,10 +35,10 @@ func rdbInsertAsset(db string, asset *models.Asset) (*models.Asset, error) {
 	return asset, nil
 }
 
-func rdbSelectAsset(db, assetID string) (*models.Asset, error) {
+func rdbSelectAsset(db, assetID string) (*model.Asset, error) {
 	replica := RdbStore(db).replica()
 
-	var assets []*models.Asset
+	var assets []*model.Asset
 	query := fmt.Sprintf("SELECT * FROM %s WHERE asset_id=:assetId AND deleted = 0;", tableNameAsset)
 	params := map[string]interface{}{"assetId": assetID}
 	_, err := replica.Select(&assets, query, params)

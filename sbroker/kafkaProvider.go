@@ -11,9 +11,9 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
-	"github.com/swagchat/chat-api/services"
+	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -81,15 +81,15 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				ctx = context.WithValue(ctx, utils.CtxWorkspace, sm.Workspace)
 				ctx = context.WithValue(ctx, utils.CtxUserID, sm.UserId)
 
-				var msg *models.Message
+				var msg *model.Message
 				err = json.Unmarshal(e.Value, &msg)
 				if err != nil {
 					return errors.Wrap(err, "")
 				}
 
-				msgs := []*models.Message{msg}
+				msgs := []*model.Message{msg}
 
-				services.PostMessage(ctx, &models.Messages{
+				service.PostMessage(ctx, &model.Messages{
 					Messages: msgs,
 				})
 			case kafka.PartitionEOF:

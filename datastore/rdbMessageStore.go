@@ -9,14 +9,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateMessageStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Message{}, tableNameMessage)
+	tableMap := master.AddTableWithName(model.Message{}, tableNameMessage)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "message_id" {
@@ -45,7 +45,7 @@ func rdbCreateMessageStore(db string) {
 	}
 }
 
-func rdbInsertMessage(db string, message *models.Message) (string, error) {
+func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -58,7 +58,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		return "", errors.Wrap(err, "An error occurred while creating message")
 	}
 
-	var rooms []*models.Room
+	var rooms []*model.Room
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": message.RoomID}
 	if _, err = trans.Select(&rooms, query, params); err != nil {
@@ -77,7 +77,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	case "file":
 		lastMessage = "ファイルを受信しました"
 	default:
-		var payloadText models.PayloadText
+		var payloadText model.PayloadText
 		json.Unmarshal(message.Payload, &payloadText)
 		if payloadText.Text == "" {
 			lastMessage = "メッセージを受信しました"
@@ -104,7 +104,7 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 		return "", errors.Wrap(err, "An error occurred while updating room's user unread count")
 	}
 
-	var users []*models.User
+	var users []*model.User
 	query = fmt.Sprintf("SELECT u.* FROM %s AS ru LEFT JOIN AS u ON ru.user_id = u.user_id WHERE room_id = :roomId;", tableNameRoomUser, tableNameUser)
 	params = map[string]interface{}{"roomId": message.RoomID}
 	_, err = trans.Select(&users, query, params)
@@ -134,10 +134,10 @@ func rdbInsertMessage(db string, message *models.Message) (string, error) {
 	return lastMessage, nil
 }
 
-func rdbSelectMessage(db, messageID string) (*models.Message, error) {
+func rdbSelectMessage(db, messageID string) (*model.Message, error) {
 	replica := RdbStore(db).replica()
 
-	var messages []*models.Message
+	var messages []*model.Message
 	query := fmt.Sprintf("SELECT * FROM %s WHERE message_id=:messageId;", tableNameMessage)
 	params := map[string]interface{}{"messageId": messageID}
 	_, err := replica.Select(&messages, query, params)
@@ -152,10 +152,10 @@ func rdbSelectMessage(db, messageID string) (*models.Message, error) {
 	return nil, nil
 }
 
-func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset int, order string) ([]*models.Message, error) {
+func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset int, order string) ([]*model.Message, error) {
 	replica := RdbStore(db).replica()
 
-	var messages []*models.Message
+	var messages []*model.Message
 	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id = :roomId AND role IN (%s) AND deleted = 0 ORDER BY created %s LIMIT :limit OFFSET :offset;", tableNameMessage, roleIDsQuery, order)
 	params["roomId"] = roomID
@@ -185,7 +185,7 @@ func rdbSelectCountMessagesByRoomID(db string, roleIDs []int32, roomID string) (
 	return count, nil
 }
 
-func rdbUpdateMessage(db string, message *models.Message) (*models.Message, error) {
+func rdbUpdateMessage(db string, message *model.Message) (*model.Message, error) {
 	master := RdbStore(db).master()
 
 	_, err := master.Update(message)

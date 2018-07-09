@@ -7,14 +7,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
 )
 
 func rdbCreateRoomStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Room{}, tableNameRoom)
+	tableMap := master.AddTableWithName(model.Room{}, tableNameRoom)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "room_id" {
@@ -28,7 +28,7 @@ func rdbCreateRoomStore(db string) {
 	}
 }
 
-func rdbInsertRoom(db string, room *models.Room, opts ...interface{}) (*models.Room, error) {
+func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Room, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -64,10 +64,10 @@ func rdbInsertRoom(db string, room *models.Room, opts ...interface{}) (*models.R
 	return room, nil
 }
 
-func rdbSelectRoom(db, roomID string) (*models.Room, error) {
+func rdbSelectRoom(db, roomID string) (*model.Room, error) {
 	replica := RdbStore(db).replica()
 
-	var rooms []*models.Room
+	var rooms []*model.Room
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&rooms, query, params)
@@ -82,10 +82,10 @@ func rdbSelectRoom(db, roomID string) (*models.Room, error) {
 	return nil, nil
 }
 
-func rdbSelectRooms(db string) ([]*models.Room, error) {
+func rdbSelectRooms(db string) ([]*model.Room, error) {
 	replica := RdbStore(db).replica()
 
-	var rooms []*models.Room
+	var rooms []*model.Room
 	query := fmt.Sprintf(`SELECT
 room_id,
 user_id,
@@ -108,10 +108,10 @@ WHERE deleted = 0;`, tableNameRoom)
 	return rooms, nil
 }
 
-func rdbSelectUsersForRoom(db, roomID string) ([]*models.UserForRoom, error) {
+func rdbSelectUsersForRoom(db, roomID string) ([]*model.UserForRoom, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.UserForRoom
+	var users []*model.UserForRoom
 	query := fmt.Sprintf(`SELECT
 u.user_id,
 u.name,
@@ -148,7 +148,7 @@ func rdbSelectCountRooms(db string) (int64, error) {
 	return count, nil
 }
 
-func rdbUpdateRoom(db string, room *models.Room) (*models.Room, error) {
+func rdbUpdateRoom(db string, room *model.Room) (*model.Room, error) {
 	master := RdbStore(db).master()
 
 	_, err := master.Update(room)

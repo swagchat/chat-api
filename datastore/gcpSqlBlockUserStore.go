@@ -1,16 +1,16 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 func (p *gcpSQLProvider) createBlockUserStore() {
 	rdbCreateBlockUserStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertBlockUsers(blockUsers []*models.BlockUser) error {
+func (p *gcpSQLProvider) InsertBlockUsers(blockUsers []*model.BlockUser) error {
 	return rdbInsertBlockUsers(p.database, blockUsers)
 }
 
-func (p *gcpSQLProvider) SelectBlockUser(userID, blockUserID string) (*models.BlockUser, error) {
+func (p *gcpSQLProvider) SelectBlockUser(userID, blockUserID string) (*model.BlockUser, error) {
 	return rdbSelectBlockUser(p.database, userID, blockUserID)
 }
 

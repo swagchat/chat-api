@@ -1,11 +1,11 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 func (p *gcpSQLProvider) createSettingStore() {
 	rdbCreateSettingStore(p.database)
 }
 
-func (p *gcpSQLProvider) SelectLatestSetting() (*models.Setting, error) {
+func (p *gcpSQLProvider) SelectLatestSetting() (*model.Setting, error) {
 	return rdbSelectLatestSetting(p.database)
 }

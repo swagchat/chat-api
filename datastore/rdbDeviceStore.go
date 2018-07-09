@@ -6,13 +6,13 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 )
 
 func rdbCreateDeviceStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Device{}, tableNameDevice)
+	tableMap := master.AddTableWithName(model.Device{}, tableNameDevice)
 	tableMap.SetUniqueTogether("user_id", "platform")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "token" || columnMap.ColumnName == "notification_device_id" {
@@ -26,7 +26,7 @@ func rdbCreateDeviceStore(db string) {
 	}
 }
 
-func rdbInsertDevice(db string, device *models.Device) (*models.Device, error) {
+func rdbInsertDevice(db string, device *model.Device) (*model.Device, error) {
 	master := RdbStore(db).master()
 
 	if err := master.Insert(device); err != nil {
@@ -36,10 +36,10 @@ func rdbInsertDevice(db string, device *models.Device) (*models.Device, error) {
 	return device, nil
 }
 
-func rdbSelectDevices(db, userID string) ([]*models.Device, error) {
+func rdbSelectDevices(db, userID string) ([]*model.Device, error) {
 	replica := RdbStore(db).replica()
 
-	var devices []*models.Device
+	var devices []*model.Device
 	query := fmt.Sprintf("SELECT user_id, platform, token, notification_device_id FROM %s WHERE user_id=:userId;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId": userID,
@@ -52,10 +52,10 @@ func rdbSelectDevices(db, userID string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func rdbSelectDevice(db, userID string, platform int) (*models.Device, error) {
+func rdbSelectDevice(db, userID string, platform int) (*model.Device, error) {
 	replica := RdbStore(db).replica()
 
-	var devices []*models.Device
+	var devices []*model.Device
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId":   userID,
@@ -73,10 +73,10 @@ func rdbSelectDevice(db, userID string, platform int) (*models.Device, error) {
 	return nil, nil
 }
 
-func rdbSelectDevicesByUserID(db, userID string) ([]*models.Device, error) {
+func rdbSelectDevicesByUserID(db, userID string) ([]*model.Device, error) {
 	replica := RdbStore(db).replica()
 
-	var devices []*models.Device
+	var devices []*model.Device
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId": userID,
@@ -89,10 +89,10 @@ func rdbSelectDevicesByUserID(db, userID string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func rdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
+func rdbSelectDevicesByToken(db, token string) ([]*model.Device, error) {
 	replica := RdbStore(db).replica()
 
-	var devices []*models.Device
+	var devices []*model.Device
 	query := fmt.Sprintf("SELECT * FROM %s WHERE token=:token;", tableNameDevice)
 	params := map[string]interface{}{
 		"token": token,
@@ -105,7 +105,7 @@ func rdbSelectDevicesByToken(db, token string) ([]*models.Device, error) {
 	return devices, nil
 }
 
-func rdbUpdateDevice(db string, device *models.Device) error {
+func rdbUpdateDevice(db string, device *model.Device) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {

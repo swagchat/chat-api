@@ -6,13 +6,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 )
 
 func rdbCreateWebhookStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.Webhook{}, tableNameWebhook)
+	tableMap := master.AddTableWithName(model.Webhook{}, tableNameWebhook)
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "webhook_id" {
 			columnMap.SetUnique(true)
@@ -25,10 +25,10 @@ func rdbCreateWebhookStore(db string) {
 	}
 }
 
-func rdbSelectWebhooks(db string, event models.WebhookEventType, opts ...WebhookOption) ([]*models.Webhook, error) {
+func rdbSelectWebhooks(db string, event model.WebhookEventType, opts ...WebhookOption) ([]*model.Webhook, error) {
 	replica := RdbStore(db).replica()
 
-	var webhooks []*models.Webhook
+	var webhooks []*model.Webhook
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE event=:event AND deleted=0", tableNameWebhook)
 	params := map[string]interface{}{

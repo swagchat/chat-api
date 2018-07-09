@@ -3,14 +3,14 @@ package idp
 import (
 	"context"
 
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
 type provider interface {
 	Init() error
-	Post(ctx context.Context) (*models.User, error)
-	Get(ctx context.Context, userID string) (*models.User, error)
+	Post(ctx context.Context) (*model.User, error)
+	Get(ctx context.Context, userID string) (*model.User, error)
 }
 
 func Provider() provider {

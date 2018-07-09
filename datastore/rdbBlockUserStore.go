@@ -6,14 +6,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateBlockUserStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.BlockUser{}, tableNameBlockUser)
+	tableMap := master.AddTableWithName(model.BlockUser{}, tableNameBlockUser)
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
@@ -22,7 +22,7 @@ func rdbCreateBlockUserStore(db string) {
 	}
 }
 
-func rdbInsertBlockUsers(db string, blockUsers []*models.BlockUser) error {
+func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -53,10 +53,10 @@ func rdbInsertBlockUsers(db string, blockUsers []*models.BlockUser) error {
 	return nil
 }
 
-func rdbSelectBlockUser(db, userID, blockUserID string) (*models.BlockUser, error) {
+func rdbSelectBlockUser(db, userID, blockUserID string) (*model.BlockUser, error) {
 	replica := RdbStore(db).replica()
 
-	var blockUsers []*models.BlockUser
+	var blockUsers []*model.BlockUser
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND block_user_id=:blockUserId;", tableNameBlockUser)
 	params := map[string]interface{}{
 		"userId":      userID,

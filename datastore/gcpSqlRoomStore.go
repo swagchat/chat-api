@@ -1,24 +1,24 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 func (p *gcpSQLProvider) createRoomStore() {
 	rdbCreateRoomStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertRoom(room *models.Room, opts ...interface{}) (*models.Room, error) {
+func (p *gcpSQLProvider) InsertRoom(room *model.Room, opts ...interface{}) (*model.Room, error) {
 	return rdbInsertRoom(p.database, room, opts...)
 }
 
-func (p *gcpSQLProvider) SelectRoom(roomID string) (*models.Room, error) {
+func (p *gcpSQLProvider) SelectRoom(roomID string) (*model.Room, error) {
 	return rdbSelectRoom(p.database, roomID)
 }
 
-func (p *gcpSQLProvider) SelectRooms() ([]*models.Room, error) {
+func (p *gcpSQLProvider) SelectRooms() ([]*model.Room, error) {
 	return rdbSelectRooms(p.database)
 }
 
-func (p *gcpSQLProvider) SelectUsersForRoom(roomID string) ([]*models.UserForRoom, error) {
+func (p *gcpSQLProvider) SelectUsersForRoom(roomID string) ([]*model.UserForRoom, error) {
 	return rdbSelectUsersForRoom(p.database, roomID)
 }
 
@@ -26,7 +26,7 @@ func (p *gcpSQLProvider) SelectCountRooms() (int64, error) {
 	return rdbSelectCountRooms(p.database)
 }
 
-func (p *gcpSQLProvider) UpdateRoom(room *models.Room) (*models.Room, error) {
+func (p *gcpSQLProvider) UpdateRoom(room *model.Room) (*model.Room, error) {
 	return rdbUpdateRoom(p.database, room)
 }
 

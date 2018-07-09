@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -16,7 +16,7 @@ import (
 func rdbCreateUserStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(models.User{}, tableNameUser)
+	tableMap := master.AddTableWithName(model.User{}, tableNameUser)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "user_id" {
@@ -30,7 +30,7 @@ func rdbCreateUserStore(db string) {
 	}
 }
 
-func rdbInsertUser(db string, user *models.User, opts ...interface{}) (*models.User, error) {
+func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.User, error) {
 	master := RdbStore(db).master()
 
 	trans, err := master.Begin()
@@ -84,16 +84,16 @@ func rdbInsertUser(db string, user *models.User, opts ...interface{}) (*models.U
 	return user, nil
 }
 
-func rdbSelectUser(db, userID string, opts ...interface{}) (*models.User, error) {
+func rdbSelectUser(db, userID string, opts ...interface{}) (*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.User
+	var users []*model.User
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND deleted=0;", tableNameUser)
 	params := map[string]interface{}{"userId": userID}
 	if _, err := replica.Select(&users, query, params); err != nil {
 		return nil, errors.Wrap(err, "An error occurred while getting user")
 	}
-	var user *models.User
+	var user *model.User
 	if len(users) != 1 {
 		return nil, nil
 	}
@@ -112,7 +112,7 @@ func rdbSelectUser(db, userID string, opts ...interface{}) (*models.User, error)
 			}
 		case WithDevices:
 			if WithDevices(v) {
-				var devices []*models.Device
+				var devices []*model.Device
 				query = fmt.Sprintf("SELECT user_id, platform, token, notification_device_id from %s WHERE user_id=:userId", tableNameDevice)
 				params = map[string]interface{}{"userId": userID}
 				_, err := replica.Select(&devices, query, params)
@@ -123,7 +123,7 @@ func rdbSelectUser(db, userID string, opts ...interface{}) (*models.User, error)
 			}
 		case WithRooms:
 			if WithRooms(v) {
-				var rooms []*models.RoomForUser
+				var rooms []*model.RoomForUser
 				query := fmt.Sprintf(`SELECT
 r.room_id,
 r.user_id,
@@ -148,7 +148,7 @@ ORDER BY r.last_message_updated DESC;`, tableNameRoomUser, tableNameRoom)
 					return nil, errors.Wrap(err, "An error occurred while getting user rooms")
 				}
 
-				var ufrs []*models.UserForRoom
+				var ufrs []*model.UserForRoom
 				query = fmt.Sprintf(`SELECT
 ru.room_id,
 u.user_id,
@@ -175,7 +175,7 @@ ORDER BY ru.room_id`, tableNameRoomUser, tableNameUser, tableNameRoomUser)
 				}
 
 				for _, room := range rooms {
-					room.Users = make([]*models.UserForRoom, 0)
+					room.Users = make([]*model.UserForRoom, 0)
 					for _, ufr := range ufrs {
 						if room.RoomID == ufr.RoomID {
 							room.Users = append(room.Users, ufr)
@@ -200,10 +200,10 @@ ORDER BY ru.room_id`, tableNameRoomUser, tableNameUser, tableNameRoomUser)
 	return user, nil
 }
 
-func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*models.User, error) {
+func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.User
+	var users []*model.User
 	query := fmt.Sprintf("SELECT id FROM %s WHERE user_id=:userId AND access_token=:accessToken AND deleted=0;", tableNameUser)
 	params := map[string]interface{}{
 		"userId":      userID,
@@ -221,10 +221,10 @@ func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*model
 	return nil, nil
 }
 
-func rdbSelectUsers(db string) ([]*models.User, error) {
+func rdbSelectUsers(db string) ([]*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.User
+	var users []*model.User
 	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0 ORDER BY unread_count DESC;", tableNameUser)
 	_, err := replica.Select(&users, query)
 	if err != nil {
@@ -237,7 +237,7 @@ func rdbSelectUsers(db string) ([]*models.User, error) {
 func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.User
+	var users []*model.User
 	userIdsQuery, params := utils.MakePrepareForInExpression(userIDs)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id in (%s) AND deleted = 0;", tableNameUser, userIdsQuery)
 	_, err := replica.Select(&users, query, params)
@@ -253,7 +253,7 @@ func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 	return resultUserIDs, nil
 }
 
-func rdbUpdateUser(db string, user *models.User) (*models.User, error) {
+func rdbUpdateUser(db string, user *model.User) (*model.User, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -352,10 +352,10 @@ func rdbUpdateUserDeleted(db, userID string) error {
 	return nil
 }
 
-func rdbSelectContacts(db, userID string) ([]*models.User, error) {
+func rdbSelectContacts(db, userID string) ([]*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	var users []*models.User
+	var users []*model.User
 	query := fmt.Sprintf(`SELECT
 u.user_id,
 u.name,
@@ -379,7 +379,7 @@ WHERE
 		u.public=1 AND
 		u.deleted=0
 	)
-GROUP BY u.user_id ORDER BY u.modified DESC`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(models.NoticeRoom)))
+GROUP BY u.user_id ORDER BY u.modified DESC`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(model.NoticeRoom)))
 	params := map[string]interface{}{
 		"userId": userID,
 	}

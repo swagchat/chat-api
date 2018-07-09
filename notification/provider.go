@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -18,7 +18,7 @@ type MessageInfo struct {
 
 type NotificationResult struct {
 	Data          interface{}
-	ProblemDetail *models.ProblemDetail
+	ProblemDetail *model.ProblemDetail
 }
 
 type NotificationChannel chan NotificationResult
@@ -54,8 +54,8 @@ func Provider() provider {
 	return p
 }
 
-func createProblemDetail(title string, err error) *models.ProblemDetail {
-	return &models.ProblemDetail{
+func createProblemDetail(title string, err error) *model.ProblemDetail {
+	return &model.ProblemDetail{
 		Title:   title,
 		Message: err.Error(),
 		Status:  http.StatusInternalServerError,

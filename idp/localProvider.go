@@ -7,7 +7,7 @@ import (
 	"github.com/betchi/go-gimei"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -19,10 +19,10 @@ func (lp *localProvider) Init() error {
 	return nil
 }
 
-func (lp *localProvider) Post(ctx context.Context) (*models.User, error) {
+func (lp *localProvider) Post(ctx context.Context) (*model.User, error) {
 	uuid := utils.GenerateUUID()
 	gimei := gimei.NewName()
-	user := &models.User{
+	user := &model.User{
 		UserID: uuid,
 		Name:   fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana()),
 	}
@@ -45,7 +45,7 @@ func (lp *localProvider) Post(ctx context.Context) (*models.User, error) {
 	return user, nil
 }
 
-func (lp *localProvider) Get(ctx context.Context, userID string) (*models.User, error) {
+func (lp *localProvider) Get(ctx context.Context, userID string) (*model.User, error) {
 	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		return nil, errors.Wrap(err, "")

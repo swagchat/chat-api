@@ -1,10 +1,10 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 type assetStore interface {
 	createAssetStore()
 
-	InsertAsset(asset *models.Asset) (*models.Asset, error)
-	SelectAsset(assetID string) (*models.Asset, error)
+	InsertAsset(asset *model.Asset) (*model.Asset, error)
+	SelectAsset(assetID string) (*model.Asset, error)
 }

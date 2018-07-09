@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/models"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -117,7 +117,7 @@ WHERE room_id IN (
 	SELECT room_id FROM %s WHERE type=:type AND user_id=:myUserId
 ) AND user_id=:opponentUserId;`, tableNameRoomUser, tableNameRoom)
 	params := map[string]interface{}{
-		"type":           models.OneOnOne,
+		"type":           model.OneOnOne,
 		"myUserId":       myUserID,
 		"opponentUserId": opponentUserID,
 	}

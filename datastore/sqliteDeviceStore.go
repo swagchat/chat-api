@@ -1,32 +1,32 @@
 package datastore
 
-import "github.com/swagchat/chat-api/models"
+import "github.com/swagchat/chat-api/model"
 
 func (p *sqliteProvider) createDeviceStore() {
 	rdbCreateDeviceStore(p.database)
 }
 
-func (p *sqliteProvider) InsertDevice(device *models.Device) (*models.Device, error) {
+func (p *sqliteProvider) InsertDevice(device *model.Device) (*model.Device, error) {
 	return rdbInsertDevice(p.database, device)
 }
 
-func (p *sqliteProvider) SelectDevices(userID string) ([]*models.Device, error) {
+func (p *sqliteProvider) SelectDevices(userID string) ([]*model.Device, error) {
 	return rdbSelectDevices(p.database, userID)
 }
 
-func (p *sqliteProvider) SelectDevice(userID string, platform int) (*models.Device, error) {
+func (p *sqliteProvider) SelectDevice(userID string, platform int) (*model.Device, error) {
 	return rdbSelectDevice(p.database, userID, platform)
 }
 
-func (p *sqliteProvider) SelectDevicesByUserID(userID string) ([]*models.Device, error) {
+func (p *sqliteProvider) SelectDevicesByUserID(userID string) ([]*model.Device, error) {
 	return rdbSelectDevicesByUserID(p.database, userID)
 }
 
-func (p *sqliteProvider) SelectDevicesByToken(token string) ([]*models.Device, error) {
+func (p *sqliteProvider) SelectDevicesByToken(token string) ([]*model.Device, error) {
 	return rdbSelectDevicesByToken(p.database, token)
 }
 
-func (p *sqliteProvider) UpdateDevice(device *models.Device) error {
+func (p *sqliteProvider) UpdateDevice(device *model.Device) error {
 	return rdbUpdateDevice(p.database, device)
 }
 
