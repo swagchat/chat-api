@@ -8,22 +8,18 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
 
 func webhookRoom(ctx context.Context, room *models.Room) {
 	webhooks, err := datastore.Provider(ctx).SelectWebhooks(models.WebhookEventTypeRoom, datastore.WithRoomID(datastore.RoomIDAll))
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
 		return
 	}
 
@@ -50,30 +46,22 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 				buf,
 			)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[HTTP][WebhookRoom] Post failure. Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[HTTP][WebhookRoom] Post failure. Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
 			}
 			_, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[HTTP][WebhookRoom] Response body read failure. Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[HTTP][WebhookRoom] Response body read failure. Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
 			}
 			if resp.StatusCode != http.StatusOK {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: fmt.Errorf("[HTTP][WebhookRoom] Status code is not 200. Endpoint=[%s] StatusCode[%d]", webhook.Endpoint, resp.StatusCode),
-				})
+				logger.Error(fmt.Sprintf("[HTTP][WebhookRoom] Status code is not 200. Endpoint=[%s] StatusCode[%d].", webhook.Endpoint, resp.StatusCode))
 				continue
 			}
 		case models.WebhookProtocolGRPC:
 			conn, err := grpc.Dial(webhook.Endpoint, grpc.WithInsecure())
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[GRPC][WebhookRoom] Connect failure. Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[GRPC][WebhookRoom] Connect failure. Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
 			}
 			defer conn.Close()
@@ -81,9 +69,7 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 			c := protobuf.NewChatOutgoingClient(conn)
 			_, err = c.PostWebhookRoom(context.Background(), pbRoom)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[GRPC][WebhookRoom] Response body read failure. GRPC Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[GRPC][WebhookRoom] Response body read failure. GRPC Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
 			}
 		}
@@ -93,17 +79,13 @@ func webhookRoom(ctx context.Context, room *models.Room) {
 func webhookMessage(ctx context.Context, message *models.Message, user *models.User) {
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
 		return
 	}
 
 	webhooks, err := datastore.Provider(ctx).SelectWebhooks(models.WebhookEventTypeMessage, datastore.WithRoomID(datastore.RoomIDAll))
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
 		return
 	}
 
@@ -155,30 +137,22 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 				buf,
 			)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[HTTP][WebhookMessage] Post failure. Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[HTTP][WebhookMessage] Post failure. Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
 			}
 			_, err = ioutil.ReadAll(resp.Body)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[HTTP][WebhookMessage] Response body read failure. Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[HTTP][WebhookMessage] Response body read failure. Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
 			}
 			if resp.StatusCode != http.StatusOK {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: fmt.Errorf("[HTTP][WebhookMessage] Status code is not 200. Endpoint=[%s] StatusCode[%d]", webhook.Endpoint, resp.StatusCode),
-				})
+				logger.Error(fmt.Sprintf("[HTTP][WebhookMessage] Status code is not 200. Endpoint=[%s] StatusCode[%d]", webhook.Endpoint, resp.StatusCode))
 				continue
 			}
 		case models.WebhookProtocolGRPC:
 			conn, err := grpc.Dial(webhook.Endpoint, grpc.WithInsecure())
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[GRPC][WebhookMessage] Connect failure. Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[GRPC][WebhookMessage] Connect failure. Endpoint=[%s]. %v", webhook.Endpoint, err))
 				continue
 			}
 			defer conn.Close()
@@ -186,9 +160,7 @@ func webhookMessage(ctx context.Context, message *models.Message, user *models.U
 			c := protobuf.NewChatOutgoingClient(conn)
 			_, err = c.PostWebhookMessage(context.Background(), pbMessage)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: errors.Wrap(err, fmt.Sprintf("[GRPC][WebhookMessage] Response body read failure. GRPC Endpoint=[%s]", webhook.Endpoint)),
-				})
+				logger.Error(fmt.Sprintf("[GRPC][WebhookMessage] Response body read failure. GRPC Endpoint=[%s]. %v", webhook.Endpoint, err))
 				continue
 			}
 		}

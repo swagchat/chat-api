@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
@@ -147,9 +145,8 @@ func GetMessage(ctx context.Context, messageID string) (*models.Message, *models
 func publishMessage(ctx context.Context, message *models.Message) {
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID, datastore.WithRoleIDs([]int32{message.Role}))
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 
 	buffer := new(bytes.Buffer)
@@ -161,8 +158,7 @@ func publishMessage(ctx context.Context, message *models.Message) {
 	}
 	err = pbroker.Provider().PublishMessage(rtmEvent)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 }

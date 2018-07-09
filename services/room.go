@@ -9,12 +9,11 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 // PostRoom is post room
@@ -316,9 +315,8 @@ func selectRoom(ctx context.Context, roomID string) (*models.Room, *models.Probl
 func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
 	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByRoomID(roomID)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 	<-unsubscribe(ctx, subscriptions)
 	if wg != nil {

@@ -4,10 +4,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 func rdbCreateDeviceStore(db string) {
@@ -22,10 +21,8 @@ func rdbCreateDeviceStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create device table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 }
 

@@ -7,9 +7,8 @@ import (
 
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 var NSQConsumer *nsq.Consumer
@@ -29,17 +28,10 @@ func (np *nsqProvider) SubscribeMessage() error {
 
 		NSQConsumer, err = nsq.NewConsumer(c.SBroker.NSQ.Topic, channel, config)
 		if err != nil {
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				Kind:    "messaging-subscribe",
-				Message: err.Error(),
-			})
 			return errors.Wrap(err, "")
 		}
 
-		logging.Log(zapcore.InfoLevel, &logging.AppLog{
-			Kind:    "messaging-subscribe",
-			Message: fmt.Sprintf("%p", NSQConsumer),
-		})
+		logger.Info(fmt.Sprintf("%p", NSQConsumer))
 
 		NSQConsumer.AddHandler(nsq.HandlerFunc(func(message *nsq.Message) error {
 			// TODO
@@ -47,10 +39,6 @@ func (np *nsqProvider) SubscribeMessage() error {
 		}))
 		err = NSQConsumer.ConnectToNSQLookupd(c.SBroker.NSQ.NsqlookupdHost + ":" + c.SBroker.NSQ.NsqlookupdPort)
 		if err != nil {
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				Kind:    "messaging-subscribe",
-				Message: err.Error(),
-			})
 			return errors.Wrap(err, "")
 		}
 	}
@@ -67,10 +55,6 @@ func (np *nsqProvider) UnsubscribeMessage() error {
 	hostname, err := os.Hostname()
 	_, err = http.Post("http://"+c.SBroker.NSQ.NsqdHost+":"+c.SBroker.NSQ.NsqdPort+"/channel/delete?topic="+c.SBroker.NSQ.Topic+"&channel="+hostname, "text/plain", nil)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Kind:    "messaging-error",
-			Message: err.Error(),
-		})
 		return errors.Wrap(err, "")
 	}
 

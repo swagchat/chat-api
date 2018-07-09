@@ -6,10 +6,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 func rdbCreateAppClientStore(db string) {
@@ -24,10 +23,8 @@ func rdbCreateAppClientStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create api table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 	api, _ := rdbSelectLatestAppClientByName(db, "browser")
 	if api == nil {

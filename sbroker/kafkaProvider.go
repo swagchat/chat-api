@@ -6,17 +6,15 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 var KafkaConsumer *kafka.Consumer
@@ -47,29 +45,15 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 		// "default.topic.config": kafka.ConfigMap{"auto.offset.reset": "earliest"}
 	})
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Kind:  "messaging-subscribe",
-			Error: errors.Wrap(err, "Createt kafka consumer failure"),
-		})
 		return errors.Wrap(err, "")
 	}
 
 	topic := c.SBroker.Kafka.Topic
 	err = KafkaConsumer.SubscribeTopics([]string{topic}, nil)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Kind:  "messaging-subscribe",
-			Error: errors.Wrap(err, "Subscribe topic failure."),
-		})
 		return errors.Wrap(err, "")
 	}
-	_, file, line, _ := runtime.Caller(0)
-	logging.Log(zapcore.InfoLevel, &logging.AppLog{
-		Kind:    "messaging-subscribe",
-		Message: fmt.Sprintf("%s group.id[%s] topic[%s]", KafkaConsumer.String(), hostname, topic),
-		File:    file,
-		Line:    line + 2,
-	})
+	logger.Info(fmt.Sprintf("%s group.id[%s] topic[%s]", KafkaConsumer.String(), hostname, topic))
 
 	run := true
 
@@ -77,13 +61,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 		select {
 		case sig := <-sigchan:
 			run = false
-			_, file, line, _ := runtime.Caller(0)
-			logging.Log(zapcore.InfoLevel, &logging.AppLog{
-				Kind:    "messaging-subscribe-terminated",
-				Message: fmt.Sprintf("terminated by %s", sig.String()),
-				File:    file,
-				Line:    line + 1,
-			})
+			logger.Info(fmt.Sprintf("terminated by %s", sig.String()))
 		default:
 			ev := KafkaConsumer.Poll(100)
 			if ev == nil {
@@ -92,21 +70,11 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 
 			switch e := ev.(type) {
 			case *kafka.Message:
-				_, file, line, _ := runtime.Caller(0)
-				logging.Log(zapcore.InfoLevel, &logging.AppLog{
-					Kind:    "messaging-subscribe-receive",
-					Message: fmt.Sprintf("Receive a message"),
-					File:    file,
-					Line:    line + 1,
-				})
-
+				logger.Info("Receive a message")
 				var sm *protobuf.Message
 				err := json.Unmarshal(e.Value, &sm)
 				if err != nil {
-					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-						Kind:  "messaging-subscribe",
-						Error: errors.Wrap(err, ""),
-					})
+					return errors.Wrap(err, "")
 				}
 
 				ctx := context.Background()
@@ -116,10 +84,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				var msg *models.Message
 				err = json.Unmarshal(e.Value, &msg)
 				if err != nil {
-					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-						Kind:  "messaging-subscribe",
-						Error: errors.Wrap(err, ""),
-					})
+					return errors.Wrap(err, "")
 				}
 
 				msgs := []*models.Message{msg}
@@ -128,40 +93,18 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 					Messages: msgs,
 				})
 			case kafka.PartitionEOF:
-				_, file, line, _ := runtime.Caller(0)
-				logging.Log(zapcore.InfoLevel, &logging.AppLog{
-					Kind:    "messaging-subscribe",
-					Message: e.String(),
-					File:    file,
-					Line:    line + 1,
-				})
+				logger.Info(e.String())
 			case kafka.Error:
 				run = false
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Kind:    "messaging-subscribe",
-					Message: e.String(),
-				})
 				return errors.Wrap(fmt.Errorf("%s", e.String()), "")
 			default:
-				_, file, line, _ := runtime.Caller(0)
-				logging.Log(zapcore.InfoLevel, &logging.AppLog{
-					Kind:    "messaging-subscribe",
-					Message: e.String(),
-					File:    file,
-					Line:    line + 1,
-				})
+				logger.Info(e.String())
 			}
 		}
 	}
 
 	KafkaConsumer.Close()
-	_, file, line, _ = runtime.Caller(0)
-	logging.Log(zapcore.InfoLevel, &logging.AppLog{
-		Kind:    "messaging-subscribe",
-		Message: "close",
-		File:    file,
-		Line:    line + 1,
-	})
+	logger.Info("close")
 
 	return nil
 }
@@ -171,11 +114,6 @@ func (kp *kafkaProvider) UnsubscribeMessage() error {
 		return nil
 	}
 
-	_, file, line, _ := runtime.Caller(0)
-	logging.Log(zapcore.InfoLevel, &logging.AppLog{
-		Kind: "messaging-unsubscribe",
-		File: file,
-		Line: line + 1,
-	})
+	logger.Info("kafka unsubscribe")
 	return KafkaConsumer.Unsubscribe()
 }

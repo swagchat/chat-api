@@ -7,9 +7,8 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 var KafkaConsumer *kafka.Consumer
@@ -34,16 +33,9 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-						Kind:    "Kafka",
-						Message: fmt.Sprintf("Delivery failed: %v\n", ev.TopicPartition),
-						Error:   err,
-					})
+					logger.Error(fmt.Sprintf("Delivery failed: %v\n", ev.TopicPartition))
 				} else {
-					logging.Log(zapcore.InfoLevel, &logging.AppLog{
-						Kind:    "Kafka",
-						Message: fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition),
-					})
+					logger.Info(fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition))
 				}
 			}
 		}

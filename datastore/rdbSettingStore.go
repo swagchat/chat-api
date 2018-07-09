@@ -4,11 +4,10 @@ import (
 	"strconv"
 
 	"github.com/pkg/errors"
-	"go.uber.org/zap/zapcore"
 
 	"time"
 
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -19,10 +18,7 @@ func rdbCreateSettingStore(db string) {
 	tableMap := master.AddTableWithName(models.Setting{}, tableNameSetting)
 	tableMap.SetKeys(true, "id")
 	if err := master.CreateTablesIfNotExists(); err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create setting table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
 		return
 	}
 }

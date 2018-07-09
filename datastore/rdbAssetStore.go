@@ -2,10 +2,9 @@ package datastore
 
 import (
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 func rdbCreateAssetStore(db string) {
@@ -20,10 +19,8 @@ func rdbCreateAssetStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create asset table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 }
 

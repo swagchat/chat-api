@@ -3,9 +3,8 @@ package datastore
 import (
 	"context"
 
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 type provider interface {
@@ -69,10 +68,8 @@ func Provider(ctx context.Context) provider {
 
 	err := p.Connect(dsCfg)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Message: "Database connect error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return nil
 	}
 
 	return p

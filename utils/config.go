@@ -858,6 +858,11 @@ func isExists(name string) bool {
 
 func (c *config) validate() error {
 	// TODO validate config
+	if c.IdP.Provider == "keycloak" {
+		if c.IdP.Keycloak.BaseEndpoint == "" {
+			return errors.Wrap(errors.New("keycloak base endpoint is empty"), "")
+		}
+	}
 	return nil
 }
 

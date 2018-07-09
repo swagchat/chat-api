@@ -2,10 +2,9 @@ package datastore
 
 import (
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 func rdbCreateSubscriptionStore(db string) {
@@ -14,10 +13,8 @@ func rdbCreateSubscriptionStore(db string) {
 	_ = master.AddTableWithName(models.Subscription{}, tableNameSubscription)
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create subscription table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 }
 

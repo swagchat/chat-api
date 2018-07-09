@@ -6,10 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/protobuf"
@@ -199,9 +197,8 @@ func selectDevice(ctx context.Context, userID string, platform int) (*models.Dev
 func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
 	roomUser, err := datastore.Provider(ctx).SelectRoomUsersByUserID(device.UserID)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 	if roomUser != nil {
 		<-subscribe(ctx, roomUser, device)
@@ -214,9 +211,8 @@ func subscribeByDevice(ctx context.Context, device *models.Device, wg *sync.Wait
 func unsubscribeByDevice(ctx context.Context, device *models.Device, wg *sync.WaitGroup) {
 	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserIDAndPlatform(device.UserID, device.Platform)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 	<-unsubscribe(ctx, subscriptions)
 	if wg != nil {
@@ -290,10 +286,7 @@ func subscribe(ctx context.Context, roomUsers []*protobuf.RoomUser, device *mode
 			case <-doneCh:
 				return
 			case pd := <-pdCh:
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					ProblemDetail: pd,
-					Error:         pd.Error,
-				})
+				logger.Error(pd.Error.Error())
 				return
 			}
 		})
@@ -335,10 +328,7 @@ func unsubscribe(ctx context.Context, subscriptions []*models.Subscription) chan
 			case <-doneCh:
 				return
 			case pd := <-pdCh:
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					ProblemDetail: pd,
-					Error:         pd.Error,
-				})
+				logger.Error(pd.Error.Error())
 				return
 			}
 		})

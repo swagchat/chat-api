@@ -6,9 +6,8 @@ import (
 	"io/ioutil"
 
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 
 	"golang.org/x/oauth2/google"
 
@@ -61,19 +60,13 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	logging.Log(zapcore.DebugLevel, &logging.AppLog{
-		Kind:    "storage",
-		Message: fmt.Sprintf("name:%s\tselfLink:%s", res.Name, res.SelfLink),
-	})
+	logger.Debug(fmt.Sprintf("name:%s\tselfLink:%s", res.Name, res.SelfLink))
 
 	res, err = gcsService.Objects.Get(gp.uploadBucket, filePath).Do()
 	if err != nil {
 		return "", err
 	}
-	logging.Log(zapcore.DebugLevel, &logging.AppLog{
-		Kind:    "storage",
-		Message: fmt.Sprintf("bucketName:%s\name:%s\tmediaLink:%s", gp.uploadBucket, res.Name, res.MediaLink),
-	})
+	logger.Debug(fmt.Sprintf("bucketName:%s\name:%s\tmediaLink:%s", gp.uploadBucket, res.Name, res.MediaLink))
 
 	return res.MediaLink, nil
 }

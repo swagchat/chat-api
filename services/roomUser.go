@@ -7,10 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
@@ -217,18 +215,15 @@ func selectRoomUser(ctx context.Context, roomID, userID string) (*protobuf.RoomU
 func publishUserJoin(ctx context.Context, roomID string) {
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
 		return
 	}
 
 	go func() {
 		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(roomID)
 		if err != nil {
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				Error: err,
-			})
+			logger.Error(err.Error())
+			return
 		}
 
 		buffer := new(bytes.Buffer)
@@ -240,9 +235,8 @@ func publishUserJoin(ctx context.Context, roomID string) {
 		}
 		err = pbroker.Provider().PublishMessage(rtmEvent)
 		if err != nil {
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				Error: err,
-			})
+			logger.Error(err.Error())
+			return
 		}
 	}()
 }
@@ -298,10 +292,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser) {
 			case <-doneChan:
 				return
 			case pd := <-pdChan:
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					ProblemDetail: pd,
-					Error:         pd.Error,
-				})
+				logger.Error(pd.Error.Error())
 				return
 			}
 		})
@@ -359,10 +350,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser)
 			case <-doneChan:
 				return
 			case pd := <-pdChan:
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					ProblemDetail: pd,
-					Error:         pd.Error,
-				})
+				logger.Error(pd.Error.Error())
 				return
 			}
 		})
@@ -413,10 +401,7 @@ func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *m
 func selectUserIDsOfRoomUser(ctx context.Context, in *protobuf.GetUserIDsOfRoomUserReq) (*protobuf.UserIDs, error) {
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(in.RoomID, datastore.WithRoleIDs(in.RoleIDs))
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Message: "Get userIDs error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
 		return nil, err
 	}
 	return &protobuf.UserIDs{

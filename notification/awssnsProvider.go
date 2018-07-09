@@ -7,13 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -268,9 +266,12 @@ func (ap *awssnsProvider) Publish(ctx context.Context, notificationTopicId, room
 		TopicArn:         aws.String(notificationTopicId),
 	}
 	res, err := client.Publish(params)
-	logging.Log(zapcore.InfoLevel, &logging.AppLog{
-		Message: fmt.Sprintf("[Amazon SNS]Publish message topicArn:%s message:%s response:%s", notificationTopicId, message, res.String()),
-	})
+	if err != nil {
+		logger.Error(err.Error())
+		return nil
+	}
+	logger.Info(fmt.Sprintf("[Amazon SNS]Publish message topicArn:%s message:%s response:%s", notificationTopicId, message, res.String()))
+
 	nc <- result
 
 	select {

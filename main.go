@@ -7,21 +7,19 @@ import (
 	_ "net/http/pprof"
 	"os"
 
-	"github.com/fairway-corp/vision-api/config"
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/swagchat/chat-api/handlers"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/sbroker"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	if config.StopRun {
+	if utils.StopRun {
 		os.Exit(0)
 	}
 
@@ -29,10 +27,7 @@ func main() {
 	compact := &pretty.Config{
 		Compact: true,
 	}
-	logging.Log(zapcore.InfoLevel, &logging.AppLog{
-		Message: fmt.Sprintf("%s start", utils.AppName),
-		Config:  compact.Sprint(cfg),
-	})
+	logger.Info(fmt.Sprintf("Config: %s", compact.Sprint(cfg)))
 
 	if cfg.Profiling {
 		go func() {
@@ -41,16 +36,19 @@ func main() {
 	}
 
 	if err := storage.Provider().Init(); err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Kind:  "storage",
-			Error: err,
-		})
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
-	go services.GrpcRun()
 	go sbroker.Provider().SubscribeMessage()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	handlers.StartServer(ctx)
+
+	if cfg.GRPCPort == "" {
+		handlers.StartServer(ctx)
+	} else {
+		go services.GrpcRun(ctx)
+		handlers.StartServer(ctx)
+	}
 }

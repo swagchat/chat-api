@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"go.uber.org/zap/zapcore"
 
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -25,10 +24,8 @@ func rdbCreateMessageStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create message table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 
 	var addIndexQuery string
@@ -40,10 +37,8 @@ func rdbCreateMessageStore(db string) {
 		if err != nil {
 			errMessage := err.Error()
 			if strings.Index(errMessage, "Duplicate key name") < 0 {
-				logging.Log(zapcore.FatalLevel, &logging.AppLog{
-					Message: "Duplicate key name",
-					Error:   err,
-				})
+				logger.Error(err.Error())
+				return
 			}
 		}
 	}

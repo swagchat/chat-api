@@ -8,9 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 )
 
 func setAssetAwsSnsMux() {
@@ -61,10 +60,7 @@ func postAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 	var input AwsSNSSubscribeInput
 	err := decoder.Decode(&input)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Message: "Amazon SNS subscribe error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
 		return
 	}
 
@@ -83,20 +79,14 @@ func postAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 		_, err = cli.ConfirmSubscription(params)
 
 		if err != nil {
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				Message: "Amazon SNS post asset error",
-				Error:   err,
-			})
+			logger.Error(err.Error())
 			return
 		}
 	} else {
 		var records AssetS3SNSRecords
 		err = json.Unmarshal([]byte(input.Message), &records)
 		if err != nil {
-			logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-				Message: "Amazon SNS input message unmarshal error",
-				Error:   err,
-			})
+			logger.Error(err.Error())
 			return
 		}
 		// filePath := records.Records[0].S3.Object.Key

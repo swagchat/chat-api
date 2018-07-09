@@ -4,9 +4,8 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"go.uber.org/zap/zapcore"
 
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -18,10 +17,8 @@ func rdbCreateUserRoleStore(db string) {
 	tableMap.SetUniqueTogether("user_id", "role_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create user role table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 }
 

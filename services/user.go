@@ -6,10 +6,8 @@ import (
 	"context"
 	"net/http"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/notification"
 )
@@ -229,9 +227,8 @@ func selectUser(ctx context.Context, userID string, opts ...interface{}) (*model
 func unsubscribeByUserID(ctx context.Context, userID string) {
 	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserID(userID)
 	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 	unsubscribe(ctx, subscriptions)
 }

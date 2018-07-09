@@ -5,9 +5,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"go.uber.org/zap/zapcore"
 
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
@@ -25,10 +24,8 @@ func rdbCreateUserStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "Create user table error",
-			Error:   err,
-		})
+		logger.Error(err.Error())
+		return
 	}
 }
 

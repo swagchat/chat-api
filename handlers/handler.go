@@ -12,13 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"go.uber.org/zap/zapcore"
-
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/models"
 	"github.com/swagchat/chat-api/services"
 	"github.com/swagchat/chat-api/utils"
@@ -42,8 +40,6 @@ var (
 
 // StartServer is start api server
 func StartServer(ctx context.Context) {
-	configValidate()
-
 	cfg := utils.Config()
 	mux = bone.New()
 
@@ -75,37 +71,24 @@ func StartServer(ctx context.Context) {
 
 	mux.NotFoundFunc(notFoundHandler)
 
-	go run(ctx)
-
-	err := gracedown.ListenAndServe(utils.AppendStrings(":", cfg.HTTPPort), mux)
-	if err != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: err,
-		})
-	}
-
-	logging.Log(zapcore.InfoLevel, &logging.AppLog{
-		Kind:    "handler",
-		Message: "shut down complete",
-	})
-}
-
-func run(ctx context.Context) {
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
-	for {
-		select {
-		case <-ctx.Done():
+	errCh := make(chan error)
+	go func() {
+		errCh <- gracedown.ListenAndServe(fmt.Sprintf(":%s", cfg.HTTPPort), mux)
+	}()
+
+	select {
+	case <-ctx.Done():
+		logger.Info(fmt.Sprintf("Stopping %s server[HTTP]", utils.AppName))
+		gracedown.Close()
+	case s := <-signalChan:
+		if s == syscall.SIGTERM || s == syscall.SIGINT {
+			logger.Info(fmt.Sprintf("Stopping %s server[HTTP]", utils.AppName))
 			gracedown.Close()
-		case s := <-signalChan:
-			if s == syscall.SIGTERM || s == syscall.SIGINT {
-				logging.Log(zapcore.InfoLevel, &logging.AppLog{
-					Kind:    "handler",
-					Message: fmt.Sprintf("%s graceful down by signal[%s]", utils.AppName, s.String()),
-				})
-				gracedown.Close()
-			}
 		}
+	case err := <-errCh:
+		logger.Error(fmt.Sprintf("Failed to serve %s server[HTTP]. %v", utils.AppName, err))
 	}
 }
 
@@ -186,9 +169,7 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 		go func() {
 			user, err := datastore.Provider(ctx).SelectUser(userID)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: err,
-				})
+				logger.Error(err.Error())
 				return
 			}
 
@@ -199,9 +180,7 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 			user.LastAccessed = time.Now().Unix()
 			_, err = datastore.Provider(ctx).UpdateUser(user)
 			if err != nil {
-				logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-					Error: err,
-				})
+				logger.Error(err.Error())
 			}
 		}()
 	}
@@ -336,16 +315,14 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *models.ProblemDetail) {
 	if pd.Error != nil {
-		logging.Log(zapcore.ErrorLevel, &logging.AppLog{
-			Error: pd.Error,
-		})
+		logger.Error(pd.Error.Error())
 	}
 	respond(w, r, status, "application/json", pd)
 }
 
 func respondJSONDecodeError(w http.ResponseWriter, r *http.Request, title string) {
 	respondErr(w, r, http.StatusBadRequest, &models.ProblemDetail{
-		Title:  utils.AppendStrings("Json parse error. (", title, ")"),
+		Title:  fmt.Sprintf("Json parse error. (%s)", title),
 		Status: http.StatusBadRequest,
 	})
 }

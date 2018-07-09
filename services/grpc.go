@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"reflect"
 	"strings"
+	"syscall"
 
 	"github.com/fatih/structs"
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/swagchat/chat-api/logging"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
-	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
@@ -100,22 +102,20 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
 
-		reply, err := handler(ctx, req)
+		res, err := handler(ctx, req)
 		if err != nil {
 			return nil, err
 		}
 
-		return reply, nil
+		return res, err
 	}
 }
 
-func GrpcRun() {
-	grpcPort := utils.Config().GRPCPort
-	if grpcPort == "" {
-		return
-	}
+// GrpcRun is run GRPC server
+func GrpcRun(ctx context.Context) {
+	cfg := utils.Config()
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", grpcPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
@@ -130,10 +130,23 @@ func GrpcRun() {
 
 	reflection.Register(s)
 
-	if err := s.Serve(lis); err != nil {
-		logging.Log(zapcore.FatalLevel, &logging.AppLog{
-			Message: "GRPC connect failure",
-			Error:   err,
-		})
+	signalChan := make(chan os.Signal)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
+	errCh := make(chan error)
+	go func() {
+		errCh <- s.Serve(lis)
+	}()
+
+	select {
+	case <-ctx.Done():
+		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
+		s.GracefulStop()
+	case signal := <-signalChan:
+		if signal == syscall.SIGTERM || signal == syscall.SIGINT {
+			logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
+			s.GracefulStop()
+		}
+	case err = <-errCh:
+		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", utils.AppName, err))
 	}
 }
