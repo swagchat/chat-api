@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 
+	"github.com/fairway-corp/vision-api/config"
+	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/swagchat/chat-api/handlers"
@@ -18,12 +21,19 @@ import (
 )
 
 func main() {
-	if utils.IsShowVersion {
-		fmt.Printf("API Version %s\nBuild Version %s\n", utils.APIVersion, utils.BuildVersion)
-		return
+	if config.StopRun {
+		os.Exit(0)
 	}
 
 	cfg := utils.Config()
+	compact := &pretty.Config{
+		Compact: true,
+	}
+	logging.Log(zapcore.InfoLevel, &logging.AppLog{
+		Message: fmt.Sprintf("%s start", utils.AppName),
+		Config:  compact.Sprint(cfg),
+	})
+
 	if cfg.Profiling {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)

@@ -2,12 +2,14 @@ package utils
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"strings"
 
+	"github.com/pkg/errors"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -49,8 +51,11 @@ const (
 )
 
 var (
-	cfg           = NewConfig()
-	IsShowVersion bool
+	cfg         = NewConfig()
+	showVersion = false
+	showHelp    = false
+	// StopRun is a flag for stop run server
+	StopRun = false
 )
 
 type config struct {
@@ -201,29 +206,23 @@ type IdP struct {
 func NewConfig() *config {
 	log.SetFlags(log.Llongfile)
 
-	c := &config{
-		Version:      "0",
-		HTTPPort:     "8101",
-		GRPCPort:     "",
-		Profiling:    false,
-		DemoPage:     false,
-		ErrorLogging: false,
-		Logging:      &Logging{},
-		PBroker:      &PBroker{},
-		SBroker:      &SBroker{},
-		Storage:      &Storage{},
-		Datastore: &Datastore{
-			Dynamic: false,
-		},
-		Notification: &Notification{},
-		IdP:          &IdP{},
+	c := defaultSetting()
+	c.loadEnv()
+
+	err := c.parseFlag(os.Args[1:])
+	if err != nil {
+		log.Fatalf("Failed to load setting. %v", err)
 	}
 
-	c.loadYaml()
-	c.loadEnvironment()
-	c.parseFlag()
-	c.after()
+	err = c.validate()
+	if err != nil {
+		log.Fatalf("Invalid setting. %v", err)
+	}
 
+	err = c.after()
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
 	return c
 }
 
@@ -232,12 +231,46 @@ func Config() *config {
 	return cfg
 }
 
-func (c *config) loadYaml() {
-	buf, _ := ioutil.ReadFile("config/app.yaml")
+func defaultSetting() *config {
+	return &config{
+		Version:      "0",
+		HTTPPort:     "8101",
+		GRPCPort:     "",
+		Profiling:    false,
+		DemoPage:     false,
+		ErrorLogging: false,
+		Logging: &Logging{
+			Level: "development",
+		},
+		PBroker: &PBroker{},
+		SBroker: &SBroker{},
+		Storage: &Storage{
+			Provider: "local",
+			Local: struct {
+				Path string
+			}{
+				Path: "data/assets",
+			},
+		},
+		Datastore: &Datastore{
+			Dynamic:  false,
+			Provider: "sqlite",
+			SQLite: struct {
+				DirPath string `yaml:"dirPath"`
+			}{
+				DirPath: "",
+			},
+		},
+		Notification: &Notification{},
+		IdP:          &IdP{},
+	}
+}
+
+func (c *config) loadYaml(buf []byte) {
 	yaml.Unmarshal(buf, c)
 }
 
-func (c *config) loadEnvironment() {
+func (c *config) loadEnv() {
 	var v string
 
 	if v = os.Getenv("HTTP_PORT"); v != "" {
@@ -562,9 +595,18 @@ func (c *config) loadEnvironment() {
 	}
 }
 
-func (c *config) parseFlag() {
-	flag.BoolVar(&IsShowVersion, "v", false, "")
-	flag.BoolVar(&IsShowVersion, "version", false, "show version")
+func (c *config) parseFlag(args []string) error {
+	if len(args) == 0 {
+		return nil
+	}
+
+	flags := flag.NewFlagSet("ChatAPI Flags", flag.ContinueOnError)
+
+	configPath := ""
+	flags.BoolVar(&showVersion, "v", false, "show version")
+	flags.BoolVar(&showVersion, "version", false, "show version")
+	flags.BoolVar(&showHelp, "h", false, "show help")
+	flags.BoolVar(&showHelp, "help", false, "show help")
 
 	flag.StringVar(&c.HTTPPort, "httpPort", c.HTTPPort, "")
 	flag.StringVar(&c.GRPCPort, "grpcPort", c.GRPCPort, "")
@@ -752,7 +794,41 @@ func (c *config) parseFlag() {
 	flag.StringVar(&c.Notification.AmazonSNS.SecretAccessKey, "notification.amazonsns.secretAccessKey", c.Notification.AmazonSNS.SecretAccessKey, "")
 	flag.StringVar(&c.Notification.AmazonSNS.ApplicationArnIos, "notification.amazonsns.applicationArnIos", c.Notification.AmazonSNS.ApplicationArnIos, "")
 	flag.StringVar(&c.Notification.AmazonSNS.ApplicationArnAndroid, "notification.amazonsns.applicationArnAndroid", c.Notification.AmazonSNS.ApplicationArnAndroid, "")
-	flag.Parse()
+
+	// IdP
+	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
+
+	// IdP Keycloak
+	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
+
+	flags.StringVar(&configPath, "config", "", "config file(yaml format)")
+
+	err := flags.Parse(args)
+	if err != nil {
+		if flag.Lookup("test.") != nil { // for testing
+			return errors.Wrap(err, "")
+		}
+	}
+
+	if showHelp {
+		flags.PrintDefaults()
+		StopRun = true
+		return nil
+	}
+
+	if showVersion {
+		fmt.Printf("API Version %s\nBuild Version %s\n", APIVersion, BuildVersion)
+		StopRun = true
+		return nil
+	}
+
+	if configPath != "" {
+		if !isExists(configPath) {
+			return fmt.Errorf("File not found [%s]", configPath)
+		}
+		buf, _ := ioutil.ReadFile(configPath)
+		c.loadYaml(buf)
+	}
 
 	if profiling == "true" {
 		c.Profiling = true
@@ -772,48 +848,26 @@ func (c *config) parseFlag() {
 		c.ErrorLogging = false
 	}
 
-	// IdP
-	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
-
-	// IdP Keycloak
-	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
+	return nil
 }
 
-func (c *config) after() {
-	if c.Logging.Level == "" {
-		c.Logging.Level = "development"
-	}
+func isExists(name string) bool {
+	_, err := os.Stat(name)
+	return !os.IsNotExist(err)
+}
 
-	if c.Storage.Provider == "" {
-		c.Storage.Provider = "local"
-	}
-	if c.Storage.Provider == "local" && c.Storage.Local.Path == "" {
-		c.Storage.Local.Path = "data/assets"
-	}
+func (c *config) validate() error {
+	// TODO validate config
+	return nil
+}
 
-	if c.Datastore.Provider == "" {
-		c.Datastore.Provider = "sqlite"
-	}
-	if c.Datastore.Provider == "sqlite" {
-		if c.Datastore.SQLite.DirPath == "" {
-			c.Datastore.SQLite.DirPath = "/tmp"
+func (c *config) after() error {
+	if c.Datastore.Provider == "sqlite" && c.Datastore.SQLite.DirPath == "" {
+		tmpDirPath, err := ioutil.TempDir("", "")
+		if err != nil {
+			return err
 		}
+		c.Datastore.SQLite.DirPath = tmpDirPath
 	}
-
-	if c.Datastore.Provider == "mysql" {
-		if c.Datastore.MaxIdleConnection == "" {
-			c.Datastore.MaxIdleConnection = "10"
-		}
-		if c.Datastore.MaxIdleConnection == "" {
-			c.Datastore.MaxOpenConnection = "10"
-		}
-	}
-
-	if c.Datastore.Database == "" {
-		c.Datastore.Database = "swagchat"
-	}
-
-	if c.IdP.Provider == "" {
-		c.IdP.Provider = "local"
-	}
+	return nil
 }
