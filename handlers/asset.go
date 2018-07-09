@@ -20,8 +20,7 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		pd := &models.ProblemDetail{
-			Title:     "MultipartForm parse error. (Create asset item)",
-			ErrorName: models.ERROR_NAME_INVALID_JSON,
+			Title: "MultipartForm parse error. (Create asset item)",
 		}
 		respondErr(w, r, http.StatusBadRequest, pd)
 		return

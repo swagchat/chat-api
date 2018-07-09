@@ -10,9 +10,8 @@ import (
 func (ru *RoomUser) IsValid() *models.ProblemDetail {
 	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
 		return &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			Title:  "Request parameter error. (Create room user item)",
+			Status: http.StatusBadRequest,
 			InvalidParams: []models.InvalidParam{
 				models.InvalidParam{
 					Name:   "roomId",
@@ -24,9 +23,8 @@ func (ru *RoomUser) IsValid() *models.ProblemDetail {
 
 	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
 		return &models.ProblemDetail{
-			Title:     "Request parameter error. (Create room user item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			Title:  "Request parameter error. (Create room user item)",
+			Status: http.StatusBadRequest,
 			InvalidParams: []models.InvalidParam{
 				models.InvalidParam{
 					Name:   "userId",

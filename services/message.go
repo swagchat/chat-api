@@ -25,9 +25,8 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 		room, pd := selectRoom(ctx, post.RoomID)
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
-				Title:     "Request parameter error. (Create message item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				Title:  "Request parameter error. (Create message item)",
+				Status: http.StatusBadRequest,
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "roomId",
@@ -41,9 +40,8 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 		user, pd := selectUser(ctx, post.UserID, datastore.WithRoles(true))
 		if pd != nil {
 			errors = append(errors, &models.ProblemDetail{
-				Title:     "Request parameter error. (Create message item)",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				Title:  "Request parameter error. (Create message item)",
+				Status: http.StatusBadRequest,
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "userId",
@@ -116,9 +114,8 @@ func PostMessage(ctx context.Context, posts *models.Messages) *models.ResponseMe
 func GetMessage(ctx context.Context, messageID string) (*models.Message, *models.ProblemDetail) {
 	if messageID == "" {
 		return nil, &models.ProblemDetail{
-			Title:     "Request parameter error. (Get message item)",
-			Status:    http.StatusBadRequest,
-			ErrorName: models.ERROR_NAME_INVALID_PARAM,
+			Title:  "Request parameter error. (Get message item)",
+			Status: http.StatusBadRequest,
 			InvalidParams: []models.InvalidParam{
 				models.InvalidParam{
 					Name:   "messageId",

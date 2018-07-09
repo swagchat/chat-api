@@ -263,9 +263,9 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		if requestUserID != "" && resourceUserID != "" {
 			if requestUserID != resourceUserID {
 				respondErr(w, r, http.StatusUnauthorized, &models.ProblemDetail{
-					Status: http.StatusUnauthorized,
-					Title:  "Not your resource",
-					Detail: fmt.Sprintf("Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
+					Title:   "Not your resource",
+					Message: fmt.Sprintf("Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
+					Status:  http.StatusUnauthorized,
 				})
 				return
 			}
@@ -353,9 +353,8 @@ func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *models.P
 
 func respondJSONDecodeError(w http.ResponseWriter, r *http.Request, title string) {
 	respondErr(w, r, http.StatusBadRequest, &models.ProblemDetail{
-		Title:     utils.AppendStrings("Json parse error. (", title, ")"),
-		Status:    http.StatusBadRequest,
-		ErrorName: models.ERROR_NAME_INVALID_JSON,
+		Title:  utils.AppendStrings("Json parse error. (", title, ")"),
+		Status: http.StatusBadRequest,
 	})
 }
 

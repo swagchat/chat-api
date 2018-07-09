@@ -76,30 +76,6 @@ func Log(level zapcore.Level, al *AppLog) {
 	if al.Kind != "" {
 		fields = append(fields, zap.String("kind", al.Kind))
 	}
-	// if al.UserID != "" {
-	// 	fields = append(fields, zap.String("userId", al.UserID))
-	// }
-	// if al.RoomID != "" {
-	// 	fields = append(fields, zap.String("roomId", al.RoomID))
-	// }
-	// if al.Event != "" {
-	// 	fields = append(fields, zap.String("event", al.Event))
-	// }
-	// if al.Client != "" {
-	// 	fields = append(fields, zap.String("client", al.Client))
-	// }
-	// if al.Useragent != "" {
-	// 	fields = append(fields, zap.String("useragent", al.Useragent))
-	// }
-	// if al.IPAddress != "" {
-	// 	fields = append(fields, zap.String("ipAddress", al.IPAddress))
-	// }
-	// if al.Language != "" {
-	// 	fields = append(fields, zap.String("language", al.Language))
-	// }
-	// if al.Provider != "" {
-	// 	fields = append(fields, zap.String("provider", al.Provider))
-	// }
 	if al.Config != "" {
 		fields = append(fields, zap.String("config", al.Config))
 	}
@@ -107,23 +83,14 @@ func Log(level zapcore.Level, al *AppLog) {
 		fields = append(fields, zap.String("message", al.Message))
 	}
 	if al.ProblemDetail != nil {
-		if al.ProblemDetail.Type != "" {
-			fields = append(fields, zap.String("problem.type", al.ProblemDetail.Type))
-		}
 		if al.ProblemDetail.Status != 0 {
 			fields = append(fields, zap.String("problem.status", fmt.Sprintf("%d", al.ProblemDetail.Status)))
 		}
 		if al.ProblemDetail.Title != "" {
 			fields = append(fields, zap.String("problem.title", al.ProblemDetail.Title))
 		}
-		if al.ProblemDetail.Detail != "" {
-			fields = append(fields, zap.String("problem.detail", al.ProblemDetail.Detail))
-		}
-		if al.ProblemDetail.Instance != "" {
-			fields = append(fields, zap.String("problem.instance", al.ProblemDetail.Instance))
-		}
-		if al.ProblemDetail.ErrorName != "" {
-			fields = append(fields, zap.String("problem.errorName", al.ProblemDetail.ErrorName))
+		if al.ProblemDetail.Message != "" {
+			fields = append(fields, zap.String("problem.detail", al.ProblemDetail.Message))
 		}
 		if al.ProblemDetail.InvalidParams != nil {
 			for i, invalidParam := range al.ProblemDetail.InvalidParams {

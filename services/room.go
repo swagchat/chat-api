@@ -335,9 +335,8 @@ func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail
 		limit, err = strconv.Atoi(limitArray[0])
 		if err != nil {
 			return limit, offset, order, &models.ProblemDetail{
-				Title:     "Request parameter error.",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				Title:  "Request parameter error.",
+				Status: http.StatusBadRequest,
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "limit",
@@ -351,9 +350,8 @@ func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail
 		offset, err = strconv.Atoi(offsetArray[0])
 		if err != nil {
 			return limit, offset, order, &models.ProblemDetail{
-				Title:     "Request parameter error.",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				Title:  "Request parameter error.",
+				Status: http.StatusBadRequest,
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "offset",
@@ -373,9 +371,8 @@ func setPagingParams(params url.Values) (int, int, string, *models.ProblemDetail
 		}
 		if utils.SearchStringValueInSlice(allowedOrders, order) {
 			return limit, offset, order, &models.ProblemDetail{
-				Title:     "Request parameter error.",
-				Status:    http.StatusBadRequest,
-				ErrorName: models.ERROR_NAME_INVALID_PARAM,
+				Title:  "Request parameter error.",
+				Status: http.StatusBadRequest,
 				InvalidParams: []models.InvalidParam{
 					models.InvalidParam{
 						Name:   "order",
@@ -419,9 +416,8 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *models.ProblemDetail
 
 	if !isAuthorized {
 		return &models.ProblemDetail{
-			Title:     "You are not this room member",
-			Status:    http.StatusUnauthorized,
-			ErrorName: models.ERROR_NAME_UNAUTHORIZED,
+			Title:  "You are not this room member",
+			Status: http.StatusUnauthorized,
 		}
 	}
 

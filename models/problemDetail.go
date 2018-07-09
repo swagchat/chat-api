@@ -1,22 +1,18 @@
 package models
 
 const (
-	ERROR_NAME_INVALID_JSON            = "invalid-json"
-	ERROR_NAME_INVALID_PARAM           = "invalid-param"
-	ERROR_NAME_DATABASE_ERROR          = "database-error"
-	ERROR_NAME_NOTIFICATION_ERROR      = "notification-error"
-	ERROR_NAME_OPERATION_NOT_PERMITTED = "operation-not-permitted"
-	ERROR_NAME_UNAUTHORIZED            = "unauthorized"
+	ErrorInvalidParams         = "Invalid params"
+	ErrorDatabase              = "Database error"
+	ErrorNotification          = "Notification error"
+	ErrorOperationNotPermitted = "Operation not permitted"
+	ErrorUnauthorized          = "Unauthorized"
 )
 
 type ProblemDetail struct {
-	Type          string         `json:"type,omitempty"`
 	Title         string         `json:"title,omitempty"`
-	Status        int            `json:"-"`
-	Detail        string         `json:"detail,omitempty"`
-	Instance      string         `json:"instance,omitempty"`
+	Message       string         `json:"message,omitempty"`
 	InvalidParams []InvalidParam `json:"invalidParams,omitempty"`
-	ErrorName     string         `json:"errorName,omitempty"`
+	Status        int            `json:"-"`
 	Error         error          `json:"-"`
 }
 
@@ -24,3 +20,7 @@ type InvalidParam struct {
 	Name   string `json:"name"`
 	Reason string `json:"reason"`
 }
+
+// func (pd *ProblemDetail) Reset()         { *pd = ProblemDetail{} }
+// func (pd *ProblemDetail) String() string { return "problem detail string" }
+// func (pd *ProblemDetail) ProtoMessage()  {}

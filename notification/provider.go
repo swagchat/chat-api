@@ -56,9 +56,8 @@ func Provider() provider {
 
 func createProblemDetail(title string, err error) *models.ProblemDetail {
 	return &models.ProblemDetail{
-		Title:     title,
-		Status:    http.StatusInternalServerError,
-		ErrorName: models.ERROR_NAME_NOTIFICATION_ERROR,
-		Detail:    err.Error(),
+		Title:   title,
+		Message: err.Error(),
+		Status:  http.StatusInternalServerError,
 	}
 }
