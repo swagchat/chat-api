@@ -3,18 +3,18 @@ package datastore
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
 	gorp "gopkg.in/gorp.v2"
 )
 
 type sqliteProvider struct {
-	dirPath  string
-	database string
-	trace    bool
+	dirPath     string
+	database    string
+	enableTrace bool
 }
 
 func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
@@ -33,8 +33,8 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 	}
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	if p.trace {
-		master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+	if p.enableTrace {
+		master.TraceOn("[master]", logger.Logger())
 	}
 	rs.setMaster(master)
 

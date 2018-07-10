@@ -9,7 +9,7 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/shareddefaults","private/protocol","private/protocol/eventstream","private/protocol/eventstream/eventstreamapi","private/protocol/json/jsonutil","private/protocol/jsonrpc","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restjson","private/protocol/restxml","private/protocol/xml/xmlutil","service/lexruntimeservice","service/s3","service/sns","service/sts"]
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/shareddefaults","private/protocol","private/protocol/eventstream","private/protocol/eventstream/eventstreamapi","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sns","service/sts"]
   revision = "bfc1a07cf158c30c41a3eefba8aae043d0bb5bff"
   version = "v1.14.8"
 
@@ -18,6 +18,12 @@
   name = "github.com/betchi/go-gimei"
   packages = ["."]
   revision = "85fcd040ce98665bcb87643f3e273ce26e4274c8"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/betchi/zapper"
+  packages = ["."]
+  revision = "aa614dc70c41e4d0b55d15913adaf9f0a8b83022"
 
 [[projects]]
   name = "github.com/confluentinc/confluent-kafka-go"
@@ -77,6 +83,12 @@
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "0b12d6b5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kylelemons/godebug"
+  packages = ["diff","pretty"]
+  revision = "d65d576e9348f5982d7f6d83682b694e731a45c6"
 
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
@@ -159,7 +171,7 @@
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/api/annotations","googleapis/rpc/status"]
+  packages = ["googleapis/api/annotations","googleapis/rpc/errdetails","googleapis/rpc/status"]
   revision = "32ee49c4dd805befd833990acba36cb75042378c"
 
 [[projects]]
@@ -175,6 +187,12 @@
   version = "v2.0.0"
 
 [[projects]]
+  name = "gopkg.in/natefinch/lumberjack.v2"
+  packages = ["."]
+  revision = "a96e63847dc3c67d17befa69c303767e2f84e54f"
+  version = "v2.1"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -183,6 +201,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "45ba0f6aa3a6b1bf7cd6ea077ca4c52f009e48b74380bb779667a99f31262936"
+  inputs-digest = "75414bc4b6d5d876eae3401052cc4ff1ca213c2291f876b2dc1fee4ec9f92abb"
   solver-name = "gps-cdcl"
   solver-version = 1

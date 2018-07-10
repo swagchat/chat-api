@@ -30,3 +30,7 @@ func newLogger() *zapper.Logger {
 		Filepath:      cfg.Logger.FilePath,
 	})
 }
+
+func Logger() *zapper.Logger {
+	return logger
+}

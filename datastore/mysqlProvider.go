@@ -6,14 +6,13 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
 	"strconv"
 
 	gorp "gopkg.in/gorp.v2"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -25,8 +24,7 @@ type mysqlProvider struct {
 	replicaSis        []*utils.ServerInfo
 	maxIdleConnection string
 	maxOpenConnection string
-
-	trace bool
+	enableTrace       bool
 }
 
 func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
@@ -60,8 +58,8 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 
 		var master *gorp.DbMap
 		master = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
-		if p.trace {
-			master.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+		if p.enableTrace {
+			master.TraceOn("[master]", logger.Logger())
 		}
 		rs.setMaster(master)
 	}
@@ -92,8 +90,8 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 
 			var replica *gorp.DbMap
 			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
-			if p.trace {
-				replica.TraceOn("", log.New(os.Stdout, "sql-trace:", log.Lmicroseconds))
+			if p.enableTrace {
+				replica.TraceOn("[replica]", logger.Logger())
 			}
 			rs.setReplica(replica)
 		}
