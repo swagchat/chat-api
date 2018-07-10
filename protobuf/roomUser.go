@@ -10,27 +10,27 @@ import (
 func (ru *RoomUser) IsValid() *model.ProblemDetail {
 	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
 		return &model.ProblemDetail{
-			Title:  "Request parameter error. (Create room user item)",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []model.InvalidParam{
 				model.InvalidParam{
 					Name:   "roomId",
 					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
 		return &model.ProblemDetail{
-			Title:  "Request parameter error. (Create room user item)",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []model.InvalidParam{
 				model.InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
@@ -75,14 +75,14 @@ type RoomUsers struct {
 func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.ProblemDetail {
 	if len(rus.UserIDs) == 0 {
 		return &model.ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []model.InvalidParam{
 				model.InvalidParam{
 					Name:   "userIds",
 					Reason: "Not set.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
@@ -90,7 +90,7 @@ func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.Problem
 	// 	for _, userId := range rus.UserIds {
 	// 		if userId == r.UserId {
 	// 			return &model.ProblemDetail{
-	// 				Title:  "Request error",
+	// 				Message:  "Invalid params",
 	// 				Status: http.StatusBadRequest,
 	// 				model.InvalidParams: []model.InvalidParam{
 	// 					model.InvalidParam{
@@ -106,14 +106,14 @@ func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.Problem
 	if method == "POST" && r.Type == model.OneOnOne {
 		if len(rus.UserIDs) == 2 {
 			return &model.ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "userIds",
 						Reason: "In case of 1-on-1 room type, It can only update once.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			}
 		}
 	}
@@ -121,14 +121,14 @@ func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.Problem
 	if method == "PUT" && r.Type == model.OneOnOne {
 		if len(r.Users) == 2 {
 			return &model.ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "userIds",
 						Reason: "In case of 1-on-1 room type, It can only update once.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			}
 		}
 	}

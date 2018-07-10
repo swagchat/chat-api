@@ -34,6 +34,8 @@ const (
 	HeaderUsername = "X-Preferred-Username"
 	// HeaderWorkspace is http header for workspace
 	HeaderWorkspace = "X-Realm"
+	// HeaderClientID is http header for clientID
+	HeaderClientID = "X-ClientId"
 	// HeaderRealmRoles is http header for roles
 	HeaderRealmRoles = "X-Realm-Roles"
 	// HeaderAccountRoles is http header for account roles

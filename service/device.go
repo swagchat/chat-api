@@ -19,9 +19,9 @@ func GetDevices(ctx context.Context, userID string) (*model.Devices, *model.Prob
 	devices, err := datastore.Provider(ctx).SelectDevices(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get device failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get device failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -65,9 +65,9 @@ func PutDevice(ctx context.Context, put *model.Device) (*model.Device, *model.Pr
 		deleteDevices, err := datastore.Provider(ctx).SelectDevicesByToken(put.Token)
 		if err != nil {
 			pd := &model.ProblemDetail{
-				Title:  "Update device failed",
-				Status: http.StatusInternalServerError,
-				Error:  err,
+				Message: "Update device failed",
+				Status:  http.StatusInternalServerError,
+				Error:   err,
 			}
 			return nil, pd
 		}
@@ -81,9 +81,9 @@ func PutDevice(ctx context.Context, put *model.Device) (*model.Device, *model.Pr
 				err := datastore.Provider(ctx).DeleteDevice(deleteDevice.UserID, deleteDevice.Platform)
 				if err != nil {
 					pd := &model.ProblemDetail{
-						Title:  "Update device failed",
-						Status: http.StatusInternalServerError,
-						Error:  err,
+						Message: "Update device failed",
+						Status:  http.StatusInternalServerError,
+						Error:   err,
 					}
 					return nil, pd
 				}
@@ -106,9 +106,9 @@ func PutDevice(ctx context.Context, put *model.Device) (*model.Device, *model.Pr
 			err := datastore.Provider(ctx).UpdateDevice(put)
 			if err != nil {
 				pd := &model.ProblemDetail{
-					Title:  "Update device failed",
-					Status: http.StatusInternalServerError,
-					Error:  err,
+					Message: "Update device failed",
+					Status:  http.StatusInternalServerError,
+					Error:   err,
 				}
 				return nil, pd
 			}
@@ -127,9 +127,9 @@ func PutDevice(ctx context.Context, put *model.Device) (*model.Device, *model.Pr
 			device, err = datastore.Provider(ctx).InsertDevice(put)
 			if err != nil {
 				pd := &model.ProblemDetail{
-					Title:  "Update device failed",
-					Status: http.StatusInternalServerError,
-					Error:  err,
+					Message: "Update device failed",
+					Status:  http.StatusInternalServerError,
+					Error:   err,
 				}
 				return nil, pd
 			}
@@ -163,9 +163,9 @@ func DeleteDevice(ctx context.Context, userID string, platform int) *model.Probl
 	err := datastore.Provider(ctx).DeleteDevice(userID, platform)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete device failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete device failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return pd
 	}
@@ -179,16 +179,16 @@ func selectDevice(ctx context.Context, userID string, platform int) (*model.Devi
 	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get device failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get device failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if device == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 	return device, nil
@@ -247,8 +247,8 @@ func subscribe(ctx context.Context, roomUsers []*protobuf.RoomUser, device *mode
 					_, err := datastore.Provider(ctx).UpdateRoom(room)
 					if err != nil {
 						pd := &model.ProblemDetail{
-							Status: http.StatusInternalServerError,
-							Title:  "Update room failed",
+							Message: "Update room failed",
+							Status:  http.StatusInternalServerError,
 						}
 						pdCh <- pd
 					}
@@ -268,9 +268,9 @@ func subscribe(ctx context.Context, roomUsers []*protobuf.RoomUser, device *mode
 						subscription, err := dp.InsertSubscription(subscription)
 						if err != nil {
 							pd := &model.ProblemDetail{
-								Title:  "User registration failed",
-								Status: http.StatusInternalServerError,
-								Error:  err,
+								Message: "User registration failed",
+								Status:  http.StatusInternalServerError,
+								Error:   err,
 							}
 							pdCh <- pd
 						} else {

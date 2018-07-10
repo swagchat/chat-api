@@ -84,27 +84,27 @@ type PayloadUsers struct {
 func (m *Message) IsValid() *ProblemDetail {
 	if m.MessageID != "" && !utils.IsValidID(m.MessageID) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "messageId",
 					Reason: "messageId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if m.Payload == nil {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "payload",
 					Reason: "payload is empty.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
@@ -113,14 +113,14 @@ func (m *Message) IsValid() *ProblemDetail {
 		json.Unmarshal(m.Payload, &pt)
 		if pt.Text == "" {
 			return &ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "payload",
 						Reason: "Text type needs text.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			}
 		}
 	}
@@ -130,20 +130,19 @@ func (m *Message) IsValid() *ProblemDetail {
 		json.Unmarshal(m.Payload, &pi)
 		if pi.Mime == "" {
 			return &ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "payload",
 						Reason: "Image type needs mime.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			}
 		}
 
 		if pi.SourceUrl == "" {
 			return &ProblemDetail{
-				Title:  "Request error",
 				Status: http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
@@ -151,6 +150,7 @@ func (m *Message) IsValid() *ProblemDetail {
 						Reason: "Image type needs sourceUrl.",
 					},
 				},
+				Message: "Invalid params",
 			}
 		}
 	}

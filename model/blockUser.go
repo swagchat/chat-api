@@ -30,14 +30,14 @@ func (reqUIDs *RequestBlockUserIDs) IsValid(userId string) *ProblemDetail {
 	for _, reqUID := range reqUIDs.UserIDs {
 		if reqUID == userId {
 			return &ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "userIds",
 						Reason: "userIds can not include own UserId.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			}
 		}
 	}

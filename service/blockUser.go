@@ -14,9 +14,9 @@ func GetBlockUsers(ctx context.Context, userID string) (*model.BlockUsers, *mode
 	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get block users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get block users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -56,9 +56,9 @@ func PutBlockUsers(ctx context.Context, userID string, reqUIDs *model.RequestBlo
 	err := datastore.Provider(ctx).InsertBlockUsers(blockUsers)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Block user registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Block user registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -66,9 +66,9 @@ func PutBlockUsers(ctx context.Context, userID string, reqUIDs *model.RequestBlo
 	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Block user registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Block user registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -99,9 +99,9 @@ func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *model.Request
 	err := datastore.Provider(ctx).DeleteBlockUser(userID, bUIDs)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete block user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete block user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -109,9 +109,9 @@ func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *model.Request
 	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete block user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete block user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}

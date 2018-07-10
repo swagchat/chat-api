@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 
 // PutRoomUsers is put room users
 func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf.RoomUsers, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start CreateRoomUser. RoomUserReq=[%#v]", put))
 	room, pd := selectRoom(ctx, put.RoomID)
 	if pd != nil {
 		return nil, pd
@@ -28,9 +30,9 @@ func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(put.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Status: http.StatusInternalServerError,
-			Title:  "Get users failed",
-			Error:  err,
+			Message: "Get users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -56,9 +58,9 @@ func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf
 		_, err := datastore.Provider(ctx).UpdateRoom(room)
 		if err != nil {
 			pd := &model.ProblemDetail{
-				Status: http.StatusInternalServerError,
-				Title:  "Get user information failed",
-				Error:  err,
+				Message: "Get user information failed",
+				Status:  http.StatusInternalServerError,
+				Error:   err,
 			}
 			return nil, pd
 		}
@@ -79,9 +81,9 @@ func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf
 	err = datastore.Provider(ctx).InsertRoomUsers(roomUsers)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's user list failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's user list failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -89,9 +91,9 @@ func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf
 	roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(put.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's user list failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's user list failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -102,6 +104,7 @@ func PutRoomUsers(ctx context.Context, put *protobuf.PostRoomUserReq) (*protobuf
 	go subscribeByRoomUsers(ctx, roomUsers)
 	go publishUserJoin(ctx, put.RoomID)
 
+	logger.Info("Finish CreateRoomUser")
 	return returnRoomUsers, nil
 }
 
@@ -121,9 +124,9 @@ func PutRoomUser(ctx context.Context, put *protobuf.RoomUser) (*protobuf.RoomUse
 	roomUser, err := datastore.Provider(ctx).UpdateRoomUser(roomUser)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Room's user registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Room's user registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -159,9 +162,9 @@ func DeleteRoomUsers(ctx context.Context, req *protobuf.DeleteRoomUserReq) (*pro
 	err := datastore.Provider(ctx).DeleteRoomUser(req.RoomID, userIds)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete room's user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete room's user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -169,9 +172,9 @@ func DeleteRoomUsers(ctx context.Context, req *protobuf.DeleteRoomUserReq) (*pro
 	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomIDAndUserIDs(&req.RoomID, userIds)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete room's user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete room's user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -181,9 +184,9 @@ func DeleteRoomUsers(ctx context.Context, req *protobuf.DeleteRoomUserReq) (*pro
 	roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(req.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -197,16 +200,16 @@ func selectRoomUser(ctx context.Context, roomID, userID string) (*protobuf.RoomU
 	roomUser, err := datastore.Provider(ctx).SelectRoomUser(roomID, userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if roomUser == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 	return roomUser, nil
@@ -254,9 +257,9 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser) {
 			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
 				pd := &model.ProblemDetail{
-					Title:  "Subscribe failed",
-					Status: http.StatusInternalServerError,
-					Error:  err,
+					Message: "Subscribe failed",
+					Status:  http.StatusInternalServerError,
+					Error:   err,
 				}
 				pdChan <- pd
 			}
@@ -272,9 +275,9 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser) {
 								err := datastore.Provider(ctx).UpdateDevice(d)
 								if err != nil {
 									pd := &model.ProblemDetail{
-										Title:  "Subscribe failed",
-										Status: http.StatusInternalServerError,
-										Error:  err,
+										Message: "Subscribe failed",
+										Status:  http.StatusInternalServerError,
+										Error:   err,
 									}
 									pdChan <- pd
 								}
@@ -313,8 +316,8 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser)
 			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomID, []string{ru.UserID})
 			if err != nil {
 				pd := &model.ProblemDetail{
-					Title:  "Delete room's user failed",
-					Status: http.StatusInternalServerError,
+					Message: "Delete room's user failed",
+					Status:  http.StatusInternalServerError,
 				}
 				pdChan <- pd
 			}
@@ -322,9 +325,9 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser)
 			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
 				pd := &model.ProblemDetail{
-					Title:  "Subscribe failed",
-					Status: http.StatusInternalServerError,
-					Error:  err,
+					Message: "Subscribe failed",
+					Status:  http.StatusInternalServerError,
+					Error:   err,
 				}
 				pdChan <- pd
 			}
@@ -333,9 +336,9 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*protobuf.RoomUser)
 					subscription, err := datastore.Provider(ctx).SelectSubscription(ru.RoomID, ru.UserID, d.Platform)
 					if err != nil {
 						pd := &model.ProblemDetail{
-							Title:  "User registration failed",
-							Status: http.StatusInternalServerError,
-							Error:  err,
+							Message: "User registration failed",
+							Status:  http.StatusInternalServerError,
+							Error:   err,
 						}
 						pdChan <- pd
 					}
@@ -374,23 +377,23 @@ func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *m
 	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsByUserIDs(requestUserIDs)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Status: http.StatusInternalServerError,
-			Title:  "Getting userIds failed",
-			Error:  err,
+			Message: "Getting userIds failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 
 	if len(existUserIDs) != len(requestUserIDs) {
 		pd := &model.ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []model.InvalidParam{
 				model.InvalidParam{
 					Name:   "userIds",
 					Reason: "It contains a userId that does not exist.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 		return nil, pd
 	}

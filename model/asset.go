@@ -72,8 +72,8 @@ func (a *Asset) MarshalJSON() ([]byte, error) {
 func (a *Asset) IsValidPost() *ProblemDetail {
 	if _, ok := acceptMimes[a.Mime]; !ok {
 		return &ProblemDetail{
-			Title:  fmt.Sprintf("Content-Type is not allowed [%s]", a.Mime),
-			Status: http.StatusBadRequest,
+			Message: fmt.Sprintf("Content-Type is not allowed [%s]", a.Mime),
+			Status:  http.StatusBadRequest,
 		}
 	}
 

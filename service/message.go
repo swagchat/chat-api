@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
@@ -19,40 +20,41 @@ import (
 // PostMessage is post message
 func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMessages {
 	messageIds := make([]string, 0)
-	errors := make([]*model.ProblemDetail, 0)
+	pds := make([]*model.ProblemDetail, 0)
 	for _, post := range posts.Messages {
+		logger.Info(fmt.Sprintf("Start CreateMessage. Message=[%#v]", post))
 		room, pd := selectRoom(ctx, post.RoomID)
 		if pd != nil {
-			errors = append(errors, &model.ProblemDetail{
-				Title:  "Request parameter error. (Create message item)",
-				Status: http.StatusBadRequest,
+			pds = append(pds, &model.ProblemDetail{
+				Message: "Invalid params",
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "roomId",
 						Reason: "roomId is invalid. Not exist room.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			})
 			continue
 		}
 
 		user, pd := selectUser(ctx, post.UserID, datastore.WithRoles(true))
 		if pd != nil {
-			errors = append(errors, &model.ProblemDetail{
-				Title:  "Request parameter error. (Create message item)",
-				Status: http.StatusBadRequest,
+			pds = append(pds, &model.ProblemDetail{
+				Message: "Invalid params",
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "userId",
 						Reason: "userId is invalid. Not exist user.",
 					},
 				},
+				Status: http.StatusBadRequest,
 			})
 			continue
 		}
 
 		if pd := post.IsValid(); pd != nil {
-			errors = append(errors, pd)
+			pds = append(pds, pd)
 			continue
 		}
 
@@ -67,22 +69,24 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 
 		m, _ := datastore.Provider(ctx).SelectMessage(post.MessageID)
 		if m != nil {
-			errors = append(errors, &model.ProblemDetail{
-				Title:  "messageId is already exist",
-				Status: http.StatusConflict,
+			pds = append(pds, &model.ProblemDetail{
+				Message: "messageId is already exist",
+				Status:  http.StatusConflict,
 			})
 		}
 
 		lastMessage, err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
 			pd := &model.ProblemDetail{
-				Title:  "Message registration failed",
-				Status: http.StatusInternalServerError,
-				Error:  err,
+				Message: "Message registration failed",
+				Status:  http.StatusInternalServerError,
+				Error:   errors.Wrap(err, ""),
 			}
-			errors = append(errors, pd)
+			pds = append(pds, pd)
 			continue
 		}
+
+		logger.Debug(lastMessage)
 		messageIds = append(messageIds, post.MessageID)
 
 		// notification
@@ -100,11 +104,15 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 
 		publishMessage(ctx, post)
 		webhookMessage(ctx, post, user)
+		logger.Info(fmt.Sprintf("Finish CreateMessage. Message=[%v]", post))
 	}
 
 	responseMessages := &model.ResponseMessages{
 		MessageIds: messageIds,
-		Errors:     errors,
+		Errors:     pds,
+	}
+	for _, pd := range pds {
+		logger.Error(pd.Error.Error())
 	}
 	return responseMessages
 }
@@ -113,30 +121,30 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.ProblemDetail) {
 	if messageID == "" {
 		return nil, &model.ProblemDetail{
-			Title:  "Request parameter error. (Get message item)",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []model.InvalidParam{
 				model.InvalidParam{
 					Name:   "messageId",
 					Reason: "messageId is required, but it's empty.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "User registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "User registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if message == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 

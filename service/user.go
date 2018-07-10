@@ -23,25 +23,25 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 	user, err := datastore.Provider(ctx).SelectUser(post.UserID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "User registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "User registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if user != nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource already exists",
-			Status: http.StatusConflict,
+			Message: "Resource already exists",
+			Status:  http.StatusConflict,
 		}
 	}
 
 	user, err = datastore.Provider(ctx).InsertUser(post)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "User registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "User registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -53,9 +53,9 @@ func GetUsers(ctx context.Context) (*model.Users, *model.ProblemDetail) {
 	users, err := datastore.Provider(ctx).SelectUsers()
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -70,16 +70,16 @@ func GetUser(ctx context.Context, userID string) (*model.User, *model.ProblemDet
 	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if user == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 
@@ -113,9 +113,9 @@ func PutUser(ctx context.Context, put *model.User) (*model.User, *model.ProblemD
 	user, err := datastore.Provider(ctx).UpdateUser(user)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Update user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Update user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -135,9 +135,9 @@ func DeleteUser(ctx context.Context, userID string) *model.ProblemDetail {
 	devices, err := dsp.SelectDevicesByUserID(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return pd
 	}
@@ -153,9 +153,9 @@ func DeleteUser(ctx context.Context, userID string) *model.ProblemDetail {
 	err = dsp.UpdateUserDeleted(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return pd
 	}
@@ -183,9 +183,9 @@ func GetContacts(ctx context.Context, userID string) (*model.Users, *model.Probl
 	contacts, err := datastore.Provider(ctx).SelectContacts(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get contact list failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get contact list failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -209,16 +209,16 @@ func selectUser(ctx context.Context, userID string, opts ...interface{}) (*model
 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get user failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if user == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 	return user, nil
@@ -250,8 +250,8 @@ func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *m
 
 	if !isAuthorized {
 		return &model.ProblemDetail{
-			Title:  "You do not have permission",
-			Status: http.StatusUnauthorized,
+			Message: "You do not have permission",
+			Status:  http.StatusUnauthorized,
 		}
 	}
 

@@ -35,9 +35,9 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader, size int
 	url, err := storage.Provider().Post(assetInfo)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "File upload failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "File upload failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -46,9 +46,9 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader, size int
 	asset, err = datastore.Provider(ctx).InsertAsset(asset)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "File upload failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "File upload failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -61,9 +61,9 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
 		if err != nil {
 			pd := &model.ProblemDetail{
-				Title:  "Date format error [If-Modified-Since]",
-				Status: http.StatusInternalServerError,
-				Error:  err,
+				Message: "Date format error [If-Modified-Since]",
+				Status:  http.StatusInternalServerError,
+				Error:   err,
 			}
 			return nil, nil, pd
 		}
@@ -80,9 +80,9 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 	bytes, err := storage.Provider().Get(assetInfo)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "File download error",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "File download error",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, nil, pd
 	}
@@ -104,16 +104,16 @@ func selectAsset(ctx context.Context, assetID string) (*model.Asset, *model.Prob
 	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "File download failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "File download failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if asset == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 	return asset, nil

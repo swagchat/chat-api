@@ -173,79 +173,79 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 func (r *Room) IsValidPost() *ProblemDetail {
 	if r.RoomID != "" && !utils.IsValidID(r.RoomID) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "roomId",
 					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if r.UserID == "" {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
 					Reason: "userId is required, but it's empty.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if !utils.IsValidID(r.UserID) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if r.Type == 0 {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "type",
 					Reason: "type is required, but it's empty.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if !(r.Type > 0 && r.Type < RoomTypeEnd) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "type",
 					Reason: "type is incorrect.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SpeechModeEnd) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "speechMode",
 					Reason: "speechMode is incorrect.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
@@ -304,8 +304,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 	if put.Type != 0 {
 		if r.Type == OneOnOne && put.Type != OneOnOne {
 			return &ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
+				Status:  http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "type",
@@ -315,8 +315,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 			}
 		} else if r.Type != OneOnOne && put.Type == OneOnOne {
 			return &ProblemDetail{
-				Title:  "Request error",
-				Status: http.StatusBadRequest,
+				Message: "Invalid params",
+				Status:  http.StatusBadRequest,
 				InvalidParams: []InvalidParam{
 					InvalidParam{
 						Name:   "type",

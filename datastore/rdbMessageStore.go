@@ -105,12 +105,12 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	}
 
 	var users []*model.User
-	query = fmt.Sprintf("SELECT u.* FROM %s AS ru LEFT JOIN AS u ON ru.user_id = u.user_id WHERE room_id = :roomId;", tableNameRoomUser, tableNameUser)
+	query = fmt.Sprintf("SELECT u.* FROM %s AS ru LEFT JOIN %s AS u ON ru.user_id = u.user_id WHERE room_id = :roomId;", tableNameRoomUser, tableNameUser)
 	params = map[string]interface{}{"roomId": message.RoomID}
 	_, err = trans.Select(&users, query, params)
 	if err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, "An error occurred while getting room's users")
+		return "", errors.Wrap(err, fmt.Sprintf("An error occurred while getting room's users. RoomID[%s]", message.RoomID))
 	}
 	for _, user := range users {
 		if user.UserID == message.UserID {

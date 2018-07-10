@@ -54,10 +54,10 @@ func Provider() provider {
 	return p
 }
 
-func createProblemDetail(title string, err error) *model.ProblemDetail {
+func createProblemDetail(msg string, err error) *model.ProblemDetail {
 	return &model.ProblemDetail{
-		Title:   title,
-		Message: err.Error(),
+		Message: msg,
 		Status:  http.StatusInternalServerError,
+		Error:   err,
 	}
 }

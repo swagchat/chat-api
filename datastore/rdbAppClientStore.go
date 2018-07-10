@@ -37,11 +37,10 @@ func rdbInsertAppClient(db, name string) (*model.AppClient, error) {
 	master := RdbStore(db).master()
 
 	appClient := &model.AppClient{
-		Name:         name,
-		ClientID:     utils.GenerateClientID(),
-		ClientSecret: utils.GenerateClientSecret(utils.TokenLength),
-		Created:      time.Now().Unix(),
-		Expired:      0,
+		Name:     name,
+		ClientID: utils.GenerateClientID(),
+		Created:  time.Now().Unix(),
+		Expired:  0,
 	}
 	err := master.Insert(appClient)
 	if err != nil {

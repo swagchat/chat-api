@@ -26,27 +26,27 @@ func IsValidDevicePlatform(platform int) bool {
 func (d *Device) IsValid() *ProblemDetail {
 	if !(d.Platform > 0 && d.Platform < int(PlatformEnd)) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Request error",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "device.platform",
 					Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if d.Token == "" {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Request error",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "token",
 					Reason: "token is required, but it's empty.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 

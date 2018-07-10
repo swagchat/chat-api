@@ -157,40 +157,40 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 func (u *User) IsValidPost() *ProblemDetail {
 	if u.UserID != "" && !utils.IsValidID(u.UserID) {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if len(u.UserID) > 36 {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. A string up to 36 symbols long.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 
 	if u.Name == "" {
 		return &ProblemDetail{
-			Title:  "Request error",
-			Status: http.StatusBadRequest,
+			Message: "Invalid params",
 			InvalidParams: []InvalidParam{
 				InvalidParam{
 					Name:   "name",
 					Reason: "name is required, but it's empty.",
 				},
 			},
+			Status: http.StatusBadRequest,
 		}
 	}
 

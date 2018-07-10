@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -18,6 +19,7 @@ import (
 
 // PostRoom is post room
 func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start CreateRoom. Room=[%#v]", post))
 	_, pd := selectUser(ctx, post.UserID)
 	if pd != nil {
 		return nil, pd
@@ -33,16 +35,16 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.UserIDs[0])
 		if err != nil {
 			pd := &model.ProblemDetail{
-				Title:  "Room registration failed",
-				Status: http.StatusInternalServerError,
-				Error:  err,
+				Message: "Room registration failed",
+				Status:  http.StatusInternalServerError,
+				Error:   err,
 			}
 			return nil, pd
 		}
 		if roomUser != nil {
 			return nil, &model.ProblemDetail{
-				Title:  "Resource already exists",
-				Status: http.StatusConflict,
+				Message: "Resource already exists",
+				Status:  http.StatusConflict,
 			}
 		}
 	}
@@ -77,9 +79,9 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	room, err := datastore.Provider(ctx).InsertRoom(post, rus)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Room registration failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Room registration failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -87,9 +89,9 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -98,9 +100,9 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(room.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -109,6 +111,7 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	go subscribeByRoomUsers(ctx, roomUsers)
 	go publishUserJoin(ctx, room.RoomID)
 
+	logger.Info(fmt.Sprintf("Finish CreateRoom. Room=[%#v]", room))
 	return room, nil
 }
 
@@ -117,9 +120,9 @@ func GetRooms(ctx context.Context, values url.Values) (*model.Rooms, *model.Prob
 	rooms, err := datastore.Provider(ctx).SelectRooms()
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get rooms failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get rooms failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -127,9 +130,9 @@ func GetRooms(ctx context.Context, values url.Values) (*model.Rooms, *model.Prob
 	count, err := datastore.Provider(ctx).SelectCountRooms()
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room count failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room count failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -155,9 +158,9 @@ func GetRoom(ctx context.Context, roomID string) (*model.Room, *model.ProblemDet
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -166,9 +169,9 @@ func GetRoom(ctx context.Context, roomID string) (*model.Room, *model.ProblemDet
 	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -194,9 +197,9 @@ func PutRoom(ctx context.Context, put *model.Room) (*model.Room, *model.ProblemD
 	room, err := datastore.Provider(ctx).UpdateRoom(room)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Update room failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Update room failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -204,9 +207,9 @@ func PutRoom(ctx context.Context, put *model.Room) (*model.Room, *model.ProblemD
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room's users failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room's users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -232,9 +235,9 @@ func DeleteRoom(ctx context.Context, roomID string) *model.ProblemDetail {
 	err := datastore.Provider(ctx).UpdateRoomDeleted(roomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Delete room failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Delete room failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return pd
 	}
@@ -267,9 +270,9 @@ func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*mo
 	messages, err := datastore.Provider(ctx).SelectMessages(user.Roles, roomID, limit, offset, order)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room messages failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room messages failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -280,9 +283,9 @@ func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*mo
 	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room messages failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room messages failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
@@ -297,16 +300,16 @@ func selectRoom(ctx context.Context, roomID string) (*model.Room, *model.Problem
 	room, err := datastore.Provider(ctx).SelectRoom(roomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Title:  "Get room failed",
-			Status: http.StatusInternalServerError,
-			Error:  err,
+			Message: "Get room failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return nil, pd
 	}
 	if room == nil {
 		return nil, &model.ProblemDetail{
-			Title:  "Resource not found",
-			Status: http.StatusNotFound,
+			Message: "Resource not found",
+			Status:  http.StatusNotFound,
 		}
 	}
 	return room, nil
@@ -333,8 +336,8 @@ func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail)
 		limit, err = strconv.Atoi(limitArray[0])
 		if err != nil {
 			return limit, offset, order, &model.ProblemDetail{
-				Title:  "Request parameter error.",
-				Status: http.StatusBadRequest,
+				Message: "Request parameter error.",
+				Status:  http.StatusBadRequest,
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "limit",
@@ -348,8 +351,8 @@ func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail)
 		offset, err = strconv.Atoi(offsetArray[0])
 		if err != nil {
 			return limit, offset, order, &model.ProblemDetail{
-				Title:  "Request parameter error.",
-				Status: http.StatusBadRequest,
+				Message: "Request parameter error.",
+				Status:  http.StatusBadRequest,
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "offset",
@@ -369,8 +372,8 @@ func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail)
 		}
 		if utils.SearchStringValueInSlice(allowedOrders, order) {
 			return limit, offset, order, &model.ProblemDetail{
-				Title:  "Request parameter error.",
-				Status: http.StatusBadRequest,
+				Message: "Request parameter error.",
+				Status:  http.StatusBadRequest,
 				InvalidParams: []model.InvalidParam{
 					model.InvalidParam{
 						Name:   "order",
@@ -397,9 +400,9 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *model.ProblemDetail 
 	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Status: http.StatusInternalServerError,
-			Title:  "Get room users failed",
-			Error:  err,
+			Message: "Get room users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
 		}
 		return pd
 	}
@@ -414,8 +417,8 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *model.ProblemDetail 
 
 	if !isAuthorized {
 		return &model.ProblemDetail{
-			Title:  "You are not this room member",
-			Status: http.StatusUnauthorized,
+			Message: "You are not this room member",
+			Status:  http.StatusUnauthorized,
 		}
 	}
 

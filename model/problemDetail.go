@@ -9,11 +9,15 @@ const (
 )
 
 type ProblemDetail struct {
-	Title         string         `json:"title,omitempty"`
-	Message       string         `json:"message,omitempty"`
+	// Message is a error message
+	Message string `json:"message,omitempty"`
+	// Info is a detail of error contents (This can be URL)
+	Info          string         `json:"info,omitempty"`
 	InvalidParams []InvalidParam `json:"invalidParams,omitempty"`
-	Status        int            `json:"-"`
-	Error         error          `json:"-"`
+	// Status is a HTTP status
+	Status int `json:"-"`
+	// Error is a error struct
+	Error error `json:"-"`
 }
 
 type InvalidParam struct {

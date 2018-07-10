@@ -189,16 +189,16 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		isAppClient := false
-		username := r.Header.Get(utils.HeaderUsername)
-		if username != "" {
-			api, err := datastore.Provider(r.Context()).SelectLatestAppClientByClientID(username)
+		clientID := r.Header.Get(utils.HeaderClientID)
+		if clientID != "" {
+			appCli, err := datastore.Provider(r.Context()).SelectLatestAppClientByClientID(clientID)
 			if err != nil {
 				respondErr(w, r, http.StatusInternalServerError, &model.ProblemDetail{
 					Error: err,
 				})
 				return
 			}
-			if api != nil {
+			if appCli != nil {
 				isAppClient = true
 			}
 		}
@@ -212,7 +212,8 @@ func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
 		if !isAppClient {
 			respondErr(w, r, http.StatusUnauthorized, &model.ProblemDetail{
-				Status: http.StatusUnauthorized,
+				Message: "Unauthorized",
+				Status:  http.StatusUnauthorized,
 			})
 			return
 		}
@@ -234,8 +235,7 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		if requestUserID != "" && resourceUserID != "" {
 			if requestUserID != resourceUserID {
 				respondErr(w, r, http.StatusUnauthorized, &model.ProblemDetail{
-					Title:   "Not your resource",
-					Message: fmt.Sprintf("Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
+					Message: fmt.Sprintf("Not your resource. Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
 					Status:  http.StatusUnauthorized,
 				})
 				return
@@ -322,8 +322,8 @@ func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *model.Pr
 
 func respondJSONDecodeError(w http.ResponseWriter, r *http.Request, title string) {
 	respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
-		Title:  fmt.Sprintf("Json parse error. (%s)", title),
-		Status: http.StatusBadRequest,
+		Message: fmt.Sprintf("Json parse error. (%s)", title),
+		Status:  http.StatusBadRequest,
 	})
 }
 
