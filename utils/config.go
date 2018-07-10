@@ -633,14 +633,14 @@ func (c *config) parseFlag(args []string) error {
 	flags.BoolVar(&showHelp, "h", false, "show help")
 	flags.BoolVar(&showHelp, "help", false, "show help")
 
-	flag.StringVar(&c.HTTPPort, "httpPort", c.HTTPPort, "")
-	flag.StringVar(&c.GRPCPort, "grpcPort", c.GRPCPort, "")
+	flags.StringVar(&c.HTTPPort, "httpPort", c.HTTPPort, "")
+	flags.StringVar(&c.GRPCPort, "grpcPort", c.GRPCPort, "")
 
 	var profiling string
-	flag.StringVar(&profiling, "profiling", "", "")
+	flags.StringVar(&profiling, "profiling", "", "")
 
 	var demoPage string
-	flag.StringVar(&demoPage, "demoPage", "", "false")
+	flags.StringVar(&demoPage, "demoPage", "", "false")
 
 	// Logging
 	flags.BoolVar(&c.Logger.EnableConsole, "logger.enableConsole", c.Logger.EnableConsole, "")
@@ -652,37 +652,37 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.Logger.FilePath, "logger.filePath", c.Logger.FilePath, "")
 
 	// Storage
-	flag.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
+	flags.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
 
 	// Storage - Local
-	flag.StringVar(&c.Storage.Local.Path, "storage.local.path", c.Storage.Local.Path, "")
+	flags.StringVar(&c.Storage.Local.Path, "storage.local.path", c.Storage.Local.Path, "")
 
 	// Storage - Google Cloud Storage
-	flag.StringVar(&c.Storage.GCS.ProjectID, "storage.gcs.projectId", c.Storage.GCS.ProjectID, "")
-	flag.StringVar(&c.Storage.GCS.JwtPath, "storage.gcs.jwtPath", c.Storage.GCS.JwtPath, "")
-	flag.StringVar(&c.Storage.GCS.UploadBucket, "storage.gcs.uploadBucket", c.Storage.GCS.UploadBucket, "")
-	flag.StringVar(&c.Storage.GCS.UploadDirectory, "storage.gcs.uploadDirectory", c.Storage.GCS.UploadDirectory, "")
-	flag.StringVar(&c.Storage.GCS.ThumbnailBucket, "storage.gcs.thumbnailBucket", c.Storage.GCS.ThumbnailBucket, "")
-	flag.StringVar(&c.Storage.GCS.ThumbnailDirectory, "storage.gcs.thumbnailDirectory", c.Storage.GCS.ThumbnailDirectory, "")
+	flags.StringVar(&c.Storage.GCS.ProjectID, "storage.gcs.projectId", c.Storage.GCS.ProjectID, "")
+	flags.StringVar(&c.Storage.GCS.JwtPath, "storage.gcs.jwtPath", c.Storage.GCS.JwtPath, "")
+	flags.StringVar(&c.Storage.GCS.UploadBucket, "storage.gcs.uploadBucket", c.Storage.GCS.UploadBucket, "")
+	flags.StringVar(&c.Storage.GCS.UploadDirectory, "storage.gcs.uploadDirectory", c.Storage.GCS.UploadDirectory, "")
+	flags.StringVar(&c.Storage.GCS.ThumbnailBucket, "storage.gcs.thumbnailBucket", c.Storage.GCS.ThumbnailBucket, "")
+	flags.StringVar(&c.Storage.GCS.ThumbnailDirectory, "storage.gcs.thumbnailDirectory", c.Storage.GCS.ThumbnailDirectory, "")
 
 	// Storage - AWS S3
-	flag.StringVar(&c.Storage.AWSS3.Region, "storage.awss3.region", c.Storage.AWSS3.Region, "")
-	flag.StringVar(&c.Storage.AWSS3.AccessKeyID, "storage.awss3.accessKeyId", c.Storage.AWSS3.AccessKeyID, "")
-	flag.StringVar(&c.Storage.AWSS3.SecretAccessKey, "storage.awss3.secretAccessKey", c.Storage.AWSS3.SecretAccessKey, "")
-	flag.StringVar(&c.Storage.AWSS3.UploadBucket, "storage.awss3.uploadBucket", c.Storage.AWSS3.UploadBucket, "")
-	flag.StringVar(&c.Storage.AWSS3.UploadDirectory, "storage.awss3.uploadDirectory", c.Storage.AWSS3.UploadDirectory, "")
-	flag.StringVar(&c.Storage.AWSS3.ThumbnailBucket, "storage.awss3.thumbnailBucket", c.Storage.AWSS3.ThumbnailBucket, "")
-	flag.StringVar(&c.Storage.AWSS3.ThumbnailDirectory, "storage.awss3.thumbnailDirectory", c.Storage.AWSS3.ThumbnailDirectory, "")
+	flags.StringVar(&c.Storage.AWSS3.Region, "storage.awss3.region", c.Storage.AWSS3.Region, "")
+	flags.StringVar(&c.Storage.AWSS3.AccessKeyID, "storage.awss3.accessKeyId", c.Storage.AWSS3.AccessKeyID, "")
+	flags.StringVar(&c.Storage.AWSS3.SecretAccessKey, "storage.awss3.secretAccessKey", c.Storage.AWSS3.SecretAccessKey, "")
+	flags.StringVar(&c.Storage.AWSS3.UploadBucket, "storage.awss3.uploadBucket", c.Storage.AWSS3.UploadBucket, "")
+	flags.StringVar(&c.Storage.AWSS3.UploadDirectory, "storage.awss3.uploadDirectory", c.Storage.AWSS3.UploadDirectory, "")
+	flags.StringVar(&c.Storage.AWSS3.ThumbnailBucket, "storage.awss3.thumbnailBucket", c.Storage.AWSS3.ThumbnailBucket, "")
+	flags.StringVar(&c.Storage.AWSS3.ThumbnailDirectory, "storage.awss3.thumbnailDirectory", c.Storage.AWSS3.ThumbnailDirectory, "")
 
 	// Datastore
-	flag.BoolVar(&c.Datastore.Dynamic, "datastore.dynamic", c.Datastore.Dynamic, "")
-	flag.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
-	flag.StringVar(&c.Datastore.TableNamePrefix, "datastore.tableNamePrefix", c.Datastore.TableNamePrefix, "")
-	flag.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")
-	flag.StringVar(&c.Datastore.Password, "datastore.password", c.Datastore.Password, "")
-	flag.StringVar(&c.Datastore.Database, "datastore.database", c.Datastore.Database, "")
-	flag.StringVar(&c.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", c.Datastore.MaxIdleConnection, "")
-	flag.StringVar(&c.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", c.Datastore.MaxOpenConnection, "")
+	flags.BoolVar(&c.Datastore.Dynamic, "datastore.dynamic", c.Datastore.Dynamic, "")
+	flags.StringVar(&c.Datastore.Provider, "datastore.provider", c.Datastore.Provider, "")
+	flags.StringVar(&c.Datastore.TableNamePrefix, "datastore.tableNamePrefix", c.Datastore.TableNamePrefix, "")
+	flags.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")
+	flags.StringVar(&c.Datastore.Password, "datastore.password", c.Datastore.Password, "")
+	flags.StringVar(&c.Datastore.Database, "datastore.database", c.Datastore.Database, "")
+	flags.StringVar(&c.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", c.Datastore.MaxIdleConnection, "")
+	flags.StringVar(&c.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", c.Datastore.MaxOpenConnection, "")
 
 	var (
 		mHostStr           string
@@ -692,17 +692,17 @@ func (c *config) parseFlag(args []string) error {
 		mClientCertPathStr string
 		mClientKeyPathStr  string
 	)
-	flag.StringVar(&mHostStr, "datastore.masterHost", mHostStr, "")
-	flag.StringVar(&mPortsStr, "datastore.masterPort", mPortsStr, "")
+	flags.StringVar(&mHostStr, "datastore.masterHost", mHostStr, "")
+	flags.StringVar(&mPortsStr, "datastore.masterPort", mPortsStr, "")
 	if mHostStr != "" && mPortsStr != "" {
 		c.Datastore.Master = &ServerInfo{
 			Host: mHostStr,
 			Port: mPortsStr,
 		}
-		flag.StringVar(&mServerNameStr, "datastore.masterServerName", mServerNameStr, "")
-		flag.StringVar(&mServerCaPathStr, "datastore.masterServerCaPath", mServerCaPathStr, "")
-		flag.StringVar(&mClientCertPathStr, "datastore.masterClientCertPath", mClientCertPathStr, "")
-		flag.StringVar(&mClientKeyPathStr, "datastore.masterClientKeyPath", mClientKeyPathStr, "")
+		flags.StringVar(&mServerNameStr, "datastore.masterServerName", mServerNameStr, "")
+		flags.StringVar(&mServerCaPathStr, "datastore.masterServerCaPath", mServerCaPathStr, "")
+		flags.StringVar(&mClientCertPathStr, "datastore.masterClientCertPath", mClientCertPathStr, "")
+		flags.StringVar(&mClientKeyPathStr, "datastore.masterClientKeyPath", mClientKeyPathStr, "")
 		if mServerNameStr != "" && mServerCaPathStr != "" && mClientCertPathStr != "" && mClientKeyPathStr != "" {
 			c.Datastore.Master.ServerName = mServerNameStr
 			c.Datastore.Master.ServerCaPath = mServerCaPathStr
@@ -725,12 +725,12 @@ func (c *config) parseFlag(args []string) error {
 		rClientCertPaths    []string
 		rClientKeyPaths     []string
 	)
-	flag.StringVar(&rHostsStr, "datastore.replicaHosts", rHostsStr, "")
-	flag.StringVar(&rPortsStr, "datastore.replicaPorts", rPortsStr, "")
-	flag.StringVar(&rServerNamesStr, "datastore.replicaServerNames", rServerNamesStr, "")
-	flag.StringVar(&rServerCaPathsStr, "datastore.replicaServerCaPaths", rServerCaPathsStr, "")
-	flag.StringVar(&rClientCertPathsStr, "datastore.replicaClientCertPaths", rClientCertPathsStr, "")
-	flag.StringVar(&rClientKeyPathsStr, "datastore.replicaClientKeyPaths", rClientKeyPathsStr, "")
+	flags.StringVar(&rHostsStr, "datastore.replicaHosts", rHostsStr, "")
+	flags.StringVar(&rPortsStr, "datastore.replicaPorts", rPortsStr, "")
+	flags.StringVar(&rServerNamesStr, "datastore.replicaServerNames", rServerNamesStr, "")
+	flags.StringVar(&rServerCaPathsStr, "datastore.replicaServerCaPaths", rServerCaPathsStr, "")
+	flags.StringVar(&rClientCertPathsStr, "datastore.replicaClientCertPaths", rClientCertPathsStr, "")
+	flags.StringVar(&rClientKeyPathsStr, "datastore.replicaClientKeyPaths", rClientKeyPathsStr, "")
 
 	if rHostsStr != "" {
 		rHosts = strings.Split(rHostsStr, ",")
@@ -773,61 +773,61 @@ func (c *config) parseFlag(args []string) error {
 	}
 
 	// Datastore - SQLite
-	flag.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
+	flags.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
 
 	// PBroker
-	flag.StringVar(&c.PBroker.Provider, "pbroker.provider", c.PBroker.Provider, "")
+	flags.StringVar(&c.PBroker.Provider, "pbroker.provider", c.PBroker.Provider, "")
 
 	// PBroker - Direct
-	flag.StringVar(&c.PBroker.Direct.Endpoint, "pbroker.direct.endpoint", c.PBroker.Direct.Endpoint, "")
+	flags.StringVar(&c.PBroker.Direct.Endpoint, "pbroker.direct.endpoint", c.PBroker.Direct.Endpoint, "")
 
 	// PBroker - kafka
-	flag.StringVar(&c.PBroker.Kafka.Host, "pbroker.kafka.host", c.PBroker.Kafka.Host, "")
-	flag.StringVar(&c.PBroker.Kafka.Port, "pbroker.kafka.port", c.PBroker.Kafka.Port, "")
-	flag.StringVar(&c.PBroker.Kafka.GroupID, "pbroker.kafka.groupId", c.PBroker.Kafka.GroupID, "")
-	flag.StringVar(&c.PBroker.Kafka.Topic, "pbroker.kafka.topic", c.PBroker.Kafka.Topic, "")
+	flags.StringVar(&c.PBroker.Kafka.Host, "pbroker.kafka.host", c.PBroker.Kafka.Host, "")
+	flags.StringVar(&c.PBroker.Kafka.Port, "pbroker.kafka.port", c.PBroker.Kafka.Port, "")
+	flags.StringVar(&c.PBroker.Kafka.GroupID, "pbroker.kafka.groupId", c.PBroker.Kafka.GroupID, "")
+	flags.StringVar(&c.PBroker.Kafka.Topic, "pbroker.kafka.topic", c.PBroker.Kafka.Topic, "")
 
 	// PBroker - NSQ
-	flag.StringVar(&c.PBroker.NSQ.NsqlookupdHost, "pbroker.nsq.nsqlookupdHost", c.PBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
-	flag.StringVar(&c.PBroker.NSQ.NsqlookupdPort, "pbroker.nsq.nsqlookupdPort", c.PBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
-	flag.StringVar(&c.PBroker.NSQ.NsqdHost, "pbroker.nsq.nsqdHost", c.PBroker.NSQ.NsqdHost, "Host name of nsqd")
-	flag.StringVar(&c.PBroker.NSQ.NsqdPort, "pbroker.nsq.nsqdPort", c.PBroker.NSQ.NsqdPort, "Port no of nsqd")
-	flag.StringVar(&c.PBroker.NSQ.Topic, "pbroker.nsq.topic", c.PBroker.NSQ.Topic, "Topic name")
-	flag.StringVar(&c.PBroker.NSQ.Channel, "pbroker.nsq.channel", c.PBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+	flags.StringVar(&c.PBroker.NSQ.NsqlookupdHost, "pbroker.nsq.nsqlookupdHost", c.PBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flags.StringVar(&c.PBroker.NSQ.NsqlookupdPort, "pbroker.nsq.nsqlookupdPort", c.PBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flags.StringVar(&c.PBroker.NSQ.NsqdHost, "pbroker.nsq.nsqdHost", c.PBroker.NSQ.NsqdHost, "Host name of nsqd")
+	flags.StringVar(&c.PBroker.NSQ.NsqdPort, "pbroker.nsq.nsqdPort", c.PBroker.NSQ.NsqdPort, "Port no of nsqd")
+	flags.StringVar(&c.PBroker.NSQ.Topic, "pbroker.nsq.topic", c.PBroker.NSQ.Topic, "Topic name")
+	flags.StringVar(&c.PBroker.NSQ.Channel, "pbroker.nsq.channel", c.PBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
 
 	// SBroker
-	flag.StringVar(&c.SBroker.Provider, "sbroker.provider", c.SBroker.Provider, "")
+	flags.StringVar(&c.SBroker.Provider, "sbroker.provider", c.SBroker.Provider, "")
 
 	// SBroker - kafka
-	flag.StringVar(&c.SBroker.Kafka.Host, "sbroker.kafka.host", c.SBroker.Kafka.Host, "")
-	flag.StringVar(&c.SBroker.Kafka.Port, "sbroker.kafka.port", c.SBroker.Kafka.Port, "")
-	flag.StringVar(&c.SBroker.Kafka.GroupID, "sbroker.kafka.groupId", c.SBroker.Kafka.GroupID, "")
-	flag.StringVar(&c.SBroker.Kafka.Topic, "sbroker.kafka.topic", c.SBroker.Kafka.Topic, "")
+	flags.StringVar(&c.SBroker.Kafka.Host, "sbroker.kafka.host", c.SBroker.Kafka.Host, "")
+	flags.StringVar(&c.SBroker.Kafka.Port, "sbroker.kafka.port", c.SBroker.Kafka.Port, "")
+	flags.StringVar(&c.SBroker.Kafka.GroupID, "sbroker.kafka.groupId", c.SBroker.Kafka.GroupID, "")
+	flags.StringVar(&c.SBroker.Kafka.Topic, "sbroker.kafka.topic", c.SBroker.Kafka.Topic, "")
 
 	// SBroker - NSQ
-	flag.StringVar(&c.SBroker.NSQ.NsqlookupdHost, "sbroker.nsq.nsqlookupdHost", c.SBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
-	flag.StringVar(&c.SBroker.NSQ.NsqlookupdPort, "sbroker.nsq.nsqlookupdPort", c.SBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
-	flag.StringVar(&c.SBroker.NSQ.NsqdHost, "sbroker.nsq.nsqdHost", c.SBroker.NSQ.NsqdHost, "Host name of nsqd")
-	flag.StringVar(&c.SBroker.NSQ.NsqdPort, "sbroker.nsq.nsqdPort", c.SBroker.NSQ.NsqdPort, "Port no of nsqd")
-	flag.StringVar(&c.SBroker.NSQ.Topic, "sbroker.nsq.topic", c.SBroker.NSQ.Topic, "Topic name")
-	flag.StringVar(&c.SBroker.NSQ.Channel, "sbroker.nsq.channel", c.SBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+	flags.StringVar(&c.SBroker.NSQ.NsqlookupdHost, "sbroker.nsq.nsqlookupdHost", c.SBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flags.StringVar(&c.SBroker.NSQ.NsqlookupdPort, "sbroker.nsq.nsqlookupdPort", c.SBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flags.StringVar(&c.SBroker.NSQ.NsqdHost, "sbroker.nsq.nsqdHost", c.SBroker.NSQ.NsqdHost, "Host name of nsqd")
+	flags.StringVar(&c.SBroker.NSQ.NsqdPort, "sbroker.nsq.nsqdPort", c.SBroker.NSQ.NsqdPort, "Port no of nsqd")
+	flags.StringVar(&c.SBroker.NSQ.Topic, "sbroker.nsq.topic", c.SBroker.NSQ.Topic, "Topic name")
+	flags.StringVar(&c.SBroker.NSQ.Channel, "sbroker.nsq.channel", c.SBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
 
 	// Notification
-	flag.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")
-	flag.StringVar(&c.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", c.Notification.RoomTopicNamePrefix, "")
+	flags.StringVar(&c.Notification.Provider, "notification.provider", c.Notification.Provider, "")
+	flags.StringVar(&c.Notification.RoomTopicNamePrefix, "notification.roomTopicNamePrefix", c.Notification.RoomTopicNamePrefix, "")
 
 	// Notification - Amazon SNS
-	flag.StringVar(&c.Notification.AmazonSNS.Region, "notification.amazonsns.region", c.Notification.AmazonSNS.Region, "")
-	flag.StringVar(&c.Notification.AmazonSNS.AccessKeyID, "notification.amazonsns.accessKeyId", c.Notification.AmazonSNS.AccessKeyID, "")
-	flag.StringVar(&c.Notification.AmazonSNS.SecretAccessKey, "notification.amazonsns.secretAccessKey", c.Notification.AmazonSNS.SecretAccessKey, "")
-	flag.StringVar(&c.Notification.AmazonSNS.ApplicationArnIos, "notification.amazonsns.applicationArnIos", c.Notification.AmazonSNS.ApplicationArnIos, "")
-	flag.StringVar(&c.Notification.AmazonSNS.ApplicationArnAndroid, "notification.amazonsns.applicationArnAndroid", c.Notification.AmazonSNS.ApplicationArnAndroid, "")
+	flags.StringVar(&c.Notification.AmazonSNS.Region, "notification.amazonsns.region", c.Notification.AmazonSNS.Region, "")
+	flags.StringVar(&c.Notification.AmazonSNS.AccessKeyID, "notification.amazonsns.accessKeyId", c.Notification.AmazonSNS.AccessKeyID, "")
+	flags.StringVar(&c.Notification.AmazonSNS.SecretAccessKey, "notification.amazonsns.secretAccessKey", c.Notification.AmazonSNS.SecretAccessKey, "")
+	flags.StringVar(&c.Notification.AmazonSNS.ApplicationArnIos, "notification.amazonsns.applicationArnIos", c.Notification.AmazonSNS.ApplicationArnIos, "")
+	flags.StringVar(&c.Notification.AmazonSNS.ApplicationArnAndroid, "notification.amazonsns.applicationArnAndroid", c.Notification.AmazonSNS.ApplicationArnAndroid, "")
 
 	// IdP
-	flag.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
+	flags.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
 
 	// IdP Keycloak
-	flag.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
+	flags.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
 
 	flags.StringVar(&configPath, "config", "", "config file(yaml format)")
 
