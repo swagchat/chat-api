@@ -35,17 +35,17 @@ func Provider(ctx context.Context) provider {
 		dsCfg.Database = ctx.Value(utils.CtxWorkspace).(string)
 	}
 
-	enableTrace := false
-	if cfg.Logger.ConsoleLevel == "debug" {
-		enableTrace = true
+	enableLogging := false
+	if cfg.Datastore.EnableLogging {
+		enableLogging = true
 	}
 
 	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
-			dirPath:     dsCfg.SQLite.DirPath,
-			database:    dsCfg.Database,
-			enableTrace: enableTrace,
+			dirPath:       dsCfg.SQLite.DirPath,
+			database:      dsCfg.Database,
+			enableLogging: enableLogging,
 		}
 	case "mysql":
 		p = &mysqlProvider{
@@ -56,7 +56,7 @@ func Provider(ctx context.Context) provider {
 			replicaSis:        dsCfg.Replicas,
 			maxIdleConnection: dsCfg.MaxIdleConnection,
 			maxOpenConnection: dsCfg.MaxOpenConnection,
-			enableTrace:       enableTrace,
+			enableLogging:     enableLogging,
 		}
 	case "gcSql":
 		p = &gcpSQLProvider{
@@ -67,7 +67,7 @@ func Provider(ctx context.Context) provider {
 			replicaSis:        dsCfg.Replicas,
 			maxIdleConnection: dsCfg.MaxIdleConnection,
 			maxOpenConnection: dsCfg.MaxOpenConnection,
-			enableTrace:       enableTrace,
+			enableLogging:     enableLogging,
 		}
 	}
 

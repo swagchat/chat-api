@@ -12,9 +12,9 @@ import (
 )
 
 type sqliteProvider struct {
-	dirPath     string
-	database    string
-	enableTrace bool
+	dirPath       string
+	database      string
+	enableLogging bool
 }
 
 func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
@@ -33,7 +33,7 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 	}
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	if p.enableTrace {
+	if p.enableLogging {
 		master.TraceOn("[master]", logger.Logger())
 	}
 	rs.setMaster(master)

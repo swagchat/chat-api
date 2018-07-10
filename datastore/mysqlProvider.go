@@ -24,7 +24,7 @@ type mysqlProvider struct {
 	replicaSis        []*utils.ServerInfo
 	maxIdleConnection string
 	maxOpenConnection string
-	enableTrace       bool
+	enableLogging     bool
 }
 
 func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
@@ -58,7 +58,7 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 
 		var master *gorp.DbMap
 		master = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
-		if p.enableTrace {
+		if p.enableLogging {
 			master.TraceOn("[master]", logger.Logger())
 		}
 		rs.setMaster(master)
@@ -90,7 +90,7 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 
 			var replica *gorp.DbMap
 			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
-			if p.enableTrace {
+			if p.enableLogging {
 				replica.TraceOn("[replica]", logger.Logger())
 			}
 			rs.setReplica(replica)

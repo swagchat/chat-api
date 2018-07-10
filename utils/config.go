@@ -129,6 +129,7 @@ type Datastore struct {
 	MaxOpenConnection string `yaml:"maxOpenConnection"`
 	Master            *ServerInfo
 	Replicas          []*ServerInfo
+	EnableLogging     bool `yaml:"enableLogging"`
 
 	// SQLite
 	SQLite struct {
@@ -264,9 +265,10 @@ func defaultSetting() *config {
 			},
 		},
 		Datastore: &Datastore{
-			Dynamic:  false,
-			Provider: "sqlite",
-			Database: "swagchat",
+			Dynamic:       false,
+			Provider:      "sqlite",
+			Database:      "swagchat",
+			EnableLogging: false,
 			SQLite: struct {
 				DirPath string `yaml:"dirPath"`
 			}{
@@ -485,6 +487,9 @@ func (c *config) loadEnv() {
 				c.Datastore.Replicas[i].ClientKeyPath = rClientKeyPath[i]
 			}
 		}
+	}
+	if v = os.Getenv("SWAG_DATASTORE_ENABLE_LOGGING"); v == "true" {
+		c.Datastore.EnableLogging = true
 	}
 
 	// Datastore - SQLite
@@ -771,6 +776,8 @@ func (c *config) parseFlag(args []string) error {
 			}
 		}
 	}
+
+	flags.BoolVar(&c.Datastore.EnableLogging, "datastore.enableLogging", c.Datastore.EnableLogging, "")
 
 	// Datastore - SQLite
 	flags.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
