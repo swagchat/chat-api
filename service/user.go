@@ -20,7 +20,7 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 
 	post.BeforePost()
 
-	user, err := datastore.Provider(ctx).SelectUser(post.UserID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
+	user, err := datastore.Provider(ctx).SelectUser(post.UserID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "User registration failed",
