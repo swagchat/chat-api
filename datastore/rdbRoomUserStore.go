@@ -19,7 +19,7 @@ func rdbCreateRoomUserStore(db string) {
 	tableMap.SetUniqueTogether("room_id", "user_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating roomUser. %v.", err))
 		return
 	}
 }
@@ -28,7 +28,8 @@ func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) erro
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while recreating roomUser. %v.", err))
+		return err
 	}
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
@@ -36,21 +37,24 @@ func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) erro
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while deleting room's users")
+		logger.Error(fmt.Sprintf("An error occurred while recreating roomUser. %v.", err))
+		return err
 	}
 
 	for _, roomUser := range roomUsers {
 		err = trans.Insert(roomUser)
 		if err != nil {
 			trans.Rollback()
-			return errors.Wrap(err, "An error occurred while creating room's users")
+			logger.Error(fmt.Sprintf("An error occurred while recreating roomUser. %v.", err))
+			return err
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while commit creating room's users")
+		logger.Error(fmt.Sprintf("An error occurred while recreating roomUser. %v.", err))
+		return err
 	}
 
 	return nil
@@ -60,20 +64,23 @@ func rdbInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while inserting roomUser. %v.", err))
+		return err
 	}
 
 	for _, roomUser := range roomUsers {
 		ru, err := rdbSelectRoomUser(db, roomUser.RoomID, roomUser.UserID)
 		if err != nil {
 			trans.Rollback()
-			return errors.Wrap(err, "An error occurred while creating room's users")
+			logger.Error(fmt.Sprintf("An error occurred while inserting roomUser. %v.", err))
+			return err
 		}
 		if ru == nil {
 			err = trans.Insert(roomUser)
 			if err != nil {
 				trans.Rollback()
-				return errors.Wrap(err, "An error occurred while creating room's user")
+				logger.Error(fmt.Sprintf("An error occurred while inserting roomUser. %v.", err))
+				return err
 			}
 		}
 	}
@@ -81,7 +88,8 @@ func rdbInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) error {
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while commit creating room's user items")
+		logger.Error(fmt.Sprintf("An error occurred while inserting roomUser. %v.", err))
+		return err
 	}
 
 	return nil
@@ -98,7 +106,8 @@ func rdbSelectRoomUser(db, roomID, userID string) (*protobuf.RoomUser, error) {
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting room's users")
+		logger.Error(fmt.Sprintf("An error occurred while getting roomUser. %v.", err))
+		return nil, err
 	}
 
 	if len(roomUsers) == 1 {
@@ -123,7 +132,8 @@ WHERE room_id IN (
 	}
 	_, err := replica.Select(&roomUsers, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting room's user")
+		logger.Error(fmt.Sprintf("An error occurred while getting roomUser for OneOnOne. %v.", err))
+		return nil, err
 	}
 
 	if len(roomUsers) == 1 {

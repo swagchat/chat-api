@@ -32,7 +32,7 @@ func GetDevices(ctx context.Context, userID string) (*model.Devices, *model.Prob
 }
 
 // GetDevice is get device
-func GetDevice(ctx context.Context, userID string, platform int) (*model.Device, *model.ProblemDetail) {
+func GetDevice(ctx context.Context, userID string, platform int32) (*model.Device, *model.ProblemDetail) {
 	device, pd := selectDevice(ctx, userID, platform)
 	if pd != nil {
 		return nil, pd
@@ -142,7 +142,7 @@ func PutDevice(ctx context.Context, put *model.Device) (*model.Device, *model.Pr
 }
 
 // DeleteDevice is delete device
-func DeleteDevice(ctx context.Context, userID string, platform int) *model.ProblemDetail {
+func DeleteDevice(ctx context.Context, userID string, platform int32) *model.ProblemDetail {
 	// User existence check
 	_, pd := selectUser(ctx, userID)
 	if pd != nil {
@@ -175,7 +175,7 @@ func DeleteDevice(ctx context.Context, userID string, platform int) *model.Probl
 	return nil
 }
 
-func selectDevice(ctx context.Context, userID string, platform int) (*model.Device, *model.ProblemDetail) {
+func selectDevice(ctx context.Context, userID string, platform int32) (*model.Device, *model.ProblemDetail) {
 	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
 	if err != nil {
 		pd := &model.ProblemDetail{
@@ -268,7 +268,7 @@ func subscribe(ctx context.Context, roomUsers []*protobuf.RoomUser, device *mode
 						subscription, err := dp.InsertSubscription(subscription)
 						if err != nil {
 							pd := &model.ProblemDetail{
-								Message: "User registration failed",
+								Message: "Create subscription failed",
 								Status:  http.StatusInternalServerError,
 								Error:   err,
 							}

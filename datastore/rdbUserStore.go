@@ -25,7 +25,7 @@ func rdbCreateUserStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating user table. %v.", err))
 		return
 	}
 }
@@ -36,14 +36,16 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 	trans, err := master.Begin()
 	if err = trans.Insert(user); err != nil {
 		trans.Rollback()
-		return nil, errors.Wrap(err, "An error occurred while insert user")
+		logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
+		return nil, err
 	}
 
 	if user.Devices != nil {
 		for _, device := range user.Devices {
 			if err := trans.Insert(device); err != nil {
 				trans.Rollback()
-				return nil, errors.Wrap(err, "An error occurred while insert user devices")
+				logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
+				return nil, err
 			}
 		}
 	}
@@ -57,20 +59,23 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 				bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
 				if err != nil {
 					trans.Rollback()
-					return nil, errors.Wrap(err, "An error occurred while get user role")
+					logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
+					return nil, err
 				}
 				if bu == nil {
 					err = trans.Insert(ur)
 					if err != nil {
 						trans.Rollback()
-						return nil, errors.Wrap(err, "An error occurred while creating user role")
+						logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
+						return nil, err
 					}
 				}
 			}
 
 			if err != nil {
 				trans.Rollback()
-				return nil, errors.Wrap(err, "An error occurred while insert user roles")
+				logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
+				return nil, err
 			}
 		}
 	}
@@ -78,20 +83,27 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return nil, errors.Wrap(err, "An error occurred while commit insert user")
+		logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
+		return nil, err
 	}
 
 	return user, nil
 }
 
-func rdbSelectUser(db, userID string, opts ...interface{}) (*model.User, error) {
+func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, error) {
 	replica := RdbStore(db).replica()
+
+	opt := selectUserOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
 	var users []*model.User
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND deleted=0;", tableNameUser)
 	params := map[string]interface{}{"userId": userID}
 	if _, err := replica.Select(&users, query, params); err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting user")
+		logger.Error(fmt.Sprintf("An error occurred while getting user. %v.", err))
+		return nil, err
 	}
 	var user *model.User
 	if len(users) != 1 {
@@ -100,101 +112,95 @@ func rdbSelectUser(db, userID string, opts ...interface{}) (*model.User, error) 
 
 	user = users[0]
 
-	for _, o := range opts {
-		switch v := o.(type) {
-		case WithBlocks:
-			if WithBlocks(v) {
-				userIDs, err := rdbSelectBlockUsersByUserID(db, userID)
-				if err != nil {
-					return nil, errors.Wrap(err, "An error occurred while getting block users")
-				}
-				user.Blocks = userIDs
-			}
-		case WithDevices:
-			if WithDevices(v) {
-				var devices []*model.Device
-				query = fmt.Sprintf("SELECT user_id, platform, token, notification_device_id from %s WHERE user_id=:userId", tableNameDevice)
-				params = map[string]interface{}{"userId": userID}
-				_, err := replica.Select(&devices, query, params)
-				if err != nil {
-					return nil, errors.Wrap(err, "An error occurred while getting devices")
-				}
-				user.Devices = devices
-			}
-		case WithRooms:
-			if WithRooms(v) {
-				var rooms []*model.RoomForUser
-				query := fmt.Sprintf(`SELECT
-r.room_id,
-r.user_id,
-r.name,
-r.picture_url,
-r.information_url,
-r.meta_data,
-r.type,
-r.last_message,
-r.last_message_updated,
-r.can_left,
-r.created,
-r.modified,
-ru.unread_count AS ru_unread_count
-FROM %s AS ru
-LEFT JOIN %s AS r ON ru.room_id=r.room_id
-WHERE ru.user_id=:userId AND r.deleted=0
-ORDER BY r.last_message_updated DESC;`, tableNameRoomUser, tableNameRoom)
-				params := map[string]interface{}{"userId": userID}
-				_, err := replica.Select(&rooms, query, params)
-				if err != nil {
-					return nil, errors.Wrap(err, "An error occurred while getting user rooms")
-				}
-
-				var ufrs []*model.UserForRoom
-				query = fmt.Sprintf(`SELECT
-ru.room_id,
-u.user_id,
-u.name,
-u.picture_url,
-u.information_url,
-u.meta_data,
-u.can_block,
-u.last_accessed,
-u.created,
-u.modified,
-ru.display as ru_display
-FROM %s AS ru
-LEFT JOIN %s AS u ON ru.user_id=u.user_id
-WHERE ru.room_id IN (
-	SELECT room_id FROM %s WHERE user_id=:userId
-)
-AND ru.user_id!=:userId
-ORDER BY ru.room_id`, tableNameRoomUser, tableNameUser, tableNameRoomUser)
-				params = map[string]interface{}{"userId": userID}
-				_, err = replica.Select(&ufrs, query, params)
-				if err != nil {
-					return nil, errors.Wrap(err, "An error occurred while getting user rooms")
-				}
-
-				for _, room := range rooms {
-					room.Users = make([]*model.UserForRoom, 0)
-					for _, ufr := range ufrs {
-						if room.RoomID == ufr.RoomID {
-							room.Users = append(room.Users, ufr)
-						}
-					}
-				}
-				user.Rooms = rooms
-			}
-		case WithRoles:
-			if WithRoles(v) {
-				roleIDs, err := rdbSelectRoleIDsOfUserRole(db, userID)
-				if err != nil {
-					return nil, errors.Wrap(err, "An error occurred while getting user roles")
-				}
-				user.Roles = roleIDs
-			}
-		default:
-			break
+	if opt.withBlocks {
+		userIDs, err := rdbSelectBlockUsersByUserID(db, userID)
+		if err != nil {
+			logger.Error(fmt.Sprintf("An error occurred while getting user. %v.", err))
+			return nil, err
 		}
+		user.Blocks = userIDs
+	}
+
+	if opt.withDevices {
+		var devices []*model.Device
+		query = fmt.Sprintf("SELECT user_id, platform, token, notification_device_id from %s WHERE user_id=:userId", tableNameDevice)
+		params = map[string]interface{}{"userId": userID}
+		_, err := replica.Select(&devices, query, params)
+		if err != nil {
+			logger.Error(fmt.Sprintf("An error occurred while getting user. %v.", err))
+			return nil, err
+		}
+		user.Devices = devices
+	}
+	if opt.withRooms {
+		var rooms []*model.RoomForUser
+		query := fmt.Sprintf(`SELECT
+	r.room_id,
+	r.user_id,
+	r.name,
+	r.picture_url,
+	r.information_url,
+	r.meta_data,
+	r.type,
+	r.last_message,
+	r.last_message_updated,
+	r.can_left,
+	r.created,
+	r.modified,
+	ru.unread_count AS ru_unread_count
+	FROM %s AS ru
+	LEFT JOIN %s AS r ON ru.room_id=r.room_id
+	WHERE ru.user_id=:userId AND r.deleted=0
+	ORDER BY r.last_message_updated DESC;`, tableNameRoomUser, tableNameRoom)
+		params := map[string]interface{}{"userId": userID}
+		_, err := replica.Select(&rooms, query, params)
+		if err != nil {
+			return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+		}
+
+		var ufrs []*model.UserForRoom
+		query = fmt.Sprintf(`SELECT
+	ru.room_id,
+	u.user_id,
+	u.name,
+	u.picture_url,
+	u.information_url,
+	u.meta_data,
+	u.can_block,
+	u.last_accessed,
+	u.created,
+	u.modified,
+	ru.display as ru_display
+	FROM %s AS ru
+	LEFT JOIN %s AS u ON ru.user_id=u.user_id
+	WHERE ru.room_id IN (
+		SELECT room_id FROM %s WHERE user_id=:userId
+	)
+	AND ru.user_id!=:userId
+	ORDER BY ru.room_id`, tableNameRoomUser, tableNameUser, tableNameRoomUser)
+		params = map[string]interface{}{"userId": userID}
+		_, err = replica.Select(&ufrs, query, params)
+		if err != nil {
+			return nil, errors.Wrap(err, "An error occurred while getting user rooms")
+		}
+
+		for _, room := range rooms {
+			room.Users = make([]*model.UserForRoom, 0)
+			for _, ufr := range ufrs {
+				if room.RoomID == ufr.RoomID {
+					room.Users = append(room.Users, ufr)
+				}
+			}
+		}
+		user.Rooms = rooms
+	}
+	if opt.withRoles {
+		roleIDs, err := rdbSelectRoleIDsOfUserRole(db, userID)
+		if err != nil {
+			logger.Error(fmt.Sprintf("An error occurred while getting user. %v.", err))
+			return nil, err
+		}
+		user.Roles = roleIDs
 	}
 
 	return user, nil
@@ -211,7 +217,8 @@ func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*model
 	}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting user")
+		logger.Error(fmt.Sprintf("An error occurred while getting user. %v.", err))
+		return nil, err
 	}
 
 	if len(users) == 1 {
@@ -228,7 +235,8 @@ func rdbSelectUsers(db string) ([]*model.User, error) {
 	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0 ORDER BY unread_count DESC;", tableNameUser)
 	_, err := replica.Select(&users, query)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting user list")
+		logger.Error(fmt.Sprintf("An error occurred while getting users. %v.", err))
+		return nil, err
 	}
 
 	return users, nil
@@ -242,7 +250,8 @@ func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id in (%s) AND deleted = 0;", tableNameUser, userIdsQuery)
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting userIds")
+		logger.Error(fmt.Sprintf("An error occurred while getting userIds. %v.", err))
+		return nil, err
 	}
 
 	resultUserIDs := make([]string, 0)
@@ -257,13 +266,15 @@ func rdbUpdateUser(db string, user *model.User) (*model.User, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while updating user. %v.", err))
+		return nil, err
 	}
 
 	_, err = trans.Update(user)
 	if err != nil {
 		err = trans.Rollback()
-		return nil, errors.Wrap(err, "An error occurred while updating user")
+		logger.Error(fmt.Sprintf("An error occurred while updating user. %v.", err))
+		return nil, err
 	}
 
 	if *user.UnreadCount == 0 {
@@ -274,14 +285,16 @@ func rdbUpdateUser(db string, user *model.User) (*model.User, error) {
 		_, err := trans.Exec(query, params)
 		if err != nil {
 			err = trans.Rollback()
-			return nil, errors.Wrap(err, "An error occurred while updating room user")
+			logger.Error(fmt.Sprintf("An error occurred while updating user. %v.", err))
+			return nil, err
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		err = trans.Rollback()
-		return nil, errors.Wrap(err, "An error occurred while commit updating user")
+		logger.Error(fmt.Sprintf("An error occurred while updating user. %v.", err))
+		return nil, err
 	}
 
 	return user, nil
@@ -298,7 +311,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		err = trans.Rollback()
-		return errors.Wrap(err, "An error occurred while deleting room's users")
+		logger.Error(fmt.Sprintf("An error occurred while deleting user. %v.", err))
+		return err
 	}
 
 	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId;", tableNameDevice)
@@ -308,7 +322,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		err = trans.Rollback()
-		return errors.Wrap(err, "An error occurred while deleting devices")
+		logger.Error(fmt.Sprintf("An error occurred while deleting user. %v.", err))
+		return err
 	}
 
 	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId;", tableNameBlockUser)
@@ -318,7 +333,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		err = trans.Rollback()
-		return errors.Wrap(err, "An error occurred while deleting block users")
+		logger.Error(fmt.Sprintf("An error occurred while deleting user. %v.", err))
+		return err
 	}
 
 	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId;", tableNameSubscription)
@@ -329,7 +345,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		err = trans.Rollback()
-		return errors.Wrap(err, "An error occurred while updating subscriptions")
+		logger.Error(fmt.Sprintf("An error occurred while deleting user. %v.", err))
+		return err
 	}
 
 	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId;", tableNameUser)
@@ -340,13 +357,15 @@ func rdbUpdateUserDeleted(db, userID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		err = trans.Rollback()
-		return errors.Wrap(err, "An error occurred while updating user")
+		logger.Error(fmt.Sprintf("An error occurred while deleting user. %v.", err))
+		return err
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		err = trans.Rollback()
-		return errors.Wrap(err, "An error occurred while commit updating user")
+		logger.Error(fmt.Sprintf("An error occurred while deleting user. %v.", err))
+		return err
 	}
 
 	return nil
@@ -385,7 +404,8 @@ GROUP BY u.user_id ORDER BY u.modified DESC`, tableNameUser, tableNameRoomUser, 
 	}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting contacts")
+		logger.Error(fmt.Sprintf("An error occurred while getting contacts. %v.", err))
+		return nil, err
 	}
 
 	return users, nil

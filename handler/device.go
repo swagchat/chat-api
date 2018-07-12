@@ -30,7 +30,13 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 
 func getDevice(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
-	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
+	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
+			Error: err,
+		})
+	}
+	platform := int32(i)
 
 	device, pd := service.GetDevice(r.Context(), userID, platform)
 	if pd != nil {
@@ -49,8 +55,13 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	put.UserID = bone.GetValue(r, "userId")
-	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
-	put.Platform = platform
+	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
+			Error: err,
+		})
+	}
+	put.Platform = int32(i)
 
 	device, pd := service.PutDevice(r.Context(), &put)
 	if pd != nil {
@@ -67,7 +78,13 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 
 func deleteDevice(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
-	platform, _ := strconv.Atoi(bone.GetValue(r, "platform"))
+	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
+			Error: err,
+		})
+	}
+	platform := int32(i)
 
 	pd := service.DeleteDevice(r.Context(), userID, platform)
 	if pd != nil {

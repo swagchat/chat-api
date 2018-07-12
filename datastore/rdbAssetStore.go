@@ -3,7 +3,6 @@ package datastore
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
@@ -20,7 +19,7 @@ func rdbCreateAssetStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating asset. %v.", err))
 		return
 	}
 }
@@ -29,7 +28,8 @@ func rdbInsertAsset(db string, asset *model.Asset) (*model.Asset, error) {
 	master := RdbStore(db).master()
 
 	if err := master.Insert(asset); err != nil {
-		return nil, errors.Wrap(err, "An error occurred while creating asset")
+		logger.Error(fmt.Sprintf("An error occurred while inserting assett. %v.", err))
+		return nil, err
 	}
 
 	return asset, nil
@@ -43,7 +43,8 @@ func rdbSelectAsset(db, assetID string) (*model.Asset, error) {
 	params := map[string]interface{}{"assetId": assetID}
 	_, err := replica.Select(&assets, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting asset")
+		logger.Error(fmt.Sprintf("An error occurred while getting asset. %v.", err))
+		return nil, err
 	}
 
 	if len(assets) > 0 {

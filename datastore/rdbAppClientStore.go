@@ -6,7 +6,6 @@ import (
 
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
@@ -24,12 +23,8 @@ func rdbCreateAppClientStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating appClient table. %v.", err))
 		return
-	}
-	api, _ := rdbSelectLatestAppClientByName(db, "browser")
-	if api == nil {
-		rdbInsertAppClient(db, "browser")
 	}
 }
 
@@ -44,7 +39,8 @@ func rdbInsertAppClient(db, name string) (*model.AppClient, error) {
 	}
 	err := master.Insert(appClient)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while creating app client")
+		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
+		return nil, err
 	}
 
 	return appClient, nil
@@ -60,7 +56,8 @@ func rdbSelectLatestAppClientByName(db, name string) (*model.AppClient, error) {
 	params := map[string]interface{}{"name": name}
 	_, err := replica.Select(&appClients, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting api")
+		logger.Error(fmt.Sprintf("An error occurred while getting appClient by name. %v.", err))
+		return nil, err
 	}
 
 	if len(appClients) > 0 {
@@ -80,7 +77,8 @@ func rdbSelectLatestAppClientByClientID(db, clientID string) (*model.AppClient, 
 	params := map[string]interface{}{"clientID": clientID}
 	_, err := replica.Select(&appClients, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting api")
+		logger.Error(fmt.Sprintf("An error occurred while getting appClient by clientId. %v.", err))
+		return nil, err
 	}
 
 	if len(appClients) > 0 {

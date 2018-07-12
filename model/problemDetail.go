@@ -11,6 +11,8 @@ const (
 type ProblemDetail struct {
 	// Message is a error message
 	Message string `json:"message,omitempty"`
+	// DeveloperMessage is a error message for developer
+	DeveloperMessage string `json:"developerMessage,omitempty"`
 	// Info is a detail of error contents (This can be URL)
 	Info          string         `json:"info,omitempty"`
 	InvalidParams []InvalidParam `json:"invalidParams,omitempty"`

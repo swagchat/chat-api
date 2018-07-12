@@ -26,7 +26,7 @@ type NotificationChannel chan NotificationResult
 type provider interface {
 	CreateTopic(string) NotificationChannel
 	DeleteTopic(string) NotificationChannel
-	CreateEndpoint(string, int, string) NotificationChannel
+	CreateEndpoint(string, int32, string) NotificationChannel
 	DeleteEndpoint(string) NotificationChannel
 	Subscribe(string, string) NotificationChannel
 	Unsubscribe(string) NotificationChannel

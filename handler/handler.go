@@ -316,6 +316,9 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *model.ProblemDetail) {
 	if pd.Error != nil {
 		logger.Error(pd.Error.Error())
+		if utils.Config().EnableDeveloperMessage {
+			pd.DeveloperMessage = pd.Error.Error()
+		}
 	}
 	respond(w, r, status, "application/json", pd)
 }

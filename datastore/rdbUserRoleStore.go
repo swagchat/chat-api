@@ -3,8 +3,6 @@ package datastore
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/protobuf"
 )
@@ -16,7 +14,7 @@ func rdbCreateUserRoleStore(db string) {
 	tableMap.SetUniqueTogether("user_id", "role_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating userRole table. %v.", err))
 		return
 	}
 }
@@ -25,26 +23,30 @@ func rdbInsertUserRole(db string, ur *protobuf.UserRole) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+		return err
 	}
 
 	bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while getting user role")
+		logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+		return err
 	}
 	if bu == nil {
 		err = trans.Insert(ur)
 		if err != nil {
 			trans.Rollback()
-			return errors.Wrap(err, "An error occurred while creating user roles")
+			logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+			return err
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while commit creating user roles")
+		logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+		return err
 	}
 
 	return nil
@@ -61,7 +63,8 @@ func rdbSelectUserRole(db, userID string, roleID int32) (*protobuf.UserRole, err
 	}
 	_, err := replica.Select(&userRoles, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting user role")
+		logger.Error(fmt.Sprintf("An error occurred while getting userRole. %v.", err))
+		return nil, err
 	}
 
 	if len(userRoles) == 1 {
@@ -81,7 +84,8 @@ func rdbSelectRoleIDsOfUserRole(db, userID string) ([]int32, error) {
 	}
 	_, err := replica.Select(&roleIDs, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting user roles")
+		logger.Error(fmt.Sprintf("An error occurred while getting roleIds. %v.", err))
+		return nil, err
 	}
 
 	return roleIDs, nil
@@ -99,7 +103,8 @@ func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 	_, err := replica.Select(&userIDs, query, params)
 
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting userIds")
+		logger.Error(fmt.Sprintf("An error occurred while inserting userIds. %v.", err))
+		return nil, err
 	}
 
 	return userIDs, nil
@@ -115,7 +120,8 @@ func rdbDeleteUserRole(db string, ur *protobuf.UserRole) error {
 	}
 	_, err := master.Exec(query, params)
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while deleting user role ids")
+		logger.Error(fmt.Sprintf("An error occurred while deleting userRole. %v.", err))
+		return err
 	}
 
 	return nil

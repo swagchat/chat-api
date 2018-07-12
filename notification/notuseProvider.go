@@ -21,7 +21,7 @@ func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationCh
 	return notificationChannel
 }
 
-func (np *notuseProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
+func (np *notuseProvider) CreateEndpoint(userId string, platform int32, deviceToken string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}

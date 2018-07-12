@@ -10,7 +10,7 @@ func (p *gcpSQLProvider) InsertSubscription(room *model.Subscription) (*model.Su
 	return rdbInsertSubscription(p.database, room)
 }
 
-func (p *gcpSQLProvider) SelectSubscription(roomID, userID string, platform int) (*model.Subscription, error) {
+func (p *gcpSQLProvider) SelectSubscription(roomID, userID string, platform int32) (*model.Subscription, error) {
 	return rdbSelectSubscription(p.database, roomID, userID, platform)
 }
 
@@ -22,7 +22,7 @@ func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*m
 	return rdbSelectDeletedSubscriptionsByUserID(p.database, userID)
 }
 
-func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int) ([]*model.Subscription, error) {
+func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int32) ([]*model.Subscription, error) {
 	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.database, userID, platform)
 }
 

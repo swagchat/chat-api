@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
@@ -23,7 +21,7 @@ func rdbCreateRoomStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating room table. %v.", err))
 		return
 	}
 }
@@ -32,13 +30,15 @@ func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Roo
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		return nil, err
 	}
 
 	err = trans.Insert(room)
 	if err != nil {
 		trans.Rollback()
-		return nil, errors.Wrap(err, "An error occurred while creating room")
+		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		return nil, err
 	}
 
 	for _, v := range opts {
@@ -49,7 +49,8 @@ func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Roo
 				err = trans.Insert(ru)
 				if err != nil {
 					trans.Rollback()
-					return nil, errors.Wrap(err, "An error occurred while creating room's users")
+					logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+					return nil, err
 				}
 			}
 		}
@@ -58,7 +59,8 @@ func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Roo
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return nil, errors.Wrap(err, "An error occurred while commit creating room")
+		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		return nil, err
 	}
 
 	return room, nil
@@ -72,7 +74,8 @@ func rdbSelectRoom(db, roomID string) (*model.Room, error) {
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting room")
+		logger.Error(fmt.Sprintf("An error occurred while getting room. %v.", err))
+		return nil, err
 	}
 
 	if len(rooms) == 1 {
@@ -102,7 +105,8 @@ FROM %s
 WHERE deleted = 0;`, tableNameRoom)
 	_, err := replica.Select(&rooms, query)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting rooms")
+		logger.Error(fmt.Sprintf("An error occurred while getting rooms. %v.", err))
+		return nil, err
 	}
 
 	return rooms, nil
@@ -130,7 +134,8 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting room's users")
+		logger.Error(fmt.Sprintf("An error occurred while getting users for room. %v.", err))
+		return nil, err
 	}
 
 	return users, nil
@@ -142,7 +147,8 @@ func rdbSelectCountRooms(db string) (int64, error) {
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
 	count, err := replica.SelectInt(query)
 	if err != nil {
-		return 0, errors.Wrap(err, "An error occurred while getting room count")
+		logger.Error(fmt.Sprintf("An error occurred while getting room count. %v.", err))
+		return 0, err
 	}
 
 	return count, nil
@@ -153,7 +159,8 @@ func rdbUpdateRoom(db string, room *model.Room) (*model.Room, error) {
 
 	_, err := master.Update(room)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(fmt.Sprintf("An error occurred while updating room. %v.", err))
+		return nil, err
 	}
 
 	return room, nil
@@ -163,7 +170,8 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		return err
 	}
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
@@ -173,7 +181,8 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		return err
 	}
 
 	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameSubscription)
@@ -184,7 +193,8 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while updating subscriptions")
+		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		return err
 	}
 
 	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameRoom)
@@ -195,13 +205,15 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		return err
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		err := trans.Rollback()
-		return errors.Wrap(err, "An error occurred while commit updating room ")
+		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		return err
 	}
 
 	return nil

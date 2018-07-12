@@ -14,7 +14,7 @@ func (p *gcpSQLProvider) SelectDevices(userID string) ([]*model.Device, error) {
 	return rdbSelectDevices(p.database, userID)
 }
 
-func (p *gcpSQLProvider) SelectDevice(userID string, platform int) (*model.Device, error) {
+func (p *gcpSQLProvider) SelectDevice(userID string, platform int32) (*model.Device, error) {
 	return rdbSelectDevice(p.database, userID, platform)
 }
 
@@ -30,6 +30,6 @@ func (p *gcpSQLProvider) UpdateDevice(device *model.Device) error {
 	return rdbUpdateDevice(p.database, device)
 }
 
-func (p *gcpSQLProvider) DeleteDevice(userID string, platform int) error {
+func (p *gcpSQLProvider) DeleteDevice(userID string, platform int32) error {
 	return rdbDeleteDevice(p.database, userID, platform)
 }

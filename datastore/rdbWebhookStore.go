@@ -3,8 +3,6 @@ package datastore
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
@@ -20,7 +18,7 @@ func rdbCreateWebhookStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating webhook table. %v.", err))
 		return
 	}
 }
@@ -52,7 +50,8 @@ func rdbSelectWebhooks(db string, event model.WebhookEventType, opts ...WebhookO
 
 	_, err := replica.Select(&webhooks, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting bot")
+		logger.Error(fmt.Sprintf("An error occurred while getting webhook. %v.", err))
+		return nil, err
 	}
 
 	return webhooks, nil

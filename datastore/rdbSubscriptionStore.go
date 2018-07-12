@@ -30,7 +30,7 @@ func rdbInsertSubscription(db string, subscription *model.Subscription) (*model.
 	return subscription, nil
 }
 
-func rdbSelectSubscription(db, roomID, userID string, platform int) (*model.Subscription, error) {
+func rdbSelectSubscription(db, roomID, userID string, platform int32) (*model.Subscription, error) {
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*model.Subscription
@@ -84,7 +84,7 @@ func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*model.Subscrip
 	return subscriptions, nil
 }
 
-func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platform int) ([]*model.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platform int32) ([]*model.Subscription, error) {
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*model.Subscription

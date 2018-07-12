@@ -10,7 +10,7 @@ func (p *sqliteProvider) InsertSubscription(room *model.Subscription) (*model.Su
 	return rdbInsertSubscription(p.database, room)
 }
 
-func (p *sqliteProvider) SelectSubscription(roomID, userID string, platform int) (*model.Subscription, error) {
+func (p *sqliteProvider) SelectSubscription(roomID, userID string, platform int32) (*model.Subscription, error) {
 	return rdbSelectSubscription(p.database, roomID, userID, platform)
 }
 
@@ -22,7 +22,7 @@ func (p *sqliteProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*m
 	return rdbSelectDeletedSubscriptionsByUserID(p.database, userID)
 }
 
-func (p *sqliteProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int) ([]*model.Subscription, error) {
+func (p *sqliteProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int32) ([]*model.Subscription, error) {
 	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.database, userID, platform)
 }
 

@@ -14,7 +14,7 @@ type Devices struct {
 
 type Device struct {
 	UserID               string `json:"userId,omitempty" db:"user_id,notnull"`
-	Platform             int    `json:"platform,omitempty" db:"platform,notnull"`
+	Platform             int32  `json:"platform,omitempty" db:"platform,notnull"`
 	Token                string `json:"token,omitempty" db:"token,notnull"`
 	NotificationDeviceID string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
 }
@@ -24,7 +24,7 @@ func IsValidDevicePlatform(platform int) bool {
 }
 
 func (d *Device) IsValid() *ProblemDetail {
-	if !(d.Platform > 0 && d.Platform < int(PlatformEnd)) {
+	if !(d.Platform > 0 && d.Platform < int32(PlatformEnd)) {
 		return &ProblemDetail{
 			Message: "Request error",
 			InvalidParams: []InvalidParam{

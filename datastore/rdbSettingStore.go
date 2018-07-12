@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/pkg/errors"
-
 	"time"
 
 	"github.com/swagchat/chat-api/logger"
@@ -18,7 +16,7 @@ func rdbCreateSettingStore(db string) {
 	tableMap := master.AddTableWithName(model.Setting{}, tableNameSetting)
 	tableMap.SetKeys(true, "id")
 	if err := master.CreateTablesIfNotExists(); err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating setting table. %v.", err))
 		return
 	}
 }
@@ -31,7 +29,8 @@ func rdbSelectLatestSetting(db string) (*model.Setting, error) {
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE expired=0 OR expired>%s ORDER BY created DESC LIMIT 1;", tableNameSetting, nowTimestampString)
 	if _, err := replica.Select(&settings, query); err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting setting")
+		logger.Error(fmt.Sprintf("An error occurred while getting setting. %v.", err))
+		return nil, err
 	}
 	if len(settings) > 0 {
 		return settings[0], nil

@@ -3,8 +3,6 @@ package datastore
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
@@ -17,7 +15,7 @@ func rdbCreateBlockUserStore(db string) {
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating blockUser table. %v.", err))
 		return
 	}
 }
@@ -26,20 +24,23 @@ func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while inserting blockUser. %v.", err))
+		return err
 	}
 
 	for _, blockUser := range blockUsers {
 		bu, err := rdbSelectBlockUser(db, blockUser.UserID, blockUser.BlockUserID)
 		if err != nil {
 			trans.Rollback()
-			return errors.Wrap(err, "An error occurred while getting block user")
+			logger.Error(fmt.Sprintf("An error occurred while inserting blockUser. %v.", err))
+			return err
 		}
 		if bu == nil {
 			err = trans.Insert(blockUser)
 			if err != nil {
 				trans.Rollback()
-				return errors.Wrap(err, "An error occurred while creating block users")
+				logger.Error(fmt.Sprintf("An error occurred while inserting blockUser. %v.", err))
+				return err
 			}
 		}
 	}
@@ -47,7 +48,8 @@ func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return errors.Wrap(err, "An error occurred while commit creating block users")
+		logger.Error(fmt.Sprintf("An error occurred while inserting blockUser. %v.", err))
+		return err
 	}
 
 	return nil
@@ -64,7 +66,8 @@ func rdbSelectBlockUser(db, userID, blockUserID string) (*model.BlockUser, error
 	}
 	_, err := replica.Select(&blockUsers, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting block user")
+		logger.Error(fmt.Sprintf("An error occurred while getting blockUser. %v.", err))
+		return nil, err
 	}
 
 	if len(blockUsers) == 1 {
@@ -84,7 +87,8 @@ func rdbSelectBlockUsersByUserID(db, userID string) ([]string, error) {
 	}
 	_, err := replica.Select(&blockUserIDs, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting block users")
+		logger.Error(fmt.Sprintf("An error occurred while getting blockUsers by userId. %v.", err))
+		return nil, err
 	}
 
 	return blockUserIDs, nil
@@ -99,7 +103,8 @@ func rdbDeleteBlockUser(db, userID string, blockUserIDs []string) error {
 	params["userId"] = userID
 	_, err := master.Exec(query, params)
 	if err != nil {
-		return errors.Wrap(err, "An error occurred while deleting block user ids")
+		logger.Error(fmt.Sprintf("An error occurred while deleting blockUser. %v.", err))
+		return err
 	}
 
 	return nil

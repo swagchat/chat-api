@@ -10,7 +10,7 @@ func (p *gcpSQLProvider) InsertUser(user *model.User, opts ...interface{}) (*mod
 	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *gcpSQLProvider) SelectUser(userID string, opts ...interface{}) (*model.User, error) {
+func (p *gcpSQLProvider) SelectUser(userID string, opts ...SelectUserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 

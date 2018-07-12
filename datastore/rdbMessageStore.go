@@ -25,7 +25,7 @@ func rdbCreateMessageStore(db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(err.Error())
+		logger.Error(fmt.Sprintf("An error occurred while creating message table. %v.", err))
 		return
 	}
 
@@ -38,7 +38,7 @@ func rdbCreateMessageStore(db string) {
 		if err != nil {
 			errMessage := err.Error()
 			if strings.Index(errMessage, "Duplicate key name") < 0 {
-				logger.Error(err.Error())
+				logger.Error(fmt.Sprintf("An error occurred while creating message table. %v.", err))
 				return
 			}
 		}
@@ -49,13 +49,15 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		return "", errors.Wrap(err, "An error occurred while transaction beginning")
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 
 	err = trans.Insert(message)
 	if err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, "An error occurred while creating message")
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 
 	var rooms []*model.Room
@@ -63,10 +65,13 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	params := map[string]interface{}{"roomId": message.RoomID}
 	if _, err = trans.Select(&rooms, query, params); err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, "An error occurred while getting room")
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 	if len(rooms) != 1 {
-		return "", errors.New("An error occurred while getting room. Room count is not 1")
+		err := errors.New("An error occurred while getting room. Room count is not 1")
+		logger.Error(err.Error())
+		return "", err
 	}
 
 	room := rooms[0]
@@ -90,7 +95,8 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	_, err = trans.Update(room)
 	if err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 
 	query = fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;", tableNameRoomUser)
@@ -101,7 +107,8 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	_, err = trans.Exec(query, params)
 	if err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, "An error occurred while updating room's user unread count")
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 
 	var users []*model.User
@@ -110,7 +117,8 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	_, err = trans.Select(&users, query, params)
 	if err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, fmt.Sprintf("An error occurred while getting room's users. RoomID[%s]", message.RoomID))
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 	for _, user := range users {
 		if user.UserID == message.UserID {
@@ -121,14 +129,16 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 		_, err = trans.Exec(query, params)
 		if err != nil {
 			trans.Rollback()
-			return "", errors.Wrap(err, "An error occurred while updating user unread count")
+			logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+			return "", err
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		return "", errors.Wrap(err, "An error occurred while commit creating message")
+		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		return "", err
 	}
 
 	return lastMessage, nil
@@ -142,7 +152,8 @@ func rdbSelectMessage(db, messageID string) (*model.Message, error) {
 	params := map[string]interface{}{"messageId": messageID}
 	_, err := replica.Select(&messages, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting message")
+		logger.Error(fmt.Sprintf("An error occurred while getting message. %v.", err))
+		return nil, err
 	}
 
 	if len(messages) == 1 {
@@ -164,7 +175,8 @@ func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset 
 
 	_, err := replica.Select(&messages, query, params)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while getting messages")
+		logger.Error(fmt.Sprintf("An error occurred while getting messages. %v.", err))
+		return nil, err
 	}
 
 	return messages, nil
@@ -179,7 +191,8 @@ func rdbSelectCountMessagesByRoomID(db string, roleIDs []int32, roomID string) (
 
 	count, err := replica.SelectInt(query, params)
 	if err != nil {
-		return 0, errors.Wrap(err, "An error occurred while getting message count")
+		logger.Error(fmt.Sprintf("An error occurred while getting message count. %v.", err))
+		return 0, err
 	}
 
 	return count, nil
@@ -190,7 +203,8 @@ func rdbUpdateMessage(db string, message *model.Message) (*model.Message, error)
 
 	_, err := master.Update(message)
 	if err != nil {
-		return nil, errors.Wrap(err, "An error occurred while updating message")
+		logger.Error(fmt.Sprintf("An error occurred while updating message. %v.", err))
+		return nil, err
 	}
 
 	return message, nil

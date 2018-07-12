@@ -110,7 +110,7 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 	return nc
 }
 
-func (ap *awssnsProvider) CreateEndpoint(userId string, platform int, deviceToken string) NotificationChannel {
+func (ap *awssnsProvider) CreateEndpoint(userId string, platform int32, deviceToken string) NotificationChannel {
 	cfg := utils.Config()
 
 	nc := make(NotificationChannel, 1)

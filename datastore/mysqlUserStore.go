@@ -10,7 +10,7 @@ func (p *mysqlProvider) InsertUser(user *model.User, opts ...interface{}) (*mode
 	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *mysqlProvider) SelectUser(userID string, opts ...interface{}) (*model.User, error) {
+func (p *mysqlProvider) SelectUser(userID string, opts ...SelectUserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 
