@@ -61,17 +61,18 @@ var (
 )
 
 type config struct {
-	HTTPPort     string `yaml:"httpPort"`
-	GRPCPort     string `yaml:"gRPCPort"`
-	Profiling    bool
-	DemoPage     bool `yaml:"demoPage"`
-	Logger       *Logger
-	Storage      *Storage
-	Datastore    *Datastore
-	PBroker      *PBroker `yaml:"pBroker"`
-	SBroker      *SBroker `yaml:"sBroker"`
-	Notification *Notification
-	IdP          *IdP
+	HTTPPort               string `yaml:"httpPort"`
+	GRPCPort               string `yaml:"gRPCPort"`
+	Profiling              bool
+	DemoPage               bool `yaml:"demoPage"`
+	EnableDeveloperMessage bool `yaml:"enableDeveloperMessage"`
+	Logger                 *Logger
+	Storage                *Storage
+	Datastore              *Datastore
+	PBroker                *PBroker `yaml:"pBroker"`
+	SBroker                *SBroker `yaml:"sBroker"`
+	Notification           *Notification
+	IdP                    *IdP
 }
 
 // Logger is settings of logger
@@ -248,10 +249,11 @@ func Config() *config {
 
 func defaultSetting() *config {
 	return &config{
-		HTTPPort:  "8101",
-		GRPCPort:  "",
-		Profiling: false,
-		DemoPage:  false,
+		HTTPPort:               "8101",
+		GRPCPort:               "",
+		Profiling:              false,
+		DemoPage:               false,
+		EnableDeveloperMessage: false,
 		Logger: &Logger{
 			EnableConsole: true,
 			ConsoleFormat: "text",
@@ -301,19 +303,14 @@ func (c *config) loadEnv() {
 		c.GRPCPort = v
 	}
 
-	if v = os.Getenv("SWAG_PROFILING"); v != "" {
-		if v == "true" {
-			c.Profiling = true
-		} else if v == "false" {
-			c.Profiling = false
-		}
+	if v = os.Getenv("SWAG_PROFILING"); v == "true" {
+		c.Profiling = true
 	}
-	if v = os.Getenv("SWAG_DEMO_PAGE"); v != "" {
-		if v == "true" {
-			c.DemoPage = true
-		} else if v == "false" {
-			c.DemoPage = false
-		}
+	if v = os.Getenv("SWAG_DEMO_PAGE"); v == "true" {
+		c.DemoPage = true
+	}
+	if v = os.Getenv("SWAG_ENABLE_DEVELOPER_MESSAGE"); v == "true" {
+		c.EnableDeveloperMessage = true
 	}
 
 	// Logger
@@ -644,10 +641,13 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.GRPCPort, "grpcPort", c.GRPCPort, "")
 
 	var profiling string
-	flags.StringVar(&profiling, "profiling", "", "")
+	flags.StringVar(&profiling, "profiling", "", "false")
 
 	var demoPage string
 	flags.StringVar(&demoPage, "demoPage", "", "false")
+
+	var enableDeveloperMessage string
+	flags.StringVar(&enableDeveloperMessage, "enableDeveloperMessage", "", "false")
 
 	// Logging
 	flags.BoolVar(&c.Logger.EnableConsole, "logger.enableConsole", c.Logger.EnableConsole, "")
@@ -869,14 +869,14 @@ func (c *config) parseFlag(args []string) error {
 
 	if profiling == "true" {
 		c.Profiling = true
-	} else if profiling == "false" {
-		c.Profiling = false
 	}
 
 	if demoPage == "true" {
 		c.DemoPage = true
-	} else if demoPage == "false" {
-		c.DemoPage = false
+	}
+
+	if enableDeveloperMessage == "true" {
+		c.EnableDeveloperMessage = true
 	}
 
 	return nil

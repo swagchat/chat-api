@@ -338,8 +338,8 @@ func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail)
 			return limit, offset, order, &model.ProblemDetail{
 				Message: "Request parameter error.",
 				Status:  http.StatusBadRequest,
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "limit",
 						Reason: "limit is incorrect.",
 					},
@@ -353,8 +353,8 @@ func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail)
 			return limit, offset, order, &model.ProblemDetail{
 				Message: "Request parameter error.",
 				Status:  http.StatusBadRequest,
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "offset",
 						Reason: "offset is incorrect.",
 					},
@@ -374,8 +374,8 @@ func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail)
 			return limit, offset, order, &model.ProblemDetail{
 				Message: "Request parameter error.",
 				Status:  http.StatusBadRequest,
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "order",
 						Reason: "order is incorrect.",
 					},

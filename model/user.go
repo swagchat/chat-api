@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 type Users struct {
@@ -158,8 +159,8 @@ func (u *User) IsValidPost() *ProblemDetail {
 	if u.UserID != "" && !utils.IsValidID(u.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -171,8 +172,8 @@ func (u *User) IsValidPost() *ProblemDetail {
 	if len(u.UserID) > 36 {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. A string up to 36 symbols long.",
 				},
@@ -184,8 +185,8 @@ func (u *User) IsValidPost() *ProblemDetail {
 	if u.Name == "" {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "name",
 					Reason: "name is required, but it's empty.",
 				},
@@ -302,4 +303,85 @@ func (u *User) IsRole(role int32) bool {
 	}
 
 	return false
+}
+
+func (u *User) ConvertFromPbCreateUserRequest(req *scpb.CreateUserRequest) {
+	u.UserID = req.UserId
+	u.Name = req.Name
+	u.PictureURL = req.PictureUrl
+	u.InformationURL = req.InformationUrl
+	u.MetaData = req.MetaData
+	u.Public = &req.Public
+	u.CanBlock = &req.CanBlock
+	u.Lang = req.Lang
+}
+
+func (u *User) ConvertToPbUser() *scpb.User {
+	pbUser := &scpb.User{
+		UserId:         u.UserID,
+		Name:           u.Name,
+		PictureUrl:     u.PictureURL,
+		InformationUrl: u.InformationURL,
+		MetaData:       u.MetaData,
+		Public:         *u.Public,
+		CanBlock:       *u.CanBlock,
+		Lang:           u.Lang,
+	}
+
+	if u.Roles != nil {
+		pbUser.Roles = u.Roles
+	}
+	if u.Rooms != nil {
+		pbRoomForUser := make([]*scpb.RoomForUser, len(u.Rooms))
+		for i, rfu := range u.Rooms {
+			pbUserForRoom := make([]*scpb.UserForRoom, len(rfu.Users))
+			for i, ufr := range rfu.Users {
+				pbUserForRoom[i] = &scpb.UserForRoom{
+					RoomID:         ufr.RoomID,
+					UserID:         ufr.UserID,
+					Name:           ufr.Name,
+					PictureURL:     ufr.PictureURL,
+					InformationURL: ufr.PictureURL,
+					MetaData:       ufr.MetaData,
+					CanBlock:       *ufr.CanBlock,
+					LastAccessed:   ufr.LastAccessed,
+					Created:        ufr.Created,
+					Modified:       ufr.Modified,
+					RuDisplay:      ufr.RuDisplay,
+				}
+			}
+
+			pbRoomForUser[i] = &scpb.RoomForUser{
+				RoomID:             rfu.RoomID,
+				UserID:             rfu.UserID,
+				Name:               rfu.Name,
+				PictureURL:         rfu.PictureURL,
+				InformationURL:     rfu.InformationURL,
+				MetaData:           rfu.MetaData,
+				Type:               scpb.RoomType(rfu.Type.Int32()),
+				LastMessage:        rfu.LastMessage,
+				LastMessageUpdated: rfu.LastMessageUpdated,
+				CanLeft:            *rfu.CanLeft,
+				Created:            rfu.Created,
+				Modified:           rfu.Modified,
+				Users:              pbUserForRoom,
+				RuUnreadCount:      rfu.RuUnreadCount,
+			}
+		}
+	}
+	if u.Devices != nil {
+		pbDevices := make([]*scpb.Device, len(u.Devices))
+		for i, d := range u.Devices {
+			pbDevices[i] = &scpb.Device{
+				UserID:               d.UserID,
+				Platform:             d.Platform,
+				Token:                d.Token,
+				NotificationDeviceID: d.NotificationDeviceID,
+			}
+		}
+	}
+	if u.Blocks != nil {
+		pbUser.Blocks = u.Blocks
+	}
+	return pbUser
 }

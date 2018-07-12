@@ -1,19 +1,19 @@
 package datastore
 
 import (
-	"github.com/swagchat/chat-api/protobuf"
+	"github.com/swagchat/chat-api/model"
 )
 
 func (p *gcpSQLProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertUserRole(ur *protobuf.UserRole) error {
-	return rdbInsertUserRole(p.database, ur)
+func (p *gcpSQLProvider) InsertUserRoles(urs *model.UserRoles) error {
+	return rdbInsertUserRoles(p.database, urs)
 }
 
-func (p *gcpSQLProvider) SelectUserRole(userID string, roleID int32) (*protobuf.UserRole, error) {
-	return rdbSelectUserRole(p.database, userID, roleID)
+func (p *gcpSQLProvider) SelectUserRole(opts ...UserRoleOption) (*model.UserRole, error) {
+	return rdbSelectUserRole(p.database, opts...)
 }
 
 func (p *gcpSQLProvider) SelectRoleIDsOfUserRole(userID string) ([]int32, error) {
@@ -24,6 +24,6 @@ func (p *gcpSQLProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error)
 	return rdbSelectUserIDsOfUserRole(p.database, roleID)
 }
 
-func (p *gcpSQLProvider) DeleteUserRole(ur *protobuf.UserRole) error {
-	return rdbDeleteUserRole(p.database, ur)
+func (p *gcpSQLProvider) DeleteUserRole(opts ...UserRoleOption) error {
+	return rdbDeleteUserRole(p.database, opts...)
 }

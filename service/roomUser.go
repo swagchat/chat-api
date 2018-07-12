@@ -387,8 +387,8 @@ func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *m
 	if len(existUserIDs) != len(requestUserIDs) {
 		pd := &model.ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []model.InvalidParam{
-				model.InvalidParam{
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
 					Name:   "userIds",
 					Reason: "It contains a userId that does not exist.",
 				},

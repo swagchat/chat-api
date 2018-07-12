@@ -34,6 +34,21 @@ const (
 	SpeechModeEnd
 )
 
+func (rt RoomType) Int32() int32 {
+	switch rt {
+	case OneOnOne:
+		return 1
+	case PrivateRoom:
+		return 2
+	case PublicRoom:
+		return 3
+	case NoticeRoom:
+		return 4
+	default:
+		return 0
+	}
+}
+
 func (rt RoomType) String() string {
 	switch rt {
 	case OneOnOne:
@@ -174,8 +189,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 	if r.RoomID != "" && !utils.IsValidID(r.RoomID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "roomId",
 					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -187,8 +202,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 	if r.UserID == "" {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "userId",
 					Reason: "userId is required, but it's empty.",
 				},
@@ -200,8 +215,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 	if !utils.IsValidID(r.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -213,8 +228,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 	if r.Type == 0 {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "type",
 					Reason: "type is required, but it's empty.",
 				},
@@ -226,8 +241,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 	if !(r.Type > 0 && r.Type < RoomTypeEnd) {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "type",
 					Reason: "type is incorrect.",
 				},
@@ -239,8 +254,8 @@ func (r *Room) IsValidPost() *ProblemDetail {
 	if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SpeechModeEnd) {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "speechMode",
 					Reason: "speechMode is incorrect.",
 				},
@@ -306,8 +321,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 			return &ProblemDetail{
 				Message: "Invalid params",
 				Status:  http.StatusBadRequest,
-				InvalidParams: []InvalidParam{
-					InvalidParam{
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
 						Name:   "type",
 						Reason: "In case of 1-on-1 room type, type can not be changed.",
 					},
@@ -317,8 +332,8 @@ func (r *Room) BeforePut(put *Room) *ProblemDetail {
 			return &ProblemDetail{
 				Message: "Invalid params",
 				Status:  http.StatusBadRequest,
-				InvalidParams: []InvalidParam{
-					InvalidParam{
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
 						Name:   "type",
 						Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
 					},

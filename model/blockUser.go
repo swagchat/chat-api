@@ -31,8 +31,8 @@ func (reqUIDs *RequestBlockUserIDs) IsValid(userId string) *ProblemDetail {
 		if reqUID == userId {
 			return &ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []InvalidParam{
-					InvalidParam{
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
 						Name:   "userIds",
 						Reason: "userIds can not include own UserId.",
 					},

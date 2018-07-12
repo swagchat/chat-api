@@ -14,8 +14,10 @@ import (
 	"github.com/fatih/structs"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
@@ -27,22 +29,66 @@ func (s *chatIncomingServer) PostMessage(ctx context.Context, in *protobuf.Messa
 	return &empty.Empty{}, nil
 }
 
+type userServiceServer struct{}
+
+func (us *userServiceServer) CreateUser(ctx context.Context, in *scpb.CreateUserRequest) (*scpb.User, error) {
+	user := &model.User{}
+	user.ConvertFromPbCreateUserRequest(in)
+	res, pd := PostUser(ctx, user)
+	if pd != nil {
+		return &scpb.User{}, pd.Error
+	}
+	pbUser := res.ConvertToPbUser()
+
+	return pbUser, nil
+}
+
+func (us *userServiceServer) GetUser(ctx context.Context, in *scpb.GetUserRequest) (*scpb.User, error) {
+	res, pd := GetUser(ctx, in.UserId)
+	if pd != nil {
+		return &scpb.User{}, pd.Error
+	}
+	pbUser := res.ConvertToPbUser()
+
+	return pbUser, nil
+}
+
 type userRoleServiceServer struct{}
 
-func (urs *userRoleServiceServer) PostUserRole(ctx context.Context, in *protobuf.PostUserRoleReq) (*protobuf.UserRole, error) {
-	return postUserRole(ctx, in)
+func (urs *userRoleServiceServer) CreateUserRole(ctx context.Context, in *scpb.CreateUserRoleRequest) (*empty.Empty, error) {
+	pd := CreateUserRoles(ctx, in)
+	if pd != nil {
+		return &empty.Empty{}, pd.Error
+	}
+
+	return &empty.Empty{}, nil
 }
 
-func (urs *userRoleServiceServer) GetRoleIDsOfUserRole(ctx context.Context, in *protobuf.GetRoleIDsOfUserRoleReq) (*protobuf.RoleIDs, error) {
-	return getRoleIDsOfUserRole(ctx, in)
+func (urs *userRoleServiceServer) GetRoleIdsOfUserRole(ctx context.Context, in *scpb.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, error) {
+	roleIDs, pd := GetRoleIDsOfUserRole(ctx, in)
+	if pd != nil {
+		return &scpb.RoleIds{}, pd.Error
+	}
+
+	return roleIDs, nil
 }
 
-func (urs *userRoleServiceServer) GetUserIDsOfUserRole(ctx context.Context, in *protobuf.GetUserIDsOfUserRoleReq) (*protobuf.UserIDs, error) {
-	return getUserIDsOfUserRole(ctx, in)
+func (urs *userRoleServiceServer) GetUserIdsOfUserRole(ctx context.Context, in *scpb.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, error) {
+	userIDs, pd := GetUserIDsOfUserRole(ctx, in)
+	if pd != nil {
+		return &scpb.UserIds{}, pd.Error
+	}
+
+	return userIDs, nil
 }
 
-func (urs *userRoleServiceServer) DeleteUserRole(ctx context.Context, in *protobuf.UserRole) (*empty.Empty, error) {
-	return deleteUserRole(ctx, in)
+func (urs *userRoleServiceServer) DeleteUserRole(ctx context.Context, in *scpb.DeleteUserRoleRequest) (*empty.Empty, error) {
+	pd := DeleteUserRole(ctx, in)
+	if pd != nil {
+		return &empty.Empty{}, pd.Error
+	}
+
+	return &empty.Empty{}, nil
 }
 
 type roomUserServiceServer struct{}
@@ -125,7 +171,8 @@ func GrpcRun(ctx context.Context) {
 	s := grpc.NewServer(ops...)
 
 	protobuf.RegisterChatIncomingServer(s, &chatIncomingServer{})
-	protobuf.RegisterUserRoleServiceServer(s, &userRoleServiceServer{})
+	scpb.RegisterUserServiceServer(s, &userServiceServer{})
+	scpb.RegisterUserRoleServiceServer(s, &userRoleServiceServer{})
 	protobuf.RegisterRoomUserServiceServer(s, &roomUserServiceServer{})
 
 	reflection.Register(s)

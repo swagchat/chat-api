@@ -85,8 +85,8 @@ func (m *Message) IsValid() *ProblemDetail {
 	if m.MessageID != "" && !utils.IsValidID(m.MessageID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "messageId",
 					Reason: "messageId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -98,8 +98,8 @@ func (m *Message) IsValid() *ProblemDetail {
 	if m.Payload == nil {
 		return &ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "payload",
 					Reason: "payload is empty.",
 				},
@@ -114,8 +114,8 @@ func (m *Message) IsValid() *ProblemDetail {
 		if pt.Text == "" {
 			return &ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []InvalidParam{
-					InvalidParam{
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
 						Name:   "payload",
 						Reason: "Text type needs text.",
 					},
@@ -131,8 +131,8 @@ func (m *Message) IsValid() *ProblemDetail {
 		if pi.Mime == "" {
 			return &ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []InvalidParam{
-					InvalidParam{
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
 						Name:   "payload",
 						Reason: "Image type needs mime.",
 					},
@@ -144,8 +144,8 @@ func (m *Message) IsValid() *ProblemDetail {
 		if pi.SourceUrl == "" {
 			return &ProblemDetail{
 				Status: http.StatusBadRequest,
-				InvalidParams: []InvalidParam{
-					InvalidParam{
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
 						Name:   "payload",
 						Reason: "Image type needs sourceUrl.",
 					},

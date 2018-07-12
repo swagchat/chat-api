@@ -27,8 +27,8 @@ func (d *Device) IsValid() *ProblemDetail {
 	if !(d.Platform > 0 && d.Platform < int32(PlatformEnd)) {
 		return &ProblemDetail{
 			Message: "Request error",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "device.platform",
 					Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
 				},
@@ -40,8 +40,8 @@ func (d *Device) IsValid() *ProblemDetail {
 	if d.Token == "" {
 		return &ProblemDetail{
 			Message: "Request error",
-			InvalidParams: []InvalidParam{
-				InvalidParam{
+			InvalidParams: []*InvalidParam{
+				&InvalidParam{
 					Name:   "token",
 					Reason: "token is required, but it's empty.",
 				},

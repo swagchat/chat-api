@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/protobuf"
+	"github.com/swagchat/chat-api/model"
 )
 
 func rdbCreateUserRoleStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(protobuf.UserRole{}, tableNameUserRole)
+	tableMap := master.AddTableWithName(model.UserRole{}, tableNameUserRole)
 	tableMap.SetUniqueTogether("user_id", "role_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
@@ -19,7 +19,7 @@ func rdbCreateUserRoleStore(db string) {
 	}
 }
 
-func rdbInsertUserRole(db string, ur *protobuf.UserRole) error {
+func rdbInsertUserRoles(db string, urs *model.UserRoles) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -27,18 +27,20 @@ func rdbInsertUserRole(db string, ur *protobuf.UserRole) error {
 		return err
 	}
 
-	bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
-	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
-		return err
-	}
-	if bu == nil {
-		err = trans.Insert(ur)
+	for _, ur := range urs.UserRoles {
+		bu, err := rdbSelectUserRole(db, WithUserRoleOptionUserID(ur.UserID), WithUserRoleOptionRoleID(ur.RoleID))
 		if err != nil {
 			trans.Rollback()
 			logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
 			return err
+		}
+		if bu == nil {
+			err = trans.Insert(ur)
+			if err != nil {
+				trans.Rollback()
+				logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+				return err
+			}
 		}
 	}
 
@@ -52,14 +54,19 @@ func rdbInsertUserRole(db string, ur *protobuf.UserRole) error {
 	return nil
 }
 
-func rdbSelectUserRole(db, userID string, roleID int32) (*protobuf.UserRole, error) {
+func rdbSelectUserRole(db string, opts ...UserRoleOption) (*model.UserRole, error) {
 	replica := RdbStore(db).replica()
 
-	var userRoles []*protobuf.UserRole
+	opt := userRoleOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	var userRoles []*model.UserRole
 	query := fmt.Sprintf("SELECT ur.user_id, ur.role_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND ur.role_id=:roleId AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
-		"userId": userID,
-		"roleId": roleID,
+		"userId": opt.userID,
+		"roleId": opt.roleID,
 	}
 	_, err := replica.Select(&userRoles, query, params)
 	if err != nil {
@@ -110,13 +117,18 @@ func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 	return userIDs, nil
 }
 
-func rdbDeleteUserRole(db string, ur *protobuf.UserRole) error {
+func rdbDeleteUserRole(db string, opts ...UserRoleOption) error {
 	master := RdbStore(db).master()
+
+	opt := userRoleOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND role_id=:roleId", tableNameUserRole)
 	params := map[string]interface{}{
-		"userId": ur.UserID,
-		"roleId": ur.RoleID,
+		"userId": opt.userID,
+		"roleId": opt.roleID,
 	}
 	_, err := master.Exec(query, params)
 	if err != nil {

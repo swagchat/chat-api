@@ -56,7 +56,7 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 			urs := v.([]*protobuf.UserRole)
 
 			for _, ur := range urs {
-				bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
+				bu, err := rdbSelectUserRole(db, WithUserRoleOptionUserID(ur.UserID), WithUserRoleOptionRoleID(ur.RoleID))
 				if err != nil {
 					trans.Rollback()
 					logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))

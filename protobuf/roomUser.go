@@ -11,8 +11,8 @@ func (ru *RoomUser) IsValid() *model.ProblemDetail {
 	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
 		return &model.ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []model.InvalidParam{
-				model.InvalidParam{
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
 					Name:   "roomId",
 					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -24,8 +24,8 @@ func (ru *RoomUser) IsValid() *model.ProblemDetail {
 	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
 		return &model.ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []model.InvalidParam{
-				model.InvalidParam{
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
 					Name:   "userId",
 					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 				},
@@ -76,8 +76,8 @@ func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.Problem
 	if len(rus.UserIDs) == 0 {
 		return &model.ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []model.InvalidParam{
-				model.InvalidParam{
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
 					Name:   "userIds",
 					Reason: "Not set.",
 				},
@@ -107,8 +107,8 @@ func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.Problem
 		if len(rus.UserIDs) == 2 {
 			return &model.ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "userIds",
 						Reason: "In case of 1-on-1 room type, It can only update once.",
 					},
@@ -122,8 +122,8 @@ func (rus *PostRoomUserReq) IsValid(method string, r *model.Room) *model.Problem
 		if len(r.Users) == 2 {
 			return &model.ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "userIds",
 						Reason: "In case of 1-on-1 room type, It can only update once.",
 					},

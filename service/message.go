@@ -27,8 +27,8 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 		if pd != nil {
 			pds = append(pds, &model.ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "roomId",
 						Reason: "roomId is invalid. Not exist room.",
 					},
@@ -42,8 +42,8 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 		if pd != nil {
 			pds = append(pds, &model.ProblemDetail{
 				Message: "Invalid params",
-				InvalidParams: []model.InvalidParam{
-					model.InvalidParam{
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
 						Name:   "userId",
 						Reason: "userId is invalid. Not exist user.",
 					},
@@ -122,8 +122,8 @@ func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.P
 	if messageID == "" {
 		return nil, &model.ProblemDetail{
 			Message: "Invalid params",
-			InvalidParams: []model.InvalidParam{
-				model.InvalidParam{
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
 					Name:   "messageId",
 					Reason: "messageId is required, but it's empty.",
 				},
@@ -135,7 +135,7 @@ func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.P
 	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Message: "User registration failed",
+			Message: "Create message failed",
 			Status:  http.StatusInternalServerError,
 			Error:   err,
 		}

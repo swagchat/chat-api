@@ -1,15 +1,34 @@
 package datastore
 
 import (
-	"github.com/swagchat/chat-api/protobuf"
+	"github.com/swagchat/chat-api/model"
 )
+
+type userRoleOptions struct {
+	userID string
+	roleID int32
+}
+
+type UserRoleOption func(*userRoleOptions)
+
+func WithUserRoleOptionUserID(userID string) UserRoleOption {
+	return func(ops *userRoleOptions) {
+		ops.userID = userID
+	}
+}
+
+func WithUserRoleOptionRoleID(roleID int32) UserRoleOption {
+	return func(ops *userRoleOptions) {
+		ops.roleID = roleID
+	}
+}
 
 type userRoleStore interface {
 	createUserRoleStore()
 
-	InsertUserRole(userRole *protobuf.UserRole) error
-	SelectUserRole(userID string, roleID int32) (*protobuf.UserRole, error)
+	InsertUserRoles(urs *model.UserRoles) error
+	SelectUserRole(opts ...UserRoleOption) (*model.UserRole, error)
 	SelectRoleIDsOfUserRole(userID string) ([]int32, error)
 	SelectUserIDsOfUserRole(roleID int32) ([]string, error)
-	DeleteUserRole(userRole *protobuf.UserRole) error
+	DeleteUserRole(opts ...UserRoleOption) error
 }

@@ -60,6 +60,7 @@ func StartServer(ctx context.Context) {
 	setRoomUserMux()
 	setSettingMux()
 	setUserMux()
+	setUserRoleMux()
 
 	if cfg.Profiling {
 		setPprofMux()

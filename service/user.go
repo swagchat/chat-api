@@ -23,7 +23,7 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 	user, err := datastore.Provider(ctx).SelectUser(post.UserID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Message: "User registration failed",
+			Message: "Failed to create user.",
 			Status:  http.StatusInternalServerError,
 			Error:   err,
 		}
@@ -31,7 +31,7 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 	}
 	if user != nil {
 		return nil, &model.ProblemDetail{
-			Message: "Resource already exists",
+			Message: "This user already exists",
 			Status:  http.StatusConflict,
 		}
 	}
@@ -39,7 +39,7 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 	user, err = datastore.Provider(ctx).InsertUser(post)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Message: "User registration failed",
+			Message: "Failed to create user.",
 			Status:  http.StatusInternalServerError,
 			Error:   err,
 		}
@@ -205,7 +205,7 @@ func GetProfile(ctx context.Context, userID string) (*model.User, *model.Problem
 	return user, nil
 }
 
-func selectUser(ctx context.Context, userID string, opts ...interface{}) (*model.User, *model.ProblemDetail) {
+func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ProblemDetail) {
 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
 	if err != nil {
 		pd := &model.ProblemDetail{

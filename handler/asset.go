@@ -32,8 +32,8 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 		pd := &model.ProblemDetail{
 			Message: "Request error",
 			Status:  http.StatusBadRequest,
-			InvalidParams: []model.InvalidParam{
-				model.InvalidParam{
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
 					Name:   "asset",
 					Reason: "asset is required, but it's empty.",
 				},

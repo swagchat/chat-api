@@ -3,51 +3,81 @@ package service
 import (
 	"context"
 	"fmt"
+	"net/http"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/protobuf"
+	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf"
 )
 
-func postUserRole(ctx context.Context, in *protobuf.PostUserRoleReq) (*protobuf.UserRole, error) {
-	logger.Info(fmt.Sprintf("Start CreateUserRole. UserRoleReq=[%#v]", in))
-	err := datastore.Provider(ctx).InsertUserRole(in.UserRole)
+func CreateUserRoles(ctx context.Context, req *scpb.CreateUserRoleRequest) *model.ProblemDetail {
+	logger.Info(fmt.Sprintf("Start CreateUserRole. UserRole=[%#v]", req))
+
+	urs := &model.UserRoles{}
+	urs.ConvertFromPbCreateUserRoleRequest(req)
+
+	err := datastore.Provider(ctx).InsertUserRoles(urs)
 	if err != nil {
-		return nil, err
+		return &model.ProblemDetail{
+			Message: "Failed to create user role.",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
 	}
 
 	logger.Info(fmt.Sprintf("Finish CreateUserRole"))
-	return in.UserRole, nil
+	return nil
 }
 
-func getRoleIDsOfUserRole(ctx context.Context, in *protobuf.GetRoleIDsOfUserRoleReq) (*protobuf.RoleIDs, error) {
-	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole(in.UserID)
+func GetRoleIDsOfUserRole(ctx context.Context, req *scpb.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetRoleIDsOfUserRole. GetRoleIdsOfUserRoleRequest=[%#v]", req))
+
+	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole(req.UserId)
 	if err != nil {
-		return nil, err
+		return nil, &model.ProblemDetail{
+			Message: "Failed to getting roleIds.",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
 	}
 
-	return &protobuf.RoleIDs{
-		RoleIDs: roleIDs,
+	logger.Info("Finish GetRoleIDsOfUserRole.")
+	return &scpb.RoleIds{
+		RoleIds: roleIDs,
 	}, nil
 }
 
-func getUserIDsOfUserRole(ctx context.Context, in *protobuf.GetUserIDsOfUserRoleReq) (*protobuf.UserIDs, error) {
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(in.RoleID)
+func GetUserIDsOfUserRole(ctx context.Context, req *scpb.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetUserIDsOfUserRole. GetUserIdsOfUserRoleRequest=[%#v]", req))
+
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleId)
 	if err != nil {
-		return nil, err
+		return nil, &model.ProblemDetail{
+			Message: "Failed to getting userIds.",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
 	}
 
-	return &protobuf.UserIDs{
-		UserIDs: userIDs,
+	logger.Info("Finish GetUserIDsOfUserRole.")
+	return &scpb.UserIds{
+		UserIds: userIDs,
 	}, nil
 }
 
-func deleteUserRole(ctx context.Context, in *protobuf.UserRole) (*empty.Empty, error) {
-	err := datastore.Provider(ctx).DeleteUserRole(in)
+func DeleteUserRole(ctx context.Context, req *scpb.DeleteUserRoleRequest) *model.ProblemDetail {
+	logger.Info(fmt.Sprintf("Start DeleteUserRole. DeleteUserRoleRequest=[%#v]", req))
+
+	err := datastore.Provider(ctx).DeleteUserRole(datastore.WithUserRoleOptionUserID(req.UserId), datastore.WithUserRoleOptionRoleID(req.RoleId))
 	if err != nil {
-		return nil, err
+		return &model.ProblemDetail{
+			Message: "Failed to delete user role.",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
 	}
 
-	return &empty.Empty{}, nil
+	logger.Info("Finish DeleteUserRole.")
+	return nil
 }
