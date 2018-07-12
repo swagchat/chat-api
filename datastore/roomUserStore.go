@@ -1,7 +1,7 @@
 package datastore
 
 import (
-	"github.com/swagchat/chat-api/protobuf"
+	"github.com/swagchat/chat-api/model"
 )
 
 type selectUserIDsOfRoomUserOptions struct {
@@ -19,14 +19,14 @@ func WithRoleIDs(roleIDs []int32) SelectUserIDsOfRoomUserOption {
 type roomUserStore interface {
 	createRoomUserStore()
 
-	DeleteAndInsertRoomUsers(roomUsers []*protobuf.RoomUser) error
-	InsertRoomUsers(roomUsers []*protobuf.RoomUser) error
-	SelectRoomUser(roomID, userID string) (*protobuf.RoomUser, error)
-	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*protobuf.RoomUser, error)
-	SelectRoomUsersByRoomID(roomID string) ([]*protobuf.RoomUser, error)
-	SelectRoomUsersByUserID(userID string) ([]*protobuf.RoomUser, error)
+	DeleteAndInsertRoomUsers(roomUsers []*model.RoomUser) error
+	InsertRoomUsers(roomUsers []*model.RoomUser) error
+	SelectRoomUser(roomID, userID string) (*model.RoomUser, error)
+	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*model.RoomUser, error)
+	SelectRoomUsersByRoomID(roomID string) ([]*model.RoomUser, error)
+	SelectRoomUsersByUserID(userID string) ([]*model.RoomUser, error)
 	SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error)
-	SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*protobuf.RoomUser, error)
-	UpdateRoomUser(*protobuf.RoomUser) (*protobuf.RoomUser, error)
+	SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*model.RoomUser, error)
+	UpdateRoomUser(*model.RoomUser) (*model.RoomUser, error)
 	DeleteRoomUser(roomID string, userIDs []string) error
 }

@@ -8,14 +8,13 @@ import (
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateRoomUserStore(db string) {
 	master := RdbStore(db).master()
 
-	tableMap := master.AddTableWithName(protobuf.RoomUser{}, tableNameRoomUser)
+	tableMap := master.AddTableWithName(model.RoomUser{}, tableNameRoomUser)
 	tableMap.SetUniqueTogether("room_id", "user_id")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
@@ -24,7 +23,7 @@ func rdbCreateRoomUserStore(db string) {
 	}
 }
 
-func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) error {
+func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*model.RoomUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -60,7 +59,7 @@ func rdbDeleteAndInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) erro
 	return nil
 }
 
-func rdbInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) error {
+func rdbInsertRoomUsers(db string, roomUsers []*model.RoomUser) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -95,10 +94,10 @@ func rdbInsertRoomUsers(db string, roomUsers []*protobuf.RoomUser) error {
 	return nil
 }
 
-func rdbSelectRoomUser(db, roomID, userID string) (*protobuf.RoomUser, error) {
+func rdbSelectRoomUser(db, roomID, userID string) (*model.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
-	var roomUsers []*protobuf.RoomUser
+	var roomUsers []*model.RoomUser
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND user_id=:userId;", tableNameRoomUser)
 	params := map[string]interface{}{
 		"roomId": roomID,
@@ -117,10 +116,10 @@ func rdbSelectRoomUser(db, roomID, userID string) (*protobuf.RoomUser, error) {
 	return nil, nil
 }
 
-func rdbSelectRoomUserOfOneOnOne(db, myUserID, opponentUserID string) (*protobuf.RoomUser, error) {
+func rdbSelectRoomUserOfOneOnOne(db, myUserID, opponentUserID string) (*model.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
-	var roomUsers []*protobuf.RoomUser
+	var roomUsers []*model.RoomUser
 	query := fmt.Sprintf(`SELECT * FROM %s
 WHERE room_id IN (
 	SELECT room_id FROM %s WHERE type=:type AND user_id=:myUserId
@@ -143,10 +142,10 @@ WHERE room_id IN (
 	return nil, nil
 }
 
-func rdbSelectRoomUsersByRoomID(db, roomID string) ([]*protobuf.RoomUser, error) {
+func rdbSelectRoomUsersByRoomID(db, roomID string) ([]*model.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
-	var roomUsers []*protobuf.RoomUser
+	var roomUsers []*model.RoomUser
 	query := fmt.Sprintf("SELECT room_id, user_id, unread_count FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
 	params := map[string]interface{}{
 		"roomId": roomID,
@@ -159,10 +158,10 @@ func rdbSelectRoomUsersByRoomID(db, roomID string) ([]*protobuf.RoomUser, error)
 	return roomUsers, nil
 }
 
-func rdbSelectRoomUsersByUserID(db, userID string) ([]*protobuf.RoomUser, error) {
+func rdbSelectRoomUsersByUserID(db, userID string) ([]*model.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
-	var roomUsers []*protobuf.RoomUser
+	var roomUsers []*model.RoomUser
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId;", tableNameRoomUser)
 	params := map[string]interface{}{
 		"userId": userID,
@@ -207,10 +206,10 @@ func rdbSelectUserIDsOfRoomUser(db string, roomID string, opts ...SelectUserIDsO
 	return userIDs, nil
 }
 
-func rdbSelectRoomUsersByRoomIDAndUserIDs(db string, roomID *string, userIDs []string) ([]*protobuf.RoomUser, error) {
+func rdbSelectRoomUsersByRoomIDAndUserIDs(db string, roomID *string, userIDs []string) ([]*model.RoomUser, error) {
 	replica := RdbStore(db).replica()
 
-	var roomUsers []*protobuf.RoomUser
+	var roomUsers []*model.RoomUser
 	var userIDsQuery string
 	var userIDsParams map[string]interface{}
 	var roomIDParams map[string]interface{}
@@ -240,7 +239,7 @@ func rdbSelectRoomUsersByRoomIDAndUserIDs(db string, roomID *string, userIDs []s
 	return roomUsers, nil
 }
 
-func rdbUpdateRoomUser(db string, ru *protobuf.RoomUser) (*protobuf.RoomUser, error) {
+func rdbUpdateRoomUser(db string, ru *model.RoomUser) (*model.RoomUser, error) {
 	master := RdbStore(db).master()
 
 	query := fmt.Sprintf("UPDATE %s SET unread_count=:unreadCount WHERE room_id=:roomId AND user_id=:userId;", tableNameRoomUser)
@@ -257,7 +256,7 @@ func rdbUpdateRoomUser(db string, ru *protobuf.RoomUser) (*protobuf.RoomUser, er
 	return ru, nil
 }
 
-// func rdbUpdateRoomUser(db string, roomUser *protobuf.RoomUser) (*protobuf.RoomUser, error) {
+// func rdbUpdateRoomUser(db string, roomUser *model.RoomUser) (*model.RoomUser, error) {
 // 	master := RdbStore(db).master()
 // 	trans, err := master.Begin()
 // 	if err != nil {

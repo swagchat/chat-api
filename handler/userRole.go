@@ -17,7 +17,7 @@ func setUserRoleMux() {
 }
 
 func postUserRole(w http.ResponseWriter, r *http.Request) {
-	var req scpb.CreateUserRoleRequest
+	var req scpb.CreateUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return

@@ -13,7 +13,6 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -56,10 +55,10 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	userIDs = append(userIDs, post.UserID)
 	userIDs = utils.RemoveDuplicate(userIDs)
 
-	rus := make([]*protobuf.RoomUser, 0)
+	rus := make([]*model.RoomUser, 0)
 
 	for _, userID := range userIDs {
-		ru := &protobuf.RoomUser{
+		ru := &model.RoomUser{
 			RoomID:      post.RoomID,
 			UserID:      userID,
 			UnreadCount: 0,

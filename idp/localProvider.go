@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -29,15 +28,15 @@ func (lp *localProvider) Post(ctx context.Context) (*model.User, error) {
 
 	user.BeforeInsertGuest()
 
-	general := &protobuf.UserRole{
+	general := &model.UserRole{
 		UserID: user.UserID,
 		RoleID: utils.RoleGeneral,
 	}
-	guest := &protobuf.UserRole{
+	guest := &model.UserRole{
 		UserID: user.UserID,
 		RoleID: utils.RoleGuest,
 	}
-	roles := []*protobuf.UserRole{general, guest}
+	roles := []*model.UserRole{general, guest}
 	user, err := datastore.Provider(ctx).InsertUser(user, roles)
 	if err != nil {
 		return nil, errors.Wrap(err, "")

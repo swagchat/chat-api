@@ -9,7 +9,6 @@ import (
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -52,8 +51,8 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 
 	for _, v := range opts {
 		switch v.(type) {
-		case []*protobuf.UserRole:
-			urs := v.([]*protobuf.UserRole)
+		case []*model.UserRole:
+			urs := v.([]*model.UserRole)
 
 			for _, ur := range urs {
 				bu, err := rdbSelectUserRole(db, WithUserRoleOptionUserID(ur.UserID), WithUserRoleOptionRoleID(ur.RoleID))

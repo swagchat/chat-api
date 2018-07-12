@@ -11,8 +11,8 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 	"google.golang.org/grpc"
 )
 
@@ -27,7 +27,7 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 		return
 	}
 
-	pbRoom := &protobuf.Room{
+	pbRoom := &scpb.Room{
 		Workspace: ctx.Value(utils.CtxWorkspace).(string),
 		RoomId:    room.RoomID,
 	}
@@ -69,7 +69,7 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 			}
 			defer conn.Close()
 
-			c := protobuf.NewChatOutgoingClient(conn)
+			c := scpb.NewChatOutgoingClient(conn)
 			_, err = c.PostWebhookRoom(context.Background(), pbRoom)
 			if err != nil {
 				logger.Error(fmt.Sprintf("[GRPC][WebhookRoom]Response body read failure. GRPC Endpoint=[%s]. %v.", webhook.Endpoint, err))
@@ -106,13 +106,13 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 	var p model.PayloadText
 	json.Unmarshal(message.Payload, &p)
 
-	pbMessage := &protobuf.Message{
+	pbMessage := &scpb.Message{
 		Workspace: ctx.Value(utils.CtxWorkspace).(string),
 		UserIds:   userIDs,
 		RoomId:    message.RoomID,
 		UserId:    message.UserID,
 		Type:      message.Type,
-		Payload: &protobuf.MessagePayload{
+		Payload: &scpb.MessagePayload{
 			Text: p.Text,
 		},
 	}
@@ -165,7 +165,7 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 			}
 			defer conn.Close()
 
-			c := protobuf.NewChatOutgoingClient(conn)
+			c := scpb.NewChatOutgoingClient(conn)
 			_, err = c.PostWebhookMessage(context.Background(), pbMessage)
 			if err != nil {
 				logger.Error(fmt.Sprintf("[GRPC][WebhookMessage] Response body read failure. GRPC Endpoint=[%s]. %v", webhook.Endpoint, err))

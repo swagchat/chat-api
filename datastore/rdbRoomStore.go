@@ -6,7 +6,6 @@ import (
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/protobuf"
 )
 
 func rdbCreateRoomStore(db string) {
@@ -43,8 +42,8 @@ func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Roo
 
 	for _, v := range opts {
 		switch v.(type) {
-		case []*protobuf.RoomUser:
-			rus := v.([]*protobuf.RoomUser)
+		case []*model.RoomUser:
+			rus := v.([]*model.RoomUser)
 			for _, ru := range rus {
 				err = trans.Insert(ru)
 				if err != nil {

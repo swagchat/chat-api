@@ -4,67 +4,67 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/service"
+	scpb "github.com/swagchat/protobuf"
 )
 
 func setRoomUserMux() {
-	mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(putRoomUsers)))
+	mux.PostFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(postRoomUsers)))
 	mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", commonHandler(roomMemberAuthzHandler(putRoomUser)))
 	mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(deleteRoomUsers)))
 }
 
-func putRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var req protobuf.PostRoomUserReq
+func postRoomUsers(w http.ResponseWriter, r *http.Request) {
+	var req scpb.CreateRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	req.RoomID = bone.GetValue(r, "roomId")
+	req.RoomId = bone.GetValue(r, "roomId")
 
-	roomUsers, pd := service.PutRoomUsers(r.Context(), &req)
+	pd := service.CreateRoomUsers(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
-	respond(w, r, http.StatusOK, "application/json", roomUsers)
+	respond(w, r, http.StatusNoContent, "application/json", nil)
 }
 
 func putRoomUser(w http.ResponseWriter, r *http.Request) {
-	var put protobuf.RoomUser
-	if err := decodeBody(r, &put); err != nil {
-		respondJSONDecodeError(w, r, "")
-		return
-	}
-
-	put.RoomID = bone.GetValue(r, "roomId")
-	put.UserID = bone.GetValue(r, "userId")
-
-	roomUser, pd := service.PutRoomUser(r.Context(), &put)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "application/json", roomUser)
-}
-
-func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var req protobuf.DeleteRoomUserReq
+	var req scpb.UpdateRoomUserRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	req.RoomID = bone.GetValue(r, "roomId")
+	req.RoomId = bone.GetValue(r, "roomId")
+	req.UserId = bone.GetValue(r, "userId")
 
-	roomUsers, pd := service.DeleteRoomUsers(r.Context(), &req)
+	pd := service.UpdateRoomUser(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
-	respond(w, r, http.StatusOK, "application/json", roomUsers)
+	respond(w, r, http.StatusNoContent, "application/json", nil)
+}
+
+func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
+	var req scpb.DeleteRoomUserRequest
+	if err := decodeBody(r, &req); err != nil {
+		respondJSONDecodeError(w, r, "")
+		return
+	}
+
+	req.RoomId = bone.GetValue(r, "roomId")
+
+	pd := service.DeleteRoomUsers(r.Context(), &req)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	respond(w, r, http.StatusNoContent, "application/json", nil)
 }

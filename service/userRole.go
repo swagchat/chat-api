@@ -11,11 +11,17 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-func CreateUserRoles(ctx context.Context, req *scpb.CreateUserRoleRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start CreateUserRole. UserRole=[%#v]", req))
+// CreateUserRoles create user roles
+func CreateUserRoles(ctx context.Context, req *scpb.CreateUserRolesRequest) *model.ProblemDetail {
+	logger.Info(fmt.Sprintf("Start CreateUserRole. UserRole[%#v]", req))
 
 	urs := &model.UserRoles{}
-	urs.ConvertFromPbCreateUserRoleRequest(req)
+	urs.ImportFromPbCreateUserRolesRequest(req)
+
+	pd := urs.Validate()
+	if pd != nil {
+		return pd
+	}
 
 	err := datastore.Provider(ctx).InsertUserRoles(urs)
 	if err != nil {
@@ -30,8 +36,9 @@ func CreateUserRoles(ctx context.Context, req *scpb.CreateUserRoleRequest) *mode
 	return nil
 }
 
+// GetRoleIDsOfUserRole get roleIds of user roles
 func GetRoleIDsOfUserRole(ctx context.Context, req *scpb.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start GetRoleIDsOfUserRole. GetRoleIdsOfUserRoleRequest=[%#v]", req))
+	logger.Info(fmt.Sprintf("Start GetRoleIDsOfUserRole. GetRoleIdsOfUserRoleRequest[%#v]", req))
 
 	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole(req.UserId)
 	if err != nil {
@@ -48,8 +55,9 @@ func GetRoleIDsOfUserRole(ctx context.Context, req *scpb.GetRoleIdsOfUserRoleReq
 	}, nil
 }
 
+// GetUserIDsOfUserRole get userIds of user roles
 func GetUserIDsOfUserRole(ctx context.Context, req *scpb.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start GetUserIDsOfUserRole. GetUserIdsOfUserRoleRequest=[%#v]", req))
+	logger.Info(fmt.Sprintf("Start GetUserIDsOfUserRole. GetUserIdsOfUserRoleRequest[%#v]", req))
 
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleId)
 	if err != nil {
@@ -66,10 +74,14 @@ func GetUserIDsOfUserRole(ctx context.Context, req *scpb.GetUserIdsOfUserRoleReq
 	}, nil
 }
 
+// DeleteUserRole delete user role
 func DeleteUserRole(ctx context.Context, req *scpb.DeleteUserRoleRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start DeleteUserRole. DeleteUserRoleRequest=[%#v]", req))
+	logger.Info(fmt.Sprintf("Start DeleteUserRole. DeleteUserRoleRequest[%#v]", req))
 
-	err := datastore.Provider(ctx).DeleteUserRole(datastore.WithUserRoleOptionUserID(req.UserId), datastore.WithUserRoleOptionRoleID(req.RoleId))
+	err := datastore.Provider(ctx).DeleteUserRole(
+		datastore.WithUserRoleOptionUserID(req.UserId),
+		datastore.WithUserRoleOptionRoleID(req.RoleId),
+	)
 	if err != nil {
 		return &model.ProblemDetail{
 			Message: "Failed to delete user role.",

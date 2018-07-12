@@ -12,9 +12,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/protobuf"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 var KafkaConsumer *kafka.Consumer
@@ -71,7 +71,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 			switch e := ev.(type) {
 			case *kafka.Message:
 				logger.Info("Receive a message")
-				var sm *protobuf.Message
+				var sm *scpb.Message
 				err := json.Unmarshal(e.Value, &sm)
 				if err != nil {
 					return errors.Wrap(err, "")
