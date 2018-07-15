@@ -29,7 +29,7 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 
 	pbRoom := &scpb.Room{
 		Workspace: ctx.Value(utils.CtxWorkspace).(string),
-		RoomId:    room.RoomID,
+		RoomID:    room.RoomID,
 	}
 
 	for _, webhook := range webhooks {

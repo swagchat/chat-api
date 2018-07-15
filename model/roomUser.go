@@ -3,137 +3,170 @@ package model
 import (
 	"net/http"
 
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
 )
 
-type RoomUsers struct {
-	RoomID    string
-	UserIDs   []string
-	Display   bool
-	Room      *Room
-	RoomUsers []*RoomUser
+type CreateRoomUsersRequest struct {
+	scpb.CreateRoomUsersRequest
+	Room *Room
 }
 
-type RoomUser struct {
-	RoomID      string `json:"roomId,omitempty" db:"room_id"`
-	UserID      string `json:"userId,omitempty" db:"user_id"`
-	UnreadCount int32  `json:"unreadCount,omitempty" db:"unread_count"`
-	Display     bool   `json:"display,omitempty" db:"display"`
-}
-
-func (ru *RoomUser) Validate() *ProblemDetail {
-	if ru.RoomID != "" && !utils.IsValidID(ru.RoomID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
-			},
-			Status: http.StatusBadRequest,
-		}
-	}
-
-	if ru.UserID != "" && !utils.IsValidID(ru.UserID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
-			},
-			Status: http.StatusBadRequest,
-		}
-	}
-
-	// if mode == Update && rus.Room.Type == OneOnOne {
-	// 	if len(rus.Room.Users) == 2 {
-	// 		return &ProblemDetail{
-	// 			Message: "Invalid params",
-	// 			InvalidParams: []*InvalidParam{
-	// 				&InvalidParam{
-	// 					Name:   "userIds",
-	// 					Reason: "In case of 1-on-1 room type, It can only update once.",
-	// 				},
-	// 			},
-	// 			Status: http.StatusBadRequest,
-	// 		}
-	// 	}
-	// }
-
-	return nil
-}
-
-type ErrorRoomUser struct {
-	UserId string         `json:"userId,omitempty"`
-	Error  *ProblemDetail `json:"error"`
-}
-
-type ResponseRoomUser struct {
-	RoomUsers []RoomUser      `json:"roomUsers,omitempty"`
-	Errors    []ErrorRoomUser `json:"errors,omitempty"`
-}
-
-type RequestRoomUserIDs struct {
-	UserIDs []string `json:"userIds,omitempty" db:"-"`
-}
-
-// ImportFromPbCreateUserRolesRequest import from CreateUserRolesRequest proto
-func (rus *RoomUsers) ImportFromPbCreateUserRolesRequest(req *scpb.CreateRoomUsersRequest) {
-	rus.RoomID = req.RoomId
-	rus.UserIDs = utils.RemoveDuplicate(req.UserIds)
-	rus.Display = req.Display
-}
-
-func (rus *RoomUsers) GenerateRoomUsers() {
-	roomUsers := make([]*RoomUser, len(rus.UserIDs))
-	for i, userID := range rus.UserIDs {
-		roomUsers[i] = &RoomUser{
-			RoomID:      rus.RoomID,
+func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*scpb.RoomUser {
+	roomUsers := make([]*scpb.RoomUser, len(crur.UserIDs))
+	var zeroValue int32 = 0
+	trueValue := true
+	for i, userID := range crur.UserIDs {
+		ru := &scpb.RoomUser{
+			RoomID:      crur.RoomID,
 			UserID:      userID,
-			UnreadCount: 0,
-			Display:     rus.Display,
+			UnreadCount: &zeroValue,
 		}
+		if crur.Display == nil {
+			ru.Display = &trueValue
+		} else {
+			ru.Display = crur.Display
+		}
+		roomUsers[i] = ru
 	}
-	rus.RoomUsers = roomUsers
+	return roomUsers
 }
 
-func (rus *RoomUsers) Validate() *ProblemDetail {
-	if len(rus.UserIDs) == 0 {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userIds",
-					Reason: "Not set.",
-				},
-			},
-			Status: http.StatusBadRequest,
-		}
-	}
-
-	if rus.Room.Type == OneOnOne {
-		if len(rus.UserIDs) == 2 {
+func (crur *CreateRoomUsersRequest) Validate() *ProblemDetail {
+	if crur.Room.Type == OneOnOne {
+		if len(crur.UserIDs) != 1 {
 			return &ProblemDetail{
 				Message: "Invalid params",
 				InvalidParams: []*InvalidParam{
 					&InvalidParam{
 						Name:   "userIds",
-						Reason: "In case of 1-on-1 room type, It can only update once.",
+						Reason: "In case of 1-on-1 room type, only one user can be specified for userIDs.",
 					},
 				},
 				Status: http.StatusBadRequest,
 			}
 		}
 	}
-
 	return nil
 }
 
-// ImportFromPbUpdateUserRoleRequest import from UpdateUserRoleRequest proto
-func (ru *RoomUser) ImportFromPbUpdateUserRoleRequest(req *scpb.UpdateRoomUserRequest) {
-	ru.UserID = req.UserId
+type UpdateRoomUserRequest struct {
+	scpb.UpdateRoomUserRequest
 }
+
+type RoomUser struct {
+	scpb.RoomUser
+}
+
+func (ru *RoomUser) GenerateRoomUser(req *scpb.UpdateRoomUserRequest) *scpb.RoomUser {
+	pbRu := &scpb.RoomUser{
+		RoomID: ru.RoomID,
+		UserID: ru.UserID,
+	}
+	if req.UnreadCount != nil {
+		pbRu.UnreadCount = req.UnreadCount
+	}
+
+	if req.Display != nil {
+		pbRu.Display = req.Display
+	}
+
+	return pbRu
+}
+
+type DeleteRoomUsersRequest struct {
+	scpb.DeleteRoomUsersRequest
+	Room *Room
+}
+
+func (drur *DeleteRoomUsersRequest) Validate() *ProblemDetail {
+	if drur.Room.Type == OneOnOne {
+		if len(drur.Room.Users)-len(drur.UserIDs) != 1 {
+			return &ProblemDetail{
+				Message: "Invalid params",
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
+						Name:   "userIds",
+						Reason: "In case of 1-on-1 room type, only one user must be specified.",
+					},
+				},
+				Status: http.StatusBadRequest,
+			}
+		}
+	}
+	return nil
+}
+
+// type RoomUsers struct {
+// 	RoomID    string
+// 	UserIDs   []string
+// 	Display   bool
+// 	Room      *Room
+// 	RoomUsers []*RoomUser
+// }
+
+// type RoomUser struct {
+// 	RoomID      string `json:"roomId,omitempty" db:"room_id"`
+// 	UserID      string `json:"userId,omitempty" db:"user_id"`
+// 	UnreadCount int32  `json:"unreadCount,omitempty" db:"unread_count"`
+// 	Display     bool   `json:"display,omitempty" db:"display"`
+// }
+
+// type ErrorRoomUser struct {
+// 	UserId string         `json:"userId,omitempty"`
+// 	Error  *ProblemDetail `json:"error"`
+// }
+
+// type ResponseRoomUser struct {
+// 	RoomUsers []RoomUser      `json:"roomUsers,omitempty"`
+// 	Errors    []ErrorRoomUser `json:"errors,omitempty"`
+// }
+
+// type RequestRoomUserIDs struct {
+// 	UserIDs []string `json:"userIds,omitempty" db:"-"`
+// }
+
+// ImportFromPbCreateUserRolesRequest import from CreateUserRolesRequest proto
+// func (rus *RoomUsers) ImportFromPbCreateUserRolesRequest(req *scpb.CreateRoomUsersRequest) {
+// 	rus.RoomID = req.RoomID
+// 	rus.UserIDs = utils.RemoveDuplicate(req.UserIDs)
+// 	rus.Display = *req.Display
+// }
+
+// func (rus *RoomUsers) Validate() *ProblemDetail {
+// 	if len(rus.UserIDs) == 0 {
+// 		return &ProblemDetail{
+// 			Message: "Invalid params",
+// 			InvalidParams: []*InvalidParam{
+// 				&InvalidParam{
+// 					Name:   "userIds",
+// 					Reason: "Not set.",
+// 				},
+// 			},
+// 			Status: http.StatusBadRequest,
+// 		}
+// 	}
+
+// 	if rus.Room.Type == OneOnOne {
+// 		if len(rus.UserIDs) == 2 {
+// 			return &ProblemDetail{
+// 				Message: "Invalid params",
+// 				InvalidParams: []*InvalidParam{
+// 					&InvalidParam{
+// 						Name:   "userIds",
+// 						Reason: "In case of 1-on-1 room type, It can only update once.",
+// 					},
+// 				},
+// 				Status: http.StatusBadRequest,
+// 			}
+// 		}
+// 	}
+
+// 	return nil
+// }
+
+// // ImportFromPbUpdateUserRoleRequest import from UpdateUserRoleRequest proto
+// func (ru *RoomUser) ImportFromPbUpdateUserRoleRequest(req *scpb.UpdateRoomUserRequest) {
+// 	ru.RoomID = req.RoomID
+// 	ru.UserID = req.UserID
+// 	ru.UnreadCount = *req.UnreadCount
+// }

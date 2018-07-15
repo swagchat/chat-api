@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
@@ -17,19 +16,16 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-// CreateRoomUsers create room users
+// CreateRoomUsers creates room users
 func CreateRoomUsers(ctx context.Context, req *scpb.CreateRoomUsersRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start CreateRoomUser. CreateRoomUserRequest[%#v]", req))
+	logger.Info(fmt.Sprintf("Start create room's users. Request[%#v]", req))
 
-	urs := &model.RoomUsers{}
-	urs.ImportFromPbCreateUserRolesRequest(req)
-
-	room, pd := selectRoom(ctx, urs.RoomID)
+	room, pd := selectRoom(ctx, req.RoomID)
 	if pd != nil {
 		return pd
 	}
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(req.RoomId)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(req.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create room users.",
@@ -38,40 +34,42 @@ func CreateRoomUsers(ctx context.Context, req *scpb.CreateRoomUsersRequest) *mod
 		}
 		return pd
 	}
-	urs.Room.Users = userForRooms
+	room.Users = userForRooms
 
-	pd = urs.Validate()
+	mReq := &model.CreateRoomUsersRequest{*req, room}
+
+	userIDs, pd := getExistUserIDs(ctx, mReq.UserIDs)
+	if pd != nil {
+		return pd
+	}
+	mReq.UserIDs = userIDs
+
+	pd = mReq.Validate()
 	if pd != nil {
 		return pd
 	}
 
-	userIDs, pd := getExistUserIDs(ctx, urs.UserIDs)
-	if pd != nil {
-		return pd
-	}
-	urs.UserIDs = userIDs
+	// if room.NotificationTopicID == "" {
+	// 	notificationTopicID, pd := createTopic(room.RoomID)
+	// 	if pd != nil {
+	// 		return pd
+	// 	}
 
-	if room.NotificationTopicID == "" {
-		notificationTopicID, pd := createTopic(room.RoomID)
-		if pd != nil {
-			return pd
-		}
+	// 	room.NotificationTopicID = notificationTopicID
+	// 	room.Modified = time.Now().Unix()
+	// 	_, err := datastore.Provider(ctx).UpdateRoom(room)
+	// 	if err != nil {
+	// 		pd := &model.ProblemDetail{
+	// 			Message: "Failed to create room users.",
+	// 			Status:  http.StatusInternalServerError,
+	// 			Error:   err,
+	// 		}
+	// 		return pd
+	// 	}
+	// }
 
-		room.NotificationTopicID = notificationTopicID
-		room.Modified = time.Now().Unix()
-		_, err := datastore.Provider(ctx).UpdateRoom(room)
-		if err != nil {
-			pd := &model.ProblemDetail{
-				Message: "Failed to create room users.",
-				Status:  http.StatusInternalServerError,
-				Error:   err,
-			}
-			return pd
-		}
-	}
-
-	urs.GenerateRoomUsers()
-	err = datastore.Provider(ctx).InsertRoomUsers(urs.RoomUsers)
+	roomUsers := mReq.GenerateRoomUsers()
+	err = datastore.Provider(ctx).InsertRoomUsers(roomUsers)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create room users.",
@@ -81,31 +79,26 @@ func CreateRoomUsers(ctx context.Context, req *scpb.CreateRoomUsersRequest) *mod
 		return pd
 	}
 
-	go subscribeByRoomUsers(ctx, urs.RoomUsers)
-	go publishUserJoin(ctx, req.RoomId)
+	go subscribeByRoomUsers(ctx, roomUsers)
+	go publishUserJoin(ctx, mReq.RoomID)
 
-	logger.Info("Finish CreateRoomUser")
+	logger.Info("Finish create room's users")
 	return nil
 }
 
 // UpdateRoomUser update room user
 func UpdateRoomUser(ctx context.Context, req *scpb.UpdateRoomUserRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start UpdateRoomUser. UpdateRoomUserRequest[%#v]", req))
+	logger.Info(fmt.Sprintf("Start update room's user. Request[%#v]", req))
 
-	ur := &model.RoomUser{}
-	ur.ImportFromPbUpdateUserRoleRequest(req)
-
-	_, pd := selectRoomUser(ctx, ur.RoomID, ur.UserID)
+	ru, pd := selectRoomUser(ctx, req.RoomID, req.UserID)
 	if pd != nil {
 		return pd
 	}
 
-	pd = ur.Validate()
-	if pd != nil {
-		return pd
-	}
+	mRu := &model.RoomUser{*ru}
+	pbRu := mRu.GenerateRoomUser(req)
 
-	_, err := datastore.Provider(ctx).UpdateRoomUser(ur)
+	_, err := datastore.Provider(ctx).UpdateRoomUser(pbRu)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Member registration failed",
@@ -126,63 +119,56 @@ func UpdateRoomUser(ctx context.Context, req *scpb.UpdateRoomUserRequest) *model
 	// }
 	// rtmPublish(ctx, m)
 
-	logger.Info("Finish UpdateRoomUser")
+	logger.Info("Finish update room's user")
 	return nil
 }
 
 // DeleteRoomUsers delete room users
-func DeleteRoomUsers(ctx context.Context, req *scpb.DeleteRoomUserRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start DeleteRoomUsers. DeleteRoomUserRequest[%#v]", req))
+func DeleteRoomUsers(ctx context.Context, req *scpb.DeleteRoomUsersRequest) *model.ProblemDetail {
+	logger.Info(fmt.Sprintf("Start delete room's users. Request[%#v]", req))
 
-	_, pd := selectRoom(ctx, req.RoomId)
+	room, pd := selectRoom(ctx, req.RoomID)
 	if pd != nil {
 		return pd
 	}
 
-	// req.RemoveDuplicate()
-
-	userIds, pd := getExistUserIDs(ctx, req.UserIds)
-	if pd != nil {
-		return pd
-	}
-
-	err := datastore.Provider(ctx).DeleteRoomUser(req.RoomId, userIds)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(req.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Message: "Delete room's user failed",
+			Message: "Failed to create room users.",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
+		return pd
+	}
+	room.Users = userForRooms
+
+	mReq := &model.DeleteRoomUsersRequest{*req, room}
+
+	err = datastore.Provider(ctx).DeleteRoomUser(req.RoomID, mReq.UserIDs)
+	if err != nil {
+		pd := &model.ProblemDetail{
+			Message: "Delete room's users failed",
 			Status:  http.StatusInternalServerError,
 			Error:   err,
 		}
 		return pd
 	}
 
-	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomIDAndUserIDs(&req.RoomId, userIds)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Delete room's user failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
+	go func() {
+		rus, err := datastore.Provider(ctx).SelectRoomUsersByRoomIDAndUserIDs(&req.RoomID, mReq.UserIDs)
+		if err != nil {
+			logger.Error(err.Error())
 		}
-		return pd
-	}
 
-	go unsubscribeByRoomUsers(ctx, roomUsers)
+		unsubscribeByRoomUsers(ctx, rus)
+	}()
 
-	// roomUsers, err = datastore.Provider(ctx).SelectRoomUsersByRoomID(req.RoomId)
-	// if err != nil {
-	// 	pd := &model.ProblemDetail{
-	// 		Message: "Get room's users failed",
-	// 		Status:  http.StatusInternalServerError,
-	// 		Error:   err,
-	// 	}
-	// 	return pd
-	// }
-
-	logger.Info(fmt.Sprintf("Finish DeleteRoomUsers"))
+	logger.Info(fmt.Sprintf("Finish delete room's users"))
 	return nil
 }
 
-func selectRoomUser(ctx context.Context, roomID, userID string) (*model.RoomUser, *model.ProblemDetail) {
+func selectRoomUser(ctx context.Context, roomID, userID string) (*scpb.RoomUser, *model.ProblemDetail) {
 	roomUser, err := datastore.Provider(ctx).SelectRoomUser(roomID, userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
@@ -230,7 +216,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 	}()
 }
 
-func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
+func subscribeByRoomUsers(ctx context.Context, roomUsers []*scpb.RoomUser) {
 	doneChan := make(chan bool, 1)
 	pdChan := make(chan *model.ProblemDetail, 1)
 
@@ -238,7 +224,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	for _, roomUser := range roomUsers {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+			ru := ctx.Value(utils.CtxRoomUser).(*scpb.RoomUser)
 
 			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
@@ -269,7 +255,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 								}
 							}
 						}
-						go subscribe(ctx, []*model.RoomUser{ru}, d)
+						go subscribe(ctx, []*scpb.RoomUser{ru}, d)
 					}
 				}
 			}
@@ -290,7 +276,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	return
 }
 
-func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
+func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*scpb.RoomUser) {
 	doneChan := make(chan bool, 1)
 	pdChan := make(chan *model.ProblemDetail, 1)
 
@@ -298,7 +284,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	for _, roomUser := range roomUsers {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+			ru := ctx.Value(utils.CtxRoomUser).(*scpb.RoomUser)
 			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomID, []string{ru.UserID})
 			if err != nil {
 				pd := &model.ProblemDetail{
@@ -388,7 +374,7 @@ func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *m
 }
 
 func SelectUserIDsOfRoomUser(ctx context.Context, req *scpb.GetUserIdsOfRoomUserRequest) (*scpb.UserIds, *model.ProblemDetail) {
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(req.RoomId, datastore.WithRoleIDs(req.RoleIds))
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(req.RoomID, datastore.WithRoleIDs(req.RoleIDs))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to getting userIds.",

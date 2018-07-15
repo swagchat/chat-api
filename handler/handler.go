@@ -54,7 +54,7 @@ func StartServer(ctx context.Context) {
 	setAssetMux()
 	setBlockUserMux()
 	setDeviceMux()
-	setGuestMux()
+	// setGuestMux()
 	setMessageMux()
 	setRoomMux()
 	setRoomUserMux()
@@ -287,12 +287,12 @@ func roomMemberAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func decodeBody(r *http.Request, v interface{}) error {
 	defer r.Body.Close()
-	bufbody := new(bytes.Buffer)
-	bodySize, _ := bufbody.ReadFrom(r.Body)
+	buf := new(bytes.Buffer)
+	bodySize, _ := buf.ReadFrom(r.Body)
 	if bodySize == 0 {
 		return nil
 	}
-	return json.NewDecoder(bufbody).Decode(v)
+	return json.NewDecoder(buf).Decode(v)
 }
 
 func encodeBody(w http.ResponseWriter, r *http.Request, v interface{}) error {

@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 func rdbCreateUserStore(db string) {
@@ -55,7 +55,7 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 			urs := v.([]*model.UserRole)
 
 			for _, ur := range urs {
-				bu, err := rdbSelectUserRole(db, WithUserRoleOptionUserID(ur.UserID), WithUserRoleOptionRoleID(ur.RoleID))
+				bu, err := rdbSelectUserRole(db, UserRoleOptionFilterByUserID(ur.UserID), UserRoleOptionFilterByRoleID(ur.RoleID))
 				if err != nil {
 					trans.Rollback()
 					logger.Error(fmt.Sprintf("An error occurred while inserting user. %v.", err))
@@ -89,10 +89,10 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 	return user, nil
 }
 
-func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, error) {
+func rdbSelectUser(db, userID string, opts ...UserOption) (*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	opt := selectUserOptions{}
+	opt := userOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -120,8 +120,9 @@ func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, er
 		user.Blocks = userIDs
 	}
 
+	user.Devices = make([]*scpb.Device, 0)
 	if opt.withDevices {
-		var devices []*model.Device
+		var devices []*scpb.Device
 		query = fmt.Sprintf("SELECT user_id, platform, token, notification_device_id from %s WHERE user_id=:userId", tableNameDevice)
 		params = map[string]interface{}{"userId": userID}
 		_, err := replica.Select(&devices, query, params)
@@ -131,8 +132,10 @@ func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, er
 		}
 		user.Devices = devices
 	}
+
+	user.Rooms = make([]*scpb.RoomForUser, 0)
 	if opt.withRooms {
-		var rooms []*model.RoomForUser
+		var rooms []*scpb.RoomForUser
 		query := fmt.Sprintf(`SELECT
 	r.room_id,
 	r.user_id,
@@ -157,7 +160,7 @@ func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, er
 			return nil, errors.Wrap(err, "An error occurred while getting user rooms")
 		}
 
-		var ufrs []*model.UserForRoom
+		var ufrs []scpb.UserForRoom
 		query = fmt.Sprintf(`SELECT
 	ru.room_id,
 	u.user_id,
@@ -184,7 +187,7 @@ func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, er
 		}
 
 		for _, room := range rooms {
-			room.Users = make([]*model.UserForRoom, 0)
+			room.Users = make([]scpb.UserForRoom, 0)
 			for _, ufr := range ufrs {
 				if room.RoomID == ufr.RoomID {
 					room.Users = append(room.Users, ufr)
@@ -193,6 +196,8 @@ func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, er
 		}
 		user.Rooms = rooms
 	}
+
+	user.Roles = make([]int32, 0)
 	if opt.withRoles {
 		roleIDs, err := rdbSelectRoleIDsOfUserRole(db, userID)
 		if err != nil {
@@ -397,7 +402,7 @@ WHERE
 		u.public=1 AND
 		u.deleted=0
 	)
-GROUP BY u.user_id ORDER BY u.modified DESC`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(model.NoticeRoom)))
+GROUP BY u.user_id ORDER BY u.modified DESC`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(scpb.RoomType_NoticeRoom)))
 	params := map[string]interface{}{
 		"userId": userID,
 	}

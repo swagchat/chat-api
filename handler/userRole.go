@@ -80,7 +80,7 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 
 	if userID != "" {
 		req := &scpb.GetRoleIdsOfUserRoleRequest{
-			UserId: userID,
+			UserID: userID,
 		}
 		roleIDs, pd := service.GetRoleIDsOfUserRole(r.Context(), req)
 		if pd != nil {
@@ -93,7 +93,7 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 
 	if roleIDint32 > 0 {
 		req := &scpb.GetUserIdsOfUserRoleRequest{
-			RoleId: roleIDint32,
+			RoleID: roleIDint32,
 		}
 		userIDs, pd := service.GetUserIDsOfUserRole(r.Context(), req)
 		if pd != nil {

@@ -28,7 +28,7 @@ func rdbInsertUserRoles(db string, urs *model.UserRoles) error {
 	}
 
 	for _, ur := range urs.UserRoles {
-		bu, err := rdbSelectUserRole(db, WithUserRoleOptionUserID(ur.UserID), WithUserRoleOptionRoleID(ur.RoleID))
+		bu, err := rdbSelectUserRole(db, UserRoleOptionFilterByUserID(ur.UserID), UserRoleOptionFilterByRoleID(ur.RoleID))
 		if err != nil {
 			trans.Rollback()
 			logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))

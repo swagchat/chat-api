@@ -78,9 +78,9 @@ func StartServer(ctx context.Context) {
 	s := grpc.NewServer(ops...)
 
 	scpb.RegisterChatIncomingServer(s, &chatIncomingServer{})
-	// scpb.RegisterUserServiceServer(s, &userServiceServer{})
-	scpb.RegisterUserRoleServiceServer(s, &userRoleServiceServer{})
 	scpb.RegisterRoomUserServiceServer(s, &roomUserServiceServer{})
+	scpb.RegisterUserServiceServer(s, &userServiceServer{})
+	scpb.RegisterUserRoleServiceServer(s, &userRoleServiceServer{})
 
 	reflection.Register(s)
 

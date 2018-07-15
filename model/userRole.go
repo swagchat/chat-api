@@ -9,8 +9,8 @@ type UserRole struct {
 
 func (ur *UserRole) ConvertProto() *scpb.UserRole {
 	return &scpb.UserRole{
-		UserId: ur.UserID,
-		RoleId: ur.RoleID,
+		UserID: ur.UserID,
+		RoleID: ur.RoleID,
 	}
 }
 
@@ -23,10 +23,10 @@ type UserRoles struct {
 }
 
 func (ur *UserRoles) ImportFromPbCreateUserRolesRequest(req *scpb.CreateUserRolesRequest) {
-	ur.UserRoles = make([]*UserRole, len(req.RoleIds))
-	for i, roleID := range req.RoleIds {
+	ur.UserRoles = make([]*UserRole, len(req.RoleIDs))
+	for i, roleID := range req.RoleIDs {
 		ur.UserRoles[i] = &UserRole{
-			UserID: req.UserId,
+			UserID: req.UserID,
 			RoleID: roleID,
 		}
 	}

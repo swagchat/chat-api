@@ -1,6 +1,10 @@
 package model
 
-import "net/http"
+import (
+	"net/http"
+
+	scpb "github.com/swagchat/protobuf"
+)
 
 const (
 	PlatformIOS = iota + 1
@@ -13,11 +17,26 @@ type Devices struct {
 }
 
 type Device struct {
-	UserID               string `json:"userId,omitempty" db:"user_id,notnull"`
-	Platform             int32  `json:"platform,omitempty" db:"platform,notnull"`
-	Token                string `json:"token,omitempty" db:"token,notnull"`
-	NotificationDeviceID string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
+	scpb.Device
 }
+
+func (d *Device) ConvertToPbDevice() *scpb.Device {
+	pbDevice := &scpb.Device{
+		UserID:               d.UserID,
+		Platform:             d.Platform,
+		Token:                d.Token,
+		NotificationDeviceID: d.NotificationDeviceID,
+	}
+
+	return pbDevice
+}
+
+// type Device struct {
+// 	UserID               string `json:"userId,omitempty" db:"user_id,notnull"`
+// 	Platform             int32  `json:"platform,omitempty" db:"platform,notnull"`
+// 	Token                string `json:"token,omitempty" db:"token,notnull"`
+// 	NotificationDeviceID string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
+// }
 
 func IsValidDevicePlatform(platform int) bool {
 	return platform > 0 && platform < int(PlatformEnd)

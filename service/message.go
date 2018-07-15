@@ -38,7 +38,7 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 			continue
 		}
 
-		user, pd := selectUser(ctx, post.UserID, datastore.WithRoles(true))
+		user, pd := selectUser(ctx, post.UserID, datastore.UserOptionWithRoles(true))
 		if pd != nil {
 			pds = append(pds, &model.ProblemDetail{
 				Message: "Invalid params",

@@ -6,21 +6,21 @@ import (
 	"context"
 	"net/http"
 
+	scpb "github.com/swagchat/protobuf"
+
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 )
 
-// PostUser is post user
-func PostUser(ctx context.Context, post *model.User) (*model.User, *model.ProblemDetail) {
-	if pd := post.IsValidPost(); pd != nil {
+// CreateUser creates user
+func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User, *model.ProblemDetail) {
+	if pd := req.Validate(); pd != nil {
 		return nil, pd
 	}
 
-	post.BeforePost()
-
-	user, err := datastore.Provider(ctx).SelectUser(post.UserID)
+	user, err := datastore.Provider(ctx).SelectUser(req.UserID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create user.",
@@ -36,7 +36,9 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 		}
 	}
 
-	user, err = datastore.Provider(ctx).InsertUser(post)
+	u := req.GenerateUser()
+
+	pbUser, err := datastore.Provider(ctx).InsertUser(u)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create user.",
@@ -45,12 +47,13 @@ func PostUser(ctx context.Context, post *model.User) (*model.User, *model.Proble
 		}
 		return nil, pd
 	}
-	return user, nil
+
+	return pbUser, nil
 }
 
 // GetUsers is get users
 func GetUsers(ctx context.Context) (*model.Users, *model.ProblemDetail) {
-	users, err := datastore.Provider(ctx).SelectUsers()
+	_, err := datastore.Provider(ctx).SelectUsers()
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get users failed",
@@ -60,14 +63,15 @@ func GetUsers(ctx context.Context) (*model.Users, *model.ProblemDetail) {
 		return nil, pd
 	}
 
-	return &model.Users{
-		Users: users,
-	}, nil
+	// return &model.Users{
+	// 	Users: users,
+	// }, nil
+	return nil, nil
 }
 
 // GetUser is get user
 func GetUser(ctx context.Context, userID string) (*model.User, *model.ProblemDetail) {
-	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
+	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.UserOptionWithBlocks(true), datastore.UserOptionWithDevices(true), datastore.UserOptionWithRooms(true))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get user failed",
@@ -98,17 +102,17 @@ func GetUser(ctx context.Context, userID string) (*model.User, *model.ProblemDet
 }
 
 // PutUser is put user
-func PutUser(ctx context.Context, put *model.User) (*model.User, *model.ProblemDetail) {
+func PutUser(ctx context.Context, put *scpb.User) (*model.User, *model.ProblemDetail) {
 	user, pd := selectUser(ctx, put.UserID)
 	if pd != nil {
 		return nil, pd
 	}
 
-	if pd := user.IsValidPut(); pd != nil {
-		return nil, pd
-	}
+	// if pd := user.IsValidPut(); pd != nil {
+	// 	return nil, pd
+	// }
 
-	user.BeforePut(put)
+	// user.BeforePut(put)
 
 	user, err := datastore.Provider(ctx).UpdateUser(user)
 	if err != nil {
@@ -180,7 +184,7 @@ func GetUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCo
 
 // GetContacts is get contacts
 func GetContacts(ctx context.Context, userID string) (*model.Users, *model.ProblemDetail) {
-	contacts, err := datastore.Provider(ctx).SelectContacts(userID)
+	_, err := datastore.Provider(ctx).SelectContacts(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get contact list failed",
@@ -190,9 +194,10 @@ func GetContacts(ctx context.Context, userID string) (*model.Users, *model.Probl
 		return nil, pd
 	}
 
-	return &model.Users{
-		Users: contacts,
-	}, nil
+	// return &scpb.Users{
+	// 	Users: contacts,
+	// }, nil
+	return nil, nil
 }
 
 // GetProfile is get profile
@@ -205,7 +210,7 @@ func GetProfile(ctx context.Context, userID string) (*model.User, *model.Problem
 	return user, nil
 }
 
-func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ProblemDetail) {
+func selectUser(ctx context.Context, userID string, opts ...datastore.UserOption) (*model.User, *model.ProblemDetail) {
 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
 	if err != nil {
 		pd := &model.ProblemDetail{

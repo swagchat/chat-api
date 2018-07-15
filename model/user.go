@@ -9,153 +9,12 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-type Users struct {
-	Users []*User `json:"users"`
+type CreateUserRequest struct {
+	scpb.CreateUserRequest
+	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 }
 
-type User struct {
-	ID               uint64         `json:"-" db:"id"`
-	UserID           string         `json:"userId" db:"user_id,notnull"`
-	Name             string         `json:"name" db:"name,notnull"`
-	PictureURL       string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationURL   string         `json:"informationUrl,omitempty" db:"information_url"`
-	UnreadCount      *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
-	MetaData         utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
-	Public           *bool          `json:"public,omitempty" db:"public,notnull"`
-	CanBlock         *bool          `json:"canBlock,omitempty" db:"can_block,notnull"`
-	Lang             string         `json:"lang,omitempty" db:"lang,notnull"`
-	AccessToken      string         `json:"accessToken,omitempty" db:"-"`
-	LastAccessRoomID string         `json:"lastAccessRoomId,omitempty" db:"last_access_room_id"`
-	LastAccessed     int64          `json:"lastAccessed,omitempty" db:"last_accessed,notnull"`
-	Created          int64          `json:"created,omitempty" db:"created,notnull"`
-	Modified         int64          `json:"modified,omitempty" db:"modified,notnull"`
-	Deleted          int64          `json:"-" db:"deleted,notnull"`
-
-	Roles   []int32        `json:"roles,omitempty" db:"-"`
-	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
-	Devices []*Device      `json:"devices,omitempty" db:"-"`
-	Blocks  []string       `json:"blocks,omitempty" db:"-"`
-}
-
-type RoomForUser struct {
-	// from room
-	RoomID             string         `json:"roomId" db:"room_id"`
-	UserID             string         `json:"userId" db:"user_id"`
-	Name               string         `json:"name" db:"name"`
-	PictureURL         string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationURL     string         `json:"informationUrl,omitempty" db:"information_url"`
-	MetaData           utils.JSONText `json:"metaData" db:"meta_data"`
-	Type               *RoomType      `json:"type,omitempty" db:"type"`
-	LastMessage        string         `json:"lastMessage" db:"last_message"`
-	LastMessageUpdated int64          `json:"lastMessageUpdated" db:"last_message_updated"`
-	CanLeft            *bool          `json:"canLeft,omitempty" db:"can_left,notnull"`
-	Created            int64          `json:"created" db:"created"`
-	Modified           int64          `json:"modified" db:"modified"`
-
-	Users []*UserForRoom `json:"users" db:"-"`
-
-	// from RoomUser
-	RuUnreadCount int64 `json:"ruUnreadCount" db:"ru_unread_count"`
-}
-
-type UserUnreadCount struct {
-	UnreadCount *uint64 `json:"unreadCount" db:"unread_count"`
-}
-
-func (u *User) MarshalJSON() ([]byte, error) {
-	l, _ := time.LoadLocation("Etc/GMT")
-
-	public := false
-	if u.Public != nil {
-		public = *u.Public
-	}
-
-	canBlock := false
-	if u.CanBlock != nil {
-		canBlock = *u.CanBlock
-	}
-
-	return json.Marshal(&struct {
-		UserID           string         `json:"userId"`
-		Name             string         `json:"name"`
-		PictureURL       string         `json:"pictureUrl"`
-		InformationURL   string         `json:"informationUrl"`
-		UnreadCount      *uint64        `json:"unreadCount"`
-		MetaData         utils.JSONText `json:"metaData"`
-		Public           bool           `json:"public"`
-		CanBlock         bool           `json:"canBlock"`
-		Lang             string         `json:"lang"`
-		AccessToken      string         `json:"accessToken"`
-		LastAccessRoomID string         `json:"lastAccessRoomId"`
-		LastAccessed     string         `json:"lastAccessed"`
-		Created          string         `json:"created"`
-		Modified         string         `json:"modified"`
-		Roles            []int32        `json:"roles"`
-		Rooms            []*RoomForUser `json:"rooms"`
-		Devices          []*Device      `json:"devices"`
-		Blocks           []string       `json:"blocks"`
-	}{
-		UserID:           u.UserID,
-		Name:             u.Name,
-		PictureURL:       u.PictureURL,
-		InformationURL:   u.InformationURL,
-		UnreadCount:      u.UnreadCount,
-		MetaData:         u.MetaData,
-		Public:           public,
-		CanBlock:         canBlock,
-		Lang:             u.Lang,
-		AccessToken:      u.AccessToken,
-		LastAccessRoomID: u.LastAccessRoomID,
-		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
-		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
-		Modified:         time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
-		Roles:            u.Roles,
-		Rooms:            u.Rooms,
-		Devices:          u.Devices,
-		Blocks:           u.Blocks,
-	})
-}
-
-func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
-	l, _ := time.LoadLocation("Etc/GMT")
-	lmu := ""
-	if rfu.LastMessageUpdated != 0 {
-		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
-	}
-	return json.Marshal(&struct {
-		RoomID             string         `json:"roomId"`
-		UserID             string         `json:"userId"`
-		Name               string         `json:"name"`
-		PictureURL         string         `json:"pictureUrl,omitempty"`
-		InformationURL     string         `json:"informationUrl,omitempty"`
-		MetaData           utils.JSONText `json:"metaData"`
-		Type               *RoomType      `json:"type,omitempty"`
-		LastMessage        string         `json:"lastMessage"`
-		LastMessageUpdated string         `json:"lastMessageUpdated"`
-		CanLeft            *bool          `json:"canLeft,omitempty"`
-		Created            string         `json:"created"`
-		Modified           string         `json:"modified"`
-		Users              []*UserForRoom `json:"users"`
-		RuUnreadCount      int64          `json:"ruUnreadCount"`
-	}{
-		RoomID:             rfu.RoomID,
-		UserID:             rfu.UserID,
-		Name:               rfu.Name,
-		PictureURL:         rfu.PictureURL,
-		InformationURL:     rfu.InformationURL,
-		MetaData:           rfu.MetaData,
-		Type:               rfu.Type,
-		LastMessage:        rfu.LastMessage,
-		LastMessageUpdated: lmu,
-		CanLeft:            rfu.CanLeft,
-		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
-		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
-		Users:              rfu.Users,
-		RuUnreadCount:      rfu.RuUnreadCount,
-	})
-}
-
-func (u *User) IsValidPost() *ProblemDetail {
+func (u *CreateUserRequest) Validate() *ProblemDetail {
 	if u.UserID != "" && !utils.IsValidID(u.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
@@ -198,40 +57,207 @@ func (u *User) IsValidPost() *ProblemDetail {
 	return nil
 }
 
-func (u *User) IsValidPut() *ProblemDetail {
-	return nil
-}
-
-func (u *User) BeforePost() {
-	if u.UserID == "" {
+func (cur *CreateUserRequest) GenerateUser() *User {
+	u := &User{}
+	if cur.UserID == "" {
 		u.UserID = utils.GenerateUUID()
+	} else {
+		u.UserID = cur.UserID
 	}
 
-	if u.MetaData == nil {
+	u.Name = cur.Name
+	u.PictureURL = cur.PictureURL
+	u.InformationURL = cur.InformationURL
+
+	if cur.MetaData == nil {
 		u.MetaData = []byte("{}")
+	} else {
+		u.MetaData = cur.MetaData
 	}
 
-	if u.Public == nil {
+	if cur.Public == nil {
 		public := true
 		u.Public = &public
+	} else {
+		u.Public = cur.Public
 	}
 
-	if u.CanBlock == nil {
+	if cur.CanBlock == nil {
 		canBlock := true
 		u.CanBlock = &canBlock
+	} else {
+		u.CanBlock = cur.CanBlock
 	}
 
-	if u.UnreadCount == nil {
-		unreadCount := uint64(0)
-		u.UnreadCount = &unreadCount
-	}
+	u.Lang = cur.Lang
 
-	u.Rooms = make([]*RoomForUser, 0)
-	u.Devices = make([]*Device, 0)
+	unreadCount := uint64(0)
+	u.UnreadCount = &unreadCount
+
+	u.Roles = make([]int32, 0)
+	u.Rooms = make([]*scpb.RoomForUser, 0)
+	u.Devices = make([]*scpb.Device, 0)
 	u.Blocks = make([]string, 0)
 	nowTimestamp := time.Now().Unix()
 	u.Created = nowTimestamp
 	u.Modified = nowTimestamp
+
+	return u
+}
+
+type Users struct {
+	Users []User `json:"users"`
+}
+
+type User struct {
+	scpb.User
+	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+}
+
+func (u *User) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+
+	public := false
+	if u.Public != nil {
+		public = *u.Public
+	}
+
+	canBlock := false
+	if u.CanBlock != nil {
+		canBlock = *u.CanBlock
+	}
+
+	return json.Marshal(&struct {
+		UserID           string              `json:"userId"`
+		Name             string              `json:"name"`
+		PictureURL       string              `json:"pictureUrl"`
+		InformationURL   string              `json:"informationUrl"`
+		UnreadCount      *uint64             `json:"unreadCount"`
+		MetaData         utils.JSONText      `json:"metaData"`
+		Public           bool                `json:"public"`
+		CanBlock         bool                `json:"canBlock"`
+		Lang             string              `json:"lang"`
+		AccessToken      string              `json:"accessToken"`
+		LastAccessRoomID string              `json:"lastAccessRoomId"`
+		LastAccessed     string              `json:"lastAccessed"`
+		Created          string              `json:"created"`
+		Modified         string              `json:"modified"`
+		Roles            []int32             `json:"roles"`
+		Rooms            []*scpb.RoomForUser `json:"rooms"`
+		Devices          []*scpb.Device      `json:"devices"`
+		Blocks           []string            `json:"blocks"`
+	}{
+		UserID:           u.UserID,
+		Name:             u.Name,
+		PictureURL:       u.PictureURL,
+		InformationURL:   u.InformationURL,
+		UnreadCount:      u.UnreadCount,
+		MetaData:         u.MetaData,
+		Public:           public,
+		CanBlock:         canBlock,
+		Lang:             u.Lang,
+		AccessToken:      u.AccessToken,
+		LastAccessRoomID: u.LastAccessRoomID,
+		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
+		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
+		Modified:         time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
+		Roles:            u.Roles,
+		Rooms:            u.Rooms,
+		Devices:          u.Devices,
+		Blocks:           u.Blocks,
+	})
+}
+
+// type User struct {
+// 	ID               uint64         `json:"-" db:"id"`
+// 	UserID           string         `json:"userId" db:"user_id,notnull"`
+// 	Name             string         `json:"name" db:"name,notnull"`
+// 	PictureURL       string         `json:"pictureUrl,omitempty" db:"picture_url"`
+// 	InformationURL   string         `json:"informationUrl,omitempty" db:"information_url"`
+// 	UnreadCount      *uint64        `json:"unreadCount,omitempty" db:"unread_count,notnull"`
+// 	MetaData         utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+// 	Public           *bool          `json:"public,omitempty" db:"public,notnull"`
+// 	CanBlock         *bool          `json:"canBlock,omitempty" db:"can_block,notnull"`
+// 	Lang             string         `json:"lang,omitempty" db:"lang,notnull"`
+// 	AccessToken      string         `json:"accessToken,omitempty" db:"-"`
+// 	LastAccessRoomID string         `json:"lastAccessRoomId,omitempty" db:"last_access_room_id"`
+// 	LastAccessed     int64          `json:"lastAccessed,omitempty" db:"last_accessed,notnull"`
+// 	Created          int64          `json:"created,omitempty" db:"created,notnull"`
+// 	Modified         int64          `json:"modified,omitempty" db:"modified,notnull"`
+// 	Deleted          int64          `json:"-" db:"deleted,notnull"`
+
+// 	Roles   []int32        `json:"roles,omitempty" db:"-"`
+// 	Rooms   []*RoomForUser `json:"rooms,omitempty" db:"-"`
+// 	Devices []*Device      `json:"devices,omitempty" db:"-"`
+// 	Blocks  []string       `json:"blocks,omitempty" db:"-"`
+// }
+
+type RoomForUser struct {
+	// from room
+	RoomID             string         `json:"roomId" db:"room_id"`
+	UserID             string         `json:"userId" db:"user_id"`
+	Name               string         `json:"name" db:"name"`
+	PictureURL         string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	InformationURL     string         `json:"informationUrl,omitempty" db:"information_url"`
+	MetaData           utils.JSONText `json:"metaData" db:"meta_data"`
+	Type               *RoomType      `json:"type,omitempty" db:"type"`
+	LastMessage        string         `json:"lastMessage" db:"last_message"`
+	LastMessageUpdated int64          `json:"lastMessageUpdated" db:"last_message_updated"`
+	CanLeft            *bool          `json:"canLeft,omitempty" db:"can_left,notnull"`
+	Created            int64          `json:"created" db:"created"`
+	Modified           int64          `json:"modified" db:"modified"`
+
+	Users []*UserForRoom `json:"users" db:"-"`
+
+	// from RoomUser
+	RuUnreadCount int64 `json:"ruUnreadCount" db:"ru_unread_count"`
+}
+
+type UserUnreadCount struct {
+	UnreadCount *uint64 `json:"unreadCount" db:"unread_count"`
+}
+
+func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	lmu := ""
+	if rfu.LastMessageUpdated != 0 {
+		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
+	}
+	return json.Marshal(&struct {
+		RoomID             string         `json:"roomId"`
+		UserID             string         `json:"userId"`
+		Name               string         `json:"name"`
+		PictureURL         string         `json:"pictureUrl,omitempty"`
+		InformationURL     string         `json:"informationUrl,omitempty"`
+		MetaData           utils.JSONText `json:"metaData"`
+		Type               *RoomType      `json:"type,omitempty"`
+		LastMessage        string         `json:"lastMessage"`
+		LastMessageUpdated string         `json:"lastMessageUpdated"`
+		CanLeft            *bool          `json:"canLeft,omitempty"`
+		Created            string         `json:"created"`
+		Modified           string         `json:"modified"`
+		Users              []*UserForRoom `json:"users"`
+		RuUnreadCount      int64          `json:"ruUnreadCount"`
+	}{
+		RoomID:             rfu.RoomID,
+		UserID:             rfu.UserID,
+		Name:               rfu.Name,
+		PictureURL:         rfu.PictureURL,
+		InformationURL:     rfu.InformationURL,
+		MetaData:           rfu.MetaData,
+		Type:               rfu.Type,
+		LastMessage:        rfu.LastMessage,
+		LastMessageUpdated: lmu,
+		CanLeft:            rfu.CanLeft,
+		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
+		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
+		Users:              rfu.Users,
+		RuUnreadCount:      rfu.RuUnreadCount,
+	})
+}
+
+func (u *User) IsValidPut() *ProblemDetail {
+	return nil
 }
 
 func (u *User) BeforePut(put *User) {
@@ -283,8 +309,8 @@ func (u *User) BeforeInsertGuest() {
 	unreadCount := uint64(0)
 	u.UnreadCount = &unreadCount
 
-	u.Rooms = make([]*RoomForUser, 0)
-	u.Devices = make([]*Device, 0)
+	u.Rooms = make([]*scpb.RoomForUser, 0)
+	u.Devices = make([]*scpb.Device, 0)
 	u.Blocks = make([]string, 0)
 	nowTimestamp := time.Now().Unix()
 	u.Created = nowTimestamp
@@ -305,83 +331,108 @@ func (u *User) IsRole(role int32) bool {
 	return false
 }
 
-func (u *User) ConvertFromPbCreateUserRequest(req *scpb.CreateUserRequest) {
-	u.UserID = req.UserId
-	u.Name = req.Name
-	u.PictureURL = req.PictureUrl
-	u.InformationURL = req.InformationUrl
-	u.MetaData = req.MetaData
-	u.Public = &req.Public
-	u.CanBlock = &req.CanBlock
-	u.Lang = req.Lang
-}
-
 func (u *User) ConvertToPbUser() *scpb.User {
 	pbUser := &scpb.User{
-		UserId:         u.UserID,
-		Name:           u.Name,
-		PictureUrl:     u.PictureURL,
-		InformationUrl: u.InformationURL,
-		MetaData:       u.MetaData,
-		Public:         *u.Public,
-		CanBlock:       *u.CanBlock,
-		Lang:           u.Lang,
+		UserID:           u.UserID,
+		Name:             u.Name,
+		PictureURL:       u.PictureURL,
+		InformationURL:   u.InformationURL,
+		UnreadCount:      u.UnreadCount,
+		MetaData:         u.MetaData,
+		Public:           u.Public,
+		CanBlock:         u.CanBlock,
+		Lang:             u.Lang,
+		AccessToken:      u.AccessToken,
+		LastAccessRoomID: u.LastAccessRoomID,
+		LastAccessed:     u.LastAccessed,
+		Created:          u.Created,
+		Modified:         u.Modified,
+		Roles:            u.Roles,
+		Rooms:            u.Rooms,
+		Devices:          u.Devices,
+		Blocks:           u.Blocks,
 	}
 
-	if u.Roles != nil {
-		pbUser.Roles = u.Roles
-	}
-	if u.Rooms != nil {
-		pbRoomForUser := make([]*scpb.RoomForUser, len(u.Rooms))
-		for i, rfu := range u.Rooms {
-			pbUserForRoom := make([]*scpb.UserForRoom, len(rfu.Users))
-			for i, ufr := range rfu.Users {
-				pbUserForRoom[i] = &scpb.UserForRoom{
-					RoomID:         ufr.RoomID,
-					UserID:         ufr.UserID,
-					Name:           ufr.Name,
-					PictureURL:     ufr.PictureURL,
-					InformationURL: ufr.PictureURL,
-					MetaData:       ufr.MetaData,
-					CanBlock:       *ufr.CanBlock,
-					LastAccessed:   ufr.LastAccessed,
-					Created:        ufr.Created,
-					Modified:       ufr.Modified,
-					RuDisplay:      ufr.RuDisplay,
-				}
-			}
-
-			pbRoomForUser[i] = &scpb.RoomForUser{
-				RoomID:             rfu.RoomID,
-				UserID:             rfu.UserID,
-				Name:               rfu.Name,
-				PictureURL:         rfu.PictureURL,
-				InformationURL:     rfu.InformationURL,
-				MetaData:           rfu.MetaData,
-				Type:               scpb.RoomType(rfu.Type.Int32()),
-				LastMessage:        rfu.LastMessage,
-				LastMessageUpdated: rfu.LastMessageUpdated,
-				CanLeft:            *rfu.CanLeft,
-				Created:            rfu.Created,
-				Modified:           rfu.Modified,
-				Users:              pbUserForRoom,
-				RuUnreadCount:      rfu.RuUnreadCount,
-			}
-		}
-	}
-	if u.Devices != nil {
-		pbDevices := make([]*scpb.Device, len(u.Devices))
-		for i, d := range u.Devices {
-			pbDevices[i] = &scpb.Device{
-				UserID:               d.UserID,
-				Platform:             d.Platform,
-				Token:                d.Token,
-				NotificationDeviceID: d.NotificationDeviceID,
-			}
-		}
-	}
-	if u.Blocks != nil {
-		pbUser.Blocks = u.Blocks
-	}
 	return pbUser
 }
+
+// func (u *User) ConvertFromPbCreateUserRequest(req *scpb.CreateUserRequest) {
+// 	u.UserID = req.UserID
+// 	u.Name = req.Name
+// 	u.PictureURL = req.PictureUrl
+// 	u.InformationURL = req.InformationUrl
+// 	// u.MetaData = req.MetaData
+// 	u.Public = &req.Public
+// 	u.CanBlock = &req.CanBlock
+// 	u.Lang = req.Lang
+// }
+
+// func (u *User) ConvertToPbUser() *scpb.User {
+// 	pbUser := &scpb.User{
+// 		UserID:         u.UserID,
+// 		Name:           u.Name,
+// 		PictureURL:     u.PictureURL,
+// 		InformationURL: u.InformationURL,
+// 		// MetaData:       u.MetaData,
+// 		Public:   *u.Public,
+// 		CanBlock: *u.CanBlock,
+// 		Lang:     u.Lang,
+// 	}
+
+// if u.Roles != nil {
+// 	pbUser.Roles = u.Roles
+// }
+// if u.Rooms != nil {
+// 	pbRoomForUser := make([]*scpb.RoomForUser, len(u.Rooms))
+// 	for i, rfu := range u.Rooms {
+// 		pbUserForRoom := make([]*scpb.UserForRoom, len(rfu.Users))
+// 		for i, ufr := range rfu.Users {
+// 			pbUserForRoom[i] = &scpb.UserForRoom{
+// 				RoomID:         ufr.RoomID,
+// 				UserID:         ufr.UserID,
+// 				Name:           ufr.Name,
+// 				PictureURL:     ufr.PictureURL,
+// 				InformationURL: ufr.PictureURL,
+// 				MetaData:       ufr.MetaData,
+// 				CanBlock:       *ufr.CanBlock,
+// 				LastAccessed:   ufr.LastAccessed,
+// 				Created:        ufr.Created,
+// 				Modified:       ufr.Modified,
+// 				RuDisplay:      ufr.RuDisplay,
+// 			}
+// 		}
+
+// 		pbRoomForUser[i] = &scpb.RoomForUser{
+// 			RoomID:             rfu.RoomID,
+// 			UserID:             rfu.UserID,
+// 			Name:               rfu.Name,
+// 			PictureURL:         rfu.PictureURL,
+// 			InformationURL:     rfu.InformationURL,
+// 			MetaData:           rfu.MetaData,
+// 			Type:               scpb.RoomType(rfu.Type.Int32()),
+// 			LastMessage:        rfu.LastMessage,
+// 			LastMessageUpdated: rfu.LastMessageUpdated,
+// 			CanLeft:            *rfu.CanLeft,
+// 			Created:            rfu.Created,
+// 			Modified:           rfu.Modified,
+// 			Users:              pbUserForRoom,
+// 			RuUnreadCount:      rfu.RuUnreadCount,
+// 		}
+// 	}
+// }
+// if u.Devices != nil {
+// 	pbDevices := make([]*scpb.Device, len(u.Devices))
+// 	for i, d := range u.Devices {
+// 		pbDevices[i] = &scpb.Device{
+// 			UserID:               d.UserID,
+// 			Platform:             d.Platform,
+// 			Token:                d.Token,
+// 			NotificationDeviceID: d.NotificationDeviceID,
+// 		}
+// 	}
+// }
+// if u.Blocks != nil {
+// 	pbUser.Blocks = u.Blocks
+// }
+// 	return pbUser
+// }

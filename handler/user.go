@@ -6,6 +6,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	scpb "github.com/swagchat/protobuf"
 )
 
 func setUserMux() {
@@ -20,13 +21,13 @@ func setUserMux() {
 }
 
 func postUser(w http.ResponseWriter, r *http.Request) {
-	var post model.User
-	if err := decodeBody(r, &post); err != nil {
+	var req model.CreateUserRequest
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	user, pd := service.PostUser(r.Context(), &post)
+	user, pd := service.CreateUser(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -58,7 +59,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func putUser(w http.ResponseWriter, r *http.Request) {
-	var put model.User
+	var put scpb.User
 	if err := decodeBody(r, &put); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return

@@ -37,7 +37,7 @@ func (urs *roomUserServiceServer) GetUserIdsOfRoomUser(ctx context.Context, in *
 	return userIDs, nil
 }
 
-func (urs *roomUserServiceServer) DeleteRoomUser(ctx context.Context, in *scpb.DeleteRoomUserRequest) (*empty.Empty, error) {
+func (urs *roomUserServiceServer) DeleteRoomUsers(ctx context.Context, in *scpb.DeleteRoomUsersRequest) (*empty.Empty, error) {
 	pd := service.DeleteRoomUsers(ctx, in)
 	if pd != nil {
 		return &empty.Empty{}, pd.Error

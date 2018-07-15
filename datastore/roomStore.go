@@ -2,6 +2,18 @@ package datastore
 
 import "github.com/swagchat/chat-api/model"
 
+// type roomOptions struct {
+// 	withUserForRoom bool
+// }
+
+// type RoomOption func(*roomOptions)
+
+// func RoomOptionWithUserForRoom(b bool) RoomOption {
+// 	return func(ops *roomOptions) {
+// 		ops.withUserForRoom = b
+// 	}
+// }
+
 type roomStore interface {
 	createRoomStore()
 

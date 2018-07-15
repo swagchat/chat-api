@@ -14,6 +14,7 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 // PostRoom is post room
@@ -55,14 +56,15 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	userIDs = append(userIDs, post.UserID)
 	userIDs = utils.RemoveDuplicate(userIDs)
 
-	rus := make([]*model.RoomUser, 0)
-
+	rus := make([]*scpb.RoomUser, len(userIDs))
+	var zeroValue int32 = 0
+	trueValue := true
 	for _, userID := range userIDs {
-		ru := &model.RoomUser{
+		ru := &scpb.RoomUser{
 			RoomID:      post.RoomID,
 			UserID:      userID,
-			UnreadCount: 0,
-			Display:     true,
+			UnreadCount: &zeroValue,
+			Display:     &trueValue,
 		}
 		rus = append(rus, ru)
 	}
@@ -144,7 +146,7 @@ func GetRooms(ctx context.Context, values url.Values) (*model.Rooms, *model.Prob
 // GetRoom is get room
 func GetRoom(ctx context.Context, roomID string) (*model.Room, *model.ProblemDetail) {
 	userID := ctx.Value(utils.CtxUserID).(string)
-	user, pd := selectUser(ctx, userID, datastore.WithRoles(true))
+	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
 	if pd != nil {
 		return nil, pd
 	}
@@ -256,7 +258,7 @@ func DeleteRoom(ctx context.Context, roomID string) *model.ProblemDetail {
 // GetRoomMessages is get room messages
 func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*model.Messages, *model.ProblemDetail) {
 	userID := ctx.Value(utils.CtxUserID).(string)
-	user, pd := selectUser(ctx, userID, datastore.WithRoles(true))
+	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
 	if pd != nil {
 		return nil, pd
 	}

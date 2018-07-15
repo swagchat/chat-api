@@ -1,11 +1,8 @@
 package datastore
 
-import (
-	"github.com/swagchat/chat-api/model"
-	scpb "github.com/swagchat/protobuf"
-)
+import "github.com/swagchat/chat-api/model"
 
-type selectUserOptions struct {
+type userOptions struct {
 	withBlocks  bool
 	withDevices bool
 	withRoles   bool
@@ -13,40 +10,40 @@ type selectUserOptions struct {
 	user        interface{}
 }
 
-type SelectUserOption func(*selectUserOptions)
+type UserOption func(*userOptions)
 
-func WithBlocks(b bool) SelectUserOption {
-	return func(ops *selectUserOptions) {
+func UserOptionWithBlocks(b bool) UserOption {
+	return func(ops *userOptions) {
 		ops.withBlocks = b
 	}
 }
 
-func WithDevices(b bool) SelectUserOption {
-	return func(ops *selectUserOptions) {
+func UserOptionWithDevices(b bool) UserOption {
+	return func(ops *userOptions) {
 		ops.withDevices = b
 	}
 }
 
-func WithRoles(b bool) SelectUserOption {
-	return func(ops *selectUserOptions) {
+func UserOptionWithRoles(b bool) UserOption {
+	return func(ops *userOptions) {
 		ops.withRoles = b
 	}
 }
 
-func WithRooms(b bool) SelectUserOption {
-	return func(ops *selectUserOptions) {
+func UserOptionWithRooms(b bool) UserOption {
+	return func(ops *userOptions) {
 		ops.withRoles = b
 	}
 }
 
-func WithUsers(user *model.User) SelectUserOption {
-	return func(ops *selectUserOptions) {
+func UserOptionWithUsers(user *model.User) UserOption {
+	return func(ops *userOptions) {
 		ops.user = user
 	}
 }
 
-func WithPbUsers(user *scpb.User) SelectUserOption {
-	return func(ops *selectUserOptions) {
+func WithPbUsers(user *model.User) UserOption {
+	return func(ops *userOptions) {
 		ops.user = user
 	}
 }
@@ -55,7 +52,7 @@ type userStore interface {
 	createUserStore()
 
 	InsertUser(user *model.User, opts ...interface{}) (*model.User, error)
-	SelectUser(userID string, opts ...SelectUserOption) (*model.User, error)
+	SelectUser(userID string, opts ...UserOption) (*model.User, error)
 	SelectUserByUserIDAndAccessToken(userID, accessToken string) (*model.User, error)
 	SelectUsers() ([]*model.User, error)
 	SelectUserIDsByUserIDs(userIDs []string) ([]string, error)

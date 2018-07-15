@@ -10,7 +10,7 @@ func (p *sqliteProvider) InsertUser(user *model.User, opts ...interface{}) (*mod
 	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *sqliteProvider) SelectUser(userID string, opts ...SelectUserOption) (*model.User, error) {
+func (p *sqliteProvider) SelectUser(userID string, opts ...UserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 

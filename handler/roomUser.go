@@ -21,7 +21,7 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.RoomId = bone.GetValue(r, "roomId")
+	req.RoomID = bone.GetValue(r, "roomId")
 
 	pd := service.CreateRoomUsers(r.Context(), &req)
 	if pd != nil {
@@ -39,8 +39,8 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.RoomId = bone.GetValue(r, "roomId")
-	req.UserId = bone.GetValue(r, "userId")
+	req.RoomID = bone.GetValue(r, "roomId")
+	req.UserID = bone.GetValue(r, "userId")
 
 	pd := service.UpdateRoomUser(r.Context(), &req)
 	if pd != nil {
@@ -52,13 +52,13 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
-	var req scpb.DeleteRoomUserRequest
+	var req scpb.DeleteRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	req.RoomId = bone.GetValue(r, "roomId")
+	req.RoomID = bone.GetValue(r, "roomId")
 
 	pd := service.DeleteRoomUsers(r.Context(), &req)
 	if pd != nil {

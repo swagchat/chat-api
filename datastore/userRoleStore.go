@@ -11,13 +11,13 @@ type userRoleOptions struct {
 
 type UserRoleOption func(*userRoleOptions)
 
-func WithUserRoleOptionUserID(userID string) UserRoleOption {
+func UserRoleOptionFilterByUserID(userID string) UserRoleOption {
 	return func(ops *userRoleOptions) {
 		ops.userID = userID
 	}
 }
 
-func WithUserRoleOptionRoleID(roleID int32) UserRoleOption {
+func UserRoleOptionFilterByRoleID(roleID int32) UserRoleOption {
 	return func(ops *userRoleOptions) {
 		ops.roleID = roleID
 	}

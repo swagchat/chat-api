@@ -40,7 +40,7 @@ func CreateUserRoles(ctx context.Context, req *scpb.CreateUserRolesRequest) *mod
 func GetRoleIDsOfUserRole(ctx context.Context, req *scpb.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, *model.ProblemDetail) {
 	logger.Info(fmt.Sprintf("Start GetRoleIDsOfUserRole. GetRoleIdsOfUserRoleRequest[%#v]", req))
 
-	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole(req.UserId)
+	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole(req.UserID)
 	if err != nil {
 		return nil, &model.ProblemDetail{
 			Message: "Failed to getting roleIds.",
@@ -59,7 +59,7 @@ func GetRoleIDsOfUserRole(ctx context.Context, req *scpb.GetRoleIdsOfUserRoleReq
 func GetUserIDsOfUserRole(ctx context.Context, req *scpb.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, *model.ProblemDetail) {
 	logger.Info(fmt.Sprintf("Start GetUserIDsOfUserRole. GetUserIdsOfUserRoleRequest[%#v]", req))
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleId)
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
 	if err != nil {
 		return nil, &model.ProblemDetail{
 			Message: "Failed to getting userIds.",
@@ -79,8 +79,8 @@ func DeleteUserRole(ctx context.Context, req *scpb.DeleteUserRoleRequest) *model
 	logger.Info(fmt.Sprintf("Start DeleteUserRole. DeleteUserRoleRequest[%#v]", req))
 
 	err := datastore.Provider(ctx).DeleteUserRole(
-		datastore.WithUserRoleOptionUserID(req.UserId),
-		datastore.WithUserRoleOptionRoleID(req.RoleId),
+		datastore.UserRoleOptionFilterByUserID(req.UserID),
+		datastore.UserRoleOptionFilterByRoleID(req.RoleID),
 	)
 	if err != nil {
 		return &model.ProblemDetail{
