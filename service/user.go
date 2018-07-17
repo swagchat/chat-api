@@ -38,8 +38,10 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 	}
 
 	u := req.GenerateUser()
+	req.UserID = u.UserID
+	urs := req.GenerateUserRoles()
 
-	pbUser, err := datastore.Provider(ctx).InsertUser(u)
+	pbUser, err := datastore.Provider(ctx).InsertUser(u, datastore.UserOptionInsertRoles(urs))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create user.",
@@ -98,17 +100,17 @@ func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *mode
 		}
 	}
 
-	unreadCountRooms := make([]*model.RoomForUser, 0)
-	notUnreadCountRooms := make([]*model.RoomForUser, 0)
-	for _, roomForUser := range user.Rooms {
-		if roomForUser.RuUnreadCount > 0 {
-			unreadCountRooms = append(unreadCountRooms, roomForUser)
-		} else {
-			notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
-		}
-	}
-	mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
-	user.Rooms = mergeRooms
+	// unreadCountRooms := make([]*model.RoomForUser, 0)
+	// notUnreadCountRooms := make([]*model.RoomForUser, 0)
+	// for _, roomForUser := range user.Rooms {
+	// 	if roomForUser.RuUnreadCount > 0 {
+	// 		unreadCountRooms = append(unreadCountRooms, roomForUser)
+	// 	} else {
+	// 		notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
+	// 	}
+	// }
+	// mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
+	// user.Rooms = mergeRooms
 	logger.Info(fmt.Sprintf("Finish GetUser."))
 	return user, nil
 }
@@ -189,21 +191,18 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.Proble
 }
 
 // GetUserUnreadCount is get user unread count
-func GetUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCount, *model.ProblemDetail) {
-	// logger.Info(fmt.Sprintf("Start GetUserUnreadCount. Request[%#v]", req))
+// func GetUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCount, *model.ProblemDetail) {
+// 	user, pd := selectUser(ctx, userID)
+// 	if pd != nil {
+// 		return nil, pd
+// 	}
 
-	user, pd := selectUser(ctx, userID)
-	if pd != nil {
-		return nil, pd
-	}
+// 	userUnreadCount := &model.UserUnreadCount{
+// 		UnreadCount: user.UnreadCount,
+// 	}
 
-	userUnreadCount := &model.UserUnreadCount{
-		UnreadCount: user.UnreadCount,
-	}
-
-	logger.Info(fmt.Sprintf("Finish GetUserUnreadCount."))
-	return userUnreadCount, nil
-}
+// 	return userUnreadCount, nil
+// }
 
 // GetContacts gets contacts
 func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.UsersResponse, *model.ProblemDetail) {
@@ -254,9 +253,9 @@ func selectUser(ctx context.Context, userID string, opts ...datastore.UserOption
 		return nil, pd
 	}
 	if user == nil {
+		logger.Error(fmt.Sprintf("User does not exist. UserId[%s]", userID))
 		return nil, &model.ProblemDetail{
-			Message: "Resource not found",
-			Status:  http.StatusNotFound,
+			Status: http.StatusNotFound,
 		}
 	}
 	return user, nil

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "messageMessage.proto";
+import "roomMessage.proto";
+
+service Webhook {
+  rpc RoomCreationEvent (Room) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/webhooks/room"
+      body: "*"
+    };
+  }
+  rpc MessageSendEvent (Message) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/webhooks/message"
+      body: "*"
+    };
+  }
+}

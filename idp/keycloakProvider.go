@@ -48,10 +48,13 @@ func (kp *keycloakProvider) Init() error {
 	return nil
 }
 
-func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
+func (kp *keycloakProvider) Post(ctx context.Context, req *model.CreateGuestRequest) (*model.User, error) {
+	pd := req.Validate()
+	if pd != nil {
+		return nil, pd.Error
+	}
+
 	workspace := ctx.Value(utils.CtxWorkspace)
-	gimei := gimei.NewName()
-	name := fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana())
 
 	setting, err := datastore.Provider(ctx).SelectLatestSetting()
 	if err != nil {
@@ -71,7 +74,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	kcUserByte, err := json.Marshal(kcUser)
 
 	endpoint := fmt.Sprintf("%s/auth/admin/realms/%s/users", kp.baseEndpoint, workspace)
-	req, err := http.NewRequest(
+	kcReq, err := http.NewRequest(
 		"POST",
 		endpoint,
 		bytes.NewBuffer(kcUserByte),
@@ -79,16 +82,16 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
-	req.Header.Set("Content-Type", "application/json")
+	kcReq.Header.Set("Content-Type", "application/json")
 
 	manageUserToken, err := kp.clientToken(ctx, settingValues.Keycloak.ManageUserClient.ClientID, settingValues.Keycloak.ManageUserClient.ClientSecret)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", manageUserToken))
+	kcReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", manageUserToken))
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := client.Do(kcReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
@@ -110,7 +113,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	kcRoleMappingsByte, _ := json.Marshal(kcRoleMappings)
 
 	endpoint = fmt.Sprintf("%s/auth/admin/realms/%s/users/%s/role-mappings/realm", kp.baseEndpoint, workspace, userID)
-	req, err = http.NewRequest(
+	kcReq, err = http.NewRequest(
 		"POST",
 		endpoint,
 		bytes.NewBuffer(kcRoleMappingsByte),
@@ -118,10 +121,10 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", manageUserToken))
+	kcReq.Header.Set("Content-Type", "application/json")
+	kcReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", manageUserToken))
 
-	resp, err = client.Do(req)
+	resp, err = client.Do(kcReq)
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
@@ -130,23 +133,15 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	}
 
 	// Create user
-	user := &model.User{
-		UserID: userID,
-		Name:   name,
-	}
-	user.BeforeInsertGuest()
+	gimei := gimei.NewName()
+	name := fmt.Sprintf("%s(%s)(仮)", gimei.Kanji(), gimei.Katakana())
+	user := req.GenerateUser()
+	user.Name = name
 
-	general := &model.UserRole{
-		UserID: user.UserID,
-		RoleID: utils.RoleGeneral,
-	}
-	guest := &model.UserRole{
-		UserID: user.UserID,
-		RoleID: utils.RoleGuest,
-	}
-	roles := []*model.UserRole{general, guest}
+	req.UserID = user.UserID
+	userRoles := req.GenerateUserRoles()
 
-	user, err = datastore.Provider(ctx).InsertUser(user, roles)
+	user, err = datastore.Provider(ctx).InsertUser(user, datastore.UserOptionInsertRoles(userRoles))
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}
@@ -160,7 +155,7 @@ func (kp *keycloakProvider) Post(ctx context.Context) (*model.User, error) {
 	return user, nil
 }
 
-func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*model.User, error) {
+func (kp *keycloakProvider) Get(ctx context.Context, req *model.GetGuestRequest) (*model.User, error) {
 	setting, err := datastore.Provider(ctx).SelectLatestSetting()
 	if err != nil {
 		return nil, errors.Wrap(err, "")
@@ -171,7 +166,7 @@ func (kp *keycloakProvider) Get(ctx context.Context, userID string) (*model.User
 	var settingValues model.SettingValues
 	json.Unmarshal(setting.Values, &settingValues)
 
-	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.WithBlocks(true), datastore.WithDevices(true), datastore.WithRooms(true))
+	user, err := datastore.Provider(ctx).SelectUser(req.UserID, datastore.UserOptionWithBlocks(true), datastore.UserOptionWithDevices(true), datastore.UserOptionWithRooms(true))
 	if err != nil {
 		return nil, errors.Wrap(err, "")
 	}

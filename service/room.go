@@ -16,22 +16,22 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-// PostRoom is post room
-func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start CreateRoom. Room=[%#v]", post))
-	_, pd := selectUser(ctx, post.UserID)
+// CreateRoom creates room
+func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start CreateRoom. Request=[%#v]", req))
+
+	pd := req.Validate()
 	if pd != nil {
 		return nil, pd
 	}
 
-	if pd := post.IsValidPost(); pd != nil {
+	_, pd = selectUser(ctx, req.UserID)
+	if pd != nil {
 		return nil, pd
 	}
 
-	post.BeforePost()
-
-	if post.Type == model.OneOnOne {
-		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(post.UserID, post.UserIDs[0])
+	if req.Type == scpb.RoomType_OneOnOne {
+		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(req.UserID, req.UserIDs[0])
 		if err != nil {
 			pd := &model.ProblemDetail{
 				Message: "Room registration failed",
@@ -48,35 +48,27 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 		}
 	}
 
-	userIDs := post.UserIDs
-	if userIDs == nil {
-		userIDs = make([]string, 0)
-	}
-	userIDs = append(userIDs, post.UserID)
-	userIDs = utils.RemoveDuplicate(userIDs)
+	r := req.GenerateRoom()
+	req.RoomID = r.RoomID
 
-	rus := make([]*scpb.RoomUser, len(userIDs))
-	var zeroValue int32 = 0
-	trueValue := true
-	for _, userID := range userIDs {
-		ru := &scpb.RoomUser{
-			RoomID:      post.RoomID,
-			UserID:      userID,
-			UnreadCount: &zeroValue,
-			Display:     &trueValue,
-		}
-		rus = append(rus, ru)
-	}
-
-	if post.UserIDs != nil {
-		notificationTopicID, pd := createTopic(post.RoomID)
+	if len(req.UserIDs) > 0 {
+		userIDs, pd := getExistUserIDs(ctx, req.UserIDs)
 		if pd != nil {
 			return nil, pd
 		}
-		post.NotificationTopicID = notificationTopicID
+		req.UserIDs = userIDs
+	}
+	rus := req.GenerateRoomUsers()
+
+	if req.UserIDs != nil {
+		notificationTopicID, pd := createTopic(req.RoomID)
+		if pd != nil {
+			return nil, pd
+		}
+		r.NotificationTopicID = notificationTopicID
 	}
 
-	room, err := datastore.Provider(ctx).InsertRoom(post, rus)
+	room, err := datastore.Provider(ctx).InsertRoom(r, datastore.RoomOptionInsertRoomUser(rus))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Room registration failed",
@@ -111,7 +103,7 @@ func PostRoom(ctx context.Context, post *model.Room) (*model.Room, *model.Proble
 	go subscribeByRoomUsers(ctx, roomUsers)
 	go publishUserJoin(ctx, room.RoomID)
 
-	logger.Info(fmt.Sprintf("Finish CreateRoom. Room=[%#v]", room))
+	logger.Info("Finish CreateRoom.")
 	return room, nil
 }
 
@@ -186,9 +178,9 @@ func PutRoom(ctx context.Context, put *model.Room) (*model.Room, *model.ProblemD
 		return nil, pd
 	}
 
-	if pd := room.IsValidPut(); pd != nil {
-		return nil, pd
-	}
+	// if pd := room.IsValidPut(); pd != nil {
+	// 	return nil, pd
+	// }
 
 	if pd := room.BeforePut(put); pd != nil {
 		return nil, pd
@@ -329,7 +321,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *model.ProblemDetail 
 		return pd
 	}
 
-	if room.Type == model.PublicRoom {
+	if room.Type == scpb.RoomType_PublicRoom {
 		return nil
 	}
 

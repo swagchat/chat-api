@@ -16,13 +16,13 @@ func setGuestMux() {
 }
 
 func postGuest(w http.ResponseWriter, r *http.Request) {
-	var post model.User
-	if err := decodeBody(r, &post); err != nil {
+	var req model.CreateGuestRequest
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	user, pd := service.PostGuest(r.Context(), &post)
+	user, pd := service.CreateGuest(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -43,9 +43,10 @@ func postGuest(w http.ResponseWriter, r *http.Request) {
 }
 
 func getGuest(w http.ResponseWriter, r *http.Request) {
-	userID := bone.GetValue(r, "userId")
+	req := &model.GetGuestRequest{}
+	req.UserID = bone.GetValue(r, "userId")
 
-	user, pd := service.GetGuest(r.Context(), userID)
+	user, pd := service.GetGuest(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

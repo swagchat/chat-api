@@ -13,18 +13,16 @@ type CreateRoomUsersRequest struct {
 
 func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
 	roomUsers := make([]*RoomUser, len(crur.UserIDs))
-	var zeroValue int32 = 0
-	trueValue := true
 	for i, userID := range crur.UserIDs {
 		ru := &RoomUser{}
 		ru.RoomID = crur.RoomID
 		ru.UserID = userID
-		ru.UnreadCount = &zeroValue
+		ru.UnreadCount = int32(0)
 
 		if crur.Display == nil {
-			ru.Display = &trueValue
+			ru.Display = true
 		} else {
-			ru.Display = crur.Display
+			ru.Display = *crur.Display
 		}
 		roomUsers[i] = ru
 	}
@@ -32,7 +30,7 @@ func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
 }
 
 func (crur *CreateRoomUsersRequest) Validate() *ProblemDetail {
-	if crur.Room.Type == OneOnOne {
+	if crur.Room.Type == scpb.RoomType_OneOnOne {
 		if len(crur.UserIDs) != 1 {
 			return &ProblemDetail{
 				Message: "Invalid params",
@@ -67,11 +65,11 @@ func (ru *RoomUser) UpdateRoomUser(req *UpdateRoomUserRequest) {
 		UserID: ru.UserID,
 	}
 	if req.UnreadCount != nil {
-		pbRu.UnreadCount = req.UnreadCount
+		pbRu.UnreadCount = *req.UnreadCount
 	}
 
 	if req.Display != nil {
-		pbRu.Display = req.Display
+		pbRu.Display = *req.Display
 	}
 }
 
@@ -81,7 +79,7 @@ type DeleteRoomUsersRequest struct {
 }
 
 func (drur *DeleteRoomUsersRequest) Validate() *ProblemDetail {
-	if drur.Room.Type == OneOnOne {
+	if drur.Room.Type == scpb.RoomType_OneOnOne {
 		if len(drur.Room.Users)-len(drur.UserIDs) != 1 {
 			return &ProblemDetail{
 				Message: "Invalid params",

@@ -8,9 +8,23 @@ type userOptions struct {
 	withRoles   bool
 	withRooms   bool
 	user        interface{}
+	devices     []*model.Device
+	roles       []*model.UserRole
 }
 
 type UserOption func(*userOptions)
+
+func UserOptionInsertDevices(devices []*model.Device) UserOption {
+	return func(ops *userOptions) {
+		ops.devices = devices
+	}
+}
+
+func UserOptionInsertRoles(roles []*model.UserRole) UserOption {
+	return func(ops *userOptions) {
+		ops.roles = roles
+	}
+}
 
 func UserOptionWithBlocks(b bool) UserOption {
 	return func(ops *userOptions) {
@@ -32,7 +46,7 @@ func UserOptionWithRoles(b bool) UserOption {
 
 func UserOptionWithRooms(b bool) UserOption {
 	return func(ops *userOptions) {
-		ops.withRoles = b
+		ops.withRooms = b
 	}
 }
 
@@ -51,7 +65,7 @@ func WithPbUsers(user *model.User) UserOption {
 type userStore interface {
 	createUserStore()
 
-	InsertUser(user *model.User, opts ...interface{}) (*model.User, error)
+	InsertUser(user *model.User, opts ...UserOption) (*model.User, error)
 	SelectUsers() ([]*model.User, error)
 	SelectUser(userID string, opts ...UserOption) (*model.User, error)
 	SelectUserByUserIDAndAccessToken(userID, accessToken string) (*model.User, error)

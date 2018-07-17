@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "userMessage.proto";
+
+
+service UserService {
+  rpc CreateUser (CreateUserRequest) returns (User) {}
+  rpc GetUsers (GetUsersRequest) returns (UsersResponse) {}
+  rpc GetUser (GetUserRequest) returns (User) {}
+  rpc UpdateUser (UpdateUserRequest) returns (User) {}
+  rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {}
+
+  rpc GetContacts (GetContactsRequest) returns (UsersResponse) {}
+  rpc GetProfile (GetProfileRequest) returns (User) {}
+}

@@ -69,8 +69,8 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 			}
 			defer conn.Close()
 
-			c := scpb.NewChatOutgoingClient(conn)
-			_, err = c.PostWebhookRoom(context.Background(), pbRoom)
+			c := scpb.NewWebhookClient(conn)
+			_, err = c.RoomCreationEvent(context.Background(), pbRoom)
 			if err != nil {
 				logger.Error(fmt.Sprintf("[GRPC][WebhookRoom]Response body read failure. GRPC Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
@@ -165,8 +165,8 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 			}
 			defer conn.Close()
 
-			c := scpb.NewChatOutgoingClient(conn)
-			_, err = c.PostWebhookMessage(context.Background(), pbMessage)
+			c := scpb.NewWebhookClient(conn)
+			_, err = c.MessageSendEvent(context.Background(), pbMessage)
 			if err != nil {
 				logger.Error(fmt.Sprintf("[GRPC][WebhookMessage] Response body read failure. GRPC Endpoint=[%s]. %v", webhook.Endpoint, err))
 				continue

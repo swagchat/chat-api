@@ -2,22 +2,22 @@ package datastore
 
 import "github.com/swagchat/chat-api/model"
 
-// type roomOptions struct {
-// 	withUserForRoom bool
-// }
+type roomOptions struct {
+	users []*model.RoomUser
+}
 
-// type RoomOption func(*roomOptions)
+type RoomOption func(*roomOptions)
 
-// func RoomOptionWithUserForRoom(b bool) RoomOption {
-// 	return func(ops *roomOptions) {
-// 		ops.withUserForRoom = b
-// 	}
-// }
+func RoomOptionInsertRoomUser(users []*model.RoomUser) RoomOption {
+	return func(ops *roomOptions) {
+		ops.users = users
+	}
+}
 
 type roomStore interface {
 	createRoomStore()
 
-	InsertRoom(room *model.Room, opts ...interface{}) (*model.Room, error)
+	InsertRoom(room *model.Room, opts ...RoomOption) (*model.Room, error)
 	SelectRoom(roomID string) (*model.Room, error)
 	SelectRooms() ([]*model.Room, error)
 	SelectUsersForRoom(roomID string) ([]*model.UserForRoom, error)

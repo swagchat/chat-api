@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "gogoproto/gogo.proto";
+
+message RoomIds {
+  repeated string room_ids = 1 [(gogoproto.customname) = "RoomIDs", (gogoproto.jsontag) = "roomIds,omitempty"];
+}
+
+message UserIds {
+  repeated string user_ids = 1 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds,omitempty"];
+}
+
+message RoleIds {
+  repeated int32 role_ids = 1 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds"];
+}

@@ -43,34 +43,26 @@ func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
 type User struct {
 	scpb.User
 	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+	Roles    []int32        `json:"roles,omitempty" db:"-"`
 	Rooms    []*RoomForUser `json:"rooms,omitempty" db:"-"`
 	Devices  []*Device      `json:"devices,omitempty" db:"-"`
+	Blocks   []string       `json:"blocks,omitempty" db:"-"`
 }
 
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
-	public := false
-	if u.Public != nil {
-		public = *u.Public
-	}
-
-	canBlock := false
-	if u.CanBlock != nil {
-		canBlock = *u.CanBlock
-	}
-
 	return json.Marshal(&struct {
-		UserID         string         `json:"userId"`
-		Name           string         `json:"name"`
-		PictureURL     string         `json:"pictureUrl"`
-		InformationURL string         `json:"informationUrl"`
-		UnreadCount    *uint64        `json:"unreadCount"`
-		MetaData       utils.JSONText `json:"metaData"`
-		Public         bool           `json:"public"`
-		CanBlock       bool           `json:"canBlock"`
-		Lang           string         `json:"lang"`
-		// AccessToken      string              `json:"accessToken"`
+		UserID           string         `json:"userId"`
+		Name             string         `json:"name"`
+		PictureURL       string         `json:"pictureUrl"`
+		InformationURL   string         `json:"informationUrl"`
+		UnreadCount      uint64         `json:"unreadCount"`
+		MetaData         utils.JSONText `json:"metaData"`
+		Public           bool           `json:"public"`
+		CanBlock         bool           `json:"canBlock"`
+		Lang             string         `json:"lang"`
+		AccessToken      string         `json:"accessToken"`
 		LastAccessRoomID string         `json:"lastAccessRoomId"`
 		LastAccessed     string         `json:"lastAccessed"`
 		Created          string         `json:"created"`
@@ -80,16 +72,16 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Devices          []*Device      `json:"devices"`
 		Blocks           []string       `json:"blocks"`
 	}{
-		UserID:         u.UserID,
-		Name:           u.Name,
-		PictureURL:     u.PictureURL,
-		InformationURL: u.InformationURL,
-		UnreadCount:    u.UnreadCount,
-		MetaData:       u.MetaData,
-		Public:         public,
-		CanBlock:       canBlock,
-		Lang:           u.Lang,
-		// AccessToken:      u.AccessToken,
+		UserID:           u.UserID,
+		Name:             u.Name,
+		PictureURL:       u.PictureURL,
+		InformationURL:   u.InformationURL,
+		UnreadCount:      u.UnreadCount,
+		MetaData:         u.MetaData,
+		Public:           u.Public,
+		CanBlock:         u.CanBlock,
+		Lang:             u.Lang,
+		AccessToken:      u.AccessToken,
 		LastAccessRoomID: u.LastAccessRoomID,
 		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
 		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
@@ -165,7 +157,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 }
 
 type UserUnreadCount struct {
-	UnreadCount *uint64 `json:"unreadCount" db:"unread_count"`
+	UnreadCount uint64 `json:"unreadCount" db:"unread_count"`
 }
 
 // func (u *User) BeforePut(put *User) {
@@ -362,24 +354,19 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 	}
 
 	if cur.Public == nil {
-		public := true
-		u.Public = &public
+		u.Public = true
 	} else {
-		u.Public = cur.Public
+		u.Public = *cur.Public
 	}
 
 	if cur.CanBlock == nil {
-		canBlock := true
-		u.CanBlock = &canBlock
+		u.CanBlock = true
 	} else {
-		u.CanBlock = cur.CanBlock
+		u.CanBlock = *cur.CanBlock
 	}
 
 	u.Lang = cur.Lang
-
-	unreadCount := uint64(0)
-	u.UnreadCount = &unreadCount
-
+	u.UnreadCount = uint64(0)
 	u.Roles = make([]int32, 0)
 	u.Rooms = make([]*RoomForUser, 0)
 	u.Devices = make([]*Device, 0)
@@ -389,6 +376,19 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 	u.Modified = nowTimestamp
 
 	return u
+}
+
+func (cur *CreateUserRequest) GenerateUserRoles() []*UserRole {
+	urs := make([]*UserRole, len(cur.RoleIDs))
+
+	for i, v := range cur.RoleIDs {
+		ru := &UserRole{}
+		ru.UserID = cur.UserID
+		ru.RoleID = v
+
+		urs[i] = ru
+	}
+	return urs
 }
 
 type GetUsersRequest struct {
@@ -437,11 +437,11 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 	}
 
 	if req.Public != nil {
-		u.Public = req.Public
+		u.Public = *req.Public
 	}
 
 	if req.CanBlock == nil {
-		u.CanBlock = req.CanBlock
+		u.CanBlock = *req.CanBlock
 	}
 
 	if req.Lang != "" {

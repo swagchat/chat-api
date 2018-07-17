@@ -62,6 +62,12 @@
   version = "1.2"
 
 [[projects]]
+  name = "github.com/gogo/protobuf"
+  packages = ["gogoproto","proto","protoc-gen-gogo/descriptor"]
+  revision = "7d68e886eac4f7e34d0d82241a6273d6c304c5cf"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/golang/protobuf"
   packages = ["jsonpb","proto","protoc-gen-go/descriptor","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/struct","ptypes/timestamp"]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
@@ -119,6 +125,12 @@
   name = "github.com/shogo82148/go-gracedown"
   packages = ["."]
   revision = "c030b2477760b7d0826b55c430dd9fcf37f4ecaf"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/swagchat/protobuf"
+  packages = ["."]
+  revision = "513284492aa755c890bf6b4f879d14cca2e8a430"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -201,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "75414bc4b6d5d876eae3401052cc4ff1ca213c2291f876b2dc1fee4ec9f92abb"
+  inputs-digest = "f1a226dfc65fb938ec7032e3273523e8df15a675010d569760fd7b7042b8f2c4"
   solver-name = "gps-cdcl"
   solver-version = 1

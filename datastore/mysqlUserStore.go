@@ -6,7 +6,7 @@ func (p *mysqlProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *mysqlProvider) InsertUser(user *model.User, opts ...interface{}) (*model.User, error) {
+func (p *mysqlProvider) InsertUser(user *model.User, opts ...UserOption) (*model.User, error) {
 	return rdbInsertUser(p.database, user, opts...)
 }
 

@@ -11,9 +11,9 @@ import (
 	"github.com/swagchat/chat-api/model"
 )
 
-// PostGuest is post guest user
-func PostGuest(ctx context.Context, post *model.User) (*model.User, *model.ProblemDetail) {
-	guest, err := idp.Provider().Post(ctx)
+// CreateGuest creates guest user
+func CreateGuest(ctx context.Context, req *model.CreateGuestRequest) (*model.User, *model.ProblemDetail) {
+	guest, err := idp.Provider().Post(ctx, req)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Register guest user failed",
@@ -22,15 +22,15 @@ func PostGuest(ctx context.Context, post *model.User) (*model.User, *model.Probl
 		}
 		return nil, pd
 	}
-	user, err := datastore.Provider(ctx).SelectUser(guest.UserID, datastore.WithRooms(true))
+	user, err := datastore.Provider(ctx).SelectUser(guest.UserID, datastore.UserOptionWithRooms(true))
 	user.AccessToken = guest.AccessToken
 
 	return user, nil
 }
 
-// GetGuest is get guest user
-func GetGuest(ctx context.Context, userID string) (*model.User, *model.ProblemDetail) {
-	guest, err := idp.Provider().Get(ctx, userID)
+// GetGuest gets guest user
+func GetGuest(ctx context.Context, req *model.GetGuestRequest) (*model.User, *model.ProblemDetail) {
+	guest, err := idp.Provider().Get(ctx, req)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Resource not found",
@@ -45,7 +45,7 @@ func GetGuest(ctx context.Context, userID string) (*model.User, *model.ProblemDe
 			Status:  http.StatusNotFound,
 		}
 	}
-	user, err := datastore.Provider(ctx).SelectUser(guest.UserID, datastore.WithRooms(true))
+	user, err := datastore.Provider(ctx).SelectUser(guest.UserID, datastore.UserOptionWithRooms(true))
 	user.AccessToken = guest.AccessToken
 
 	return user, nil

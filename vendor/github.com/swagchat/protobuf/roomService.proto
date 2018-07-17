@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "google/api/annotations.proto";
+// import "google/protobuf/empty.proto";
+import "roomMessage.proto";
+
+
+service RoomService {
+  rpc CreateRoom (CreateRoomRequest) returns (Room) {}
+  // rpc GetRooms (GetRoomsRequest) returns (RoomsResponse) {}
+  // rpc GetRoom (GetRoomRequest) returns (Room) {}
+  // rpc UpdateRoom (UpdateRoomRequest) returns (Room) {}
+  // rpc DeleteRoom (DeleteRoomRequest) returns (google.protobuf.Empty) {}
+}

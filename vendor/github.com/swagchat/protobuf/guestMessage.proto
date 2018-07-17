@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "gogoproto/gogo.proto";
+
+message CreateGuestRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+  optional string name = 12 [(gogoproto.nullable) = false];
+  optional string picture_url = 13 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl"];
+  optional string information_url = 14 [(gogoproto.customname) = "InformationURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "informationUrl"];
+  optional bytes meta_data = 15 [(gogoproto.jsontag) = "metaData"];
+  optional bool public = 16;
+  optional bool can_block = 17 [(gogoproto.jsontag) = "canBlock,omitempty"];
+  optional string lang = 18 [(gogoproto.nullable) = false];
+}
+
+message GetGuestRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+}

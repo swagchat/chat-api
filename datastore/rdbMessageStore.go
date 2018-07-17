@@ -11,7 +11,6 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf"
 )
 
 func rdbCreateMessageStore(db string) {
@@ -112,7 +111,7 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 		return "", err
 	}
 
-	var users []*scpb.User
+	var users []*model.User
 	query = fmt.Sprintf("SELECT u.* FROM %s AS ru LEFT JOIN %s AS u ON ru.user_id = u.user_id WHERE room_id = :roomId;", tableNameRoomUser, tableNameUser)
 	params = map[string]interface{}{"roomId": message.RoomID}
 	_, err = trans.Select(&users, query, params)

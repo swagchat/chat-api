@@ -19,13 +19,13 @@ func setRoomMux() {
 }
 
 func postRoom(w http.ResponseWriter, r *http.Request) {
-	var post model.Room
-	if err := decodeBody(r, &post); err != nil {
+	var req model.CreateRoomRequest
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	room, pd := service.PostRoom(r.Context(), &post)
+	room, pd := service.CreateRoom(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

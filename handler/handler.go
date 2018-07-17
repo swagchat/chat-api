@@ -56,7 +56,7 @@ func StartServer(ctx context.Context) {
 	setAssetMux()
 	setBlockUserMux()
 	setDeviceMux()
-	// setGuestMux()
+	setGuestMux()
 	setMessageMux()
 	setRoomMux()
 	setRoomUserMux()

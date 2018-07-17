@@ -6,7 +6,7 @@ func (p *sqliteProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *sqliteProvider) InsertUser(user *model.User, opts ...interface{}) (*model.User, error) {
+func (p *sqliteProvider) InsertUser(user *model.User, opts ...UserOption) (*model.User, error) {
 	return rdbInsertUser(p.database, user, opts...)
 }
 

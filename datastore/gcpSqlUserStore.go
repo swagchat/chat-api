@@ -6,7 +6,7 @@ func (p *gcpSQLProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertUser(user *model.User, opts ...interface{}) (*model.User, error) {
+func (p *gcpSQLProvider) InsertUser(user *model.User, opts ...UserOption) (*model.User, error) {
 	return rdbInsertUser(p.database, user, opts...)
 }
 

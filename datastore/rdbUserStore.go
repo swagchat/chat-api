@@ -29,8 +29,13 @@ func rdbCreateUserStore(db string) {
 	}
 }
 
-func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.User, error) {
+func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User, error) {
 	master := RdbStore(db).master()
+
+	opt := userOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
 	trans, err := master.Begin()
 	if err = trans.Insert(user); err != nil {
@@ -40,7 +45,7 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 		return nil, err
 	}
 
-	if user.Devices != nil {
+	if opt.devices != nil {
 		for _, device := range user.Devices {
 			if err := trans.Insert(device); err != nil {
 				trans.Rollback()
@@ -51,36 +56,31 @@ func rdbInsertUser(db string, user *model.User, opts ...interface{}) (*model.Use
 		}
 	}
 
-	for _, v := range opts {
-		switch v.(type) {
-		case []*model.UserRole:
-			urs := v.([]*model.UserRole)
-
-			for _, ur := range urs {
-				bu, err := rdbSelectUserRole(db, UserRoleOptionFilterByUserID(ur.UserID), UserRoleOptionFilterByRoleID(ur.RoleID))
-				if err != nil {
-					trans.Rollback()
-					err = errors.Wrap(err, "An error occurred while inserting user")
-					logger.Error(err.Error())
-					return nil, err
-				}
-				if bu == nil {
-					err = trans.Insert(ur)
-					if err != nil {
-						trans.Rollback()
-						err = errors.Wrap(err, "An error occurred while inserting user")
-						logger.Error(err.Error())
-						return nil, err
-					}
-				}
-			}
-
+	if opt.roles != nil {
+		for _, ur := range opt.roles {
+			bu, err := rdbSelectUserRole(db, UserRoleOptionFilterByUserID(ur.UserID), UserRoleOptionFilterByRoleID(ur.RoleID))
 			if err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
 				logger.Error(err.Error())
 				return nil, err
 			}
+			if bu == nil {
+				err = trans.Insert(ur)
+				if err != nil {
+					trans.Rollback()
+					err = errors.Wrap(err, "An error occurred while inserting user")
+					logger.Error(err.Error())
+					return nil, err
+				}
+			}
+		}
+
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while inserting user")
+			logger.Error(err.Error())
+			return nil, err
 		}
 	}
 
@@ -300,7 +300,7 @@ func rdbUpdateUser(db string, user *model.User) (*model.User, error) {
 		return nil, err
 	}
 
-	if *user.UnreadCount == 0 {
+	if user.UnreadCount == 0 {
 		query := fmt.Sprintf("UPDATE %s SET unread_count=0 WHERE user_id=:userId;", tableNameRoomUser)
 		params := map[string]interface{}{
 			"userId": user.UserID,

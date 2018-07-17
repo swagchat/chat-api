@@ -25,8 +25,14 @@ func rdbCreateRoomStore(db string) {
 	}
 }
 
-func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Room, error) {
+func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) (*model.Room, error) {
 	master := RdbStore(db).master()
+
+	opt := roomOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
 	trans, err := master.Begin()
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
@@ -40,18 +46,12 @@ func rdbInsertRoom(db string, room *model.Room, opts ...interface{}) (*model.Roo
 		return nil, err
 	}
 
-	for _, v := range opts {
-		switch v.(type) {
-		case []*model.RoomUser:
-			rus := v.([]*model.RoomUser)
-			for _, ru := range rus {
-				err = trans.Insert(ru)
-				if err != nil {
-					trans.Rollback()
-					logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
-					return nil, err
-				}
-			}
+	for _, ru := range opt.users {
+		err = trans.Insert(ru)
+		if err != nil {
+			trans.Rollback()
+			logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+			return nil, err
 		}
 	}
 

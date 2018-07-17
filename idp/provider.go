@@ -9,8 +9,8 @@ import (
 
 type provider interface {
 	Init() error
-	Post(ctx context.Context) (*model.User, error)
-	Get(ctx context.Context, userID string) (*model.User, error)
+	Post(ctx context.Context, req *model.CreateGuestRequest) (*model.User, error)
+	Get(ctx context.Context, req *model.GetGuestRequest) (*model.User, error)
 }
 
 func Provider() provider {
