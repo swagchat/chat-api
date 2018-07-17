@@ -3,6 +3,8 @@ package grpc
 import (
 	"context"
 
+	"github.com/swagchat/chat-api/model"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/swagchat/chat-api/service"
 	scpb "github.com/swagchat/protobuf"
@@ -11,7 +13,8 @@ import (
 type userRoleServiceServer struct{}
 
 func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.CreateUserRolesRequest) (*empty.Empty, error) {
-	pd := service.CreateUserRoles(ctx, in)
+	req := &model.CreateUserRolesRequest{*in}
+	pd := service.CreateUserRoles(ctx, req)
 	if pd != nil {
 		return &empty.Empty{}, pd.Error
 	}
@@ -20,7 +23,8 @@ func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.
 }
 
 func (urs *userRoleServiceServer) GetRoleIdsOfUserRole(ctx context.Context, in *scpb.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, error) {
-	roleIDs, pd := service.GetRoleIDsOfUserRole(ctx, in)
+	req := &model.GetRoleIdsOfUserRoleRequest{*in}
+	roleIDs, pd := service.GetRoleIDsOfUserRole(ctx, req)
 	if pd != nil {
 		return &scpb.RoleIds{}, pd.Error
 	}
@@ -29,7 +33,8 @@ func (urs *userRoleServiceServer) GetRoleIdsOfUserRole(ctx context.Context, in *
 }
 
 func (urs *userRoleServiceServer) GetUserIdsOfUserRole(ctx context.Context, in *scpb.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, error) {
-	userIDs, pd := service.GetUserIDsOfUserRole(ctx, in)
+	req := &model.GetUserIdsOfUserRoleRequest{*in}
+	userIDs, pd := service.GetUserIDsOfUserRole(ctx, req)
 	if pd != nil {
 		return &scpb.UserIds{}, pd.Error
 	}
@@ -37,8 +42,9 @@ func (urs *userRoleServiceServer) GetUserIdsOfUserRole(ctx context.Context, in *
 	return userIDs, nil
 }
 
-func (urs *userRoleServiceServer) DeleteUserRole(ctx context.Context, in *scpb.DeleteUserRoleRequest) (*empty.Empty, error) {
-	pd := service.DeleteUserRole(ctx, in)
+func (urs *userRoleServiceServer) DeleteUserRoles(ctx context.Context, in *scpb.DeleteUserRolesRequest) (*empty.Empty, error) {
+	req := &model.DeleteUserRolesRequest{*in}
+	pd := service.DeleteUserRoles(ctx, req)
 	if pd != nil {
 		return &empty.Empty{}, pd.Error
 	}

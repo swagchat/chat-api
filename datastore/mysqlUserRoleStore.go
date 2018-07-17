@@ -8,7 +8,7 @@ func (p *mysqlProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.database)
 }
 
-func (p *mysqlProvider) InsertUserRoles(urs *model.UserRoles) error {
+func (p *mysqlProvider) InsertUserRoles(urs []*model.UserRole) error {
 	return rdbInsertUserRoles(p.database, urs)
 }
 
@@ -24,6 +24,6 @@ func (p *mysqlProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error) 
 	return rdbSelectUserIDsOfUserRole(p.database, roleID)
 }
 
-func (p *mysqlProvider) DeleteUserRole(opts ...UserRoleOption) error {
-	return rdbDeleteUserRole(p.database, opts...)
+func (p *mysqlProvider) DeleteUserRoles(opts ...UserRoleOption) error {
+	return rdbDeleteUserRoles(p.database, opts...)
 }

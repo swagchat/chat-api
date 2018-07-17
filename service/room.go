@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"sync"
 	"time"
 
@@ -256,14 +255,9 @@ func DeleteRoom(ctx context.Context, roomID string) *model.ProblemDetail {
 }
 
 // GetRoomMessages is get room messages
-func GetRoomMessages(ctx context.Context, roomID string, params url.Values) (*model.Messages, *model.ProblemDetail) {
+func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int32, order string) (*model.Messages, *model.ProblemDetail) {
 	userID := ctx.Value(utils.CtxUserID).(string)
 	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
-	if pd != nil {
-		return nil, pd
-	}
-
-	limit, offset, order, pd := setPagingParams(params)
 	if pd != nil {
 		return nil, pd
 	}
@@ -326,65 +320,6 @@ func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup)
 	if wg != nil {
 		wg.Done()
 	}
-}
-
-func setPagingParams(params url.Values) (int, int, string, *model.ProblemDetail) {
-	var err error
-	limit := 10
-	offset := 0
-	order := "ASC"
-	if limitArray, ok := params["limit"]; ok {
-		limit, err = strconv.Atoi(limitArray[0])
-		if err != nil {
-			return limit, offset, order, &model.ProblemDetail{
-				Message: "Request parameter error.",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "limit",
-						Reason: "limit is incorrect.",
-					},
-				},
-			}
-		}
-	}
-	if offsetArray, ok := params["offset"]; ok {
-		offset, err = strconv.Atoi(offsetArray[0])
-		if err != nil {
-			return limit, offset, order, &model.ProblemDetail{
-				Message: "Request parameter error.",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "offset",
-						Reason: "offset is incorrect.",
-					},
-				},
-			}
-		}
-	}
-	if orderArray, ok := params["order"]; ok {
-		order := orderArray[0]
-		allowedOrders := []string{
-			"DESC",
-			"desc",
-			"ASC",
-			"asc",
-		}
-		if utils.SearchStringValueInSlice(allowedOrders, order) {
-			return limit, offset, order, &model.ProblemDetail{
-				Message: "Request parameter error.",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "order",
-						Reason: "order is incorrect.",
-					},
-				},
-			}
-		}
-	}
-	return limit, offset, order, nil
 }
 
 // RoomAuthz is room authorize

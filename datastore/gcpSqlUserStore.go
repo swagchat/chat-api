@@ -10,16 +10,16 @@ func (p *gcpSQLProvider) InsertUser(user *model.User, opts ...interface{}) (*mod
 	return rdbInsertUser(p.database, user, opts...)
 }
 
+func (p *gcpSQLProvider) SelectUsers() ([]*model.User, error) {
+	return rdbSelectUsers(p.database)
+}
+
 func (p *gcpSQLProvider) SelectUser(userID string, opts ...UserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 
 func (p *gcpSQLProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*model.User, error) {
 	return rdbSelectUserByUserIDAndAccessToken(p.database, userID, accessToken)
-}
-
-func (p *gcpSQLProvider) SelectUsers() ([]*model.User, error) {
-	return rdbSelectUsers(p.database)
 }
 
 func (p *gcpSQLProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {

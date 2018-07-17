@@ -10,16 +10,16 @@ func (p *mysqlProvider) InsertUser(user *model.User, opts ...interface{}) (*mode
 	return rdbInsertUser(p.database, user, opts...)
 }
 
+func (p *mysqlProvider) SelectUsers() ([]*model.User, error) {
+	return rdbSelectUsers(p.database)
+}
+
 func (p *mysqlProvider) SelectUser(userID string, opts ...UserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 
 func (p *mysqlProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*model.User, error) {
 	return rdbSelectUserByUserIDAndAccessToken(p.database, userID, accessToken)
-}
-
-func (p *mysqlProvider) SelectUsers() ([]*model.User, error) {
-	return rdbSelectUsers(p.database)
 }
 
 func (p *mysqlProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {

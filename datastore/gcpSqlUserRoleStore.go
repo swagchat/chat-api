@@ -8,7 +8,7 @@ func (p *gcpSQLProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertUserRoles(urs *model.UserRoles) error {
+func (p *gcpSQLProvider) InsertUserRoles(urs []*model.UserRole) error {
 	return rdbInsertUserRoles(p.database, urs)
 }
 
@@ -24,6 +24,6 @@ func (p *gcpSQLProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error)
 	return rdbSelectUserIDsOfUserRole(p.database, roleID)
 }
 
-func (p *gcpSQLProvider) DeleteUserRole(opts ...UserRoleOption) error {
-	return rdbDeleteUserRole(p.database, opts...)
+func (p *gcpSQLProvider) DeleteUserRoles(opts ...UserRoleOption) error {
+	return rdbDeleteUserRoles(p.database, opts...)
 }

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 // RoomType is room type
@@ -94,20 +95,21 @@ type Room struct {
 }
 
 type UserForRoom struct {
-	// from User
-	RoomID         string         `json:"roomId" db:"room_id"`
-	UserID         string         `json:"userId" db:"user_id"`
-	Name           string         `json:"name" db:"name"`
-	PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
-	MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
-	CanBlock       *bool          `json:"canBlock,omitempty" db:"can_block"`
-	LastAccessed   int64          `json:"lastAccessed" db:"last_accessed"`
-	Created        int64          `json:"created" db:"created"`
-	Modified       int64          `json:"modified" db:"modified"`
+	scpb.UserForRoom
+	// // from User
+	// RoomID         string         `json:"roomId" db:"room_id"`
+	// UserID         string         `json:"userId" db:"user_id"`
+	// Name           string         `json:"name" db:"name"`
+	// PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
+	// InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
+	// MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
+	// CanBlock       *bool          `json:"canBlock,omitempty" db:"can_block"`
+	// LastAccessed   int64          `json:"lastAccessed" db:"last_accessed"`
+	// Created        int64          `json:"created" db:"created"`
+	// Modified       int64          `json:"modified" db:"modified"`
 
-	// from RoomUser
-	RuDisplay bool `json:"ruDisplay" db:"ru_display"`
+	// // from RoomUser
+	// RuDisplay bool `json:"ruDisplay" db:"ru_display"`
 }
 
 func (r *Room) MarshalJSON() ([]byte, error) {
@@ -170,7 +172,7 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		LastAccessed   string         `json:"lastAccessed"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
-		RuDisplay      bool           `json:"ruDisplay"`
+		RuDisplay      *bool          `json:"ruDisplay"`
 	}{
 		UserID:         ufr.UserID,
 		Name:           ufr.Name,

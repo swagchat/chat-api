@@ -8,7 +8,7 @@ func (p *sqliteProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.database)
 }
 
-func (p *sqliteProvider) InsertUserRoles(urs *model.UserRoles) error {
+func (p *sqliteProvider) InsertUserRoles(urs []*model.UserRole) error {
 	return rdbInsertUserRoles(p.database, urs)
 }
 
@@ -24,6 +24,6 @@ func (p *sqliteProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error)
 	return rdbSelectUserIDsOfUserRole(p.database, roleID)
 }
 
-func (p *sqliteProvider) DeleteUserRole(opts ...UserRoleOption) error {
-	return rdbDeleteUserRole(p.database, opts...)
+func (p *sqliteProvider) DeleteUserRoles(opts ...UserRoleOption) error {
+	return rdbDeleteUserRoles(p.database, opts...)
 }

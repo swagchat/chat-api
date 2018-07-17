@@ -11,7 +11,6 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf"
 )
 
 // GetDevices is get devices
@@ -220,7 +219,7 @@ func unsubscribeByDevice(ctx context.Context, device *model.Device, wg *sync.Wai
 	}
 }
 
-func subscribe(ctx context.Context, roomUsers []*scpb.RoomUser, device *model.Device) chan bool {
+func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.Device) chan bool {
 	np := notification.Provider()
 	dp := datastore.Provider(ctx)
 	doneCh := make(chan bool, 1)

@@ -6,8 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -335,4 +337,64 @@ func setLastModified(w http.ResponseWriter, timestamp int64) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	lm := time.Unix(timestamp, 0).In(l).Format(http.TimeFormat)
 	w.Header().Set("Last-Modified", lm)
+}
+
+func setPagingParams(params url.Values) (int32, int32, string, *model.ProblemDetail) {
+	limit := int32(10)
+	offset := int32(0)
+	order := "ASC"
+	if limitArray, ok := params["limit"]; ok {
+		limitInt, err := strconv.Atoi(limitArray[0])
+		if err != nil {
+			return limit, offset, order, &model.ProblemDetail{
+				Message: "Request parameter error.",
+				Status:  http.StatusBadRequest,
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
+						Name:   "limit",
+						Reason: "limit is incorrect.",
+					},
+				},
+			}
+		}
+		limit = int32(limitInt)
+	}
+	if offsetArray, ok := params["offset"]; ok {
+		offsetInt, err := strconv.Atoi(offsetArray[0])
+		if err != nil {
+			return limit, offset, order, &model.ProblemDetail{
+				Message: "Request parameter error.",
+				Status:  http.StatusBadRequest,
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
+						Name:   "offset",
+						Reason: "offset is incorrect.",
+					},
+				},
+			}
+		}
+		offset = int32(offsetInt)
+	}
+	if orderArray, ok := params["order"]; ok {
+		order := orderArray[0]
+		allowedOrders := []string{
+			"DESC",
+			"desc",
+			"ASC",
+			"asc",
+		}
+		if utils.SearchStringValueInSlice(allowedOrders, order) {
+			return limit, offset, order, &model.ProblemDetail{
+				Message: "Request parameter error.",
+				Status:  http.StatusBadRequest,
+				InvalidParams: []*model.InvalidParam{
+					&model.InvalidParam{
+						Name:   "order",
+						Reason: "order is incorrect.",
+					},
+				},
+			}
+		}
+	}
+	return limit, offset, order, nil
 }

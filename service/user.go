@@ -4,9 +4,8 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-
-	scpb "github.com/swagchat/protobuf"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
@@ -16,6 +15,8 @@ import (
 
 // CreateUser creates user
 func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start CreateUser. Request[%#v]", req))
+
 	if pd := req.Validate(); pd != nil {
 		return nil, pd
 	}
@@ -48,12 +49,15 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, pd
 	}
 
+	logger.Info(fmt.Sprintf("Finish CreateUser."))
 	return pbUser, nil
 }
 
 // GetUsers is get users
-func GetUsers(ctx context.Context) (*model.Users, *model.ProblemDetail) {
-	_, err := datastore.Provider(ctx).SelectUsers()
+func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResponse, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetUsers. Request[%#v]", req))
+
+	users, err := datastore.Provider(ctx).SelectUsers()
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get users failed",
@@ -63,15 +67,22 @@ func GetUsers(ctx context.Context) (*model.Users, *model.ProblemDetail) {
 		return nil, pd
 	}
 
-	// return &model.Users{
-	// 	Users: users,
-	// }, nil
-	return nil, nil
+	res := &model.UsersResponse{}
+	res.Users = users
+	res.AllCount = int64(0)
+	res.Limit = req.Limit
+	res.Offset = req.Offset
+	res.Order = req.Order
+
+	logger.Info(fmt.Sprintf("Finish GetUsers."))
+	return res, nil
 }
 
-// GetUser is get user
-func GetUser(ctx context.Context, userID string) (*model.User, *model.ProblemDetail) {
-	user, err := datastore.Provider(ctx).SelectUser(userID, datastore.UserOptionWithBlocks(true), datastore.UserOptionWithDevices(true), datastore.UserOptionWithRooms(true))
+// GetUser gets user
+func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetUser. Request[%#v]", req))
+
+	user, err := datastore.Provider(ctx).SelectUser(req.UserID, datastore.UserOptionWithBlocks(true), datastore.UserOptionWithDevices(true), datastore.UserOptionWithRooms(true))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get user failed",
@@ -87,32 +98,36 @@ func GetUser(ctx context.Context, userID string) (*model.User, *model.ProblemDet
 		}
 	}
 
-	// unreadCountRooms := make([]*model.RoomForUser, 0)
-	// notUnreadCountRooms := make([]*model.RoomForUser, 0)
-	// for _, roomForUser := range user.Rooms {
-	// 	if roomForUser.RuUnreadCount > 0 {
-	// 		unreadCountRooms = append(unreadCountRooms, roomForUser)
-	// 	} else {
-	// 		notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
-	// 	}
-	// }
-	// mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
-	// user.Rooms = mergeRooms
+	unreadCountRooms := make([]*model.RoomForUser, 0)
+	notUnreadCountRooms := make([]*model.RoomForUser, 0)
+	for _, roomForUser := range user.Rooms {
+		if roomForUser.RuUnreadCount > 0 {
+			unreadCountRooms = append(unreadCountRooms, roomForUser)
+		} else {
+			notUnreadCountRooms = append(notUnreadCountRooms, roomForUser)
+		}
+	}
+	mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
+	user.Rooms = mergeRooms
+	logger.Info(fmt.Sprintf("Finish GetUser."))
 	return user, nil
 }
 
-// PutUser is put user
-func PutUser(ctx context.Context, put *scpb.User) (*model.User, *model.ProblemDetail) {
-	user, pd := selectUser(ctx, put.UserID)
+// UpdateUser updates user
+func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start UpdateUser. Request[%#v]", req))
+
+	user, pd := selectUser(ctx, req.UserID)
 	if pd != nil {
 		return nil, pd
 	}
 
-	// if pd := user.IsValidPut(); pd != nil {
-	// 	return nil, pd
-	// }
+	pd = req.Validate()
+	if pd != nil {
+		return nil, pd
+	}
 
-	// user.BeforePut(put)
+	user.UpdateUser(req)
 
 	user, err := datastore.Provider(ctx).UpdateUser(user)
 	if err != nil {
@@ -124,19 +139,22 @@ func PutUser(ctx context.Context, put *scpb.User) (*model.User, *model.ProblemDe
 		return nil, pd
 	}
 
+	logger.Info(fmt.Sprintf("Finish UpdateUser."))
 	return user, nil
 }
 
-// DeleteUser is delete user
-func DeleteUser(ctx context.Context, userID string) *model.ProblemDetail {
+// DeleteUser deletes user
+func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ProblemDetail {
+	logger.Info(fmt.Sprintf("Start DeleteUser. Request[%#v]", req))
+
 	dsp := datastore.Provider(ctx)
 	// User existence check
-	_, pd := selectUser(ctx, userID)
+	_, pd := selectUser(ctx, req.UserID)
 	if pd != nil {
 		return pd
 	}
 
-	devices, err := dsp.SelectDevicesByUserID(userID)
+	devices, err := dsp.SelectDevicesByUserID(req.UserID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete user failed",
@@ -154,7 +172,7 @@ func DeleteUser(ctx context.Context, userID string) *model.ProblemDetail {
 		}
 	}
 
-	err = dsp.UpdateUserDeleted(userID)
+	err = dsp.UpdateUserDeleted(req.UserID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete user failed",
@@ -164,13 +182,16 @@ func DeleteUser(ctx context.Context, userID string) *model.ProblemDetail {
 		return pd
 	}
 
-	go unsubscribeByUserID(ctx, userID)
+	go unsubscribeByUserID(ctx, req.UserID)
 
+	logger.Info(fmt.Sprintf("Finish DeleteUser."))
 	return nil
 }
 
 // GetUserUnreadCount is get user unread count
 func GetUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCount, *model.ProblemDetail) {
+	// logger.Info(fmt.Sprintf("Start GetUserUnreadCount. Request[%#v]", req))
+
 	user, pd := selectUser(ctx, userID)
 	if pd != nil {
 		return nil, pd
@@ -179,12 +200,16 @@ func GetUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCo
 	userUnreadCount := &model.UserUnreadCount{
 		UnreadCount: user.UnreadCount,
 	}
+
+	logger.Info(fmt.Sprintf("Finish GetUserUnreadCount."))
 	return userUnreadCount, nil
 }
 
-// GetContacts is get contacts
-func GetContacts(ctx context.Context, userID string) (*model.Users, *model.ProblemDetail) {
-	_, err := datastore.Provider(ctx).SelectContacts(userID)
+// GetContacts gets contacts
+func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.UsersResponse, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetContacts. Request[%#v]", req))
+
+	contacts, err := datastore.Provider(ctx).SelectContacts(req.UserID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get contact list failed",
@@ -194,19 +219,27 @@ func GetContacts(ctx context.Context, userID string) (*model.Users, *model.Probl
 		return nil, pd
 	}
 
-	// return &scpb.Users{
-	// 	Users: contacts,
-	// }, nil
-	return nil, nil
+	res := &model.UsersResponse{}
+	res.Users = contacts
+	res.AllCount = int64(0)
+	res.Limit = req.Limit
+	res.Offset = req.Offset
+	res.Order = req.Order
+
+	logger.Info(fmt.Sprintf("Finish GetContacts."))
+	return res, nil
 }
 
-// GetProfile is get profile
-func GetProfile(ctx context.Context, userID string) (*model.User, *model.ProblemDetail) {
-	user, pd := selectUser(ctx, userID)
+// GetProfile gets profile
+func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetProfile. Request[%#v]", req))
+
+	user, pd := selectUser(ctx, req.UserID)
 	if pd != nil {
 		return nil, pd
 	}
 
+	logger.Info(fmt.Sprintf("Finish GetProfile."))
 	return user, nil
 }
 
@@ -240,7 +273,10 @@ func unsubscribeByUserID(ctx context.Context, userID string) {
 
 // ContactsAuthz is contacts authorize
 func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *model.ProblemDetail {
-	contacts, pd := GetContacts(ctx, requestUserID)
+	req := &model.GetContactsRequest{}
+	req.UserID = requestUserID
+
+	contacts, pd := GetContacts(ctx, req)
 	if pd != nil {
 		return pd
 	}

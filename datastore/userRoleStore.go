@@ -5,8 +5,9 @@ import (
 )
 
 type userRoleOptions struct {
-	userID string
-	roleID int32
+	userID  string
+	roleID  int32
+	roleIDs []int32
 }
 
 type UserRoleOption func(*userRoleOptions)
@@ -23,12 +24,18 @@ func UserRoleOptionFilterByRoleID(roleID int32) UserRoleOption {
 	}
 }
 
+func UserRoleOptionFilterByRoleIDs(roleIDs []int32) UserRoleOption {
+	return func(ops *userRoleOptions) {
+		ops.roleIDs = roleIDs
+	}
+}
+
 type userRoleStore interface {
 	createUserRoleStore()
 
-	InsertUserRoles(urs *model.UserRoles) error
+	InsertUserRoles(urs []*model.UserRole) error
 	SelectUserRole(opts ...UserRoleOption) (*model.UserRole, error)
 	SelectRoleIDsOfUserRole(userID string) ([]int32, error)
 	SelectUserIDsOfUserRole(roleID int32) ([]string, error)
-	DeleteUserRole(opts ...UserRoleOption) error
+	DeleteUserRoles(opts ...UserRoleOption) error
 }

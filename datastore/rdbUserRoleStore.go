@@ -3,6 +3,7 @@ package datastore
 import (
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
@@ -19,26 +20,29 @@ func rdbCreateUserRoleStore(db string) {
 	}
 }
 
-func rdbInsertUserRoles(db string, urs *model.UserRoles) error {
+func rdbInsertUserRoles(db string, urs []*model.UserRole) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		logger.Error(err.Error())
 		return err
 	}
 
-	for _, ur := range urs.UserRoles {
+	for _, ur := range urs {
 		bu, err := rdbSelectUserRole(db, UserRoleOptionFilterByUserID(ur.UserID), UserRoleOptionFilterByRoleID(ur.RoleID))
 		if err != nil {
 			trans.Rollback()
-			logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+			err = errors.Wrap(err, "An error occurred while inserting user roles")
+			logger.Error(err.Error())
 			return err
 		}
 		if bu == nil {
 			err = trans.Insert(ur)
 			if err != nil {
 				trans.Rollback()
-				logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+				err = errors.Wrap(err, "An error occurred while inserting user roles")
+				logger.Error(err.Error())
 				return err
 			}
 		}
@@ -47,7 +51,8 @@ func rdbInsertUserRoles(db string, urs *model.UserRoles) error {
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting userRole. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		logger.Error(err.Error())
 		return err
 	}
 
@@ -70,7 +75,8 @@ func rdbSelectUserRole(db string, opts ...UserRoleOption) (*model.UserRole, erro
 	}
 	_, err := replica.Select(&userRoles, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting userRole. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting user role")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -91,7 +97,8 @@ func rdbSelectRoleIDsOfUserRole(db, userID string) ([]int32, error) {
 	}
 	_, err := replica.Select(&roleIDs, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting roleIds. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting roleIds")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -110,14 +117,15 @@ func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 	_, err := replica.Select(&userIDs, query, params)
 
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting userIds. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting userIds")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
 	return userIDs, nil
 }
 
-func rdbDeleteUserRole(db string, opts ...UserRoleOption) error {
+func rdbDeleteUserRoles(db string, opts ...UserRoleOption) error {
 	master := RdbStore(db).master()
 
 	opt := userRoleOptions{}
@@ -125,14 +133,27 @@ func rdbDeleteUserRole(db string, opts ...UserRoleOption) error {
 		o(&opt)
 	}
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND role_id=:roleId", tableNameUserRole)
-	params := map[string]interface{}{
-		"userId": opt.userID,
-		"roleId": opt.roleID,
+	trans, err := master.Begin()
+	for _, roleID := range opt.roleIDs {
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND role_id=:roleId", tableNameUserRole)
+		params := map[string]interface{}{
+			"userId": opt.userID,
+			"roleId": roleID,
+		}
+		_, err := trans.Exec(query, params)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while deleting user roles")
+			logger.Error(err.Error())
+			return err
+		}
 	}
-	_, err := master.Exec(query, params)
+
+	err = trans.Commit()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while deleting userRole. %v.", err))
+		trans.Rollback()
+		err = errors.Wrap(err, "An error occurred while deleting user roles")
+		logger.Error(err.Error())
 		return err
 	}
 

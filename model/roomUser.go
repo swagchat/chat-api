@@ -11,16 +11,16 @@ type CreateRoomUsersRequest struct {
 	Room *Room
 }
 
-func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*scpb.RoomUser {
-	roomUsers := make([]*scpb.RoomUser, len(crur.UserIDs))
+func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
+	roomUsers := make([]*RoomUser, len(crur.UserIDs))
 	var zeroValue int32 = 0
 	trueValue := true
 	for i, userID := range crur.UserIDs {
-		ru := &scpb.RoomUser{
-			RoomID:      crur.RoomID,
-			UserID:      userID,
-			UnreadCount: &zeroValue,
-		}
+		ru := &RoomUser{}
+		ru.RoomID = crur.RoomID
+		ru.UserID = userID
+		ru.UnreadCount = &zeroValue
+
 		if crur.Display == nil {
 			ru.Display = &trueValue
 		} else {
@@ -49,6 +49,10 @@ func (crur *CreateRoomUsersRequest) Validate() *ProblemDetail {
 	return nil
 }
 
+type GetUserIdsOfRoomUserRequest struct {
+	scpb.GetUserIdsOfRoomUserRequest
+}
+
 type UpdateRoomUserRequest struct {
 	scpb.UpdateRoomUserRequest
 }
@@ -57,7 +61,7 @@ type RoomUser struct {
 	scpb.RoomUser
 }
 
-func (ru *RoomUser) GenerateRoomUser(req *scpb.UpdateRoomUserRequest) *scpb.RoomUser {
+func (ru *RoomUser) UpdateRoomUser(req *UpdateRoomUserRequest) {
 	pbRu := &scpb.RoomUser{
 		RoomID: ru.RoomID,
 		UserID: ru.UserID,
@@ -69,8 +73,6 @@ func (ru *RoomUser) GenerateRoomUser(req *scpb.UpdateRoomUserRequest) *scpb.Room
 	if req.Display != nil {
 		pbRu.Display = req.Display
 	}
-
-	return pbRu
 }
 
 type DeleteRoomUsersRequest struct {

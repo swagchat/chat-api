@@ -92,7 +92,13 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	roomID := bone.GetValue(r, "roomId")
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
-	messages, pd := service.GetRoomMessages(r.Context(), roomID, params)
+	limit, offset, order, pd := setPagingParams(params)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+
+	messages, pd := service.GetRoomMessages(r.Context(), roomID, limit, offset, order)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

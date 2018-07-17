@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // Join is join strings
@@ -77,4 +78,21 @@ func SearchStringValueInSlice(slice []string, value string) bool {
 		}
 	}
 	return false
+}
+
+func CommaSeparatedStringsToInt32(v string) []int32 {
+	vv := strings.Split(v, ",")
+	int32Sli := make([]int32, len(vv))
+	if len(vv) == 0 {
+		return int32Sli
+	}
+
+	for i, v := range vv {
+		intValue, err := strconv.ParseInt(v, 10, 32)
+		if err != nil {
+			continue
+		}
+		int32Sli[i] = int32(intValue)
+	}
+	return int32Sli
 }

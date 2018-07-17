@@ -164,7 +164,7 @@ func rdbSelectMessage(db, messageID string) (*model.Message, error) {
 	return nil, nil
 }
 
-func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset int, order string) ([]*model.Message, error) {
+func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset int32, order string) ([]*model.Message, error) {
 	replica := RdbStore(db).replica()
 
 	var messages []*model.Message

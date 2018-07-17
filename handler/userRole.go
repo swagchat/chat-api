@@ -7,7 +7,6 @@ import (
 
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	scpb "github.com/swagchat/protobuf"
 )
 
 func setUserRoleMux() {
@@ -17,7 +16,7 @@ func setUserRoleMux() {
 }
 
 func postUserRole(w http.ResponseWriter, r *http.Request) {
-	var req scpb.CreateUserRolesRequest
+	var req model.CreateUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -41,7 +40,6 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 	}
 
 	roleID := ""
-	var roleIDint32 int32
 	if roleIDSli, ok := params["roleId"]; ok {
 		roleID = roleIDSli[0]
 	}
@@ -60,6 +58,19 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if userID != "" {
+		gRIDsReq := &model.GetRoleIdsOfUserRoleRequest{}
+		gRIDsReq.UserID = userID
+		roleIDs, pd := service.GetRoleIDsOfUserRole(r.Context(), gRIDsReq)
+		if pd != nil {
+			respondErr(w, r, pd.Status, pd)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", roleIDs)
+		return
+	}
+
+	var roleIDint32 int32
 	if roleID != "" {
 		i, err := strconv.ParseInt(roleID, 10, 32)
 		if err != nil {
@@ -78,24 +89,10 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 		roleIDint32 = int32(i)
 	}
 
-	if userID != "" {
-		req := &scpb.GetRoleIdsOfUserRoleRequest{
-			UserID: userID,
-		}
-		roleIDs, pd := service.GetRoleIDsOfUserRole(r.Context(), req)
-		if pd != nil {
-			respondErr(w, r, pd.Status, pd)
-			return
-		}
-		respond(w, r, http.StatusOK, "application/json", roleIDs)
-		return
-	}
-
 	if roleIDint32 > 0 {
-		req := &scpb.GetUserIdsOfUserRoleRequest{
-			RoleID: roleIDint32,
-		}
-		userIDs, pd := service.GetUserIDsOfUserRole(r.Context(), req)
+		gUIDsReq := &model.GetUserIdsOfUserRoleRequest{}
+		gUIDsReq.RoleID = roleIDint32
+		userIDs, pd := service.GetUserIDsOfUserRole(r.Context(), gUIDsReq)
 		if pd != nil {
 			respondErr(w, r, pd.Status, pd)
 			return
@@ -108,17 +105,17 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUserRole(w http.ResponseWriter, r *http.Request) {
-	var req scpb.DeleteUserRoleRequest
+	var req model.DeleteUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	pd := service.DeleteUserRole(r.Context(), &req)
+	pd := service.DeleteUserRoles(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 
-	respond(w, r, http.StatusOK, "application/json", nil)
+	respond(w, r, http.StatusNotFound, "application/json", nil)
 }

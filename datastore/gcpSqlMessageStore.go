@@ -14,7 +14,7 @@ func (p *gcpSQLProvider) SelectMessage(messageID string) (*model.Message, error)
 	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *gcpSQLProvider) SelectMessages(roleIds []int32, roomID string, limit, offset int, order string) ([]*model.Message, error) {
+func (p *gcpSQLProvider) SelectMessages(roleIds []int32, roomID string, limit, offset int32, order string) ([]*model.Message, error) {
 	return rdbSelectMessages(p.database, roleIds, roomID, limit, offset, order)
 }
 

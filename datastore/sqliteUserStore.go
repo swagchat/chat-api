@@ -10,16 +10,16 @@ func (p *sqliteProvider) InsertUser(user *model.User, opts ...interface{}) (*mod
 	return rdbInsertUser(p.database, user, opts...)
 }
 
+func (p *sqliteProvider) SelectUsers() ([]*model.User, error) {
+	return rdbSelectUsers(p.database)
+}
+
 func (p *sqliteProvider) SelectUser(userID string, opts ...UserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 
 func (p *sqliteProvider) SelectUserByUserIDAndAccessToken(userID, accessToken string) (*model.User, error) {
 	return rdbSelectUserByUserIDAndAccessToken(p.database, userID, accessToken)
-}
-
-func (p *sqliteProvider) SelectUsers() ([]*model.User, error) {
-	return rdbSelectUsers(p.database)
 }
 
 func (p *sqliteProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {

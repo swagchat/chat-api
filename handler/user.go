@@ -2,11 +2,11 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	scpb "github.com/swagchat/protobuf"
 )
 
 func setUserMux() {
@@ -15,7 +15,8 @@ func setUserMux() {
 	mux.GetFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(getUser)))
 	mux.PutFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(putUser)))
 	mux.DeleteFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(deleteUser)))
-	mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", commonHandler(selfResourceAuthzHandler(getUserUnreadCount)))
+
+	// mux.GetFunc("/users/#userId^[a-z0-9-]$/unreadCount", commonHandler(selfResourceAuthzHandler(getUserUnreadCount)))
 	mux.GetFunc("/users/#userId^[a-z0-9-]$/contacts", commonHandler(selfResourceAuthzHandler(getContacts)))
 	mux.GetFunc("/profiles/#userId^[a-z0-9-]$", commonHandler(contactsAuthzHandler(getProfile)))
 }
@@ -37,7 +38,23 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
-	users, pd := service.GetUsers(r.Context())
+	req := &model.GetUsersRequest{}
+	params, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, nil)
+		return
+	}
+
+	limit, offset, order, pd := setPagingParams(params)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+	req.Limit = limit
+	req.Offset = offset
+	req.Order = order
+
+	users, pd := service.GetUsers(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -47,9 +64,12 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	userID := bone.GetValue(r, "userId")
+	req := &model.GetUserRequest{}
 
-	user, pd := service.GetUser(r.Context(), userID)
+	userID := bone.GetValue(r, "userId")
+	req.UserID = userID
+
+	user, pd := service.GetUser(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -59,15 +79,15 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func putUser(w http.ResponseWriter, r *http.Request) {
-	var put scpb.User
-	if err := decodeBody(r, &put); err != nil {
+	var req model.UpdateUserRequest
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	put.UserID = bone.GetValue(r, "userId")
+	req.UserID = bone.GetValue(r, "userId")
 
-	user, pd := service.PutUser(r.Context(), &put)
+	user, pd := service.UpdateUser(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -77,9 +97,12 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	userID := bone.GetValue(r, "userId")
+	req := &model.DeleteUserRequest{}
 
-	pd := service.DeleteUser(r.Context(), userID)
+	userID := bone.GetValue(r, "userId")
+	req.UserID = userID
+
+	pd := service.DeleteUser(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -88,22 +111,40 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNoContent, "", nil)
 }
 
-func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
-	userID := bone.GetValue(r, "userId")
+// func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
+// 	userID := bone.GetValue(r, "userId")
 
-	userUnreadCount, pd := service.GetUserUnreadCount(r.Context(), userID)
+// 	userUnreadCount, pd := service.GetUserUnreadCount(r.Context(), userID)
+// 	if pd != nil {
+// 		respondErr(w, r, pd.Status, pd)
+// 		return
+// 	}
+
+// 	respond(w, r, http.StatusOK, "application/json", userUnreadCount)
+// }
+
+func getContacts(w http.ResponseWriter, r *http.Request) {
+	req := &model.GetContactsRequest{}
+
+	userID := bone.GetValue(r, "userId")
+	req.UserID = userID
+
+	params, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, nil)
+		return
+	}
+
+	limit, offset, order, pd := setPagingParams(params)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
+	req.Limit = limit
+	req.Offset = offset
+	req.Order = order
 
-	respond(w, r, http.StatusOK, "application/json", userUnreadCount)
-}
-
-func getContacts(w http.ResponseWriter, r *http.Request) {
-	userID := bone.GetValue(r, "userId")
-
-	contacts, pd := service.GetContacts(r.Context(), userID)
+	contacts, pd := service.GetContacts(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -113,9 +154,12 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProfile(w http.ResponseWriter, r *http.Request) {
-	userID := bone.GetValue(r, "userId")
+	req := &model.GetProfileRequest{}
 
-	user, pd := service.GetProfile(r.Context(), userID)
+	userID := bone.GetValue(r, "userId")
+	req.UserID = userID
+
+	user, pd := service.GetProfile(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
