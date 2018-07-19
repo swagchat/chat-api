@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
-	"strings"
 	"syscall"
 
 	"github.com/fatih/structs"
@@ -16,41 +15,40 @@ import (
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
 )
 
 func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		workspace := ""
-		headers, ok := metadata.FromIncomingContext(ctx)
-		if ok {
-			if v, ok := headers[strings.ToLower(utils.HeaderWorkspace)]; ok {
-				if len(v) > 0 {
-					workspace = v[0]
-				}
-			}
-		}
+		// headers, ok := metadata.FromIncomingContext(ctx)
+		// if ok {
+		// 	if v, ok := headers[strings.ToLower(utils.HeaderWorkspace)]; ok {
+		// 		if len(v) > 0 {
+		// 			workspace = v[0]
+		// 		}
+		// 	}
+		// }
 
-		if workspace == "" {
-			r := reflect.ValueOf(req)
-			if r.IsValid() {
-				switch r.Kind() {
-				case reflect.Ptr:
-					if !r.IsNil() {
-						fields := structs.Fields(req)
-						for _, f := range fields {
-							if f.Name() == "Workspace" {
-								workspace = f.Value().(string)
-							}
+		// if workspace == "" {
+		r := reflect.ValueOf(req)
+		if r.IsValid() {
+			switch r.Kind() {
+			case reflect.Ptr:
+				if !r.IsNil() {
+					fields := structs.Fields(req)
+					for _, f := range fields {
+						if f.Name() == "Workspace" {
+							workspace = f.Value().(string)
 						}
 					}
 				}
 			}
 		}
+		// }
 
 		if workspace == "" {
-			workspace = "swagchat"
+			workspace = utils.Config().Datastore.Database
 		}
 
 		ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
@@ -64,8 +62,8 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
-// StartServer is run GRPC server
-func StartServer(ctx context.Context) {
+// Run runs GRPC API server
+func Run(ctx context.Context) {
 	cfg := utils.Config()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
@@ -74,7 +72,7 @@ func StartServer(ctx context.Context) {
 	}
 
 	ops := make([]grpc.ServerOption, 0)
-	ops = append(ops, grpc.UnaryInterceptor(unaryServerInterceptor()))
+	// ops = append(ops, grpc.UnaryInterceptor(unaryServerInterceptor()))
 	s := grpc.NewServer(ops...)
 
 	scpb.RegisterChatIncomingServer(s, &chatIncomingServer{})

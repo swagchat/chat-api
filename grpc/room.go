@@ -13,11 +13,12 @@ type roomServiceServer struct{}
 
 func (us *roomServiceServer) CreateRoom(ctx context.Context, in *scpb.CreateRoomRequest) (*scpb.Room, error) {
 	metaData := utils.JSONText{}
-	err := metaData.UnmarshalJSON(in.MetaData)
-	if err != nil {
-		return &scpb.Room{}, err
+	if in.MetaData != nil {
+		err := metaData.UnmarshalJSON(in.MetaData)
+		if err != nil {
+			return &scpb.Room{}, err
+		}
 	}
-
 	req := &model.CreateRoomRequest{*in, metaData}
 	room, pd := service.CreateRoom(ctx, req)
 	if pd != nil {

@@ -14,11 +14,12 @@ type userServiceServer struct{}
 
 func (us *userServiceServer) CreateUser(ctx context.Context, in *scpb.CreateUserRequest) (*scpb.User, error) {
 	metaData := utils.JSONText{}
-	err := metaData.UnmarshalJSON(in.MetaData)
-	if err != nil {
-		return &scpb.User{}, err
+	if in.MetaData != nil {
+		err := metaData.UnmarshalJSON(in.MetaData)
+		if err != nil {
+			return &scpb.User{}, err
+		}
 	}
-
 	req := &model.CreateUserRequest{*in, metaData}
 	user, pd := service.CreateUser(ctx, req)
 	if pd != nil {
@@ -52,7 +53,14 @@ func (us *userServiceServer) GetUser(ctx context.Context, in *scpb.GetUserReques
 }
 
 func (us *userServiceServer) UpdateUser(ctx context.Context, in *scpb.UpdateUserRequest) (*scpb.User, error) {
-	req := &model.UpdateUserRequest{*in}
+	metaData := utils.JSONText{}
+	if in.MetaData != nil {
+		err := metaData.UnmarshalJSON(in.MetaData)
+		if err != nil {
+			return &scpb.User{}, err
+		}
+	}
+	req := &model.UpdateUserRequest{*in, metaData}
 	user, pd := service.UpdateUser(ctx, req)
 	if pd != nil {
 		return &scpb.User{}, pd.Error
