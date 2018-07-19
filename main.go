@@ -46,9 +46,9 @@ func main() {
 	defer cancel()
 
 	if cfg.GRPCPort == "" {
-		handler.StartServer(ctx)
+		handler.Run(ctx)
 	} else {
-		go grpc.StartServer(ctx)
-		handler.StartServer(ctx)
+		go grpc.Run(ctx)
+		handler.Run(ctx)
 	}
 }

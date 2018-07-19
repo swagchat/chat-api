@@ -4,6 +4,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -34,6 +35,7 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, &model.ProblemDetail{
 			Message: "This user already exists",
 			Status:  http.StatusConflict,
+			Error:   errors.New("This user already exists"),
 		}
 	}
 
@@ -41,7 +43,7 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 	req.UserID = u.UserID
 	urs := req.GenerateUserRoles()
 
-	pbUser, err := datastore.Provider(ctx).InsertUser(u, datastore.UserOptionInsertRoles(urs))
+	resUser, err := datastore.Provider(ctx).InsertUser(u, datastore.UserOptionInsertRoles(urs))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create user.",
@@ -51,8 +53,8 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, pd
 	}
 
-	logger.Info(fmt.Sprintf("Finish CreateUser."))
-	return pbUser, nil
+	logger.Info(fmt.Sprintf("Finish CreateUser. Response[%#v]", resUser))
+	return resUser, nil
 }
 
 // GetUsers is get users
@@ -82,7 +84,7 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 
 // GetUser gets user
 func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start GetUser. Request[%#v]", req))
+	logger.Info(fmt.Sprintf("Start  GetUser. Request[%#v]", req))
 
 	user, err := datastore.Provider(ctx).SelectUser(req.UserID, datastore.UserOptionWithBlocks(true), datastore.UserOptionWithDevices(true), datastore.UserOptionWithRooms(true))
 	if err != nil {
@@ -111,7 +113,7 @@ func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *mode
 	// }
 	// mergeRooms := append(unreadCountRooms, notUnreadCountRooms...)
 	// user.Rooms = mergeRooms
-	logger.Info(fmt.Sprintf("Finish GetUser."))
+	logger.Info(fmt.Sprintf("Finish GetUser. Response[%#v]", user))
 	return user, nil
 }
 
@@ -256,6 +258,7 @@ func selectUser(ctx context.Context, userID string, opts ...datastore.UserOption
 		logger.Error(fmt.Sprintf("User does not exist. UserId[%s]", userID))
 		return nil, &model.ProblemDetail{
 			Status: http.StatusNotFound,
+			Error:  errors.New("Not found"),
 		}
 	}
 	return user, nil

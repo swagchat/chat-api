@@ -631,7 +631,6 @@ func (c *config) parseFlag(args []string) error {
 
 	flags := flag.NewFlagSet("ChatAPI Flags", flag.ContinueOnError)
 
-	configPath := ""
 	flags.BoolVar(&showVersion, "v", false, "show version")
 	flags.BoolVar(&showVersion, "version", false, "show version")
 	flags.BoolVar(&showHelp, "h", false, "show help")
@@ -838,6 +837,7 @@ func (c *config) parseFlag(args []string) error {
 	// IdP Keycloak
 	flags.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
 
+	configPath := ""
 	flags.StringVar(&configPath, "config", "", "config file(yaml format)")
 
 	err := flags.Parse(args)

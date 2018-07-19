@@ -40,8 +40,8 @@ var (
 	}
 )
 
-// StartServer is start api server
-func StartServer(ctx context.Context) {
+// Run runs start REST API server
+func Run(ctx context.Context) {
 	cfg := utils.Config()
 	mux = bone.New()
 
