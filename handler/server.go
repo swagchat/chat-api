@@ -56,7 +56,6 @@ func Run(ctx context.Context) {
 	setAssetMux()
 	setBlockUserMux()
 	setDeviceMux()
-	setGuestMux()
 	setMessageMux()
 	setRoomMux()
 	setRoomUserMux()

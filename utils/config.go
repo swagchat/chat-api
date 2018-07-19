@@ -49,7 +49,6 @@ const (
 	CtxSubscription
 
 	RoleGeneral int32 = 1
-	RoleGuest   int32 = 2
 )
 
 var (
@@ -72,7 +71,6 @@ type config struct {
 	PBroker                *PBroker `yaml:"pBroker"`
 	SBroker                *SBroker `yaml:"sBroker"`
 	Notification           *Notification
-	IdP                    *IdP
 }
 
 // Logger is settings of logger
@@ -210,15 +208,6 @@ type Notification struct {
 	}
 }
 
-type IdP struct {
-	Provider string
-
-	// Keycloak
-	Keycloak struct {
-		BaseEndpoint string `yaml:"baseEndpoint"`
-	}
-}
-
 func NewConfig() *config {
 	log.SetFlags(log.Llongfile)
 
@@ -282,7 +271,6 @@ func defaultSetting() *config {
 		PBroker:      &PBroker{},
 		SBroker:      &SBroker{},
 		Notification: &Notification{},
-		IdP:          &IdP{},
 	}
 }
 
@@ -612,16 +600,6 @@ func (c *config) loadEnv() {
 	if v = os.Getenv("SWAG_NOTIFICATION_AMAZONSNS_APPLICATION_ARN_ANDROID"); v != "" {
 		c.Notification.AmazonSNS.ApplicationArnAndroid = v
 	}
-
-	// IdP
-	if v = os.Getenv("SWAG_IDP_PROVIDER"); v != "" {
-		c.IdP.Provider = v
-	}
-
-	// IdP Keycloak
-	if v = os.Getenv("SWAG_IDP_KEYCLOAK_BASEENDPOINT"); v != "" {
-		c.IdP.Keycloak.BaseEndpoint = v
-	}
 }
 
 func (c *config) parseFlag(args []string) error {
@@ -831,12 +809,6 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.Notification.AmazonSNS.ApplicationArnIos, "notification.amazonsns.applicationArnIos", c.Notification.AmazonSNS.ApplicationArnIos, "")
 	flags.StringVar(&c.Notification.AmazonSNS.ApplicationArnAndroid, "notification.amazonsns.applicationArnAndroid", c.Notification.AmazonSNS.ApplicationArnAndroid, "")
 
-	// IdP
-	flags.StringVar(&c.IdP.Provider, "idp.provider", c.IdP.Provider, "")
-
-	// IdP Keycloak
-	flags.StringVar(&c.IdP.Keycloak.BaseEndpoint, "idp.keycloak.baseEndpoint", c.IdP.Keycloak.BaseEndpoint, "")
-
 	configPath := ""
 	flags.StringVar(&configPath, "config", "", "config file(yaml format)")
 
@@ -914,12 +886,6 @@ func (c *config) validate() error {
 		}
 	}
 
-	// Idp
-	if c.IdP.Provider == "keycloak" {
-		if c.IdP.Keycloak.BaseEndpoint == "" {
-			return errors.Wrap(errors.New("keycloak base endpoint is empty"), "")
-		}
-	}
 	return nil
 }
 
