@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -68,12 +67,13 @@ func Run(ctx context.Context) {
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", utils.AppName, err))
 	}
 
 	ops := make([]grpc.ServerOption, 0)
-	// ops = append(ops, grpc.UnaryInterceptor(unaryServerInterceptor()))
+	ops = append(ops, grpc.UnaryInterceptor(unaryServerInterceptor()))
 	s := grpc.NewServer(ops...)
+	logger.Info(fmt.Sprintf("Starting %s server[GRPC] on listen tcp :%s", utils.AppName, cfg.GRPCPort))
 
 	scpb.RegisterChatIncomingServer(s, &chatIncomingServer{})
 	scpb.RegisterRoomUserServiceServer(s, &roomUserServiceServer{})

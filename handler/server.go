@@ -73,6 +73,7 @@ func Run(ctx context.Context) {
 
 	mux.NotFoundFunc(notFoundHandler)
 
+	logger.Info(fmt.Sprintf("Starting %s server[REST] on listen tcp :%s", utils.AppName, cfg.HTTPPort))
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
 	errCh := make(chan error)
