@@ -5,7 +5,7 @@ rm -f ./*.pb.go
 rm -f ./*.gen.go
 
 protoc \
-  -I./ \
+  -I./proto \
   -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
   -I$GOPATH/src/github.com/gogo/protobuf \
   --gogo_out=plugins=grpc:../../../ \

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Google Inc. All Rights Reserved.
+Copyright 2017 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -190,11 +190,8 @@ func TestColumnValues(t *testing.T) {
 				Col3 string
 			}{
 				nil,
-				&struct {
-					Col1 NullInt64
-					Col2 NullFloat64
-					Col3 string
-				}{
+
+				{
 					NullInt64{3, true},
 					NullFloat64{33.3, true},
 					"three",
@@ -1498,11 +1495,8 @@ func TestToStruct(t *testing.T) {
 				Col3 string
 			}{
 				nil,
-				&struct {
-					Col1 int64
-					Col2 float64
-					Col3 string
-				}{3, 33.3, "three"},
+
+				{3, 33.3, "three"},
 				nil,
 			},
 			[]*struct {

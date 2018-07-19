@@ -672,7 +672,7 @@
    "id": "cloudbuild:v1",
    "name": "cloudbuild",
    "version": "v1",
-   "title": "Cloud Container Builder API",
+   "title": "Cloud Container Builder",
    "description": "Builds container images in the cloud.",
    "discoveryRestUrl": "https://cloudbuild.googleapis.com/$discovery/rest?version=v1",
    "icons": {
@@ -785,6 +785,21 @@
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
    },
    "documentationLink": "https://cloud.google.com/kms/",
+   "preferred": true
+  },
+  {
+   "kind": "discovery#directoryItem",
+   "id": "cloudprofiler:v2",
+   "name": "cloudprofiler",
+   "version": "v2",
+   "title": "Stackdriver Profiler API",
+   "description": "Allows Google services manage the continuous profiling information.",
+   "discoveryRestUrl": "https://cloudprofiler.googleapis.com/$discovery/rest?version=v2",
+   "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+   },
+   "documentationLink": "https://cloud.google.com/",
    "preferred": true
   },
   {
@@ -1701,7 +1716,22 @@
     "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
    },
-   "documentationLink": "https://developers.google.com/identity/protocols/OAuth2ServiceAccount",
+   "documentationLink": "https://cloud.google.com/iam/docs/creating-short-lived-service-account-credentials",
+   "preferred": true
+  },
+  {
+   "kind": "discovery#directoryItem",
+   "id": "iap:v1beta1",
+   "name": "iap",
+   "version": "v1beta1",
+   "title": "Cloud Identity-Aware Proxy API",
+   "description": "Controls access to cloud applications running on Google Cloud Platform.",
+   "discoveryRestUrl": "https://iap.googleapis.com/$discovery/rest?version=v1beta1",
+   "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+   },
+   "documentationLink": "https://cloud.google.com/iap",
    "preferred": true
   },
   {
@@ -1718,6 +1748,21 @@
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
    },
    "documentationLink": "https://developers.google.com/identity-toolkit/v3/",
+   "preferred": true
+  },
+  {
+   "kind": "discovery#directoryItem",
+   "id": "indexing:v3",
+   "name": "indexing",
+   "version": "v3",
+   "title": "Indexing API",
+   "description": "The Indexing API allows developers to share the life cycle of a Web Document with Google.",
+   "discoveryRestUrl": "https://indexing.googleapis.com/$discovery/rest?version=v3",
+   "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+   },
+   "documentationLink": "https://developers.google.com/search/apis/indexing-api/",
    "preferred": true
   },
   {
@@ -2128,7 +2173,7 @@
    "id": "proximitybeacon:v1beta1",
    "name": "proximitybeacon",
    "version": "v1beta1",
-   "title": "Google Proximity Beacon API",
+   "title": "Proximity Beacon API",
    "description": "Registers, manages, indexes, and searches beacons.",
    "discoveryRestUrl": "https://proximitybeacon.googleapis.com/$discovery/rest?version=v1beta1",
    "icons": {
@@ -2306,7 +2351,7 @@
    "name": "script",
    "version": "v1",
    "title": "Apps Script API",
-   "description": "An API for managing and executing Google Apps Script projects. Note: In order to use this API in your apps, you must  enable it for use. To allow other apps to manage your scripts, you must  grant them access.",
+   "description": "An API for managing and executing Google Apps Script projects.",
    "discoveryRestUrl": "https://script.googleapis.com/$discovery/rest?version=v1",
    "icons": {
     "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
@@ -2422,6 +2467,21 @@
   },
   {
    "kind": "discovery#directoryItem",
+   "id": "serviceusage:v1",
+   "name": "serviceusage",
+   "version": "v1",
+   "title": "Service Usage API",
+   "description": "Enables services that service consumers want to use on Google Cloud Platform, lists the available or enabled services, or disables services that service consumers no longer use.",
+   "discoveryRestUrl": "https://serviceusage.googleapis.com/$discovery/rest?version=v1",
+   "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+   },
+   "documentationLink": "https://cloud.google.com/service-usage/",
+   "preferred": true
+  },
+  {
+   "kind": "discovery#directoryItem",
    "id": "serviceusage:v1beta1",
    "name": "serviceusage",
    "version": "v1beta1",
@@ -2433,7 +2493,7 @@
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
    },
    "documentationLink": "https://cloud.google.com/service-usage/",
-   "preferred": true
+   "preferred": false
   },
   {
    "kind": "discovery#directoryItem",
@@ -2554,7 +2614,7 @@
     "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
    },
-   "documentationLink": "https://cloud.google.com/speech/",
+   "documentationLink": "https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
    "preferred": true
   },
   {
@@ -2569,7 +2629,7 @@
     "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
    },
-   "documentationLink": "https://cloud.google.com/speech/",
+   "documentationLink": "https://cloud.google.com/speech-to-text/docs/quickstart-protocol",
    "preferred": false
   },
   {

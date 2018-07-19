@@ -1,5 +1,7 @@
 // Package cloudkms provides access to the Cloud Key Management Service (KMS) API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/kms/apiv1 instead.
+//
 // See https://cloud.google.com/kms/
 //
 // Usage example:
@@ -324,9 +326,7 @@ type Binding struct {
 	Members []string `json:"members,omitempty"`
 
 	// Role: Role that is assigned to `members`.
-	// For example, `roles/viewer`, `roles/editor`, or
-	// `roles/owner`.
-	// Required
+	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
 	Role string `json:"role,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Members") to
@@ -3767,7 +3767,7 @@ type ProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionCall struct {
 }
 
 // UpdatePrimaryVersion: Update the version of a CryptoKey that will be
-// used in Encrypt
+// used in Encrypt.
 func (r *ProjectsLocationsKeyRingsCryptoKeysService) UpdatePrimaryVersion(name string, updatecryptokeyprimaryversionrequest *UpdateCryptoKeyPrimaryVersionRequest) *ProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionCall {
 	c := &ProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -3861,7 +3861,7 @@ func (c *ProjectsLocationsKeyRingsCryptoKeysUpdatePrimaryVersionCall) Do(opts ..
 	}
 	return ret, nil
 	// {
-	//   "description": "Update the version of a CryptoKey that will be used in Encrypt",
+	//   "description": "Update the version of a CryptoKey that will be used in Encrypt.",
 	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/keyRings/{keyRingsId}/cryptoKeys/{cryptoKeysId}:updatePrimaryVersion",
 	//   "httpMethod": "POST",
 	//   "id": "cloudkms.projects.locations.keyRings.cryptoKeys.updatePrimaryVersion",

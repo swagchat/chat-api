@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc. All Rights Reserved.
+// Copyright 2016 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@ func TestSampleRowKeys(t *testing.T) {
 				Mutation: &btpb.Mutation_SetCell_{SetCell: &btpb.Mutation_SetCell{
 					FamilyName:      "cf",
 					ColumnQualifier: []byte("col"),
-					TimestampMicros: 0,
+					TimestampMicros: 1000,
 					Value:           val,
 				}},
 			}},
@@ -262,7 +262,7 @@ func TestDropRowRange(t *testing.T) {
 						Mutation: &btpb.Mutation_SetCell_{SetCell: &btpb.Mutation_SetCell{
 							FamilyName:      "cf",
 							ColumnQualifier: []byte("col"),
-							TimestampMicros: 0,
+							TimestampMicros: 1000,
 							Value:           []byte{},
 						}},
 					}},
@@ -597,7 +597,7 @@ func TestCheckAndMutateRowWithoutPredicate(t *testing.T) {
 			Mutation: &btpb.Mutation_SetCell_{SetCell: &btpb.Mutation_SetCell{
 				FamilyName:      "cf",
 				ColumnQualifier: []byte("col"),
-				TimestampMicros: 0,
+				TimestampMicros: 1000,
 				Value:           val,
 			}},
 		}},

@@ -1,5 +1,5 @@
 /*
-Copyright 2015 Google Inc. All Rights Reserved.
+Copyright 2015 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -53,6 +53,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+const (
+	// MilliSeconds field of the minimum valid Timestamp.
+	minValidMilliSeconds = 0
+
+	// MilliSeconds field of the max valid Timestamp.
+	maxValidMilliSeconds = int64(time.Millisecond) * 253402300800
 )
 
 // Server is an in-memory Cloud Bigtable fake.
@@ -171,8 +179,6 @@ func (s *server) DeleteTable(ctx context.Context, req *btapb.DeleteTableRequest)
 }
 
 func (s *server) ModifyColumnFamilies(ctx context.Context, req *btapb.ModifyColumnFamiliesRequest) (*btapb.Table, error) {
-	tblName := req.Name[strings.LastIndex(req.Name, "/")+1:]
-
 	s.mu.Lock()
 	tbl, ok := s.tables[req.Name]
 	s.mu.Unlock()
@@ -216,7 +222,7 @@ func (s *server) ModifyColumnFamilies(ctx context.Context, req *btapb.ModifyColu
 
 	s.needGC()
 	return &btapb.Table{
-		Name:           tblName,
+		Name:           req.Name,
 		ColumnFamilies: toColumnFamilies(tbl.families),
 		Granularity:    btapb.Table_TimestampGranularity(btapb.Table_MILLIS),
 	}, nil
@@ -1053,6 +1059,10 @@ func newTable(ctr *btapb.CreateTableRequest) *table {
 }
 
 func (t *table) validTimestamp(ts int64) bool {
+	if ts <= minValidMilliSeconds || ts >= maxValidMilliSeconds {
+		return false
+	}
+
 	// Assume millisecond granularity is required.
 	return ts%1000 == 0
 }
@@ -1267,8 +1277,8 @@ func applyGC(cells []cell, rule *btapb.GcRule) []cell {
 type family struct {
 	name     string            // Column family name
 	order    uint64            // Creation order of column family
-	colNames []string          // Collumn names are sorted in lexicographical ascending order
-	cells    map[string][]cell // Keyed by collumn name; cells are in descending timestamp order
+	colNames []string          // Column names are sorted in lexicographical ascending order
+	cells    map[string][]cell // Keyed by column name; cells are in descending timestamp order
 }
 
 type byCreationOrder []*family

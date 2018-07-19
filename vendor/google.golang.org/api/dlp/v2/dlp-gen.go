@@ -1,5 +1,7 @@
 // Package dlp provides access to the Cloud Data Loss Prevention (DLP) API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/dlp/apiv2 instead.
+//
 // See https://cloud.google.com/dlp/docs/
 //
 // Usage example:
@@ -2640,10 +2642,10 @@ type GooglePrivacyDlpV2Finding struct {
 	CreateTime string `json:"createTime,omitempty"`
 
 	// InfoType: The type of content that might have been found.
-	// Provided if requested by the `InspectConfig`.
+	// Provided if `excluded_types` is false.
 	InfoType *GooglePrivacyDlpV2InfoType `json:"infoType,omitempty"`
 
-	// Likelihood: Estimate of how likely it is that the `info_type` is
+	// Likelihood: Confidence of how likely it is that the `info_type` is
 	// correct.
 	//
 	// Possible values:
@@ -2661,7 +2663,7 @@ type GooglePrivacyDlpV2Finding struct {
 	// Quote: The content that was found. Even if the content is not
 	// textual, it
 	// may be converted to a textual representation here.
-	// Provided if requested by the `InspectConfig` and the finding is
+	// Provided if `include_quote` is true and the finding is
 	// less than or equal to 4096 bytes long. If the finding exceeds 4096
 	// bytes
 	// in length, the quote may be omitted.
@@ -3210,6 +3212,12 @@ type GooglePrivacyDlpV2InspectConfig struct {
 	// InfoType values returned by ListInfoTypes or listed
 	// at
 	// https://cloud.google.com/dlp/docs/infotypes-reference.
+	//
+	// When no InfoTypes or CustomInfoTypes are specified in a request,
+	// the
+	// system may automatically choose what detectors to run. By default
+	// this may
+	// be all types, but may change over time as detectors are updated.
 	InfoTypes []*GooglePrivacyDlpV2InfoType `json:"infoTypes,omitempty"`
 
 	Limits *GooglePrivacyDlpV2FindingLimits `json:"limits,omitempty"`
@@ -5274,6 +5282,11 @@ type GooglePrivacyDlpV2RedactImageRequest struct {
 	// to redact from images.
 	ImageRedactionConfigs []*GooglePrivacyDlpV2ImageRedactionConfig `json:"imageRedactionConfigs,omitempty"`
 
+	// IncludeFindings: Whether the response should include findings along
+	// with the redacted
+	// image.
+	IncludeFindings bool `json:"includeFindings,omitempty"`
+
 	// InspectConfig: Configuration for the inspector.
 	InspectConfig *GooglePrivacyDlpV2InspectConfig `json:"inspectConfig,omitempty"`
 
@@ -5308,6 +5321,10 @@ type GooglePrivacyDlpV2RedactImageResponse struct {
 	// found
 	// in the image.
 	ExtractedText string `json:"extractedText,omitempty"`
+
+	// InspectResult: The findings. Populated when include_findings in the
+	// request is true.
+	InspectResult *GooglePrivacyDlpV2InspectResult `json:"inspectResult,omitempty"`
 
 	// RedactedImage: The redacted image. The type will be the same as the
 	// original image.
@@ -8408,6 +8425,12 @@ type ProjectsContentDeidentifyCall struct {
 // See https://cloud.google.com/dlp/docs/deidentify-sensitive-data
 // to
 // learn more.
+//
+// When no InfoTypes or CustomInfoTypes are specified in this request,
+// the
+// system will automatically choose what detectors to run. By default
+// this may
+// be all types, but may change over time as detectors are updated.
 func (r *ProjectsContentService) Deidentify(parent string, googleprivacydlpv2deidentifycontentrequest *GooglePrivacyDlpV2DeidentifyContentRequest) *ProjectsContentDeidentifyCall {
 	c := &ProjectsContentDeidentifyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -8503,7 +8526,7 @@ func (c *ProjectsContentDeidentifyCall) Do(opts ...googleapi.CallOption) (*Googl
 	}
 	return ret, nil
 	// {
-	//   "description": "De-identifies potentially sensitive info from a ContentItem.\nThis method has limits on input size and output size.\nSee https://cloud.google.com/dlp/docs/deidentify-sensitive-data to\nlearn more.",
+	//   "description": "De-identifies potentially sensitive info from a ContentItem.\nThis method has limits on input size and output size.\nSee https://cloud.google.com/dlp/docs/deidentify-sensitive-data to\nlearn more.\n\nWhen no InfoTypes or CustomInfoTypes are specified in this request, the\nsystem will automatically choose what detectors to run. By default this may\nbe all types, but may change over time as detectors are updated.",
 	//   "flatPath": "v2/projects/{projectsId}/content:deidentify",
 	//   "httpMethod": "POST",
 	//   "id": "dlp.projects.content.deidentify",
@@ -8547,6 +8570,12 @@ type ProjectsContentInspectCall struct {
 // Inspect: Finds potentially sensitive info in content.
 // This method has limits on input size, processing time, and output
 // size.
+//
+// When no InfoTypes or CustomInfoTypes are specified in this request,
+// the
+// system will automatically choose what detectors to run. By default
+// this may
+// be all types, but may change over time as detectors are updated.
 //
 // For how to guides, see
 // https://cloud.google.com/dlp/docs/inspecting-images
@@ -8646,7 +8675,7 @@ func (c *ProjectsContentInspectCall) Do(opts ...googleapi.CallOption) (*GooglePr
 	}
 	return ret, nil
 	// {
-	//   "description": "Finds potentially sensitive info in content.\nThis method has limits on input size, processing time, and output size.\n\nFor how to guides, see https://cloud.google.com/dlp/docs/inspecting-images\nand https://cloud.google.com/dlp/docs/inspecting-text,",
+	//   "description": "Finds potentially sensitive info in content.\nThis method has limits on input size, processing time, and output size.\n\nWhen no InfoTypes or CustomInfoTypes are specified in this request, the\nsystem will automatically choose what detectors to run. By default this may\nbe all types, but may change over time as detectors are updated.\n\nFor how to guides, see https://cloud.google.com/dlp/docs/inspecting-images\nand https://cloud.google.com/dlp/docs/inspecting-text,",
 	//   "flatPath": "v2/projects/{projectsId}/content:inspect",
 	//   "httpMethod": "POST",
 	//   "id": "dlp.projects.content.inspect",
@@ -9721,6 +9750,12 @@ type ProjectsDlpJobsCreateCall struct {
 // and
 // https://cloud.google.com/dlp/docs/compute-risk-analysis to learn
 // more.
+//
+// When no InfoTypes or CustomInfoTypes are specified in inspect jobs,
+// the
+// system will automatically choose what detectors to run. By default
+// this may
+// be all types, but may change over time as detectors are updated.
 func (r *ProjectsDlpJobsService) Create(parent string, googleprivacydlpv2createdlpjobrequest *GooglePrivacyDlpV2CreateDlpJobRequest) *ProjectsDlpJobsCreateCall {
 	c := &ProjectsDlpJobsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -9814,7 +9849,7 @@ func (c *ProjectsDlpJobsCreateCall) Do(opts ...googleapi.CallOption) (*GooglePri
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a new job to inspect storage or calculate risk metrics.\nSee https://cloud.google.com/dlp/docs/inspecting-storage and\nhttps://cloud.google.com/dlp/docs/compute-risk-analysis to learn more.",
+	//   "description": "Creates a new job to inspect storage or calculate risk metrics.\nSee https://cloud.google.com/dlp/docs/inspecting-storage and\nhttps://cloud.google.com/dlp/docs/compute-risk-analysis to learn more.\n\nWhen no InfoTypes or CustomInfoTypes are specified in inspect jobs, the\nsystem will automatically choose what detectors to run. By default this may\nbe all types, but may change over time as detectors are updated.",
 	//   "flatPath": "v2/projects/{projectsId}/dlpJobs",
 	//   "httpMethod": "POST",
 	//   "id": "dlp.projects.dlpJobs.create",
@@ -10387,6 +10422,12 @@ type ProjectsImageRedactCall struct {
 // See https://cloud.google.com/dlp/docs/redacting-sensitive-data-images
 // to
 // learn more.
+//
+// When no InfoTypes or CustomInfoTypes are specified in this request,
+// the
+// system will automatically choose what detectors to run. By default
+// this may
+// be all types, but may change over time as detectors are updated.
 func (r *ProjectsImageService) Redact(parent string, googleprivacydlpv2redactimagerequest *GooglePrivacyDlpV2RedactImageRequest) *ProjectsImageRedactCall {
 	c := &ProjectsImageRedactCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
@@ -10481,7 +10522,7 @@ func (c *ProjectsImageRedactCall) Do(opts ...googleapi.CallOption) (*GooglePriva
 	}
 	return ret, nil
 	// {
-	//   "description": "Redacts potentially sensitive info from an image.\nThis method has limits on input size, processing time, and output size.\nSee https://cloud.google.com/dlp/docs/redacting-sensitive-data-images to\nlearn more.",
+	//   "description": "Redacts potentially sensitive info from an image.\nThis method has limits on input size, processing time, and output size.\nSee https://cloud.google.com/dlp/docs/redacting-sensitive-data-images to\nlearn more.\n\nWhen no InfoTypes or CustomInfoTypes are specified in this request, the\nsystem will automatically choose what detectors to run. By default this may\nbe all types, but may change over time as detectors are updated.",
 	//   "flatPath": "v2/projects/{projectsId}/image:redact",
 	//   "httpMethod": "POST",
 	//   "id": "dlp.projects.image.redact",

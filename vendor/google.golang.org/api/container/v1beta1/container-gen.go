@@ -529,6 +529,9 @@ type Cluster struct {
 	// creation.
 	EnableKubernetesAlpha bool `json:"enableKubernetesAlpha,omitempty"`
 
+	// EnableTpu: Enable the ability to use Cloud TPUs in this cluster.
+	EnableTpu bool `json:"enableTpu,omitempty"`
+
 	// Endpoint: [Output only] The IP address of this cluster's master
 	// endpoint.
 	// The endpoint can be accessed from the internet
@@ -769,6 +772,14 @@ type Cluster struct {
 	// of
 	// the name.
 	Subnetwork string `json:"subnetwork,omitempty"`
+
+	// TpuIpv4CidrBlock: [Output only] The IP address range of the Cloud
+	// TPUs in this cluster,
+	// in
+	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	//
+	// notation (e.g. `1.2.3.4/29`).
+	TpuIpv4CidrBlock string `json:"tpuIpv4CidrBlock,omitempty"`
 
 	// Zone: [Output only] The name of the Google Compute
 	// Engine
@@ -1038,9 +1049,8 @@ type CreateNodePoolRequest struct {
 
 	// Parent: The parent (project, location, cluster id) where the node
 	// pool will be
-	// created. Specified in the
-	// format
-	// 'projects/*/locations/*/clusters/*/nodePools/*'.
+	// created. Specified in the format
+	// 'projects/*/locations/*/clusters/*'.
 	Parent string `json:"parent,omitempty"`
 
 	// ProjectId: Deprecated. The Google Developers Console [project ID or
@@ -1344,6 +1354,29 @@ type IPAllocationPolicy struct {
 	// subnetwork.
 	SubnetworkName string `json:"subnetworkName,omitempty"`
 
+	// TpuIpv4CidrBlock: The IP address range of the Cloud TPUs in this
+	// cluster. If unspecified, a
+	// range will be automatically chosen with the default size.
+	//
+	// This field is only applicable when `use_ip_aliases` is true.
+	//
+	// If unspecified, the range will use the default size.
+	//
+	// Set to /netmask (e.g. `/14`) to have a range chosen with a
+	// specific
+	// netmask.
+	//
+	// Set to
+	// a
+	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	//
+	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
+	// (e.g.
+	// `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific
+	// range
+	// to use.
+	TpuIpv4CidrBlock string `json:"tpuIpv4CidrBlock,omitempty"`
+
 	// UseIpAliases: Whether alias IPs will be used for pod IPs in the
 	// cluster.
 	UseIpAliases bool `json:"useIpAliases,omitempty"`
@@ -1642,7 +1675,7 @@ func (s *ListUsableSubnetworksResponse) MarshalJSON() ([]byte, error) {
 // for GKE cluster scheduling.
 type Location struct {
 	// Name: Contains the name of the resource requested.
-	// Specific in the format 'projects/*/locations/*'.
+	// Specified in the format 'projects/*/locations/*'.
 	Name string `json:"name,omitempty"`
 
 	// Recommended: Recommended is a bool combining the drain state of the
@@ -4276,7 +4309,7 @@ func (c *ProjectsLocationsListCall) Do(opts ...googleapi.CallOption) (*ListLocat
 	//   ],
 	//   "parameters": {
 	//     "parent": {
-	//       "description": "Contains the name of the resource requested.\nSpecific in the format 'projects/*/locations'.",
+	//       "description": "Contains the name of the resource requested.\nSpecified in the format 'projects/*'.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
@@ -6856,7 +6889,7 @@ func (c *ProjectsLocationsClustersNodePoolsCreateCall) Do(opts ...googleapi.Call
 	//   ],
 	//   "parameters": {
 	//     "parent": {
-	//       "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*/nodePools/*'.",
+	//       "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*'.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+$",
 	//       "required": true,

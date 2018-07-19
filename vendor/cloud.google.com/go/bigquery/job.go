@@ -1,4 +1,4 @@
-// Copyright 2015 Google Inc. All Rights Reserved.
+// Copyright 2015 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@ package bigquery
 import (
 	"errors"
 	"fmt"
-	"math/rand"
-	"os"
-	"sync"
 	"time"
 
 	"cloud.google.com/go/internal"
@@ -164,38 +161,13 @@ func (j *JobIDConfig) createJobRef(c *Client) *bq.JobReference {
 	return jr
 }
 
-const alphanum = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-
-var (
-	rngMu sync.Mutex
-	rng   = rand.New(rand.NewSource(time.Now().UnixNano() ^ int64(os.Getpid())))
-)
-
-// For testing.
-var randomIDFn = randomID
-
-// As of August 2017, the BigQuery service uses 27 alphanumeric characters for
-// suffixes.
-const randomIDLen = 27
-
-func randomID() string {
-	// This is used for both job IDs and insert IDs.
-	var b [randomIDLen]byte
-	rngMu.Lock()
-	for i := 0; i < len(b); i++ {
-		b[i] = alphanum[rng.Intn(len(alphanum))]
-	}
-	rngMu.Unlock()
-	return string(b[:])
-}
-
 // Done reports whether the job has completed.
-// After Done returns true, the Err method will return an error if the job completed unsuccesfully.
+// After Done returns true, the Err method will return an error if the job completed unsuccessfully.
 func (s *JobStatus) Done() bool {
 	return s.State == Done
 }
 
-// Err returns the error that caused the job to complete unsuccesfully (if any).
+// Err returns the error that caused the job to complete unsuccessfully (if any).
 func (s *JobStatus) Err() error {
 	return s.err
 }

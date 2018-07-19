@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "gogoproto/gogo.proto";
+
+message UserRole {
+  option (gogoproto.goproto_unrecognized) = false;
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
+  int32 role_id = 12 [(gogoproto.customname) = "RoleID", (gogoproto.jsontag) = "roleId", (gogoproto.moretags) = "db:\"role_id\""];
+}
+
+message CreateUserRolesRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string workspace = 1 [(gogoproto.jsontag) = "-"];
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
+  repeated int32 role_ids = 12 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds"];
+}
+
+message GetUserIdsOfUserRoleRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string workspace = 1 [(gogoproto.jsontag) = "-"];
+  int32 role_id = 11 [(gogoproto.customname) = "RoleID", (gogoproto.jsontag) = "roleId"];
+}
+
+message GetRoleIdsOfUserRoleRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string workspace = 1 [(gogoproto.jsontag) = "-"];
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
+}
+
+message DeleteUserRolesRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string workspace = 1 [(gogoproto.jsontag) = "-"];
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
+  repeated int32 role_ids = 12 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds"];
+}

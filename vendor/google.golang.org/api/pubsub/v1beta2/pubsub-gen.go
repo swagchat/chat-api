@@ -1,5 +1,7 @@
 // Package pubsub provides access to the Cloud Pub/Sub API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/pubsub instead.
+//
 // See https://cloud.google.com/pubsub/docs
 //
 // Usage example:
@@ -191,9 +193,7 @@ type Binding struct {
 	Members []string `json:"members,omitempty"`
 
 	// Role: Role that is assigned to `members`.
-	// For example, `roles/viewer`, `roles/editor`, or
-	// `roles/owner`.
-	// Required
+	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
 	Role string `json:"role,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Members") to

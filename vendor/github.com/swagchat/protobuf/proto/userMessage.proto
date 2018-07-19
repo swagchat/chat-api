@@ -1,0 +1,121 @@
+syntax = "proto2";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf";
+
+import "gogoproto/gogo.proto";
+import "deviceMessage.proto";
+import "roomMessage.proto";
+
+message User {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional uint64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id\""];
+  optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
+  optional string name = 13 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"name\""];
+  optional string picture_url = 14 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl", (gogoproto.moretags) = "db:\"picture_url\""];
+  optional string information_url = 15 [(gogoproto.customname) = "InformationURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "informationUrl", (gogoproto.moretags) = "db:\"information_url\""];
+  optional uint64 unread_count = 16 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "unreadCount,omitempty", (gogoproto.moretags) = "db:\"unread_count\""];
+  optional bytes meta_data = 17 [(gogoproto.jsontag) = "metaData", (gogoproto.moretags) = "db:\"-\""];
+  optional bool public = 18 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"public\""];
+  optional bool can_block = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "canBlock,omitempty", (gogoproto.moretags) = "db:\"can_block\""];
+  optional string lang = 20 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"lang\""];
+  optional string access_token = 21 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "accessToken,omitempty", (gogoproto.moretags) = "db:\"-\""];
+  optional string last_access_room_id = 22 [(gogoproto.customname) = "LastAccessRoomID", (gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"last_access_room_id\""];
+  optional int64 last_accessed = 23 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"last_accessed\""];
+  optional int64 created = 31 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"created\""];
+  optional int64 modified = 32 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"modified\""];
+  optional int64 deleted = 33 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"deleted\""];
+  repeated int32 roles = 40 [(gogoproto.moretags) = "db:\"-\""];
+  repeated RoomForUser rooms = 41 [(gogoproto.moretags) = "db:\"-\""];
+  repeated Device devices = 42 [(gogoproto.moretags) = "db:\"-\""];
+  repeated string blocks = 43 [(gogoproto.moretags) = "db:\"-\""];
+}
+
+message RoomForUser {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string room_id = 1 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId", (gogoproto.moretags) = "db:\"room_id\""];
+  optional string user_id = 2 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
+  optional string name = 3 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"name\""];
+  optional string picture_url = 4 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl", (gogoproto.moretags) = "db:\"picture_url\""];
+  optional string information_url = 5 [(gogoproto.customname) = "InformationURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "informationUrl", (gogoproto.moretags) = "db:\"information_url\""];
+  optional bytes meta_data = 6 [(gogoproto.jsontag) = "metaData", (gogoproto.moretags) = "db:\"meta_data\""];
+  optional RoomType type = 7 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"type\""];
+  optional string last_message = 8 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "lastMessage",  (gogoproto.moretags) = "db:\"last_message\""];
+  optional int64 last_message_updated = 9 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "lastMessageUpdated",  (gogoproto.moretags) = "db:\"last_message_updated\""];
+  optional bool can_left = 10 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "canLeft", (gogoproto.moretags) = "db:\"can_left\""];
+  optional int64 created = 21 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"created\""];
+  optional int64 modified = 22 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"modified\""];
+  repeated UserForRoom users = 13 [(gogoproto.moretags) = "db:\"-\""];
+  optional int64 ru_unread_count = 14 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "ruUnreadCount", (gogoproto.moretags) = "db:\"ru_unread_count\""];
+}
+
+message CreateUserRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+  optional string name = 12 [(gogoproto.nullable) = false];
+  optional string picture_url = 13 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl"];
+  optional string information_url = 14 [(gogoproto.customname) = "InformationURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "informationUrl"];
+  optional bytes meta_data = 15 [(gogoproto.jsontag) = "metaData"];
+  optional bool public = 16 [(gogoproto.nullable) = false];
+  optional bool can_block = 17 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "canBlock,omitempty"];
+  optional string lang = 18 [(gogoproto.nullable) = false];
+  repeated int32 role_ids = 19 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds,omitempty", (gogoproto.moretags) = "db:\"-\""];
+}
+
+message GetUsersRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional int32 limit = 11 [(gogoproto.nullable) = false];
+  optional int32 offset = 12 [(gogoproto.nullable) = false];
+  optional string order = 13 [(gogoproto.nullable) = false];
+}
+
+message UsersResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated User users = 1 [(gogoproto.jsontag) = "users"];
+  optional int64 allCount = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "allCount"];
+  optional int32 limit = 3 [(gogoproto.nullable) = false];
+  optional int32 offset = 4 [(gogoproto.nullable) = false];
+  optional string order = 5 [(gogoproto.nullable) = false];
+}
+
+message GetUserRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+}
+
+message UpdateUserRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+  optional string name = 13 [(gogoproto.moretags) = "db:\"name\""];
+  optional string picture_url = 14 [(gogoproto.customname) = "PictureURL", (gogoproto.jsontag) = "pictureUrl", (gogoproto.moretags) = "db:\"picture_url\""];
+  optional string information_url = 15 [(gogoproto.customname) = "InformationURL", (gogoproto.jsontag) = "informationUrl", (gogoproto.moretags) = "db:\"information_url\""];
+  optional bytes meta_data = 17 [(gogoproto.jsontag) = "metaData", (gogoproto.moretags) = "db:\"meta_data\""];
+  optional bool public = 18 [(gogoproto.moretags) = "db:\"public\""];
+  optional bool can_block = 19 [(gogoproto.jsontag) = "canBlock,omitempty", (gogoproto.moretags) = "db:\"can_block\""];
+  optional string lang = 20 [(gogoproto.moretags) = "db:\"lang\""];
+}
+
+message DeleteUserRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+}
+
+message GetContactsRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
+  optional int32 limit = 12 [(gogoproto.nullable) = false];
+  optional int32 offset = 13 [(gogoproto.nullable) = false];
+  optional string order = 14 [(gogoproto.nullable) = false];
+}
+
+message GetProfileRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+}

@@ -31,6 +31,8 @@ It has these top-level messages:
 	RoomIds
 	UserIds
 	RoleIds
+	ErrorResponse
+	InvalidParam
 	Room
 	UserForRoom
 	CreateRoomRequest

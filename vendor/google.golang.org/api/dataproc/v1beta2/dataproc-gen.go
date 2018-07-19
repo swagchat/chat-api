@@ -1,5 +1,7 @@
 // Package dataproc provides access to the Cloud Dataproc API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/dataproc/apiv1 instead.
+//
 // See https://cloud.google.com/dataproc/
 //
 // Usage example:
@@ -229,7 +231,7 @@ type Binding struct {
 	Members []string `json:"members,omitempty"`
 
 	// Role: Role that is assigned to members. For example, roles/viewer,
-	// roles/editor, or roles/owner. Required
+	// roles/editor, or roles/owner.
 	Role string `json:"role,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Members") to
@@ -1034,8 +1036,9 @@ type InstanceGroupConfig struct {
 	// DiskConfig: Optional. Disk option config settings.
 	DiskConfig *DiskConfig `json:"diskConfig,omitempty"`
 
-	// ImageUri: Output only. The Compute Engine image resource used for
-	// cluster instances. Inferred from SoftwareConfig.image_version.
+	// ImageUri: Optional. The Compute Engine image resource used for
+	// cluster instances. It can be specified or may be inferred from
+	// SoftwareConfig.image_version.
 	ImageUri string `json:"imageUri,omitempty"`
 
 	// InstanceNames: Output only. The list of instance names. Cloud
@@ -1098,18 +1101,21 @@ func (s *InstanceGroupConfig) MarshalJSON() ([]byte, error) {
 // InstantiateWorkflowTemplateRequest: A request to instantiate a
 // workflow template.
 type InstantiateWorkflowTemplateRequest struct {
-	// InstanceId: Optional. A tag that prevents multiple concurrent
-	// workflow instances with the same tag from running. This mitigates
-	// risk of concurrent instances started due to retries.It is recommended
-	// to always set this value to a UUID
-	// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag
-	// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
-	// and hyphens (-). The maximum length is 40 characters.
+	// InstanceId: Deprecated. Please use request_id field instead.
 	InstanceId string `json:"instanceId,omitempty"`
 
 	// Parameters: Optional. Map from parameter names to values that should
 	// be used for those parameters.
 	Parameters map[string]string `json:"parameters,omitempty"`
+
+	// RequestId: Optional. A tag that prevents multiple concurrent workflow
+	// instances with the same tag from running. This mitigates risk of
+	// concurrent instances started due to retries.It is recommended to
+	// always set this value to a UUID
+	// (https://en.wikipedia.org/wiki/Universally_unique_identifier).The tag
+	// must contain only letters (a-z, A-Z), numbers (0-9), underscores (_),
+	// and hyphens (-). The maximum length is 40 characters.
+	RequestId string `json:"requestId,omitempty"`
 
 	// Version: Optional. The version of workflow template to instantiate.
 	// If specified, the workflow will be instantiated only if the current

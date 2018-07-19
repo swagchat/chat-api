@@ -1,5 +1,5 @@
 /*
-Copyright 2016 Google Inc. All Rights Reserved.
+Copyright 2016 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/bigtable/bttest"
+	"cloud.google.com/go/bigtable/internal/gax"
 	"cloud.google.com/go/internal/testutil"
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"github.com/google/go-cmp/cmp"
@@ -69,6 +70,7 @@ func setupFakeServer(opt ...grpc.ServerOption) (tbl *Table, cleanup func(), err 
 }
 
 func TestRetryApply(t *testing.T) {
+	gax.Logger = nil
 	ctx := context.Background()
 
 	errCount := 0
@@ -88,7 +90,7 @@ func TestRetryApply(t *testing.T) {
 	defer cleanup()
 
 	mut := NewMutation()
-	mut.Set("cf", "col", 1, []byte("val"))
+	mut.Set("cf", "col", 1000, []byte("val"))
 	if err := tbl.Apply(ctx, "row1", mut); err != nil {
 		t.Errorf("applying single mutation with retries: %v", err)
 	}
@@ -110,7 +112,7 @@ func TestRetryApply(t *testing.T) {
 	mutTrue := NewMutation()
 	mutTrue.DeleteRow()
 	mutFalse := NewMutation()
-	mutFalse.Set("cf", "col", 1, []byte("val"))
+	mutFalse.Set("cf", "col", 1000, []byte("val"))
 	condMut := NewCondMutation(ValueFilter("."), mutTrue, mutFalse)
 
 	errCount = 0
@@ -135,6 +137,7 @@ func TestRetryApply(t *testing.T) {
 
 func TestRetryApplyBulk(t *testing.T) {
 	ctx := context.Background()
+	gax.Logger = nil
 
 	// Intercept requests and delegate to an interceptor defined by the test case
 	errCount := 0
@@ -297,6 +300,7 @@ func TestRetainRowsAfter(t *testing.T) {
 
 func TestRetryReadRows(t *testing.T) {
 	ctx := context.Background()
+	gax.Logger = nil
 
 	// Intercept requests and delegate to an interceptor defined by the test case
 	errCount := 0

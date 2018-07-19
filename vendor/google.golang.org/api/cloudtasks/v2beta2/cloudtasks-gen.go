@@ -1,5 +1,7 @@
 // Package cloudtasks provides access to the Cloud Tasks API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/cloudtasks/apiv2beta2 instead.
+//
 // See https://cloud.google.com/cloud-tasks/
 //
 // Usage example:
@@ -471,12 +473,6 @@ type AppEngineRouting struct {
 	// is
 	// attempted.
 	//
-	// When service is "default",
-	// version is "default", and
-	// instance is empty,
-	// host is shortened to just the
-	// `application_domain_name`.
-	//
 	// If service,
 	// version, or
 	// instance is invalid, then the task
@@ -506,7 +502,7 @@ type AppEngineRouting struct {
 	//
 	// By default, the task is sent to the service which is the
 	// default
-	// service when the task is attempted ("default").
+	// service when the task is attempted.
 	//
 	// For some queues or tasks which were created using the App Engine
 	// Task Queue API, host is not parsable
@@ -525,7 +521,7 @@ type AppEngineRouting struct {
 	//
 	// By default, the task is sent to the version which is the
 	// default
-	// version when the task is attempted ("default").
+	// version when the task is attempted.
 	//
 	// For some queues or tasks which were created using the App Engine
 	// Task Queue API, host is not parsable
@@ -934,9 +930,13 @@ type LeaseTasksRequest struct {
 	// `lease_duration` will be truncated to the nearest second.
 	LeaseDuration string `json:"leaseDuration,omitempty"`
 
-	// MaxTasks: The maximum number of tasks to lease. The maximum that can
-	// be
-	// requested is 1000.
+	// MaxTasks: The maximum number of tasks to lease.
+	//
+	// The system will make a best effort to return as close to
+	// as
+	// `max_tasks` as possible.
+	//
+	// The largest that `max_tasks` can be is 1000.
 	MaxTasks int64 `json:"maxTasks,omitempty"`
 
 	// ResponseView: The response_view specifies which subset of the Task
@@ -1394,7 +1394,10 @@ type Queue struct {
 	// An App Engine queue is a queue that has an AppEngineHttpTarget.
 	AppEngineHttpTarget *AppEngineHttpTarget `json:"appEngineHttpTarget,omitempty"`
 
-	// Name: The queue name.
+	// Name: Caller-specified and required in CreateQueue,
+	// after which it becomes output only.
+	//
+	// The queue name.
 	//
 	// The queue name must have the following
 	// format:
@@ -1413,11 +1416,7 @@ type Queue struct {
 	//    For more information, see
 	// https://cloud.google.com/about/locations/.
 	// * `QUEUE_ID` can contain letters ([A-Za-z]), numbers ([0-9]), or
-	//   hyphens (-). The maximum length is 100
-	// characters.
-	//
-	// Caller-specified and required in CreateQueue,
-	// after which it becomes output only.
+	//   hyphens (-). The maximum length is 100 characters.
 	Name string `json:"name,omitempty"`
 
 	// PullTarget: Pull target.
@@ -2158,7 +2157,9 @@ type Task struct {
 	// `create_time` will be truncated to the nearest second.
 	CreateTime string `json:"createTime,omitempty"`
 
-	// Name: The task name.
+	// Name: Optionally caller-specified in CreateTask.
+	//
+	// The task name.
 	//
 	// The task name must have the following
 	// format:
@@ -2181,8 +2182,6 @@ type Task struct {
 	// * `TASK_ID` can contain only letters ([A-Za-z]), numbers ([0-9]),
 	//   hyphens (-), or underscores (_). The maximum length is 500
 	// characters.
-	//
-	// Optionally caller-specified in CreateTask.
 	Name string `json:"name,omitempty"`
 
 	// PullMessage: LeaseTasks to process the task. Can be
@@ -3668,7 +3667,7 @@ func (c *ProjectsLocationsQueuesPatchCall) Do(opts ...googleapi.CallOption) (*Qu
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The queue name.\n\nThe queue name must have the following format:\n`projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID`\n\n* `PROJECT_ID` can contain letters ([A-Za-z]), numbers ([0-9]),\n   hyphens (-), colons (:), or periods (.).\n   For more information, see\n   [Identifying projects](/resource-manager/docs/creating-managing-projects#identifying_projects)\n* `LOCATION_ID` is the canonical ID for the queue's location.\n   The list of available locations can be obtained by calling\n   ListLocations.\n   For more information, see https://cloud.google.com/about/locations/.\n* `QUEUE_ID` can contain letters ([A-Za-z]), numbers ([0-9]), or\n  hyphens (-). The maximum length is 100 characters.\n\nCaller-specified and required in CreateQueue,\nafter which it becomes output only.",
+	//       "description": "Caller-specified and required in CreateQueue,\nafter which it becomes output only.\n\nThe queue name.\n\nThe queue name must have the following format:\n`projects/PROJECT_ID/locations/LOCATION_ID/queues/QUEUE_ID`\n\n* `PROJECT_ID` can contain letters ([A-Za-z]), numbers ([0-9]),\n   hyphens (-), colons (:), or periods (.).\n   For more information, see\n   [Identifying projects](/resource-manager/docs/creating-managing-projects#identifying_projects)\n* `LOCATION_ID` is the canonical ID for the queue's location.\n   The list of available locations can be obtained by calling\n   ListLocations.\n   For more information, see https://cloud.google.com/about/locations/.\n* `QUEUE_ID` can contain letters ([A-Za-z]), numbers ([0-9]), or\n  hyphens (-). The maximum length is 100 characters.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/queues/[^/]+$",
 	//       "required": true,
@@ -5339,18 +5338,6 @@ func (r *ProjectsLocationsQueuesTasksService) List(parent string) *ProjectsLocat
 	return c
 }
 
-// OrderBy sets the optional parameter "orderBy": Sort order used for
-// the query. The only fields supported for sorting
-// are `schedule_time` and `pull_message.tag`. All results will
-// be
-// returned in approximately ascending order. The default ordering is
-// by
-// `schedule_time`.
-func (c *ProjectsLocationsQueuesTasksListCall) OrderBy(orderBy string) *ProjectsLocationsQueuesTasksListCall {
-	c.urlParams_.Set("orderBy", orderBy)
-	return c
-}
-
 // PageSize sets the optional parameter "pageSize": Requested page size.
 // Fewer tasks than requested might be returned.
 //
@@ -5510,11 +5497,6 @@ func (c *ProjectsLocationsQueuesTasksListCall) Do(opts ...googleapi.CallOption) 
 	//     "parent"
 	//   ],
 	//   "parameters": {
-	//     "orderBy": {
-	//       "description": "Sort order used for the query. The only fields supported for sorting\nare `schedule_time` and `pull_message.tag`. All results will be\nreturned in approximately ascending order. The default ordering is by\n`schedule_time`.",
-	//       "location": "query",
-	//       "type": "string"
-	//     },
 	//     "pageSize": {
 	//       "description": "Requested page size. Fewer tasks than requested might be returned.\n\nThe maximum page size is 1000. If unspecified, the page size will\nbe the maximum. Fewer tasks than requested might be returned,\neven if more tasks exist; use\nnext_page_token in the\nresponse to determine if more tasks exist.",
 	//       "format": "int32",

@@ -2361,6 +2361,180 @@ func (c *SSM) DescribeAssociationWithContext(ctx aws.Context, input *DescribeAss
 	return out, req.Send()
 }
 
+const opDescribeAssociationExecutionTargets = "DescribeAssociationExecutionTargets"
+
+// DescribeAssociationExecutionTargetsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeAssociationExecutionTargets operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeAssociationExecutionTargets for more information on using the DescribeAssociationExecutionTargets
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeAssociationExecutionTargetsRequest method.
+//    req, resp := client.DescribeAssociationExecutionTargetsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeAssociationExecutionTargets
+func (c *SSM) DescribeAssociationExecutionTargetsRequest(input *DescribeAssociationExecutionTargetsInput) (req *request.Request, output *DescribeAssociationExecutionTargetsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeAssociationExecutionTargets,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeAssociationExecutionTargetsInput{}
+	}
+
+	output = &DescribeAssociationExecutionTargetsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeAssociationExecutionTargets API operation for Amazon Simple Systems Manager (SSM).
+//
+// Use this API action to view information about a specific execution of a specific
+// association.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation DescribeAssociationExecutionTargets for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInternalServerError "InternalServerError"
+//   An error occurred on the server side.
+//
+//   * ErrCodeAssociationDoesNotExist "AssociationDoesNotExist"
+//   The specified association does not exist.
+//
+//   * ErrCodeInvalidNextToken "InvalidNextToken"
+//   The specified token is not valid.
+//
+//   * ErrCodeAssociationExecutionDoesNotExist "AssociationExecutionDoesNotExist"
+//   The specified execution ID does not exist. Verify the ID number and try again.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeAssociationExecutionTargets
+func (c *SSM) DescribeAssociationExecutionTargets(input *DescribeAssociationExecutionTargetsInput) (*DescribeAssociationExecutionTargetsOutput, error) {
+	req, out := c.DescribeAssociationExecutionTargetsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeAssociationExecutionTargetsWithContext is the same as DescribeAssociationExecutionTargets with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeAssociationExecutionTargets for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) DescribeAssociationExecutionTargetsWithContext(ctx aws.Context, input *DescribeAssociationExecutionTargetsInput, opts ...request.Option) (*DescribeAssociationExecutionTargetsOutput, error) {
+	req, out := c.DescribeAssociationExecutionTargetsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeAssociationExecutions = "DescribeAssociationExecutions"
+
+// DescribeAssociationExecutionsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeAssociationExecutions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeAssociationExecutions for more information on using the DescribeAssociationExecutions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DescribeAssociationExecutionsRequest method.
+//    req, resp := client.DescribeAssociationExecutionsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeAssociationExecutions
+func (c *SSM) DescribeAssociationExecutionsRequest(input *DescribeAssociationExecutionsInput) (req *request.Request, output *DescribeAssociationExecutionsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeAssociationExecutions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeAssociationExecutionsInput{}
+	}
+
+	output = &DescribeAssociationExecutionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeAssociationExecutions API operation for Amazon Simple Systems Manager (SSM).
+//
+// Use this API action to view all executions for a specific association ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation DescribeAssociationExecutions for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInternalServerError "InternalServerError"
+//   An error occurred on the server side.
+//
+//   * ErrCodeAssociationDoesNotExist "AssociationDoesNotExist"
+//   The specified association does not exist.
+//
+//   * ErrCodeInvalidNextToken "InvalidNextToken"
+//   The specified token is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/DescribeAssociationExecutions
+func (c *SSM) DescribeAssociationExecutions(input *DescribeAssociationExecutionsInput) (*DescribeAssociationExecutionsOutput, error) {
+	req, out := c.DescribeAssociationExecutionsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeAssociationExecutionsWithContext is the same as DescribeAssociationExecutions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeAssociationExecutions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) DescribeAssociationExecutionsWithContext(ctx aws.Context, input *DescribeAssociationExecutionsInput, opts ...request.Option) (*DescribeAssociationExecutionsOutput, error) {
+	req, out := c.DescribeAssociationExecutionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeAutomationExecutions = "DescribeAutomationExecutions"
 
 // DescribeAutomationExecutionsRequest generates a "aws/request.Request" representing the
@@ -3141,6 +3315,10 @@ func (c *SSM) DescribeInstanceInformationRequest(input *DescribeInstanceInformat
 // information for those instances. If you do not specify instance IDs, it returns
 // information for all your instances. If you specify an instance ID that is
 // not valid or an instance that you do not own, you receive an error.
+//
+// The IamRole field for this API action is the Amazon Identity and Access Management
+// (IAM) role assigned to on-premises instances. This call does not return the
+// IAM role for Amazon EC2 instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7975,8 +8153,8 @@ func (c *SSM) PutParameterRequest(input *PutParameterInput) (req *request.Reques
 //   The parameter already exists. You can't create duplicate parameters.
 //
 //   * ErrCodeHierarchyLevelLimitExceededException "HierarchyLevelLimitExceededException"
-//   A hierarchy can have a maximum of 15 levels. For more information, see Working
-//   with Systems Manager Parameters (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-working.html)
+//   A hierarchy can have a maximum of 15 levels. For more information, see Requirements
+//   and Constraints for Parameter Names (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-parameter-name-constraints.html)
 //   in the AWS Systems Manager User Guide.
 //
 //   * ErrCodeHierarchyTypeMismatchException "HierarchyTypeMismatchException"
@@ -8713,6 +8891,89 @@ func (c *SSM) SendCommand(input *SendCommandInput) (*SendCommandOutput, error) {
 // for more information on using Contexts.
 func (c *SSM) SendCommandWithContext(ctx aws.Context, input *SendCommandInput, opts ...request.Option) (*SendCommandOutput, error) {
 	req, out := c.SendCommandRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opStartAssociationsOnce = "StartAssociationsOnce"
+
+// StartAssociationsOnceRequest generates a "aws/request.Request" representing the
+// client's request for the StartAssociationsOnce operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartAssociationsOnce for more information on using the StartAssociationsOnce
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the StartAssociationsOnceRequest method.
+//    req, resp := client.StartAssociationsOnceRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/StartAssociationsOnce
+func (c *SSM) StartAssociationsOnceRequest(input *StartAssociationsOnceInput) (req *request.Request, output *StartAssociationsOnceOutput) {
+	op := &request.Operation{
+		Name:       opStartAssociationsOnce,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StartAssociationsOnceInput{}
+	}
+
+	output = &StartAssociationsOnceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartAssociationsOnce API operation for Amazon Simple Systems Manager (SSM).
+//
+// Use this API action to execute an association immediately and only one time.
+// This action can be helpful when troubleshooting associations.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Systems Manager (SSM)'s
+// API operation StartAssociationsOnce for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidAssociation "InvalidAssociation"
+//   The association is not valid or does not exist.
+//
+//   * ErrCodeAssociationDoesNotExist "AssociationDoesNotExist"
+//   The specified association does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06/StartAssociationsOnce
+func (c *SSM) StartAssociationsOnce(input *StartAssociationsOnceInput) (*StartAssociationsOnceOutput, error) {
+	req, out := c.StartAssociationsOnceRequest(input)
+	return out, req.Send()
+}
+
+// StartAssociationsOnceWithContext is the same as StartAssociationsOnce with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartAssociationsOnce for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSM) StartAssociationsOnceWithContext(ctx aws.Context, input *StartAssociationsOnceInput, opts ...request.Option) (*StartAssociationsOnceOutput, error) {
+	req, out := c.StartAssociationsOnceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -10276,6 +10537,319 @@ func (s *AssociationDescription) SetStatus(v *AssociationStatus) *AssociationDes
 // SetTargets sets the Targets field's value.
 func (s *AssociationDescription) SetTargets(v []*Target) *AssociationDescription {
 	s.Targets = v
+	return s
+}
+
+// Includes information about the specified association.
+type AssociationExecution struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID.
+	AssociationId *string `type:"string"`
+
+	// The association version.
+	AssociationVersion *string `type:"string"`
+
+	// The time the execution started.
+	CreatedTime *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// Detailed status information about the execution.
+	DetailedStatus *string `type:"string"`
+
+	// The execution ID for the association. If the association does not run at
+	// intervals or according to a schedule, then the ExecutionID is the same as
+	// the AssociationID.
+	ExecutionId *string `type:"string"`
+
+	// The date of the last execution.
+	LastExecutionDate *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// An aggregate status of the resources in the execution based on the status
+	// type.
+	ResourceCountByStatus *string `type:"string"`
+
+	// The status of the association execution.
+	Status *string `type:"string"`
+}
+
+// String returns the string representation
+func (s AssociationExecution) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociationExecution) GoString() string {
+	return s.String()
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *AssociationExecution) SetAssociationId(v string) *AssociationExecution {
+	s.AssociationId = &v
+	return s
+}
+
+// SetAssociationVersion sets the AssociationVersion field's value.
+func (s *AssociationExecution) SetAssociationVersion(v string) *AssociationExecution {
+	s.AssociationVersion = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *AssociationExecution) SetCreatedTime(v time.Time) *AssociationExecution {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDetailedStatus sets the DetailedStatus field's value.
+func (s *AssociationExecution) SetDetailedStatus(v string) *AssociationExecution {
+	s.DetailedStatus = &v
+	return s
+}
+
+// SetExecutionId sets the ExecutionId field's value.
+func (s *AssociationExecution) SetExecutionId(v string) *AssociationExecution {
+	s.ExecutionId = &v
+	return s
+}
+
+// SetLastExecutionDate sets the LastExecutionDate field's value.
+func (s *AssociationExecution) SetLastExecutionDate(v time.Time) *AssociationExecution {
+	s.LastExecutionDate = &v
+	return s
+}
+
+// SetResourceCountByStatus sets the ResourceCountByStatus field's value.
+func (s *AssociationExecution) SetResourceCountByStatus(v string) *AssociationExecution {
+	s.ResourceCountByStatus = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AssociationExecution) SetStatus(v string) *AssociationExecution {
+	s.Status = &v
+	return s
+}
+
+// Filters used in the request.
+type AssociationExecutionFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The key value used in the request.
+	//
+	// Key is a required field
+	Key *string `type:"string" required:"true" enum:"AssociationExecutionFilterKey"`
+
+	// The filter type specified in the request.
+	//
+	// Type is a required field
+	Type *string `type:"string" required:"true" enum:"AssociationFilterOperatorType"`
+
+	// The value specified for the key.
+	//
+	// Value is a required field
+	Value *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociationExecutionFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociationExecutionFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociationExecutionFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociationExecutionFilter"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *AssociationExecutionFilter) SetKey(v string) *AssociationExecutionFilter {
+	s.Key = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *AssociationExecutionFilter) SetType(v string) *AssociationExecutionFilter {
+	s.Type = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *AssociationExecutionFilter) SetValue(v string) *AssociationExecutionFilter {
+	s.Value = &v
+	return s
+}
+
+// Includes information about the specified association execution.
+type AssociationExecutionTarget struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID.
+	AssociationId *string `type:"string"`
+
+	// The association version.
+	AssociationVersion *string `type:"string"`
+
+	// Detailed information about the execution status.
+	DetailedStatus *string `type:"string"`
+
+	// The execution ID. If the association does not run at intervals or according
+	// to a schedule, then the ExecutionID is the same as the AssociationID.
+	ExecutionId *string `type:"string"`
+
+	// The date of the last execution.
+	LastExecutionDate *time.Time `type:"timestamp" timestampFormat:"unix"`
+
+	// The location where the association details are saved.
+	OutputSource *OutputSource `type:"structure"`
+
+	// The resource ID, for example, the instance ID where the association ran.
+	ResourceId *string `min:"1" type:"string"`
+
+	// The resource type, for example, instance.
+	ResourceType *string `min:"1" type:"string"`
+
+	// The association execution status.
+	Status *string `type:"string"`
+}
+
+// String returns the string representation
+func (s AssociationExecutionTarget) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociationExecutionTarget) GoString() string {
+	return s.String()
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *AssociationExecutionTarget) SetAssociationId(v string) *AssociationExecutionTarget {
+	s.AssociationId = &v
+	return s
+}
+
+// SetAssociationVersion sets the AssociationVersion field's value.
+func (s *AssociationExecutionTarget) SetAssociationVersion(v string) *AssociationExecutionTarget {
+	s.AssociationVersion = &v
+	return s
+}
+
+// SetDetailedStatus sets the DetailedStatus field's value.
+func (s *AssociationExecutionTarget) SetDetailedStatus(v string) *AssociationExecutionTarget {
+	s.DetailedStatus = &v
+	return s
+}
+
+// SetExecutionId sets the ExecutionId field's value.
+func (s *AssociationExecutionTarget) SetExecutionId(v string) *AssociationExecutionTarget {
+	s.ExecutionId = &v
+	return s
+}
+
+// SetLastExecutionDate sets the LastExecutionDate field's value.
+func (s *AssociationExecutionTarget) SetLastExecutionDate(v time.Time) *AssociationExecutionTarget {
+	s.LastExecutionDate = &v
+	return s
+}
+
+// SetOutputSource sets the OutputSource field's value.
+func (s *AssociationExecutionTarget) SetOutputSource(v *OutputSource) *AssociationExecutionTarget {
+	s.OutputSource = v
+	return s
+}
+
+// SetResourceId sets the ResourceId field's value.
+func (s *AssociationExecutionTarget) SetResourceId(v string) *AssociationExecutionTarget {
+	s.ResourceId = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *AssociationExecutionTarget) SetResourceType(v string) *AssociationExecutionTarget {
+	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AssociationExecutionTarget) SetStatus(v string) *AssociationExecutionTarget {
+	s.Status = &v
+	return s
+}
+
+// Filters for the association execution.
+type AssociationExecutionTargetsFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The key value used in the request.
+	//
+	// Key is a required field
+	Key *string `type:"string" required:"true" enum:"AssociationExecutionTargetsFilterKey"`
+
+	// The value specified for the key.
+	//
+	// Value is a required field
+	Value *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s AssociationExecutionTargetsFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AssociationExecutionTargetsFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociationExecutionTargetsFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociationExecutionTargetsFilter"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *AssociationExecutionTargetsFilter) SetKey(v string) *AssociationExecutionTargetsFilter {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *AssociationExecutionTargetsFilter) SetValue(v string) *AssociationExecutionTargetsFilter {
+	s.Value = &v
 	return s
 }
 
@@ -14369,6 +14943,265 @@ func (s *DescribeActivationsOutput) SetActivationList(v []*Activation) *Describe
 
 // SetNextToken sets the NextToken field's value.
 func (s *DescribeActivationsOutput) SetNextToken(v string) *DescribeActivationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAssociationExecutionTargetsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID that includes the execution for which you want to view
+	// details.
+	//
+	// AssociationId is a required field
+	AssociationId *string `type:"string" required:"true"`
+
+	// The execution ID for which you want to view details.
+	//
+	// ExecutionId is a required field
+	ExecutionId *string `type:"string" required:"true"`
+
+	// Filters for the request. You can specify the following filters and values.
+	//
+	// Status (EQUAL)
+	//
+	// ResourceId (EQUAL)
+	//
+	// ResourceType (EQUAL)
+	Filters []*AssociationExecutionTargetsFilter `min:"1" type:"list"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeAssociationExecutionTargetsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAssociationExecutionTargetsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeAssociationExecutionTargetsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeAssociationExecutionTargetsInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.ExecutionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExecutionId"))
+	}
+	if s.Filters != nil && len(s.Filters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Filters", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DescribeAssociationExecutionTargetsInput) SetAssociationId(v string) *DescribeAssociationExecutionTargetsInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetExecutionId sets the ExecutionId field's value.
+func (s *DescribeAssociationExecutionTargetsInput) SetExecutionId(v string) *DescribeAssociationExecutionTargetsInput {
+	s.ExecutionId = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeAssociationExecutionTargetsInput) SetFilters(v []*AssociationExecutionTargetsFilter) *DescribeAssociationExecutionTargetsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeAssociationExecutionTargetsInput) SetMaxResults(v int64) *DescribeAssociationExecutionTargetsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAssociationExecutionTargetsInput) SetNextToken(v string) *DescribeAssociationExecutionTargetsInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAssociationExecutionTargetsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the execution.
+	AssociationExecutionTargets []*AssociationExecutionTarget `type:"list"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeAssociationExecutionTargetsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAssociationExecutionTargetsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociationExecutionTargets sets the AssociationExecutionTargets field's value.
+func (s *DescribeAssociationExecutionTargetsOutput) SetAssociationExecutionTargets(v []*AssociationExecutionTarget) *DescribeAssociationExecutionTargetsOutput {
+	s.AssociationExecutionTargets = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAssociationExecutionTargetsOutput) SetNextToken(v string) *DescribeAssociationExecutionTargetsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAssociationExecutionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association ID for which you want to view execution history details.
+	//
+	// AssociationId is a required field
+	AssociationId *string `type:"string" required:"true"`
+
+	// Filters for the request. You can specify the following filters and values.
+	//
+	// ExecutionId (EQUAL)
+	//
+	// Status (EQUAL)
+	//
+	// CreatedTime (EQUAL, GREATER_THAN, LESS_THAN)
+	Filters []*AssociationExecutionFilter `min:"1" type:"list"`
+
+	// The maximum number of items to return for this call. The call also returns
+	// a token that you can specify in a subsequent call to get the next set of
+	// results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token to start the list. Use this token to get the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeAssociationExecutionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAssociationExecutionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeAssociationExecutionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeAssociationExecutionsInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.Filters != nil && len(s.Filters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Filters", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DescribeAssociationExecutionsInput) SetAssociationId(v string) *DescribeAssociationExecutionsInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *DescribeAssociationExecutionsInput) SetFilters(v []*AssociationExecutionFilter) *DescribeAssociationExecutionsInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeAssociationExecutionsInput) SetMaxResults(v int64) *DescribeAssociationExecutionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAssociationExecutionsInput) SetNextToken(v string) *DescribeAssociationExecutionsInput {
+	s.NextToken = &v
+	return s
+}
+
+type DescribeAssociationExecutionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of the executions for the specified association ID.
+	AssociationExecutions []*AssociationExecution `type:"list"`
+
+	// The token for the next set of items to return. Use this token to get the
+	// next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation
+func (s DescribeAssociationExecutionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DescribeAssociationExecutionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociationExecutions sets the AssociationExecutions field's value.
+func (s *DescribeAssociationExecutionsOutput) SetAssociationExecutions(v []*AssociationExecution) *DescribeAssociationExecutionsOutput {
+	s.AssociationExecutions = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeAssociationExecutionsOutput) SetNextToken(v string) *DescribeAssociationExecutionsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -19587,8 +20420,8 @@ type GetParametersByPathInput struct {
 	ParameterFilters []*ParameterStringFilter `type:"list"`
 
 	// The hierarchy for the parameter. Hierarchies start with a forward slash (/)
-	// and end with the parameter name. A hierarchy can have a maximum of 15 levels.
-	// Here is an example of a hierarchy: /Finance/Prod/IAD/WinServ2016/license33
+	// and end with the parameter name. A parameter name hierarchy can have a maximum
+	// of 15 levels. Here is an example of a hierarchy: /Finance/Prod/IAD/WinServ2016/license33
 	//
 	// Path is a required field
 	Path *string `min:"1" type:"string" required:"true"`
@@ -24139,6 +24972,41 @@ func (s *NotificationConfig) SetNotificationType(v string) *NotificationConfig {
 	return s
 }
 
+// Information about the source where the association execution details are
+// stored.
+type OutputSource struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the output source, for example the URL of an Amazon S3 bucket.
+	OutputSourceId *string `min:"36" type:"string"`
+
+	// The type of source where the association execution details are stored, for
+	// example, Amazon S3.
+	OutputSourceType *string `type:"string"`
+}
+
+// String returns the string representation
+func (s OutputSource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s OutputSource) GoString() string {
+	return s.String()
+}
+
+// SetOutputSourceId sets the OutputSourceId field's value.
+func (s *OutputSource) SetOutputSourceId(v string) *OutputSource {
+	s.OutputSourceId = &v
+	return s
+}
+
+// SetOutputSourceType sets the OutputSourceType field's value.
+func (s *OutputSource) SetOutputSourceType(v string) *OutputSource {
+	s.OutputSourceType = &v
+	return s
+}
+
 // An Amazon EC2 Systems Manager parameter in Parameter Store.
 type Parameter struct {
 	_ struct{} `type:"structure"`
@@ -24970,6 +25838,50 @@ func (s *PatchComplianceData) SetTitle(v string) *PatchComplianceData {
 //
 //    * Low
 //
+// Amazon Linux 2 Operating Systems
+//
+// The supported keys for Amazon Linux 2 operating systems are PRODUCT, CLASSIFICATION,
+// and SEVERITY. See the following lists for valid values for each of these
+// keys.
+//
+// Supported key:PRODUCT
+//
+// Supported values:
+//
+//    * AmazonLinux2
+//
+//    * AmazonLinux2.0
+//
+//    * *
+//
+// Use a wildcard character (*) to target all supported operating system versions.
+//
+// Supported key:CLASSIFICATION
+//
+// Supported values:
+//
+//    * Security
+//
+//    * Bugfix
+//
+//    * Enhancement
+//
+//    * Recommended
+//
+//    * Newpackage
+//
+// Supported key:SEVERITY
+//
+// Supported values:
+//
+//    * Critical
+//
+//    * Important
+//
+//    * Medium
+//
+//    * Low
+//
 // RedHat Enterprise Linux (RHEL) Operating Systems
 //
 // The supported keys for RedHat Enterprise Linux operating systems are PRODUCT,
@@ -25484,7 +26396,7 @@ type PatchSource struct {
 	//
 	// keepcache=0
 	//
-	// debualevel=2
+	// debuglevel=2
 	//
 	// Configuration is a required field
 	Configuration *string `min:"1" type:"string" required:"true"`
@@ -25844,22 +26756,49 @@ type PutParameterInput struct {
 	// AllowedPattern=^\d+$
 	AllowedPattern *string `type:"string"`
 
-	// Information about the parameter that you want to add to the system.
+	// Information about the parameter that you want to add to the system. Optional
+	// but recommended.
 	//
 	// Do not enter personally identifiable information in this field.
 	Description *string `type:"string"`
 
-	// The KMS Key ID that you want to use to encrypt a parameter when you choose
-	// the SecureString data type. If you don't specify a key ID, the system uses
-	// the default key associated with your AWS account.
+	// The KMS Key ID that you want to use to encrypt a parameter. Either the default
+	// AWS Key Management Service (AWS KMS) key automatically assigned to your AWS
+	// account or a custom key. Required for parameters that use the SecureString
+	// data type.
+	//
+	// If you don't specify a key ID, the system uses the default key associated
+	// with your AWS account.
+	//
+	//    * To use your default AWS KMS key, choose the SecureString data type,
+	//    and do not specify the Key ID when you create the parameter. The system
+	//    automatically populates Key ID with your default KMS key.
+	//
+	//    * To use a custom KMS key, choose the SecureString data type with the
+	//    Key ID parameter.
 	KeyId *string `min:"1" type:"string"`
 
 	// The fully qualified name of the parameter that you want to add to the system.
 	// The fully qualified name includes the complete hierarchy of the parameter
 	// path and name. For example: /Dev/DBServer/MySQL/db-string13
 	//
-	// For information about parameter name requirements and restrictions, see Creating
-	// Systems Manager Parameters (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-su-create.html)
+	// Naming Constraints:
+	//
+	//    * Parameter names are case sensitive.
+	//
+	//    * A parameter name must be unique within an AWS Region
+	//
+	//    * A parameter name can't be prefixed with "aws" or "ssm" (case-insensitive).
+	//
+	//    * Parameter names can include only the following symbols and letters:
+	//    a-zA-Z0-9_.-/
+	//
+	//    * A parameter name can't include spaces.
+	//
+	//    * Parameter hierarchies are limited to a maximum depth of fifteen levels.
+	//
+	// For additional information about valid values for parameter names, see Requirements
+	// and Constraints for Parameter Names (http://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-parameter-name-constraints.html)
 	// in the AWS Systems Manager User Guide.
 	//
 	// The maximum length constraint listed below includes capacity for additional
@@ -25873,6 +26812,13 @@ type PutParameterInput struct {
 	Overwrite *bool `type:"boolean"`
 
 	// The type of parameter that you want to add to the system.
+	//
+	// Items in a StringList must be separated by a comma (,). You can't use other
+	// punctuation or special character to escape items in the list. If you have
+	// a parameter value that requires a comma, then use the String data type.
+	//
+	// SecureString is not currently supported for AWS CloudFormation templates
+	// or in the China Regions.
 	//
 	// Type is a required field
 	Type *string `type:"string" required:"true" enum:"ParameterType"`
@@ -27542,6 +28488,61 @@ func (s *SeveritySummary) SetUnspecifiedCount(v int64) *SeveritySummary {
 	return s
 }
 
+type StartAssociationsOnceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The association IDs that you want to execute immediately and only one time.
+	//
+	// AssociationIds is a required field
+	AssociationIds []*string `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s StartAssociationsOnceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartAssociationsOnceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartAssociationsOnceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartAssociationsOnceInput"}
+	if s.AssociationIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationIds"))
+	}
+	if s.AssociationIds != nil && len(s.AssociationIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AssociationIds", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationIds sets the AssociationIds field's value.
+func (s *StartAssociationsOnceInput) SetAssociationIds(v []*string) *StartAssociationsOnceInput {
+	s.AssociationIds = v
+	return s
+}
+
+type StartAssociationsOnceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s StartAssociationsOnceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s StartAssociationsOnceOutput) GoString() string {
+	return s.String()
+}
+
 type StartAutomationExecutionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -27744,9 +28745,22 @@ type StepExecution struct {
 	// Fully-resolved values passed into the step before execution.
 	Inputs map[string]*string `type:"map"`
 
+	// Enable this option to designate a step as critical for the successful completion
+	// of the Automation. If a step with this designation fails, then Automation
+	// reports the final status of the Automation as Failed.
+	IsCritical *bool `type:"boolean"`
+
+	// Enable this option to stop an Automation execution at the end of a specific
+	// step. The Automation execution stops if the step execution failed or succeeded.
+	IsEnd *bool `type:"boolean"`
+
 	// The maximum number of tries to run the action of the step. The default value
 	// is 1.
 	MaxAttempts *int64 `type:"integer"`
+
+	// Specifies which step in an Automation to process next after successfully
+	// completing a step.
+	NextStep *string `type:"string"`
 
 	// The action to take if the step fails. The default value is Abort.
 	OnFailure *string `type:"string"`
@@ -27775,6 +28789,16 @@ type StepExecution struct {
 
 	// The timeout seconds of the step.
 	TimeoutSeconds *int64 `type:"long"`
+
+	// ValidNextSteps offer different strategies for managing an Automation workflow
+	// when a step finishes. Automation dynamically processes ValidNextSteps when
+	// a step is completed. For example, you can specify Abort to stop the Automation
+	// when a step fails or Continue to ignore the failure of the current step and
+	// allow Automation to continue processing the next step. You can also specify
+	// step:step_name to jump to a designated step after a step succeeds. The result
+	// of the current step dynamically determines the ValidNextSteps. If a step
+	// finishes and no ValidNextStep is designated, then the Automation stops.
+	ValidNextSteps []*string `type:"list"`
 }
 
 // String returns the string representation
@@ -27823,9 +28847,27 @@ func (s *StepExecution) SetInputs(v map[string]*string) *StepExecution {
 	return s
 }
 
+// SetIsCritical sets the IsCritical field's value.
+func (s *StepExecution) SetIsCritical(v bool) *StepExecution {
+	s.IsCritical = &v
+	return s
+}
+
+// SetIsEnd sets the IsEnd field's value.
+func (s *StepExecution) SetIsEnd(v bool) *StepExecution {
+	s.IsEnd = &v
+	return s
+}
+
 // SetMaxAttempts sets the MaxAttempts field's value.
 func (s *StepExecution) SetMaxAttempts(v int64) *StepExecution {
 	s.MaxAttempts = &v
+	return s
+}
+
+// SetNextStep sets the NextStep field's value.
+func (s *StepExecution) SetNextStep(v string) *StepExecution {
+	s.NextStep = &v
 	return s
 }
 
@@ -27880,6 +28922,12 @@ func (s *StepExecution) SetStepStatus(v string) *StepExecution {
 // SetTimeoutSeconds sets the TimeoutSeconds field's value.
 func (s *StepExecution) SetTimeoutSeconds(v int64) *StepExecution {
 	s.TimeoutSeconds = &v
+	return s
+}
+
+// SetValidNextSteps sets the ValidNextSteps field's value.
+func (s *StepExecution) SetValidNextSteps(v []*string) *StepExecution {
+	s.ValidNextSteps = v
 	return s
 }
 
@@ -29707,6 +30755,28 @@ func (s *UpdatePatchBaselineOutput) SetSources(v []*PatchSource) *UpdatePatchBas
 }
 
 const (
+	// AssociationExecutionFilterKeyExecutionId is a AssociationExecutionFilterKey enum value
+	AssociationExecutionFilterKeyExecutionId = "ExecutionId"
+
+	// AssociationExecutionFilterKeyStatus is a AssociationExecutionFilterKey enum value
+	AssociationExecutionFilterKeyStatus = "Status"
+
+	// AssociationExecutionFilterKeyCreatedTime is a AssociationExecutionFilterKey enum value
+	AssociationExecutionFilterKeyCreatedTime = "CreatedTime"
+)
+
+const (
+	// AssociationExecutionTargetsFilterKeyStatus is a AssociationExecutionTargetsFilterKey enum value
+	AssociationExecutionTargetsFilterKeyStatus = "Status"
+
+	// AssociationExecutionTargetsFilterKeyResourceId is a AssociationExecutionTargetsFilterKey enum value
+	AssociationExecutionTargetsFilterKeyResourceId = "ResourceId"
+
+	// AssociationExecutionTargetsFilterKeyResourceType is a AssociationExecutionTargetsFilterKey enum value
+	AssociationExecutionTargetsFilterKeyResourceType = "ResourceType"
+)
+
+const (
 	// AssociationFilterKeyInstanceId is a AssociationFilterKey enum value
 	AssociationFilterKeyInstanceId = "InstanceId"
 
@@ -29727,6 +30797,17 @@ const (
 
 	// AssociationFilterKeyAssociationName is a AssociationFilterKey enum value
 	AssociationFilterKeyAssociationName = "AssociationName"
+)
+
+const (
+	// AssociationFilterOperatorTypeEqual is a AssociationFilterOperatorType enum value
+	AssociationFilterOperatorTypeEqual = "EQUAL"
+
+	// AssociationFilterOperatorTypeLessThan is a AssociationFilterOperatorType enum value
+	AssociationFilterOperatorTypeLessThan = "LESS_THAN"
+
+	// AssociationFilterOperatorTypeGreaterThan is a AssociationFilterOperatorType enum value
+	AssociationFilterOperatorTypeGreaterThan = "GREATER_THAN"
 )
 
 const (
@@ -30183,6 +31264,9 @@ const (
 
 	// OperatingSystemAmazonLinux is a OperatingSystem enum value
 	OperatingSystemAmazonLinux = "AMAZON_LINUX"
+
+	// OperatingSystemAmazonLinux2 is a OperatingSystem enum value
+	OperatingSystemAmazonLinux2 = "AMAZON_LINUX_2"
 
 	// OperatingSystemUbuntu is a OperatingSystem enum value
 	OperatingSystemUbuntu = "UBUNTU"
