@@ -11,6 +11,7 @@ import (
 	gorp "gopkg.in/gorp.v2"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -42,6 +43,8 @@ func (p *gcpSQLProvider) Connect(dsCfg *utils.Datastore) error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
+			err = errors.Wrap(err, "Database open error")
+			logger.Error(err.Error())
 			return err
 		}
 
@@ -75,6 +78,8 @@ func (p *gcpSQLProvider) Connect(dsCfg *utils.Datastore) error {
 				p.database)
 			db, err := p.openDb(ds, replicaSi)
 			if err != nil {
+				err = errors.Wrap(err, "Database open error")
+				logger.Error(err.Error())
 				return err
 			}
 
@@ -128,11 +133,13 @@ func (p *gcpSQLProvider) DropDatabase() error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
+			logger.Error(err.Error())
 			return err
 		}
 		defer db.Close()
 		_, err = db.Exec(fmt.Sprintf("DROP DATABASE %s", p.database))
 		if err != nil {
+			logger.Error(err.Error())
 			return err
 		}
 	}
@@ -145,14 +152,18 @@ func (p *gcpSQLProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.D
 		rootCertPool := x509.NewCertPool()
 		pem, err := ioutil.ReadFile(si.ServerCaPath)
 		if err != nil {
+			logger.Error(err.Error())
 			return nil, err
 		}
 		if ok := rootCertPool.AppendCertsFromPEM(pem); !ok {
+			err = errors.New("Failed AppendCertsFromPEM.")
+			logger.Error(err.Error())
 			return nil, err
 		}
 		clientCert := make([]tls.Certificate, 0, 1)
 		certs, err := tls.LoadX509KeyPair(si.ClientCertPath, si.ClientKeyPath)
 		if err != nil {
+			logger.Error(err.Error())
 			return nil, err
 		}
 		clientCert = append(clientCert, certs)
@@ -166,11 +177,13 @@ func (p *gcpSQLProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.D
 	}
 	db, err := sql.Open("mysql", dataSource)
 	if err != nil {
+		logger.Error(err.Error())
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
+		logger.Error(err.Error())
 		return nil, err
 	}
 	return db, nil

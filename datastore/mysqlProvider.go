@@ -43,7 +43,9 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
-			return errors.Wrap(err, "Database open error")
+			err = errors.Wrap(err, "Database open error")
+			logger.Error(err.Error())
+			return err
 		}
 
 		mic, err := strconv.Atoi(p.maxIdleConnection)
@@ -75,6 +77,8 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 				p.database)
 			db, err := p.openDb(ds, replicaSi)
 			if err != nil {
+				err = errors.Wrap(err, "Database open error")
+				logger.Error(err.Error())
 				return err
 			}
 
@@ -128,11 +132,13 @@ func (p *mysqlProvider) DropDatabase() error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
+			logger.Error(err.Error())
 			return err
 		}
 		defer db.Close()
 		_, err = db.Exec(fmt.Sprintf("DROP DATABASE %s", p.database))
 		if err != nil {
+			logger.Error(err.Error())
 			return err
 		}
 	}
@@ -145,14 +151,18 @@ func (p *mysqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB
 		rootCertPool := x509.NewCertPool()
 		pem, err := ioutil.ReadFile(si.ServerCaPath)
 		if err != nil {
+			logger.Error(err.Error())
 			return nil, err
 		}
 		if ok := rootCertPool.AppendCertsFromPEM(pem); !ok {
+			err = errors.New("Failed AppendCertsFromPEM.")
+			logger.Error(err.Error())
 			return nil, err
 		}
 		clientCert := make([]tls.Certificate, 0, 1)
 		certs, err := tls.LoadX509KeyPair(si.ClientCertPath, si.ClientKeyPath)
 		if err != nil {
+			logger.Error(err.Error())
 			return nil, err
 		}
 		clientCert = append(clientCert, certs)
@@ -166,11 +176,13 @@ func (p *mysqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB
 	}
 	db, err := sql.Open("mysql", dataSource)
 	if err != nil {
+		logger.Error(err.Error())
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
+		logger.Error(err.Error())
 		return nil, err
 	}
 	return db, nil

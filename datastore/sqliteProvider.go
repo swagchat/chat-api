@@ -29,6 +29,7 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 
 	db, err := sql.Open("sqlite3", fmt.Sprintf("%s/%s.db", p.dirPath, p.database))
 	if err != nil {
+		logger.Error(err.Error())
 		return err
 	}
 	var master *gorp.DbMap
@@ -60,7 +61,9 @@ func (p *sqliteProvider) init() {
 
 func (p *sqliteProvider) DropDatabase() error {
 	if err := os.Remove(p.database); err != nil {
-		return errors.Wrap(err, "Drop database failure")
+		err = errors.Wrap(err, "Drop database failure")
+		logger.Error(err.Error())
+		return err
 	}
 	return nil
 }
