@@ -3,7 +3,6 @@ package model
 import (
 	"net/http"
 
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
 )
 
@@ -28,19 +27,12 @@ type UserRole struct {
 	scpb.UserRole
 }
 
-// func (ur *UserRole) ConvertProto() *scpb.UserRole {
-// 	return &scpb.UserRole{
-// 		UserID: ur.UserID,
-// 		RoleID: ur.RoleID,
-// 	}
-// }
-
 type GetRoleIdsOfUserRoleRequest struct {
 	scpb.GetRoleIdsOfUserRoleRequest
 }
 
 func (grourr *GetRoleIdsOfUserRoleRequest) Validate() *ProblemDetail {
-	if grourr.UserID != "" && !utils.IsValidID(grourr.UserID) {
+	if grourr.UserID != "" && !IsValidID(grourr.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{
@@ -65,7 +57,7 @@ type DeleteUserRolesRequest struct {
 }
 
 func (durr *DeleteUserRolesRequest) Validate() *ProblemDetail {
-	if durr.UserID != "" && !utils.IsValidID(durr.UserID) {
+	if durr.UserID != "" && !IsValidID(durr.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{

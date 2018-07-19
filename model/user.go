@@ -42,11 +42,11 @@ func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
 
 type User struct {
 	scpb.User
-	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
-	Roles    []int32        `json:"roles,omitempty" db:"-"`
-	Rooms    []*RoomForUser `json:"rooms,omitempty" db:"-"`
-	Devices  []*Device      `json:"devices,omitempty" db:"-"`
-	Blocks   []string       `json:"blocks,omitempty" db:"-"`
+	MetaData utils.JSONText `db:"meta_data"`
+	Roles    []int32        `db:"-"`
+	Rooms    []*RoomForUser `db:"-"`
+	Devices  []*Device      `db:"-"`
+	Blocks   []string       `db:"-"`
 }
 
 func (u *User) MarshalJSON() ([]byte, error) {
@@ -62,12 +62,12 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Public           bool           `json:"public"`
 		CanBlock         bool           `json:"canBlock"`
 		Lang             string         `json:"lang"`
-		AccessToken      string         `json:"accessToken"`
+		AccessToken      string         `json:"accessToken,omitempty"`
 		LastAccessRoomID string         `json:"lastAccessRoomId"`
 		LastAccessed     string         `json:"lastAccessed"`
 		Created          string         `json:"created"`
 		Modified         string         `json:"modified"`
-		Roles            []int32        `json:"roles"`
+		Roles            []int32        `json:"roles,omitempty"`
 		Rooms            []*RoomForUser `json:"rooms"`
 		Devices          []*Device      `json:"devices"`
 		Blocks           []string       `json:"blocks"`
@@ -97,24 +97,6 @@ type RoomForUser struct {
 	scpb.RoomForUser
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
 	Users    []*UserForRoom `json:"users,omitempty" db:"-"`
-	// // from room
-	// RoomID             string         `json:"roomId" db:"room_id"`
-	// UserID             string         `json:"userId" db:"user_id"`
-	// Name               string         `json:"name" db:"name"`
-	// PictureURL         string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	// InformationURL     string         `json:"informationUrl,omitempty" db:"information_url"`
-	// MetaData           utils.JSONText `json:"metaData" db:"meta_data"`
-	// Type               *RoomType      `json:"type,omitempty" db:"type"`
-	// LastMessage        string         `json:"lastMessage" db:"last_message"`
-	// LastMessageUpdated int64          `json:"lastMessageUpdated" db:"last_message_updated"`
-	// CanLeft            *bool          `json:"canLeft,omitempty" db:"can_left,notnull"`
-	// Created            int64          `json:"created" db:"created"`
-	// Modified           int64          `json:"modified" db:"modified"`
-
-	// Users []*UserForRoom `json:"users" db:"-"`
-
-	// // from RoomUser
-	// RuUnreadCount int64 `json:"ruUnreadCount" db:"ru_unread_count"`
 }
 
 func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
@@ -133,7 +115,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		Type               scpb.RoomType  `json:"type,omitempty"`
 		LastMessage        string         `json:"lastMessage"`
 		LastMessageUpdated string         `json:"lastMessageUpdated"`
-		CanLeft            *bool          `json:"canLeft,omitempty"`
+		CanLeft            bool           `json:"canLeft,omitempty"`
 		Created            string         `json:"created"`
 		Modified           string         `json:"modified"`
 		Users              []*UserForRoom `json:"users"`
@@ -159,63 +141,6 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 type UserUnreadCount struct {
 	UnreadCount uint64 `json:"unreadCount" db:"unread_count"`
 }
-
-// func (u *User) BeforePut(put *User) {
-// 	if put.Name != "" {
-// 		u.Name = put.Name
-// 	}
-// 	if put.PictureURL != "" {
-// 		u.PictureURL = put.PictureURL
-// 	}
-// 	if put.InformationURL != "" {
-// 		u.InformationURL = put.InformationURL
-// 	}
-// 	if put.UnreadCount != nil {
-// 		u.UnreadCount = put.UnreadCount
-// 	}
-// 	if put.MetaData != nil {
-// 		u.MetaData = put.MetaData
-// 	}
-// 	if put.Public != nil {
-// 		u.Public = put.Public
-// 	}
-// 	if put.CanBlock != nil {
-// 		u.CanBlock = put.CanBlock
-// 	}
-// 	if put.Lang != "" {
-// 		u.Lang = put.Lang
-// 	}
-// }
-
-// func (u *User) BeforeInsertGuest() {
-// 	if u.UserID == "" {
-// 		u.UserID = utils.GenerateUUID()
-// 	}
-
-// 	if u.MetaData == nil {
-// 		u.MetaData = []byte("{}")
-// 	}
-
-// 	if u.Public == nil {
-// 		public := true
-// 		u.Public = &public
-// 	}
-
-// 	if u.CanBlock == nil {
-// 		canBlock := true
-// 		u.CanBlock = &canBlock
-// 	}
-
-// 	unreadCount := uint64(0)
-// 	u.UnreadCount = &unreadCount
-
-// 	u.Rooms = make([]*scpb.RoomForUser, 0)
-// 	u.Devices = make([]*scpb.Device, 0)
-// 	u.Blocks = make([]string, 0)
-// 	nowTimestamp := time.Now().Unix()
-// 	u.Created = nowTimestamp
-// 	u.Modified = nowTimestamp
-// }
 
 func (u *User) IsRole(role int32) bool {
 	if u.Roles == nil {
@@ -293,7 +218,7 @@ type CreateUserRequest struct {
 }
 
 func (u *CreateUserRequest) Validate() *ProblemDetail {
-	if u.UserID != "" && !utils.IsValidID(u.UserID) {
+	if u.UserID != "" && !IsValidID(u.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{
@@ -337,6 +262,7 @@ func (u *CreateUserRequest) Validate() *ProblemDetail {
 
 func (cur *CreateUserRequest) GenerateUser() *User {
 	u := &User{}
+
 	if cur.UserID == "" {
 		u.UserID = utils.GenerateUUID()
 	} else {
@@ -347,30 +273,17 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 	u.PictureURL = cur.PictureURL
 	u.InformationURL = cur.InformationURL
 
-	if cur.MetaData == nil {
+	if cur.MetaData == nil || cur.MetaData.String() == "" {
 		u.MetaData = []byte("{}")
 	} else {
 		u.MetaData = cur.MetaData
 	}
 
-	if cur.Public == nil {
-		u.Public = true
-	} else {
-		u.Public = *cur.Public
-	}
-
-	if cur.CanBlock == nil {
-		u.CanBlock = true
-	} else {
-		u.CanBlock = *cur.CanBlock
-	}
-
+	u.Public = cur.Public
+	u.CanBlock = cur.CanBlock
 	u.Lang = cur.Lang
 	u.UnreadCount = uint64(0)
-	u.Roles = make([]int32, 0)
-	u.Rooms = make([]*RoomForUser, 0)
-	u.Devices = make([]*Device, 0)
-	u.Blocks = make([]string, 0)
+
 	nowTimestamp := time.Now().Unix()
 	u.Created = nowTimestamp
 	u.Modified = nowTimestamp
@@ -401,6 +314,7 @@ type GetUserRequest struct {
 
 type UpdateUserRequest struct {
 	scpb.UpdateUserRequest
+	MetaData utils.JSONText `db:"meta_data"`
 }
 
 type DeleteUserRequest struct {
@@ -420,16 +334,16 @@ func (uur *UpdateUserRequest) Validate() *ProblemDetail {
 }
 
 func (u *User) UpdateUser(req *UpdateUserRequest) {
-	if req.Name != "" {
-		u.Name = req.Name
+	if req.Name != nil {
+		u.Name = *req.Name
 	}
 
-	if req.PictureURL != "" {
-		u.PictureURL = req.PictureURL
+	if req.PictureURL != nil {
+		u.PictureURL = *req.PictureURL
 	}
 
-	if req.InformationURL != "" {
-		u.InformationURL = req.InformationURL
+	if req.InformationURL != nil {
+		u.InformationURL = *req.InformationURL
 	}
 
 	if req.MetaData != nil {
@@ -444,8 +358,8 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 		u.CanBlock = *req.CanBlock
 	}
 
-	if req.Lang != "" {
-		u.Lang = req.Lang
+	if req.Lang != nil {
+		u.Lang = *req.Lang
 	}
 
 	nowTimestamp := time.Now().Unix()

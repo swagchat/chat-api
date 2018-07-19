@@ -1,4 +1,4 @@
-package utils
+package model
 
 import (
 	"errors"
@@ -24,6 +24,6 @@ func IsURL(checkURL string) error {
 
 // IsValidID is valid ID
 func IsValidID(ID string) bool {
-	r := regexp.MustCompile(`(?m)^[0-9a-zA-Z-]+$`)
+	r := regexp.MustCompile(`(?m)^[0-9a-z-]+$`)
 	return r.MatchString(ID)
 }

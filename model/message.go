@@ -82,7 +82,7 @@ type PayloadUsers struct {
 }
 
 func (m *Message) IsValid() *ProblemDetail {
-	if m.MessageID != "" && !utils.IsValidID(m.MessageID) {
+	if m.MessageID != "" && !IsValidID(m.MessageID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{

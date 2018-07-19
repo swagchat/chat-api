@@ -14,7 +14,7 @@ type CreateGuestRequest struct {
 }
 
 func (u *CreateGuestRequest) Validate() *ProblemDetail {
-	if u.UserID != "" && !utils.IsValidID(u.UserID) {
+	if u.UserID != "" && !IsValidID(u.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{

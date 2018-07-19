@@ -18,12 +18,7 @@ func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
 		ru.RoomID = crur.RoomID
 		ru.UserID = userID
 		ru.UnreadCount = int32(0)
-
-		if crur.Display == nil {
-			ru.Display = true
-		} else {
-			ru.Display = *crur.Display
-		}
+		ru.Display = crur.Display
 		roomUsers[i] = ru
 	}
 	return roomUsers

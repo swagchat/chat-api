@@ -247,7 +247,7 @@ type CreateRoomRequest struct {
 }
 
 func (r *CreateRoomRequest) Validate() *ProblemDetail {
-	if r.RoomID != "" && !utils.IsValidID(r.RoomID) {
+	if r.RoomID != "" && !IsValidID(r.RoomID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{
@@ -273,7 +273,7 @@ func (r *CreateRoomRequest) Validate() *ProblemDetail {
 		}
 	}
 
-	if !utils.IsValidID(r.UserID) {
+	if !IsValidID(r.UserID) {
 		return &ProblemDetail{
 			Message: "Invalid params",
 			InvalidParams: []*InvalidParam{
