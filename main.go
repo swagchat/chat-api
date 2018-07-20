@@ -11,8 +11,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/swagchat/chat-api/grpc"
-	"github.com/swagchat/chat-api/handler"
 	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/rest"
 	"github.com/swagchat/chat-api/sbroker"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/utils"
@@ -46,9 +46,9 @@ func main() {
 	defer cancel()
 
 	if cfg.GRPCPort == "" {
-		handler.Run(ctx)
+		rest.Run(ctx)
 	} else {
 		go grpc.Run(ctx)
-		handler.Run(ctx)
+		rest.Run(ctx)
 	}
 }
