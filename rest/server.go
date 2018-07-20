@@ -83,15 +83,15 @@ func Run(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
-		logger.Info(fmt.Sprintf("Stopping %s server[HTTP]", utils.AppName))
+		logger.Info(fmt.Sprintf("Stopping %s server[REST]", utils.AppName))
 		gracedown.Close()
 	case s := <-signalChan:
 		if s == syscall.SIGTERM || s == syscall.SIGINT {
-			logger.Info(fmt.Sprintf("Stopping %s server[HTTP]", utils.AppName))
+			logger.Info(fmt.Sprintf("Stopping %s server[REST]", utils.AppName))
 			gracedown.Close()
 		}
 	case err := <-errCh:
-		logger.Error(fmt.Sprintf("Failed to serve %s server[HTTP]. %v", utils.AppName, err))
+		logger.Error(fmt.Sprintf("Failed to serve %s server[REST]. %v", utils.AppName, err))
 	}
 }
 
