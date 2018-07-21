@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/sdkuri","internal/shareddefaults","private/protocol","private/protocol/eventstream","private/protocol/eventstream/eventstreamapi","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sns","service/sts"]
-  revision = "ad774ec7aa8110faa8acdb510930f733a874ca4c"
-  version = "v1.14.29"
+  revision = "8cf662a972fa7fba8f2c1ec57648cf840e2bb401"
+  version = "v1.14.30"
 
 [[projects]]
   branch = "master"
@@ -24,12 +24,6 @@
   packages = ["kafka"]
   revision = "5e4d04e05fc319ce5996a867aafef29059f26862"
   version = "v0.11.4"
-
-[[projects]]
-  name = "github.com/fatih/structs"
-  packages = ["."]
-  revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
-  version = "v1.0"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -124,7 +118,7 @@
   branch = "master"
   name = "github.com/swagchat/protobuf"
   packages = ["."]
-  revision = "78ceee9a1d5397b5d2ffa2b8e4a3781244fb5475"
+  revision = "ee57dbbcfd443918bd12b81881ad65e56e6a0b8c"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -141,14 +135,14 @@
 [[projects]]
   name = "go.uber.org/zap"
   packages = [".","buffer","internal/bufferpool","internal/color","internal/exit","zapcore"]
-  revision = "eeedf312bc6c57391d84767a4cd413f02a917974"
-  version = "v1.8.0"
+  revision = "4d45f9617f7d90f7a663ff21c7a4321dbe78098b"
+  version = "v1.9.0"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","http/httpguts","http2","http2/hpack","idna","internal/timeseries","trace"]
-  revision = "81d44fd177a98d09fe3bc40a5a78d495d3f042ea"
+  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
 
 [[projects]]
   branch = "master"
@@ -207,6 +201,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "715cea597fce6206829987c2e2f312d331fde96f6c97ea7867f60d1875635830"
+  inputs-digest = "0dded13ff03e4ce5bbc20fb1dbfa71d416dc755548be38d7e1bf55feddb85fad"
   solver-name = "gps-cdcl"
   solver-version = 1

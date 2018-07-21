@@ -51,7 +51,6 @@ message RoomForUser {
 
 message CreateUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
   optional string name = 12 [(gogoproto.nullable) = false];
   optional string picture_url = 13 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl"];
@@ -65,7 +64,6 @@ message CreateUserRequest {
 
 message GetUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional int32 limit = 11 [(gogoproto.nullable) = false];
   optional int32 offset = 12 [(gogoproto.nullable) = false];
   optional string order = 13 [(gogoproto.nullable) = false];
@@ -82,13 +80,11 @@ message UsersResponse {
 
 message GetUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
 }
 
 message UpdateUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
   optional string name = 13 [(gogoproto.moretags) = "db:\"name\""];
   optional string picture_url = 14 [(gogoproto.customname) = "PictureURL", (gogoproto.jsontag) = "pictureUrl", (gogoproto.moretags) = "db:\"picture_url\""];
@@ -101,13 +97,11 @@ message UpdateUserRequest {
 
 message DeleteUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
 }
 
 message GetContactsRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
   optional int32 limit = 12 [(gogoproto.nullable) = false];
   optional int32 offset = 13 [(gogoproto.nullable) = false];
@@ -116,6 +110,5 @@ message GetContactsRequest {
 
 message GetProfileRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
 }

@@ -15,7 +15,6 @@ message RoomUser {
 
 message CreateRoomUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
   repeated string user_ids = 12 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds,omitempty"];
   optional bool display = 13 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "display,omitempty"];
@@ -23,7 +22,6 @@ message CreateRoomUsersRequest {
 
 message UpdateRoomUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
   optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
   optional int32 unread_count = 13 [(gogoproto.jsontag) = "unreadCount,omitempty"];
@@ -32,14 +30,12 @@ message UpdateRoomUserRequest {
 
 message GetUserIdsOfRoomUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
   repeated int32 role_ids = 12 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds,omitempty"];
 }
 
 message DeleteRoomUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "-"];
   optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
   repeated string user_ids = 12 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds,omitempty"];
 }

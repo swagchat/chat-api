@@ -26,7 +26,6 @@ enum SpeechMode {
 
 message Room {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"-\""];
   optional uint64 id = 11 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id\""];
   optional string room_id = 12 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId", (gogoproto.moretags) = "db:\"room_id\""];
   optional string user_id = 13 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
@@ -66,7 +65,6 @@ message UserForRoom {
 
 message CreateRoomRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string workspace = 1 [(gogoproto.nullable) = false];
   optional string room_id = 12 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId", (gogoproto.moretags) = "db:\"user_id\""];
   optional string user_id = 13 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"room_id\""];
   optional string name = 14 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"name\""];
