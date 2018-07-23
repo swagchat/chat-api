@@ -6,22 +6,22 @@ func (p *gcpSQLProvider) createMessageStore() {
 	rdbCreateMessageStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertMessage(message *model.Message) (string, error) {
+func (p *gcpSQLProvider) InsertMessage(message *model.Message) error {
 	return rdbInsertMessage(p.database, message)
+}
+
+func (p *gcpSQLProvider) SelectMessages(limit, offset int32, opts ...MessageOption) ([]*model.Message, error) {
+	return rdbSelectMessages(p.database, limit, offset, opts...)
 }
 
 func (p *gcpSQLProvider) SelectMessage(messageID string) (*model.Message, error) {
 	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *gcpSQLProvider) SelectMessages(roleIds []int32, roomID string, limit, offset int32, order string) ([]*model.Message, error) {
-	return rdbSelectMessages(p.database, roleIds, roomID, limit, offset, order)
+func (p *gcpSQLProvider) SelectCountMessages(opts ...MessageOption) (int64, error) {
+	return rdbSelectCountMessages(p.database, opts...)
 }
 
-func (p *gcpSQLProvider) SelectCountMessagesByRoomID(roleIDs []int32, roomID string) (int64, error) {
-	return rdbSelectCountMessagesByRoomID(p.database, roleIDs, roomID)
-}
-
-func (p *gcpSQLProvider) UpdateMessage(message *model.Message) (*model.Message, error) {
+func (p *gcpSQLProvider) UpdateMessage(message *model.Message) error {
 	return rdbUpdateMessage(p.database, message)
 }

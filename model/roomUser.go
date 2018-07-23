@@ -55,16 +55,12 @@ type RoomUser struct {
 }
 
 func (ru *RoomUser) UpdateRoomUser(req *UpdateRoomUserRequest) {
-	pbRu := &scpb.RoomUser{
-		RoomID: ru.RoomID,
-		UserID: ru.UserID,
-	}
 	if req.UnreadCount != nil {
-		pbRu.UnreadCount = *req.UnreadCount
+		ru.UnreadCount = *req.UnreadCount
 	}
 
 	if req.Display != nil {
-		pbRu.Display = *req.Display
+		ru.Display = *req.Display
 	}
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"sync"
 	"time"
 
@@ -68,7 +67,7 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		r.NotificationTopicID = notificationTopicID
 	}
 
-	room, err := datastore.Provider(ctx).InsertRoom(r, datastore.RoomOptionInsertRoomUser(rus))
+	err := datastore.Provider(ctx).InsertRoom(r, datastore.RoomOptionInsertRoomUser(rus))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Room registration failed",
@@ -78,7 +77,7 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		return nil, pd
 	}
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(room.RoomID)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(r.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get room's users failed",
@@ -87,9 +86,9 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		}
 		return nil, pd
 	}
-	room.Users = userForRooms
+	r.Users = userForRooms
 
-	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(room.RoomID)
+	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(r.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get room's users failed",
@@ -99,17 +98,19 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		return nil, pd
 	}
 
-	go webhookRoom(ctx, room)
+	go webhookRoom(ctx, r)
 	go subscribeByRoomUsers(ctx, roomUsers)
-	go publishUserJoin(ctx, room.RoomID)
+	go publishUserJoin(ctx, r.RoomID)
 
 	logger.Info("Finish CreateRoom.")
-	return room, nil
+	return r, nil
 }
 
-// GetRooms is get rooms
-func GetRooms(ctx context.Context, values url.Values) (*model.Rooms, *model.ProblemDetail) {
-	rooms, err := datastore.Provider(ctx).SelectRooms()
+// GetRooms gets rooms
+func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResponse, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start GetRooms. Request[%#v]", req))
+
+	rooms, err := datastore.Provider(ctx).SelectRooms(req.Limit, req.Offset)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get rooms failed",
@@ -122,35 +123,42 @@ func GetRooms(ctx context.Context, values url.Values) (*model.Rooms, *model.Prob
 	count, err := datastore.Provider(ctx).SelectCountRooms()
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Message: "Get room count failed",
+			Message: "Get rooms failed",
 			Status:  http.StatusInternalServerError,
 			Error:   err,
 		}
 		return nil, pd
 	}
-	return &model.Rooms{
-		Rooms:    rooms,
-		AllCount: count,
-	}, nil
+
+	res := &model.RoomsResponse{}
+	res.Rooms = rooms
+	res.AllCount = count
+	res.Limit = req.Limit
+	res.Offset = req.Offset
+
+	logger.Info(fmt.Sprintf("Finish GetRooms."))
+	return res, nil
 }
 
-// GetRoom is get room
-func GetRoom(ctx context.Context, roomID string) (*model.Room, *model.ProblemDetail) {
+// GetRoom gets room
+func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start  GetRoom. Request[%#v]", req))
+
 	userID := ctx.Value(utils.CtxUserID).(string)
 	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
 	if pd != nil {
 		return nil, pd
 	}
 
-	room, pd := selectRoom(ctx, roomID)
+	room, pd := selectRoom(ctx, req.RoomID)
 	if pd != nil {
 		return nil, pd
 	}
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
+	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(req.RoomID)
 	if err != nil {
 		pd := &model.ProblemDetail{
-			Message: "Get room's users failed",
+			Message: "Get room failed",
 			Status:  http.StatusInternalServerError,
 			Error:   err,
 		}
@@ -158,7 +166,10 @@ func GetRoom(ctx context.Context, roomID string) (*model.Room, *model.ProblemDet
 	}
 	room.Users = userForRooms
 
-	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
+	count, err := datastore.Provider(ctx).SelectCountMessages(
+		datastore.MessageOptionFilterByRoomID(req.RoomID),
+		datastore.MessageOptionFilterByRoleIDs(user.Roles),
+	)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get room failed",
@@ -168,25 +179,28 @@ func GetRoom(ctx context.Context, roomID string) (*model.Room, *model.ProblemDet
 		return nil, pd
 	}
 	room.MessageCount = count
+
+	logger.Info(fmt.Sprintf("Finish GetRoom. Response[%#v]", room))
 	return room, nil
 }
 
-// PutRoom is put room
-func PutRoom(ctx context.Context, put *model.Room) (*model.Room, *model.ProblemDetail) {
-	room, pd := selectRoom(ctx, put.RoomID)
+// UpdateRoom updates room
+func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room, *model.ProblemDetail) {
+	logger.Info(fmt.Sprintf("Start UpdateRoom. Request[%#v]", req))
+
+	room, pd := selectRoom(ctx, req.RoomID)
 	if pd != nil {
 		return nil, pd
 	}
 
-	// if pd := room.IsValidPut(); pd != nil {
-	// 	return nil, pd
-	// }
-
-	if pd := room.BeforePut(put); pd != nil {
+	pd = req.Validate(room)
+	if pd != nil {
 		return nil, pd
 	}
 
-	room, err := datastore.Provider(ctx).UpdateRoom(room)
+	room.UpdateRoom(req)
+
+	err := datastore.Provider(ctx).UpdateRoom(room)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Update room failed",
@@ -206,12 +220,16 @@ func PutRoom(ctx context.Context, put *model.Room) (*model.Room, *model.ProblemD
 		return nil, pd
 	}
 	room.Users = userForRooms
+
+	logger.Info("Finish UpdateRoom.")
 	return room, nil
 }
 
-// DeleteRoom is delete room
-func DeleteRoom(ctx context.Context, roomID string) *model.ProblemDetail {
-	room, pd := selectRoom(ctx, roomID)
+// DeleteRoom deletes room
+func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ProblemDetail {
+	logger.Info(fmt.Sprintf("Start DeleteRoom. Request[%#v]", req))
+
+	room, pd := selectRoom(ctx, req.RoomID)
 	if pd != nil {
 		return pd
 	}
@@ -224,7 +242,7 @@ func DeleteRoom(ctx context.Context, roomID string) *model.ProblemDetail {
 	}
 
 	room.Deleted = time.Now().Unix()
-	err := datastore.Provider(ctx).UpdateRoomDeleted(roomID)
+	err := datastore.Provider(ctx).UpdateRoom(room)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete room failed",
@@ -237,16 +255,17 @@ func DeleteRoom(ctx context.Context, roomID string) *model.ProblemDetail {
 	go func() {
 		wg := &sync.WaitGroup{}
 		wg.Add(1)
-		go unsubscribeByRoomID(ctx, roomID, wg)
+		go unsubscribeByRoomID(ctx, req.RoomID, wg)
 		wg.Wait()
 		room.NotificationTopicID = ""
 		datastore.Provider(ctx).UpdateRoom(room)
 	}()
 
+	logger.Info("Finish DeleteRoom.")
 	return nil
 }
 
-// GetRoomMessages is get room messages
+// GetRoomMessages gets room messages
 func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int32, order string) (*model.Messages, *model.ProblemDetail) {
 	userID := ctx.Value(utils.CtxUserID).(string)
 	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
@@ -254,7 +273,12 @@ func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int
 		return nil, pd
 	}
 
-	messages, err := datastore.Provider(ctx).SelectMessages(user.Roles, roomID, limit, offset, order)
+	messages, err := datastore.Provider(ctx).SelectMessages(
+		limit,
+		offset,
+		datastore.MessageOptionFilterByRoomID(roomID),
+		datastore.MessageOptionFilterByRoleIDs(user.Roles),
+	)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get room messages failed",
@@ -267,7 +291,10 @@ func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int
 		Messages: messages,
 	}
 
-	count, err := datastore.Provider(ctx).SelectCountMessagesByRoomID(user.Roles, roomID)
+	count, err := datastore.Provider(ctx).SelectCountMessages(
+		datastore.MessageOptionFilterByRoomID(roomID),
+		datastore.MessageOptionFilterByRoleIDs(user.Roles),
+	)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get room messages failed",

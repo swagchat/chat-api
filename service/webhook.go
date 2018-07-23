@@ -14,6 +14,7 @@ import (
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 func webhookRoom(ctx context.Context, room *model.Room) {
@@ -28,8 +29,7 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 	}
 
 	pbRoom := &scpb.Room{
-		Workspace: ctx.Value(utils.CtxWorkspace).(string),
-		RoomID:    room.RoomID,
+		RoomID: room.RoomID,
 	}
 
 	for _, webhook := range webhooks {
@@ -70,7 +70,12 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 			defer conn.Close()
 
 			c := scpb.NewWebhookClient(conn)
-			_, err = c.RoomCreationEvent(context.Background(), pbRoom)
+
+			grpcCtx := metadata.NewOutgoingContext(
+				context.Background(),
+				metadata.Pairs(utils.HeaderWorkspace, ctx.Value(utils.CtxWorkspace).(string)),
+			)
+			_, err = c.RoomCreationEvent(grpcCtx, pbRoom)
 			if err != nil {
 				logger.Error(fmt.Sprintf("[GRPC][WebhookRoom]Response body read failure. GRPC Endpoint=[%s]. %v.", webhook.Endpoint, err))
 				continue
@@ -81,7 +86,6 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 }
 
 func webhookMessage(ctx context.Context, message *model.Message, user *model.User) {
-	logger.Debug("------------- webhookMessage ---------------")
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID)
 	if err != nil {
 		logger.Error(err.Error())
@@ -98,23 +102,19 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 		return
 	}
 
-	// Only support text message
-	if message.Type != model.MessageTypeText {
+	payload, err := message.Payload.MarshalJSON()
+	if err != nil {
+		logger.Error(err.Error())
 		return
 	}
 
-	var p model.PayloadText
-	json.Unmarshal(message.Payload, &p)
-
 	pbMessage := &scpb.Message{
-		Workspace: ctx.Value(utils.CtxWorkspace).(string),
-		UserIds:   userIDs,
-		RoomId:    message.RoomID,
-		UserId:    message.UserID,
+		RoomID:    message.RoomID,
+		UserID:    message.UserID,
 		Type:      message.Type,
-		Payload: &scpb.MessagePayload{
-			Text: p.Text,
-		},
+		Payload:   payload,
+		EventName: "message",
+		UserIDs:   userIDs,
 	}
 
 	for _, webhook := range webhooks {
@@ -128,8 +128,6 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 		if !matchRole {
 			continue
 		}
-
-		pbMessage.WebhookToken = webhook.Token
 
 		switch webhook.Protocol {
 		case model.WebhookProtocolHTTP:
@@ -166,7 +164,11 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 			defer conn.Close()
 
 			c := scpb.NewWebhookClient(conn)
-			_, err = c.MessageSendEvent(context.Background(), pbMessage)
+			grpcCtx := metadata.NewOutgoingContext(
+				context.Background(),
+				metadata.Pairs(utils.HeaderWorkspace, ctx.Value(utils.CtxWorkspace).(string)),
+			)
+			_, err = c.MessageSendEvent(grpcCtx, pbMessage)
 			if err != nil {
 				logger.Error(fmt.Sprintf("[GRPC][WebhookMessage] Response body read failure. GRPC Endpoint=[%s]. %v", webhook.Endpoint, err))
 				continue

@@ -9,6 +9,7 @@ import (
 
 type provider interface {
 	Connect(dsCfg *utils.Datastore) error
+	CreateTables()
 	DropDatabase() error
 	appClientStore
 	assetStore

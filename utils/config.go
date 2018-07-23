@@ -131,11 +131,12 @@ type Datastore struct {
 	Master            *ServerInfo
 	Replicas          []*ServerInfo
 	EnableLogging     bool `yaml:"enableLogging"`
+	SQLite            *SQLite
+}
 
-	// SQLite
-	SQLite struct {
-		DirPath string `yaml:"dirPath"`
-	} `yaml:"sqlite"`
+type SQLite struct {
+	OnMemory bool   `yaml:"onMemory"`
+	DirPath  string `yaml:"dirPath"`
 }
 
 type ServerInfo struct {
@@ -237,6 +238,10 @@ func Config() *config {
 }
 
 func defaultSetting() *config {
+	sqlite := &SQLite{
+		OnMemory: false,
+		DirPath:  "",
+	}
 	return &config{
 		HTTPPort:               "8101",
 		GRPCPort:               "",
@@ -262,11 +267,7 @@ func defaultSetting() *config {
 			Provider:      "sqlite",
 			Database:      "swagchat",
 			EnableLogging: false,
-			SQLite: struct {
-				DirPath string `yaml:"dirPath"`
-			}{
-				DirPath: "",
-			},
+			SQLite:        sqlite,
 		},
 		PBroker:      &PBroker{},
 		SBroker:      &SBroker{},
@@ -480,6 +481,9 @@ func (c *config) loadEnv() {
 	}
 
 	// Datastore - SQLite
+	if v = os.Getenv("SWAG_DATASTORE_SQLITE_ONMEMORY"); v == "true" {
+		c.Datastore.SQLite.OnMemory = true
+	}
 	if v = os.Getenv("SWAG_DATASTORE_SQLITE_DIRPATH"); v != "" {
 		c.Datastore.SQLite.DirPath = v
 	}
@@ -759,6 +763,8 @@ func (c *config) parseFlag(args []string) error {
 	flags.BoolVar(&c.Datastore.EnableLogging, "datastore.enableLogging", c.Datastore.EnableLogging, "")
 
 	// Datastore - SQLite
+	var onMemory string
+	flags.StringVar(&onMemory, "datastore.sqlite.onMemory", "", "false")
 	flags.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
 
 	// PBroker
@@ -851,6 +857,10 @@ func (c *config) parseFlag(args []string) error {
 		c.EnableDeveloperMessage = true
 	}
 
+	if onMemory == "true" {
+		c.Datastore.SQLite.OnMemory = true
+	}
+
 	return nil
 }
 
@@ -890,7 +900,7 @@ func (c *config) validate() error {
 }
 
 func (c *config) after() error {
-	if c.Datastore.Provider == "sqlite" && c.Datastore.SQLite.DirPath == "" {
+	if c.Datastore.Provider == "sqlite" && !c.Datastore.SQLite.OnMemory && c.Datastore.SQLite.DirPath == "" {
 		tmpDirPath, err := ioutil.TempDir("", "")
 		if err != nil {
 			return err

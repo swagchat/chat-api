@@ -134,11 +134,40 @@ func rdbDeleteUserRoles(db string, opts ...UserRoleOption) error {
 	}
 
 	trans, err := master.Begin()
-	for _, roleID := range opt.roleIDs {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND role_id=:roleId", tableNameUserRole)
+
+	if opt.userID != "" && opt.roleIDs != nil {
+		for _, roleID := range opt.roleIDs {
+			query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND role_id=:roleId", tableNameUserRole)
+			params := map[string]interface{}{
+				"userId": opt.userID,
+				"roleId": roleID,
+			}
+			_, err := trans.Exec(query, params)
+			if err != nil {
+				trans.Rollback()
+				err = errors.Wrap(err, "An error occurred while deleting user roles")
+				logger.Error(err.Error())
+				return err
+			}
+		}
+	} else if opt.userID != "" && opt.roleIDs == nil {
+		for _, roleID := range opt.roleIDs {
+			query := fmt.Sprintf("DELETE FROM %s WHERE role_id=:roleId", tableNameUserRole)
+			params := map[string]interface{}{
+				"roleId": roleID,
+			}
+			_, err := trans.Exec(query, params)
+			if err != nil {
+				trans.Rollback()
+				err = errors.Wrap(err, "An error occurred while deleting user roles")
+				logger.Error(err.Error())
+				return err
+			}
+		}
+	} else if opt.userID == "" && opt.roleIDs != nil {
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId", tableNameUserRole)
 		params := map[string]interface{}{
 			"userId": opt.userID,
-			"roleId": roleID,
 		}
 		_, err := trans.Exec(query, params)
 		if err != nil {

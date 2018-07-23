@@ -45,19 +45,19 @@ func rdbCreateMessageStore(db string) {
 	}
 }
 
-func rdbInsertMessage(db string, message *model.Message) (string, error) {
+func rdbInsertMessage(db string, message *model.Message) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 
 	err = trans.Insert(message)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 
 	var rooms []*model.Room
@@ -66,12 +66,12 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	if _, err = trans.Select(&rooms, query, params); err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 	if len(rooms) != 1 {
 		err := errors.New("An error occurred while getting room. Room count is not 1")
 		logger.Error(err.Error())
-		return "", err
+		return err
 	}
 
 	room := rooms[0]
@@ -96,19 +96,15 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE room_id=:roomId AND user_id!=:userId;", tableNameRoomUser)
-	params = map[string]interface{}{
-		"roomId": message.RoomID,
-		"userId": message.UserID,
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE room_id=? AND user_id!=?;", tableNameRoomUser)
+	_, err = trans.Exec(query, message.RoomID, message.UserID)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 
 	var users []*model.User
@@ -118,19 +114,18 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 	for _, user := range users {
 		if user.UserID == message.UserID {
 			continue
 		}
-		query := fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE user_id=:userId;", tableNameUser)
-		params := map[string]interface{}{"userId": user.UserID}
-		_, err = trans.Exec(query, params)
+		query := fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE user_id=?;", tableNameUser)
+		_, err = trans.Exec(query, user.UserID)
 		if err != nil {
 			trans.Rollback()
 			logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-			return "", err
+			return err
 		}
 	}
 
@@ -138,10 +133,60 @@ func rdbInsertMessage(db string, message *model.Message) (string, error) {
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return "", err
+		return err
 	}
 
-	return lastMessage, nil
+	return nil
+}
+
+func rdbSelectMessages(db string, limit, offset int32, opts ...MessageOption) ([]*model.Message, error) {
+	replica := RdbStore(db).replica()
+
+	opt := messageOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	var messages []*model.Message
+	query := fmt.Sprintf("SELECT * FROM %s WHERE deleted = 0", tableNameMessage)
+	params := make(map[string]interface{})
+
+	if opt.roomID != "" {
+		params["roomId"] = opt.roomID
+		query = fmt.Sprintf("%s AND room_id = :roomId", query)
+	}
+
+	if opt.roleIDs != nil {
+		roleIDsQuery, roleIDsParam := utils.MakePrepareForInExpression(opt.roleIDs)
+		params = utils.MergeMap(params, roleIDsParam)
+		query = fmt.Sprintf("%s AND role IN (%s)", query, roleIDsQuery)
+	}
+
+	query = fmt.Sprintf("%s ORDER BY", query)
+	if opt.orders == nil {
+		query = fmt.Sprintf("%s created ASC", query)
+	} else {
+		i := 1
+		for k, v := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, k, v.String())
+			if i < len(opt.orders) {
+				query = fmt.Sprintf("%s,", query)
+			}
+			i++
+		}
+	}
+
+	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
+	params["limit"] = limit
+	params["offset"] = offset
+
+	_, err := replica.Select(&messages, query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting messages. %s %v.", query, err))
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func rdbSelectMessage(db, messageID string) (*model.Message, error) {
@@ -163,31 +208,27 @@ func rdbSelectMessage(db, messageID string) (*model.Message, error) {
 	return nil, nil
 }
 
-func rdbSelectMessages(db string, roleIDs []int32, roomID string, limit, offset int32, order string) ([]*model.Message, error) {
+func rdbSelectCountMessages(db string, opts ...MessageOption) (int64, error) {
 	replica := RdbStore(db).replica()
 
-	var messages []*model.Message
-	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
-	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id = :roomId AND role IN (%s) AND deleted = 0 ORDER BY created %s LIMIT :limit OFFSET :offset;", tableNameMessage, roleIDsQuery, order)
-	params["roomId"] = roomID
-	params["limit"] = limit
-	params["offset"] = offset
-
-	_, err := replica.Select(&messages, query, params)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting messages. %v.", err))
-		return nil, err
+	opt := messageOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
 
-	return messages, nil
-}
+	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0", tableNameMessage)
+	params := make(map[string]interface{})
 
-func rdbSelectCountMessagesByRoomID(db string, roleIDs []int32, roomID string) (int64, error) {
-	replica := RdbStore(db).replica()
+	if opt.roomID != "" {
+		params["roomId"] = opt.roomID
+		query = fmt.Sprintf("%s AND room_id = :roomId", query)
+	}
 
-	roleIDsQuery, params := utils.MakePrepareForInExpression(roleIDs)
-	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE room_id = :roomId AND role IN (%s) AND deleted = 0;", tableNameMessage, roleIDsQuery)
-	params["roomId"] = roomID
+	if opt.roleIDs != nil {
+		roleIDsQuery, roleIDsParam := utils.MakePrepareForInExpression(opt.roleIDs)
+		params = utils.MergeMap(params, roleIDsParam)
+		query = fmt.Sprintf("%s AND role IN (%s)", query, roleIDsQuery)
+	}
 
 	count, err := replica.SelectInt(query, params)
 	if err != nil {
@@ -198,14 +239,14 @@ func rdbSelectCountMessagesByRoomID(db string, roleIDs []int32, roomID string) (
 	return count, nil
 }
 
-func rdbUpdateMessage(db string, message *model.Message) (*model.Message, error) {
+func rdbUpdateMessage(db string, message *model.Message) error {
 	master := RdbStore(db).master()
 
 	_, err := master.Update(message)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while updating message. %v.", err))
-		return nil, err
+		return err
 	}
 
-	return message, nil
+	return nil
 }

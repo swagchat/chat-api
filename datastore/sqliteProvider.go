@@ -40,11 +40,11 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 	rs.setMaster(master)
 
 	rdbStores[dsCfg.Database] = rs
-	p.init()
+	p.CreateTables()
 	return nil
 }
 
-func (p *sqliteProvider) init() {
+func (p *sqliteProvider) CreateTables() {
 	p.createAppClientStore()
 	p.createAssetStore()
 	p.createBlockUserStore()

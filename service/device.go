@@ -243,7 +243,7 @@ func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.D
 
 					room.NotificationTopicID = notificationTopicID
 					room.Modified = time.Now().Unix()
-					_, err := datastore.Provider(ctx).UpdateRoom(room)
+					err := datastore.Provider(ctx).UpdateRoom(room)
 					if err != nil {
 						pd := &model.ProblemDetail{
 							Message: "Update room failed",

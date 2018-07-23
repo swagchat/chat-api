@@ -7,6 +7,7 @@ type userOptions struct {
 	withDevices bool
 	withRoles   bool
 	withRooms   bool
+	orders      Orders
 	user        interface{}
 	devices     []*model.Device
 	roles       []*model.UserRole
@@ -50,27 +51,21 @@ func UserOptionWithRooms(b bool) UserOption {
 	}
 }
 
-func UserOptionWithUsers(user *model.User) UserOption {
+func UserOptionOrders(orders Orders) UserOption {
 	return func(ops *userOptions) {
-		ops.user = user
-	}
-}
-
-func WithPbUsers(user *model.User) UserOption {
-	return func(ops *userOptions) {
-		ops.user = user
+		ops.orders = orders
 	}
 }
 
 type userStore interface {
 	createUserStore()
 
-	InsertUser(user *model.User, opts ...UserOption) (*model.User, error)
-	SelectUsers() ([]*model.User, error)
+	InsertUser(user *model.User, opts ...UserOption) error
+	SelectUsers(limit, offset int32, opts ...UserOption) ([]*model.User, error)
 	SelectUser(userID string, opts ...UserOption) (*model.User, error)
-	SelectUserByUserIDAndAccessToken(userID, accessToken string) (*model.User, error)
+	SelectCountUsers(opts ...UserOption) (int64, error)
 	SelectUserIDsByUserIDs(userIDs []string) ([]string, error)
-	UpdateUser(user *model.User) (*model.User, error)
-	UpdateUserDeleted(userID string) error
+	UpdateUser(user *model.User) error
+
 	SelectContacts(userID string) ([]*model.User, error)
 }

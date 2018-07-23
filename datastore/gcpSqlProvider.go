@@ -102,11 +102,11 @@ func (p *gcpSQLProvider) Connect(dsCfg *utils.Datastore) error {
 		}
 	}
 	rdbStores[dsCfg.Database] = rs
-	p.init()
+	p.CreateTables()
 	return nil
 }
 
-func (p *gcpSQLProvider) init() {
+func (p *gcpSQLProvider) CreateTables() {
 	p.createAppClientStore()
 	p.createAssetStore()
 	p.createBlockUserStore()

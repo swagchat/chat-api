@@ -25,7 +25,7 @@ func rdbCreateRoomStore(db string) {
 	}
 }
 
-func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) (*model.Room, error) {
+func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) error {
 	master := RdbStore(db).master()
 
 	opt := roomOptions{}
@@ -36,14 +36,14 @@ func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) (*model.Room
 	trans, err := master.Begin()
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
-		return nil, err
+		return err
 	}
 
 	err = trans.Insert(room)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
-		return nil, err
+		return err
 	}
 
 	for _, ru := range opt.users {
@@ -51,7 +51,7 @@ func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) (*model.Room
 		if err != nil {
 			trans.Rollback()
 			logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
-			return nil, err
+			return err
 		}
 	}
 
@@ -59,10 +59,62 @@ func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) (*model.Room
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		return err
+	}
+
+	return nil
+}
+
+func rdbSelectRooms(db string, limit, offset int32, opts ...RoomOption) ([]*model.Room, error) {
+	replica := RdbStore(db).replica()
+
+	opt := roomOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	var rooms []*model.Room
+	query := fmt.Sprintf(`SELECT
+	room_id,
+	user_id,
+	name,
+	picture_url,
+	information_url,
+	meta_data,
+	type,
+	last_message,
+	last_message_updated,
+	created,
+	modified
+	FROM %s
+	WHERE deleted = 0`, tableNameRoom)
+	params := make(map[string]interface{})
+
+	query = fmt.Sprintf("%s ORDER BY", query)
+	if opt.orders == nil {
+		query = fmt.Sprintf("%s created DESC", query)
+	} else {
+		i := 1
+		for k, v := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, k, v.String())
+			if i < len(opt.orders) {
+				query = fmt.Sprintf("%s,", query)
+			}
+			i++
+		}
+	}
+
+	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
+	params["limit"] = limit
+	params["offset"] = offset
+	println(query)
+	_, err := replica.Select(&rooms, query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting rooms. %v.", err))
 		return nil, err
 	}
 
-	return room, nil
+	return rooms, nil
 }
 
 func rdbSelectRoom(db, roomID string) (*model.Room, error) {
@@ -82,33 +134,6 @@ func rdbSelectRoom(db, roomID string) (*model.Room, error) {
 	}
 
 	return nil, nil
-}
-
-func rdbSelectRooms(db string) ([]*model.Room, error) {
-	replica := RdbStore(db).replica()
-
-	var rooms []*model.Room
-	query := fmt.Sprintf(`SELECT
-room_id,
-user_id,
-name,
-picture_url,
-information_url,
-meta_data,
-type,
-last_message,
-last_message_updated,
-created,
-modified
-FROM %s
-WHERE deleted = 0;`, tableNameRoom)
-	_, err := replica.Select(&rooms, query)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting rooms. %v.", err))
-		return nil, err
-	}
-
-	return rooms, nil
 }
 
 func rdbSelectUsersForRoom(db, roomID string) ([]*model.UserForRoom, error) {
@@ -140,7 +165,7 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	return users, nil
 }
 
-func rdbSelectCountRooms(db string) (int64, error) {
+func rdbSelectCountRooms(db string, opts ...RoomOption) (int64, error) {
 	replica := RdbStore(db).replica()
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
@@ -153,16 +178,20 @@ func rdbSelectCountRooms(db string) (int64, error) {
 	return count, nil
 }
 
-func rdbUpdateRoom(db string, room *model.Room) (*model.Room, error) {
+func rdbUpdateRoom(db string, room *model.Room) error {
 	master := RdbStore(db).master()
+
+	if room.Deleted != 0 {
+		return rdbUpdateRoomDeleted(db, room.RoomID)
+	}
 
 	_, err := master.Update(room)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while updating room. %v.", err))
-		return nil, err
+		return err
 	}
 
-	return room, nil
+	return nil
 }
 
 func rdbUpdateRoomDeleted(db, roomID string) error {

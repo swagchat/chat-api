@@ -6,14 +6,15 @@ import (
 	"time"
 
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 const (
 	MessageTypeText           = "text"
 	MessageTypeImage          = "image"
 	MessageTypeFile           = "file"
-	MessageTypeIndicatorStart = "indicatorStart"
-	MessageTypeIndicatorEnd   = "indicatorEnd"
+	MessageTypeIndicatorStart = "indicator-start"
+	MessageTypeIndicatorEnd   = "indicator-end"
 	MessageTypeUpdateRoomUser = "updateRoomUser"
 )
 
@@ -23,17 +24,9 @@ type Messages struct {
 }
 
 type Message struct {
-	ID        uint64         `json:"-" db:"id"`
-	MessageID string         `json:"messageId" db:"message_id,notnull"`
-	RoomID    string         `json:"roomId" db:"room_id,notnull"`
-	UserID    string         `json:"userId" db:"user_id,notnull"`
-	Type      string         `json:"type,omitempty" db:"type"`
-	EventName string         `json:"eventName,omitempty" db:"-"`
-	Payload   utils.JSONText `json:"payload" db:"payload"`
-	Role      int32          `json:"role,omitempty" db:"role,notnull"`
-	Created   int64          `json:"created" db:"created,notnull"`
-	Modified  int64          `json:"modified" db:"modified,notnull"`
-	Deleted   int64          `json:"-" db:"deleted,notnull"`
+	scpb.Message
+	Payload utils.JSONText `json:"payload" db:"payload"`
+	UserIDs []string       `json:"userIds" db:"-"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {

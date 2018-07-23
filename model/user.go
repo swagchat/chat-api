@@ -42,11 +42,11 @@ func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
 
 type User struct {
 	scpb.User
-	MetaData utils.JSONText `db:"meta_data"`
-	Roles    []int32        `db:"-"`
-	Rooms    []*RoomForUser `db:"-"`
-	Devices  []*Device      `db:"-"`
-	Blocks   []string       `db:"-"`
+	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
+	Roles    []int32        `json:"roles" db:"-"`
+	Rooms    []*RoomForUser `json:"rooms" db:"-"`
+	Devices  []*Device      `json:"devices" db:"-"`
+	Blocks   []string       `json:"blocks" db:"-"`
 }
 
 func (u *User) MarshalJSON() ([]byte, error) {
@@ -91,55 +91,6 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Devices:          u.Devices,
 		Blocks:           u.Blocks,
 	})
-}
-
-type RoomForUser struct {
-	scpb.RoomForUser
-	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
-	Users    []*UserForRoom `json:"users,omitempty" db:"-"`
-}
-
-func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
-	l, _ := time.LoadLocation("Etc/GMT")
-	lmu := ""
-	if rfu.LastMessageUpdated != 0 {
-		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
-	}
-	return json.Marshal(&struct {
-		RoomID             string         `json:"roomId"`
-		UserID             string         `json:"userId"`
-		Name               string         `json:"name"`
-		PictureURL         string         `json:"pictureUrl,omitempty"`
-		InformationURL     string         `json:"informationUrl,omitempty"`
-		MetaData           utils.JSONText `json:"metaData"`
-		Type               scpb.RoomType  `json:"type,omitempty"`
-		LastMessage        string         `json:"lastMessage"`
-		LastMessageUpdated string         `json:"lastMessageUpdated"`
-		CanLeft            bool           `json:"canLeft,omitempty"`
-		Created            string         `json:"created"`
-		Modified           string         `json:"modified"`
-		Users              []*UserForRoom `json:"users"`
-		RuUnreadCount      int64          `json:"ruUnreadCount"`
-	}{
-		RoomID:             rfu.RoomID,
-		UserID:             rfu.UserID,
-		Name:               rfu.Name,
-		PictureURL:         rfu.PictureURL,
-		InformationURL:     rfu.InformationURL,
-		MetaData:           rfu.MetaData,
-		Type:               rfu.Type,
-		LastMessage:        rfu.LastMessage,
-		LastMessageUpdated: lmu,
-		CanLeft:            rfu.CanLeft,
-		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
-		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
-		Users:              rfu.Users,
-		RuUnreadCount:      rfu.RuUnreadCount,
-	})
-}
-
-type UserUnreadCount struct {
-	UnreadCount uint64 `json:"unreadCount" db:"unread_count"`
 }
 
 func (u *User) IsRole(role int32) bool {
@@ -210,6 +161,88 @@ func (u *User) ConvertToPbUser() *scpb.User {
 	}
 
 	return pbUser
+}
+
+func (u *User) UpdateUser(req *UpdateUserRequest) {
+	if req.Name != nil {
+		u.Name = *req.Name
+	}
+
+	if req.PictureURL != nil {
+		u.PictureURL = *req.PictureURL
+	}
+
+	if req.InformationURL != nil {
+		u.InformationURL = *req.InformationURL
+	}
+
+	if req.MetaData != nil {
+		u.MetaData = req.MetaData
+	}
+
+	if req.Public != nil {
+		u.Public = *req.Public
+	}
+
+	if req.CanBlock == nil {
+		u.CanBlock = *req.CanBlock
+	}
+
+	if req.Lang != nil {
+		u.Lang = *req.Lang
+	}
+
+	nowTimestamp := time.Now().Unix()
+	u.Modified = nowTimestamp
+}
+
+type RoomForUser struct {
+	scpb.RoomForUser
+	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
+	Users    []*UserForRoom `json:"users,omitempty" db:"-"`
+}
+
+func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
+	l, _ := time.LoadLocation("Etc/GMT")
+	lmu := ""
+	if rfu.LastMessageUpdated != 0 {
+		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
+	}
+	return json.Marshal(&struct {
+		RoomID             string         `json:"roomId"`
+		UserID             string         `json:"userId"`
+		Name               string         `json:"name"`
+		PictureURL         string         `json:"pictureUrl,omitempty"`
+		InformationURL     string         `json:"informationUrl,omitempty"`
+		MetaData           utils.JSONText `json:"metaData"`
+		Type               scpb.RoomType  `json:"type,omitempty"`
+		LastMessage        string         `json:"lastMessage"`
+		LastMessageUpdated string         `json:"lastMessageUpdated"`
+		CanLeft            bool           `json:"canLeft,omitempty"`
+		Created            string         `json:"created"`
+		Modified           string         `json:"modified"`
+		Users              []*UserForRoom `json:"users"`
+		RuUnreadCount      int64          `json:"ruUnreadCount"`
+	}{
+		RoomID:             rfu.RoomID,
+		UserID:             rfu.UserID,
+		Name:               rfu.Name,
+		PictureURL:         rfu.PictureURL,
+		InformationURL:     rfu.InformationURL,
+		MetaData:           rfu.MetaData,
+		Type:               rfu.Type,
+		LastMessage:        rfu.LastMessage,
+		LastMessageUpdated: lmu,
+		CanLeft:            rfu.CanLeft,
+		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
+		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
+		Users:              rfu.Users,
+		RuUnreadCount:      rfu.RuUnreadCount,
+	})
+}
+
+type UserUnreadCount struct {
+	UnreadCount uint64 `json:"unreadCount" db:"unread_count"`
 }
 
 type CreateUserRequest struct {
@@ -317,6 +350,10 @@ type UpdateUserRequest struct {
 	MetaData utils.JSONText `db:"meta_data"`
 }
 
+func (uur *UpdateUserRequest) Validate() *ProblemDetail {
+	return nil
+}
+
 type DeleteUserRequest struct {
 	scpb.DeleteUserRequest
 }
@@ -327,43 +364,6 @@ type GetContactsRequest struct {
 
 type GetProfileRequest struct {
 	scpb.GetProfileRequest
-}
-
-func (uur *UpdateUserRequest) Validate() *ProblemDetail {
-	return nil
-}
-
-func (u *User) UpdateUser(req *UpdateUserRequest) {
-	if req.Name != nil {
-		u.Name = *req.Name
-	}
-
-	if req.PictureURL != nil {
-		u.PictureURL = *req.PictureURL
-	}
-
-	if req.InformationURL != nil {
-		u.InformationURL = *req.InformationURL
-	}
-
-	if req.MetaData != nil {
-		u.MetaData = req.MetaData
-	}
-
-	if req.Public != nil {
-		u.Public = *req.Public
-	}
-
-	if req.CanBlock == nil {
-		u.CanBlock = *req.CanBlock
-	}
-
-	if req.Lang != nil {
-		u.Lang = *req.Lang
-	}
-
-	nowTimestamp := time.Now().Unix()
-	u.Modified = nowTimestamp
 }
 
 // func (u *User) ConvertFromPbCreateUserRequest(req *scpb.CreateUserRequest) {

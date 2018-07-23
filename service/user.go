@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
@@ -43,7 +44,7 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 	req.UserID = u.UserID
 	urs := req.GenerateUserRoles()
 
-	resUser, err := datastore.Provider(ctx).InsertUser(u, datastore.UserOptionInsertRoles(urs))
+	err = datastore.Provider(ctx).InsertUser(u, datastore.UserOptionInsertRoles(urs))
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create user.",
@@ -53,15 +54,25 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, pd
 	}
 
-	logger.Info(fmt.Sprintf("Finish CreateUser. Response[%#v]", resUser))
-	return resUser, nil
+	logger.Info("Finish CreateUser")
+	return u, nil
 }
 
-// GetUsers is get users
+// GetUsers gets users
 func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResponse, *model.ProblemDetail) {
 	logger.Info(fmt.Sprintf("Start GetUsers. Request[%#v]", req))
 
-	users, err := datastore.Provider(ctx).SelectUsers()
+	users, err := datastore.Provider(ctx).SelectUsers(req.Limit, req.Offset)
+	if err != nil {
+		pd := &model.ProblemDetail{
+			Message: "Get users failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
+		return nil, pd
+	}
+
+	count, err := datastore.Provider(ctx).SelectCountUsers()
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get users failed",
@@ -73,7 +84,7 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 
 	res := &model.UsersResponse{}
 	res.Users = users
-	res.AllCount = int64(0)
+	res.AllCount = count
 	res.Limit = req.Limit
 	res.Offset = req.Offset
 	res.Order = req.Order
@@ -133,7 +144,7 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 
 	user.UpdateUser(req)
 
-	user, err := datastore.Provider(ctx).UpdateUser(user)
+	err := datastore.Provider(ctx).UpdateUser(user)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Update user failed",
@@ -143,7 +154,7 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 		return nil, pd
 	}
 
-	logger.Info(fmt.Sprintf("Finish UpdateUser."))
+	logger.Info("Finish UpdateUser.")
 	return user, nil
 }
 
@@ -153,7 +164,7 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.Proble
 
 	dsp := datastore.Provider(ctx)
 	// User existence check
-	_, pd := selectUser(ctx, req.UserID)
+	user, pd := selectUser(ctx, req.UserID)
 	if pd != nil {
 		return pd
 	}
@@ -176,7 +187,8 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.Proble
 		}
 	}
 
-	err = dsp.UpdateUserDeleted(req.UserID)
+	user.Deleted = time.Now().Unix()
+	err = dsp.UpdateUser(user)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete user failed",
@@ -188,7 +200,7 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.Proble
 
 	go unsubscribeByUserID(ctx, req.UserID)
 
-	logger.Info(fmt.Sprintf("Finish DeleteUser."))
+	logger.Info("Finish DeleteUser.")
 	return nil
 }
 

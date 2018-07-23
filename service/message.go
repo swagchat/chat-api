@@ -50,10 +50,15 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 				},
 				Status: http.StatusBadRequest,
 			})
+			logger.Error(fmt.Sprintf("Message is invalid. %s", pd.Message))
 			continue
 		}
 
-		if pd := post.IsValid(); pd != nil {
+		pd = post.IsValid()
+		if pd != nil {
+			for _, ip := range pd.InvalidParams {
+				logger.Error(fmt.Sprintf("Message is invalid. name[%s] reason[%s]", ip.Name, ip.Reason))
+			}
 			pds = append(pds, pd)
 			continue
 		}
@@ -73,23 +78,25 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 				Message: "messageId is already exist",
 				Status:  http.StatusConflict,
 			})
+			logger.Error(fmt.Sprintf("Message is invalid. %s", pd.Message))
 		}
 
-		lastMessage, err := datastore.Provider(ctx).InsertMessage(post)
+		err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
 			pd := &model.ProblemDetail{
 				Message: "Message registration failed",
 				Status:  http.StatusInternalServerError,
 				Error:   errors.Wrap(err, ""),
 			}
+			logger.Error(fmt.Sprintf("Message is invalid. %s", pd.Message))
 			pds = append(pds, pd)
 			continue
 		}
 
-		logger.Debug(lastMessage)
 		messageIds = append(messageIds, post.MessageID)
 
 		// notification
+		lastMessage := "" // TODO
 		mi := &notification.MessageInfo{
 			Text: fmt.Sprintf("[%s]%s", room.Name, lastMessage),
 		}
@@ -111,9 +118,9 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 		MessageIds: messageIds,
 		Errors:     pds,
 	}
-	for _, pd := range pds {
-		logger.Error(pd.Error.Error())
-	}
+	// for _, pd := range pds {
+	// 	logger.Error(pd.Error.Error())
+	// }
 	return responseMessages
 }
 

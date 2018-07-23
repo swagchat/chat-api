@@ -17,43 +17,53 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-var KafkaConsumer *kafka.Consumer
+var client *kafka.Consumer
 
 type kafkaProvider struct{}
 
 func (kp *kafkaProvider) SubscribeMessage() error {
-	c := utils.Config()
+	cfg := utils.Config()
 
-	host := c.SBroker.Kafka.Host
-	port := c.SBroker.Kafka.Port
-
-	if host == "" || port == "" {
-		return nil
+	host := cfg.SBroker.Kafka.Host
+	if host == "" {
+		err := errors.New("sbroker.kafka.host is empty")
+		logger.Error(err.Error())
+		return err
 	}
 
-	sigchan := make(chan os.Signal, 1)
-	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
-	var hostname string
+	port := cfg.SBroker.Kafka.Port
+	if port == "" {
+		err := errors.New("sbroker.kafka.port is empty")
+		logger.Error(err.Error())
+		return err
+	}
+
 	hostname, err := os.Hostname()
 	if err != nil {
 		hostname = utils.GenerateUUID()
 	}
-	KafkaConsumer, err := kafka.NewConsumer(&kafka.ConfigMap{
+
+	sigchan := make(chan os.Signal, 1)
+	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
+
+	client, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": fmt.Sprintf("%s:%s", host, port),
 		"group.id":          hostname,
 		// "session.timeout.ms":   6000,
 		// "default.topic.config": kafka.ConfigMap{"auto.offset.reset": "earliest"}
 	})
 	if err != nil {
-		return errors.Wrap(err, "")
+		logger.Error(err.Error())
+		return err
 	}
 
-	topic := c.SBroker.Kafka.Topic
-	err = KafkaConsumer.SubscribeTopics([]string{topic}, nil)
+	topic := cfg.SBroker.Kafka.Topic
+	err = client.SubscribeTopics([]string{topic}, nil)
 	if err != nil {
-		return errors.Wrap(err, "")
+		logger.Error(err.Error())
+		return err
 	}
-	logger.Info(fmt.Sprintf("%s group.id[%s] topic[%s]", KafkaConsumer.String(), hostname, topic))
+	logger.Info(fmt.Sprintf("%s group.id[%s] topic[%s]", client.String(), hostname, topic))
 
 	run := true
 
@@ -63,7 +73,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 			run = false
 			logger.Info(fmt.Sprintf("terminated by %s", sig.String()))
 		default:
-			ev := KafkaConsumer.Poll(100)
+			ev := client.Poll(100)
 			if ev == nil {
 				continue
 			}
@@ -71,23 +81,39 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 			switch e := ev.(type) {
 			case *kafka.Message:
 				logger.Info("Receive a message")
-				var sm *scpb.Message
-				err := json.Unmarshal(e.Value, &sm)
+				kafkaMsg := e
 				if err != nil {
-					return errors.Wrap(err, "")
+					logger.Error(err.Error())
+					break
 				}
+
+				var pbMsg scpb.Message
+				err = json.Unmarshal(kafkaMsg.Value, &pbMsg)
+				if err != nil {
+					logger.Error(err.Error())
+					break
+				}
+				payload := utils.JSONText{}
+				err := payload.UnmarshalJSON(pbMsg.Payload)
+				if err != nil {
+					logger.Error(err.Error())
+					break
+				}
+
+				msg := &model.Message{pbMsg, payload, nil}
+				msgs := []*model.Message{msg}
 
 				ctx := context.Background()
-				ctx = context.WithValue(ctx, utils.CtxWorkspace, sm.Workspace)
-				ctx = context.WithValue(ctx, utils.CtxUserID, sm.UserId)
+				ctx = context.WithValue(ctx, utils.CtxUserID, msg.UserID)
 
-				var msg *model.Message
-				err = json.Unmarshal(e.Value, &msg)
-				if err != nil {
-					return errors.Wrap(err, "")
+				workspace := cfg.Datastore.Database
+				for _, v := range kafkaMsg.Headers {
+					logger.Debug(fmt.Sprintf("kafka header %s=%s", v.Key, string(v.Value)))
+					if v.Key == utils.HeaderWorkspace {
+						workspace = string(v.Value)
+					}
 				}
-
-				msgs := []*model.Message{msg}
+				ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
 
 				service.PostMessage(ctx, &model.Messages{
 					Messages: msgs,
@@ -96,24 +122,24 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				logger.Info(e.String())
 			case kafka.Error:
 				run = false
-				return errors.Wrap(fmt.Errorf("%s", e.String()), "")
+				logger.Error(e.String())
 			default:
 				logger.Info(e.String())
 			}
 		}
 	}
 
-	KafkaConsumer.Close()
-	logger.Info("close")
+	client.Close()
+	logger.Info("kafka close")
 
 	return nil
 }
 
 func (kp *kafkaProvider) UnsubscribeMessage() error {
-	if KafkaConsumer == nil {
+	if client == nil {
 		return nil
 	}
 
 	logger.Info("kafka unsubscribe")
-	return KafkaConsumer.Unsubscribe()
+	return client.Unsubscribe()
 }

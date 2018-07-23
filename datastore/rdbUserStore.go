@@ -29,7 +29,7 @@ func rdbCreateUserStore(db string) {
 	}
 }
 
-func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User, error) {
+func rdbInsertUser(db string, user *model.User, opts ...UserOption) error {
 	master := RdbStore(db).master()
 
 	opt := userOptions{}
@@ -42,7 +42,7 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while inserting user")
 		logger.Error(err.Error())
-		return nil, err
+		return err
 	}
 
 	if opt.devices != nil {
@@ -51,7 +51,7 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
 				logger.Error(err.Error())
-				return nil, err
+				return err
 			}
 		}
 	}
@@ -63,7 +63,7 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
 				logger.Error(err.Error())
-				return nil, err
+				return err
 			}
 			if bu == nil {
 				err = trans.Insert(ur)
@@ -71,7 +71,7 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User
 					trans.Rollback()
 					err = errors.Wrap(err, "An error occurred while inserting user")
 					logger.Error(err.Error())
-					return nil, err
+					return err
 				}
 			}
 		}
@@ -80,7 +80,7 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User
 			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while inserting user")
 			logger.Error(err.Error())
-			return nil, err
+			return err
 		}
 	}
 
@@ -89,18 +89,43 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) (*model.User
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while inserting user")
 		logger.Error(err.Error())
-		return nil, err
+		return err
 	}
 
-	return user, nil
+	return nil
 }
 
-func rdbSelectUsers(db string) ([]*model.User, error) {
+func rdbSelectUsers(db string, limit, offset int32, opts ...UserOption) ([]*model.User, error) {
 	replica := RdbStore(db).replica()
 
+	opt := userOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
 	var users []*model.User
-	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0 ORDER BY unread_count DESC;", tableNameUser)
-	_, err := replica.Select(&users, query)
+	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0", tableNameUser)
+	params := make(map[string]interface{})
+
+	query = fmt.Sprintf("%s ORDER BY", query)
+	if opt.orders == nil {
+		query = fmt.Sprintf("%s unread_count DESC", query)
+	} else {
+		i := 1
+		for k, v := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, k, v.String())
+			if i < len(opt.orders) {
+				query = fmt.Sprintf("%s,", query)
+			}
+			i++
+		}
+	}
+
+	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
+	params["limit"] = limit
+	params["offset"] = offset
+
+	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting users")
 		logger.Error(err.Error())
@@ -262,6 +287,26 @@ func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*model
 	return nil, nil
 }
 
+func rdbSelectCountUsers(db string, opts ...UserOption) (int64, error) {
+	replica := RdbStore(db).replica()
+
+	opt := userOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0", tableNameUser)
+	params := make(map[string]interface{})
+
+	count, err := replica.SelectInt(query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting user count. %v.", err))
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 	replica := RdbStore(db).replica()
 
@@ -283,57 +328,28 @@ func rdbSelectUserIDsByUserIDs(db string, userIDs []string) ([]string, error) {
 	return resultUserIDs, nil
 }
 
-func rdbUpdateUser(db string, user *model.User) (*model.User, error) {
+func rdbUpdateUser(db string, user *model.User) error {
 	master := RdbStore(db).master()
-	trans, err := master.Begin()
+
+	if user.Deleted != 0 {
+		return rdbUpdateUserDeleted(db, user.UserID)
+	}
+
+	_, err := master.Update(user)
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while updating user")
-		logger.Error(err.Error())
-		return nil, err
+		logger.Error(fmt.Sprintf("An error occurred while updating user. %v.", err))
+		return err
 	}
 
-	_, err = trans.Update(user)
-	if err != nil {
-		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while updating user")
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	if user.UnreadCount == 0 {
-		query := fmt.Sprintf("UPDATE %s SET unread_count=0 WHERE user_id=:userId;", tableNameRoomUser)
-		params := map[string]interface{}{
-			"userId": user.UserID,
-		}
-		_, err := trans.Exec(query, params)
-		if err != nil {
-			trans.Rollback()
-			err = errors.Wrap(err, "An error occurred while updating user")
-			logger.Error(err.Error())
-			return nil, err
-		}
-	}
-
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while updating user")
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	return user, nil
+	return nil
 }
 
 func rdbUpdateUserDeleted(db, userID string) error {
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId;", tableNameRoomUser)
-	params := map[string]interface{}{
-		"userId": userID,
-	}
-	_, err = trans.Exec(query, params)
+	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameRoomUser)
+	_, err = trans.Exec(query, userID)
 	if err != nil {
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while deleting user")
@@ -341,11 +357,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 		return err
 	}
 
-	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId;", tableNameDevice)
-	params = map[string]interface{}{
-		"userId": userID,
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameDevice)
+	_, err = trans.Exec(query, userID)
 	if err != nil {
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while deleting user")
@@ -353,11 +366,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 		return err
 	}
 
-	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId;", tableNameBlockUser)
-	params = map[string]interface{}{
-		"userId": userID,
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameBlockUser)
+	_, err = trans.Exec(query, userID)
 	if err != nil {
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while deleting user")
@@ -365,12 +375,9 @@ func rdbUpdateUserDeleted(db, userID string) error {
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId;", tableNameSubscription)
-	params = map[string]interface{}{
-		"userId":  userID,
-		"deleted": time.Now().Unix(),
-	}
-	_, err = trans.Exec(query, params)
+	nowDatetime := time.Now().Unix()
+	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameSubscription)
+	_, err = trans.Exec(query, nowDatetime, userID)
 	if err != nil {
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while deleting user")
@@ -378,12 +385,8 @@ func rdbUpdateUserDeleted(db, userID string) error {
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId;", tableNameUser)
-	params = map[string]interface{}{
-		"userId":  userID,
-		"deleted": time.Now().Unix(),
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameUser)
+	_, err = trans.Exec(query, nowDatetime, userID)
 	if err != nil {
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while deleting user")

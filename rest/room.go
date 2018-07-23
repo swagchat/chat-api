@@ -35,9 +35,23 @@ func postRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRooms(w http.ResponseWriter, r *http.Request) {
-	requestParams, _ := url.ParseQuery(r.URL.RawQuery)
+	req := &model.GetRoomsRequest{}
+	params, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, nil)
+		return
+	}
 
-	rooms, pd := service.GetRooms(r.Context(), requestParams)
+	limit, offset, order, pd := setPagingParams(params)
+	if pd != nil {
+		respondErr(w, r, pd.Status, pd)
+		return
+	}
+	req.Limit = limit
+	req.Offset = offset
+	req.Order = order
+
+	rooms, pd := service.GetRooms(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -47,9 +61,12 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoom(w http.ResponseWriter, r *http.Request) {
-	roomID := bone.GetValue(r, "roomId")
+	req := &model.GetRoomRequest{}
 
-	room, pd := service.GetRoom(r.Context(), roomID)
+	roomID := bone.GetValue(r, "roomId")
+	req.RoomID = roomID
+
+	room, pd := service.GetRoom(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -59,15 +76,15 @@ func getRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func putRoom(w http.ResponseWriter, r *http.Request) {
-	var put model.Room
-	if err := decodeBody(r, &put); err != nil {
+	var req model.UpdateRoomRequest
+	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	put.RoomID = bone.GetValue(r, "roomId")
+	req.RoomID = bone.GetValue(r, "roomId")
 
-	room, pd := service.PutRoom(r.Context(), &put)
+	room, pd := service.UpdateRoom(r.Context(), &req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
@@ -77,9 +94,12 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoom(w http.ResponseWriter, r *http.Request) {
-	roomID := bone.GetValue(r, "roomId")
+	req := &model.DeleteRoomRequest{}
 
-	pd := service.DeleteRoom(r.Context(), roomID)
+	roomID := bone.GetValue(r, "roomId")
+	req.RoomID = roomID
+
+	pd := service.DeleteRoom(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

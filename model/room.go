@@ -11,68 +11,39 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-// RoomType is room type
-// type RoomType int
-
-// const (
-// 	OneOnOne RoomType = iota + 1
-// 	PrivateRoom
-// 	PublicRoom
-// 	NoticeRoom
-// 	RoomTypeEnd
-// )
-
-// SpeechMode is speech mode
-// type SpeechMode int
-
-// const (
-// 	SpeechModeNone SpeechMode = iota + 1
-// 	SpeechModeWakeupWebToWeb
-// 	SpeechModeWakeupWebToCloud
-// 	SpeechModeWakeupCloudToCloud
-// 	SpeechModeAlways
-// 	SpeechModeManual
-// 	SpeechModeEnd
-// )
-
-// func (rt RoomType) Int32() int32 {
-// 	switch rt {
-// 	case OneOnOne:
-// 		return 1
-// 	case PrivateRoom:
-// 		return 2
-// 	case PublicRoom:
-// 		return 3
-// 	case NoticeRoom:
-// 		return 4
-// 	default:
-// 		return 0
-// 	}
+// type Rooms struct {
+// 	Rooms    []*Room `json:"rooms" db:"-"`
+// 	AllCount int64   `json:"allCount" db:"all_count"`
 // }
+type RoomsResponse struct {
+	scpb.RoomsResponse
+	Rooms []*Room `json:"rooms"`
+}
 
-// func (rt RoomType) String() string {
-// 	switch rt {
-// 	case OneOnOne:
-// 		return "OneOnOne"
-// 	case PrivateRoom:
-// 		return "PrivateRoom"
-// 	case PublicRoom:
-// 		return "PublicRoom"
-// 	case NoticeRoom:
-// 		return "NoticeRoom"
-// 	default:
-// 		return "Unknown"
-// 	}
-// }
-
-type Rooms struct {
-	Rooms    []*Room `json:"rooms" db:"-"`
-	AllCount int64   `json:"allCount" db:"all_count"`
+func (rr *RoomsResponse) ConvertToPbRooms() *scpb.RoomsResponse {
+	rooms := make([]*scpb.Room, len(rr.Rooms))
+	for i, v := range rr.Rooms {
+		metaData, _ := v.MetaData.MarshalJSON()
+		rooms[i] = &scpb.Room{
+			RoomID:         v.RoomID,
+			UserID:         v.UserID,
+			Name:           v.Name,
+			PictureURL:     v.PictureURL,
+			InformationURL: v.InformationURL,
+			MetaData:       metaData,
+			Created:        v.Created,
+			Modified:       v.Modified,
+		}
+	}
+	return &scpb.RoomsResponse{
+		Rooms: rooms,
+	}
 }
 
 type Room struct {
 	scpb.Room
-	Users []*UserForRoom `json:"users,omitempty" db:"-"`
+	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
+	Users    []*UserForRoom `json:"users" db:"-"`
 	// ID                    uint64         `json:"-" db:"id"`
 	// RoomID                string         `json:"roomId" db:"room_id,notnull"`
 	// UserID                string         `json:"userId" db:"user_id,notnull"`
@@ -145,9 +116,38 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 }
 
 func (r *Room) ConvertToPbRoom() *scpb.Room {
-	pbRoom := &scpb.Room{}
-
+	// TODO
+	pbRoom := &scpb.Room{
+		RoomID:         r.RoomID,
+		UserID:         r.UserID,
+		Name:           r.Name,
+		PictureURL:     r.PictureURL,
+		InformationURL: r.InformationURL,
+		MetaData:       r.MetaData,
+	}
 	return pbRoom
+}
+
+func (u *Room) UpdateRoom(req *UpdateRoomRequest) {
+	// TODO
+	if req.Name != nil {
+		u.Name = *req.Name
+	}
+
+	if req.PictureURL != nil {
+		u.PictureURL = *req.PictureURL
+	}
+
+	if req.InformationURL != nil {
+		u.InformationURL = *req.InformationURL
+	}
+
+	if req.MetaData != nil {
+		u.MetaData = req.MetaData
+	}
+
+	nowTimestamp := time.Now().Unix()
+	u.Modified = nowTimestamp
 }
 
 type UserForRoom struct {
@@ -193,52 +193,6 @@ func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
 		Modified:       time.Unix(ufr.Modified, 0).In(l).Format(time.RFC3339),
 		RuDisplay:      ufr.RuDisplay,
 	})
-}
-
-func (r *Room) BeforePut(put *Room) *ProblemDetail {
-	if put.Name != "" {
-		r.Name = put.Name
-	}
-	if put.PictureURL != "" {
-		r.PictureURL = put.PictureURL
-	}
-	if put.InformationURL != "" {
-		r.InformationURL = put.InformationURL
-	}
-	if put.MetaData != nil {
-		r.MetaData = put.MetaData
-	}
-	// if put.CanLeft != nil {
-	// 	r.CanLeft = put.CanLeft
-	// }
-	if put.Type != 0 {
-		if r.Type == scpb.RoomType_OneOnOne && put.Type != scpb.RoomType_OneOnOne {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "type",
-						Reason: "In case of 1-on-1 room type, type can not be changed.",
-					},
-				},
-			}
-		} else if r.Type != scpb.RoomType_OneOnOne && put.Type == scpb.RoomType_OneOnOne {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "type",
-						Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
-					},
-				},
-			}
-		} else {
-			r.Type = put.Type
-		}
-	}
-	return nil
 }
 
 type CreateRoomRequest struct {
@@ -384,4 +338,50 @@ func (crr *CreateRoomRequest) GenerateRoomUsers() []*RoomUser {
 		rus[i] = ru
 	}
 	return rus
+}
+
+type GetRoomsRequest struct {
+	scpb.GetRoomsRequest
+}
+
+type GetRoomRequest struct {
+	scpb.GetRoomRequest
+}
+
+type UpdateRoomRequest struct {
+	scpb.UpdateRoomRequest
+	MetaData utils.JSONText `db:"meta_data"`
+}
+
+func (uur *UpdateRoomRequest) Validate(room *Room) *ProblemDetail {
+	if uur.Type != 0 {
+		if room.Type == scpb.RoomType_OneOnOne && uur.Type != scpb.RoomType_OneOnOne {
+			return &ProblemDetail{
+				Message: "Invalid params",
+				Status:  http.StatusBadRequest,
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
+						Name:   "type",
+						Reason: "In case of 1-on-1 room type, type can not be changed.",
+					},
+				},
+			}
+		} else if room.Type != scpb.RoomType_OneOnOne && uur.Type == scpb.RoomType_OneOnOne {
+			return &ProblemDetail{
+				Message: "Invalid params",
+				Status:  http.StatusBadRequest,
+				InvalidParams: []*InvalidParam{
+					&InvalidParam{
+						Name:   "type",
+						Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
+					},
+				},
+			}
+		}
+	}
+	return nil
+}
+
+type DeleteRoomRequest struct {
+	scpb.DeleteRoomRequest
 }

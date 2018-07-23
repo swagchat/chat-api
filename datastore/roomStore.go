@@ -3,7 +3,8 @@ package datastore
 import "github.com/swagchat/chat-api/model"
 
 type roomOptions struct {
-	users []*model.RoomUser
+	orders Orders
+	users  []*model.RoomUser
 }
 
 type RoomOption func(*roomOptions)
@@ -14,14 +15,19 @@ func RoomOptionInsertRoomUser(users []*model.RoomUser) RoomOption {
 	}
 }
 
+func RoomOptionOrders(orders Orders) RoomOption {
+	return func(ops *roomOptions) {
+		ops.orders = orders
+	}
+}
+
 type roomStore interface {
 	createRoomStore()
 
-	InsertRoom(room *model.Room, opts ...RoomOption) (*model.Room, error)
+	InsertRoom(room *model.Room, opts ...RoomOption) error
+	SelectRooms(limit, offset int32, opts ...RoomOption) ([]*model.Room, error)
 	SelectRoom(roomID string) (*model.Room, error)
-	SelectRooms() ([]*model.Room, error)
 	SelectUsersForRoom(roomID string) ([]*model.UserForRoom, error)
-	SelectCountRooms() (int64, error)
-	UpdateRoom(room *model.Room) (*model.Room, error)
-	UpdateRoomDeleted(roomID string) error
+	SelectCountRooms(opts ...RoomOption) (int64, error)
+	UpdateRoom(room *model.Room) error
 }

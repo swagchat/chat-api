@@ -101,11 +101,11 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 		}
 	}
 	rdbStores[dsCfg.Database] = rs
-	p.init()
+	p.CreateTables()
 	return nil
 }
 
-func (p *mysqlProvider) init() {
+func (p *mysqlProvider) CreateTables() {
 	p.createAppClientStore()
 	p.createAssetStore()
 	p.createBlockUserStore()
