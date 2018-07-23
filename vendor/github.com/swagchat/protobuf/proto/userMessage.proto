@@ -9,7 +9,7 @@ import "roomMessage.proto";
 
 message User {
   option (gogoproto.goproto_unrecognized) = false;
-  optional uint64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id\""];
+  optional uint64 id = 1 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id,primarykey,autoincrement\""];
   optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
   optional string name = 13 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"name\""];
   optional string picture_url = 14 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl", (gogoproto.moretags) = "db:\"picture_url\""];

@@ -23,7 +23,6 @@ import (
 	"cloud.google.com/go/internal/version"
 	"cloud.google.com/go/longrunning"
 	lroauto "cloud.google.com/go/longrunning/autogen"
-	"github.com/golang/protobuf/proto"
 	anypb "github.com/golang/protobuf/ptypes/any"
 	gax "github.com/googleapis/gax-go"
 	"golang.org/x/net/context"
@@ -64,8 +63,6 @@ func defaultCloudRedisCallOptions() *CloudRedisCallOptions {
 }
 
 // CloudRedisClient is a client for interacting with Google Cloud Memorystore for Redis API.
-//
-// Methods, except Close, may be called concurrently. However, fields must not be modified concurrently with method calls.
 type CloudRedisClient struct {
 	// The connection to the service.
 	conn *grpc.ClientConn
@@ -166,7 +163,6 @@ func (c *CloudRedisClient) ListInstances(ctx context.Context, req *redispb.ListI
 	ctx = insertMetadata(ctx, c.xGoogMetadata)
 	opts = append(c.CallOptions.ListInstances[0:len(c.CallOptions.ListInstances):len(c.CallOptions.ListInstances)], opts...)
 	it := &InstanceIterator{}
-	req = proto.Clone(req).(*redispb.ListInstancesRequest)
 	it.InternalFetch = func(pageSize int, pageToken string) ([]*redispb.Instance, string, error) {
 		var resp *redispb.ListInstancesResponse
 		req.PageToken = pageToken
@@ -194,7 +190,6 @@ func (c *CloudRedisClient) ListInstances(ctx context.Context, req *redispb.ListI
 		return nextPageToken, nil
 	}
 	it.pageInfo, it.nextFunc = iterator.NewPageInfo(fetch, it.bufLen, it.takeBuf)
-	it.pageInfo.MaxSize = int(req.PageSize)
 	return it
 }
 

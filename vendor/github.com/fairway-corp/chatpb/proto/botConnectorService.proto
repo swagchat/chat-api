@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package fairway.chatpb;
+option go_package = "github.com/fairway-corp/chatpb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "botConnectorMessage.proto";
+
+service BotConnector {
+  rpc PostAgent (Agent) returns (Agent) {
+    option (google.api.http) = {
+      post: "/agents"
+      body: "*"
+    };
+  }
+  rpc GetAgents (Agents) returns (Agents) {
+    option (google.api.http) = {
+      get: "/agents"
+    };
+  }
+  rpc GetAgent (Agent) returns (Agent) {
+    option (google.api.http) = {
+      get: "/agents/{agentID}"
+    };
+  }
+  rpc PutAgent (Agent) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/agents/{agentID}"
+      body: "*"
+    };
+  }
+  rpc DeleteAgent (Agent) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/agents/{agentID}"
+    };
+  }
+
+
+  rpc PostIntent (Intent) returns (Intent) {
+    option (google.api.http) = {
+      post: "/intents"
+      body: "*"
+    };
+  }
+  rpc GetIntents (Intents) returns (Intents) {
+    option (google.api.http) = {
+      get: "/intents"
+    };
+  }
+  // rpc GetIntent (Intent) returns (Intent) {
+  //   option (google.api.http) = {
+  //     get: "/intents/{intentID}"
+  //   };
+  // }
+  rpc PutIntent (Intent) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/intents/{intentID}"
+      body: "*"
+    };
+  }
+  // rpc DeleteIntent (Intent) returns (google.protobuf.Empty) {
+  //   option (google.api.http) = {
+  //     delete: "/intents/{intentID}"
+  //   };
+  // }
+
+  rpc Query (QueryInput) returns (QueryResult) {
+    option (google.api.http) = {
+      post: "/query"
+      body: "*"
+    };
+  }
+}

@@ -7,6 +7,7 @@ import proto "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import _ "google.golang.org/genproto/googleapis/api/annotations"
+import google_protobuf1 "github.com/golang/protobuf/ptypes/empty"
 
 import context "golang.org/x/net/context"
 import grpc "google.golang.org/grpc"
@@ -28,6 +29,10 @@ const _ = grpc.SupportPackageIsVersion4
 
 type RoomServiceClient interface {
 	CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*Room, error)
+	GetRooms(ctx context.Context, in *GetRoomsRequest, opts ...grpc.CallOption) (*RoomsResponse, error)
+	GetRoom(ctx context.Context, in *GetRoomRequest, opts ...grpc.CallOption) (*Room, error)
+	UpdateRoom(ctx context.Context, in *UpdateRoomRequest, opts ...grpc.CallOption) (*Room, error)
+	DeleteRoom(ctx context.Context, in *DeleteRoomRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
 }
 
 type roomServiceClient struct {
@@ -47,10 +52,50 @@ func (c *roomServiceClient) CreateRoom(ctx context.Context, in *CreateRoomReques
 	return out, nil
 }
 
+func (c *roomServiceClient) GetRooms(ctx context.Context, in *GetRoomsRequest, opts ...grpc.CallOption) (*RoomsResponse, error) {
+	out := new(RoomsResponse)
+	err := grpc.Invoke(ctx, "/swagchat.protobuf.RoomService/GetRooms", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomServiceClient) GetRoom(ctx context.Context, in *GetRoomRequest, opts ...grpc.CallOption) (*Room, error) {
+	out := new(Room)
+	err := grpc.Invoke(ctx, "/swagchat.protobuf.RoomService/GetRoom", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomServiceClient) UpdateRoom(ctx context.Context, in *UpdateRoomRequest, opts ...grpc.CallOption) (*Room, error) {
+	out := new(Room)
+	err := grpc.Invoke(ctx, "/swagchat.protobuf.RoomService/UpdateRoom", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomServiceClient) DeleteRoom(ctx context.Context, in *DeleteRoomRequest, opts ...grpc.CallOption) (*google_protobuf1.Empty, error) {
+	out := new(google_protobuf1.Empty)
+	err := grpc.Invoke(ctx, "/swagchat.protobuf.RoomService/DeleteRoom", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for RoomService service
 
 type RoomServiceServer interface {
 	CreateRoom(context.Context, *CreateRoomRequest) (*Room, error)
+	GetRooms(context.Context, *GetRoomsRequest) (*RoomsResponse, error)
+	GetRoom(context.Context, *GetRoomRequest) (*Room, error)
+	UpdateRoom(context.Context, *UpdateRoomRequest) (*Room, error)
+	DeleteRoom(context.Context, *DeleteRoomRequest) (*google_protobuf1.Empty, error)
 }
 
 func RegisterRoomServiceServer(s *grpc.Server, srv RoomServiceServer) {
@@ -75,6 +120,78 @@ func _RoomService_CreateRoom_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RoomService_GetRooms_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoomsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).GetRooms(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/swagchat.protobuf.RoomService/GetRooms",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).GetRooms(ctx, req.(*GetRoomsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomService_GetRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRoomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).GetRoom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/swagchat.protobuf.RoomService/GetRoom",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).GetRoom(ctx, req.(*GetRoomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomService_UpdateRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateRoomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).UpdateRoom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/swagchat.protobuf.RoomService/UpdateRoom",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).UpdateRoom(ctx, req.(*UpdateRoomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomService_DeleteRoom_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteRoomRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).DeleteRoom(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/swagchat.protobuf.RoomService/DeleteRoom",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).DeleteRoom(ctx, req.(*DeleteRoomRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _RoomService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "swagchat.protobuf.RoomService",
 	HandlerType: (*RoomServiceServer)(nil),
@@ -82,6 +199,22 @@ var _RoomService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateRoom",
 			Handler:    _RoomService_CreateRoom_Handler,
+		},
+		{
+			MethodName: "GetRooms",
+			Handler:    _RoomService_GetRooms_Handler,
+		},
+		{
+			MethodName: "GetRoom",
+			Handler:    _RoomService_GetRoom_Handler,
+		},
+		{
+			MethodName: "UpdateRoom",
+			Handler:    _RoomService_UpdateRoom_Handler,
+		},
+		{
+			MethodName: "DeleteRoom",
+			Handler:    _RoomService_DeleteRoom_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -91,16 +224,21 @@ var _RoomService_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("roomService.proto", fileDescriptorRoomService) }
 
 var fileDescriptorRoomService = []byte{
-	// 162 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x2c, 0xca, 0xcf, 0xcf,
-	0x0d, 0x4e, 0x2d, 0x2a, 0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x2c,
-	0x2e, 0x4f, 0x4c, 0x4f, 0xce, 0x48, 0x2c, 0x81, 0xf0, 0x93, 0x4a, 0xd3, 0xa4, 0x64, 0xd2, 0xf3,
-	0xf3, 0xd3, 0x73, 0x52, 0xf5, 0x13, 0x0b, 0x32, 0xf5, 0x13, 0xf3, 0xf2, 0xf2, 0x4b, 0x12, 0x4b,
-	0x32, 0xf3, 0xf3, 0x8a, 0x21, 0x0a, 0xa4, 0xc0, 0x66, 0xf8, 0xa6, 0x16, 0x17, 0x27, 0xa6, 0x43,
-	0xcd, 0x30, 0x8a, 0xe1, 0xe2, 0x0e, 0x42, 0x18, 0x2c, 0xe4, 0xcb, 0xc5, 0xe5, 0x5c, 0x94, 0x9a,
-	0x58, 0x92, 0x0a, 0x12, 0x14, 0x52, 0xd1, 0xc3, 0xb0, 0x41, 0x0f, 0x21, 0x1d, 0x94, 0x5a, 0x58,
-	0x9a, 0x5a, 0x5c, 0x22, 0x25, 0x8e, 0x45, 0x15, 0x48, 0x5e, 0x89, 0xc1, 0x49, 0x2e, 0x4a, 0x26,
-	0x3d, 0xb3, 0x24, 0xa3, 0x34, 0x49, 0x2f, 0x39, 0x3f, 0x57, 0x1f, 0xa6, 0x4c, 0x1f, 0xa6, 0x2c,
-	0x89, 0x0d, 0xcc, 0x32, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0x40, 0x44, 0x1c, 0x59, 0xdd, 0x00,
-	0x00, 0x00,
+	// 253 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x91, 0xcf, 0x4a, 0xc4, 0x30,
+	0x10, 0xc6, 0x0b, 0x82, 0xca, 0x78, 0xda, 0x1c, 0x14, 0xea, 0x22, 0x5a, 0x3c, 0xa7, 0xa0, 0x6f,
+	0xe0, 0x1f, 0xf6, 0x62, 0x2f, 0x15, 0x2f, 0xde, 0xd2, 0x3a, 0x66, 0x0b, 0xdb, 0x4e, 0xec, 0x4c,
+	0x15, 0x5f, 0xc4, 0xe7, 0x95, 0x6e, 0x13, 0x73, 0x70, 0x77, 0xd9, 0x5b, 0xa7, 0xbf, 0x2f, 0xbf,
+	0x2f, 0x61, 0x60, 0xd6, 0x13, 0xb5, 0xcf, 0xd8, 0x7f, 0x36, 0x35, 0x6a, 0xd7, 0x93, 0x90, 0x9a,
+	0xf1, 0x97, 0xb1, 0xf5, 0xd2, 0xc8, 0x34, 0x57, 0xc3, 0x7b, 0x3a, 0xb7, 0x44, 0x76, 0x85, 0xb9,
+	0x71, 0x4d, 0x6e, 0xba, 0x8e, 0xc4, 0x48, 0x43, 0x1d, 0x4f, 0x81, 0xf4, 0xdc, 0xd3, 0x10, 0xcf,
+	0xb1, 0x75, 0xf2, 0xed, 0xe1, 0xba, 0xa0, 0x40, 0x66, 0x63, 0x7d, 0xc1, 0xcd, 0xcf, 0x01, 0x9c,
+	0x94, 0xb1, 0x56, 0x15, 0x00, 0xf7, 0x3d, 0x1a, 0xc1, 0xf1, 0xa7, 0xba, 0xd6, 0xff, 0xfa, 0x75,
+	0xc4, 0x25, 0x7e, 0x0c, 0xc8, 0x92, 0x9e, 0x6d, 0x48, 0x8d, 0x3c, 0x4b, 0x54, 0x09, 0xc7, 0x0b,
+	0x94, 0x71, 0x60, 0x95, 0x6d, 0x88, 0x05, 0x18, 0x54, 0x97, 0x5b, 0x54, 0x5c, 0x22, 0x3b, 0xea,
+	0x18, 0xb3, 0x44, 0x2d, 0xe0, 0xc8, 0x1f, 0x53, 0x57, 0xdb, 0x95, 0x7b, 0x5c, 0xae, 0x00, 0x78,
+	0x71, 0x6f, 0xbb, 0xde, 0x1a, 0xf1, 0x1e, 0xba, 0x27, 0x80, 0x07, 0x5c, 0xe1, 0x0e, 0x5d, 0xc4,
+	0x41, 0x77, 0xaa, 0xa7, 0x7d, 0xc5, 0xcc, 0xe3, 0xb8, 0xaf, 0x2c, 0xb9, 0xbb, 0x78, 0x9d, 0xdb,
+	0x46, 0x96, 0x43, 0xa5, 0x6b, 0x6a, 0xf3, 0xe0, 0xfa, 0xdb, 0x6b, 0x75, 0xb8, 0xfe, 0xba, 0xfd,
+	0x0d, 0x00, 0x00, 0xff, 0xff, 0x25, 0x47, 0xc4, 0x9d, 0x35, 0x02, 0x00, 0x00,
 }

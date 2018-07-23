@@ -1,0 +1,115 @@
+syntax = "proto2";
+
+package fairway.chatpb;
+option go_package = "github.com/fairway-corp/chatpb";
+
+import "gogoproto/gogo.proto";
+
+message Bot {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional uint64 id = 11 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id\""];
+  optional string bot_id = 12 [(gogoproto.customname) = "BotID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "botId", (gogoproto.moretags) = "db:\"bot_id\""];
+  optional string user_id = 13 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
+  optional string service = 14 [(gogoproto.customname) = "Service", (gogoproto.nullable) = false, (gogoproto.jsontag) = "service", (gogoproto.moretags) = "db:\"service\""];
+  optional string project_id = 15 [(gogoproto.customname) = "ProjectID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "projectId", (gogoproto.moretags) = "db:\"project_id\""];
+  optional string service_account = 16 [(gogoproto.customname) = "ServiceAccount", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceAccount", (gogoproto.moretags) = "db:\"service_account\""];
+  optional bool suggest = 17 [(gogoproto.jsontag) = "suggest", (gogoproto.moretags) = "db:\"suggest\""];
+  optional int64 created = 18 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"created\""];
+  optional int64 modified = 19 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"modified\""];
+  optional int64 deleted = 20 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"deleted\""];
+}
+
+message GuestSetting {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional uint64 id = 11 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id\""];
+  optional bool enable_webchat = 12 [(gogoproto.jsontag) = "enableWebchat", (gogoproto.moretags) = "db:\"enable_webchat\""];
+}
+
+message OperatorSetting {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional uint64 id = 11 [(gogoproto.customname) = "ID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "-", (gogoproto.moretags) = "db:\"id\""];
+  optional string setting_id = 12 [(gogoproto.customname) = "SettingID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "settingId", (gogoproto.moretags) = "db:\"setting_id\""];
+  optional string site_id = 13 [(gogoproto.customname) = "SiteID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "siteId", (gogoproto.moretags) = "db:\"site_id\""];
+  optional string domain = 14 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"domain\""];
+  optional string system_user_id = 15 [(gogoproto.customname) = "SystemUserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "systemUserId", (gogoproto.moretags) = "db:\"system_user_id\""];
+  optional bytes first_message = 16 [(gogoproto.jsontag) = "firstMessage", (gogoproto.moretags) = "db:\"first_message\""];
+  optional bytes timeout_message = 17 [(gogoproto.jsontag) = "timeoutMessage", (gogoproto.moretags) = "db:\"timeout_message\""];
+  optional string operator_base_url = 18 [(gogoproto.customname) = "OperatorBaseURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "operatorBaseUrl", (gogoproto.moretags) = "db:\"operator_base_url\""];
+  optional string notification_slack_url = 19 [(gogoproto.customname) = "NotificationSlackURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "notificationSlackUrl", (gogoproto.moretags) = "db:\"notification_slack_url\""];
+  optional bytes idp = 20 [(gogoproto.jsontag) = "idp", (gogoproto.moretags) = "db:\"idp\""];
+  optional int64 created = 30 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"created\""];
+  optional int64 modified = 31 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"modified\""];
+}
+
+message CreateBotRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string user_id = 13 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+  optional string service = 14 [(gogoproto.customname) = "Service", (gogoproto.nullable) = false, (gogoproto.jsontag) = "service"];
+  optional string project_id = 15 [(gogoproto.customname) = "ProjectID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "projectId"];
+  optional string service_account = 16 [(gogoproto.customname) = "ServiceAccount", (gogoproto.nullable) = false, (gogoproto.jsontag) = "serviceAccount"];
+  optional bool suggest = 17 [(gogoproto.jsontag) = "suggest"];
+}
+
+message GetBotRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string bot_id = 11 [(gogoproto.customname) = "BotID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "botId"];
+  optional string user_id = 13 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+}
+
+message CreateGuestRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+  optional string name = 12 [(gogoproto.nullable) = false];
+  optional string picture_url = 13 [(gogoproto.customname) = "PictureURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "pictureUrl"];
+  optional string information_url = 14 [(gogoproto.customname) = "InformationURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "informationUrl"];
+  optional bytes meta_data = 15 [(gogoproto.jsontag) = "metaData"];
+  optional bool public = 16 [(gogoproto.nullable) = false];
+  optional bool can_block = 17 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "canBlock,omitempty"];
+  optional string lang = 18 [(gogoproto.nullable) = false];
+}
+
+message GetGuestRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string user_id = 11 [(gogoproto.jsontag) = "userId"];
+}
+
+
+message CreateGuestSettingRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional bool enable_webchat = 11 [(gogoproto.jsontag) = "enableWebchat", (gogoproto.moretags) = "db:\"enable_webchat\""];
+}
+
+message GetGuestSettingRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+}
+
+message UpdateGuestSettingRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional bool enable_webchat = 11 [(gogoproto.jsontag) = "enableWebchat", (gogoproto.moretags) = "db:\"enable_webchat\""];
+}
+
+message CreateOperatorSettingRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string site_id = 13 [(gogoproto.customname) = "SiteID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "siteId"];
+  optional string domain = 14 [(gogoproto.nullable) = false];
+  optional string system_user_id = 15 [(gogoproto.customname) = "SystemUserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "systemUserId"];
+  optional bytes first_message = 16 [(gogoproto.jsontag) = "firstMessage"];
+  optional bytes timeout_message = 17 [(gogoproto.jsontag) = "timeoutMessage"];
+  optional string operator_base_url = 18 [(gogoproto.customname) = "OperatorBaseURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "operatorBaseUrl"];
+  optional string notification_slack_url = 19 [(gogoproto.customname) = "NotificationSlackURL", (gogoproto.nullable) = false, (gogoproto.jsontag) = "notificationSlackUrl"];
+}
+
+message GetOperatorSettingRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+}
+
+message UpdateOperatorSettingRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string site_id = 13 [(gogoproto.customname) = "SiteID", (gogoproto.jsontag) = "siteId"];
+  optional string domain = 14;
+  optional string system_user_id = 15 [(gogoproto.customname) = "SystemUserID", (gogoproto.jsontag) = "systemUserId"];
+  optional bytes first_message = 16 [(gogoproto.jsontag) = "firstMessage"];
+  optional bytes timeout_message = 17 [(gogoproto.jsontag) = "timeoutMessage"];
+  optional string operator_base_url = 18 [(gogoproto.customname) = "OperatorBaseURL", (gogoproto.jsontag) = "operatorBaseUrl"];
+  optional string notification_slack_url = 19 [(gogoproto.customname) = "NotificationSlackURL", (gogoproto.jsontag) = "notificationSlackUrl"];
+}

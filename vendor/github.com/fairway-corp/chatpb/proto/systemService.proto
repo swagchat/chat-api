@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package protobuf;
+option go_package = "protobuf";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "systemMessage.proto";
+
+service System {
+  rpc GetSetting (SystemSetting) returns (SystemSetting) {
+    option (google.api.http) = {
+      get: "/settings"
+    };
+  }
+  rpc PutSetting (SystemSetting) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      put: "/settings"
+      body: "*"
+    };
+  }
+
+  rpc GetServices (Services) returns (Services) {
+    option (google.api.http) = {
+      get: "/services"
+    };
+  }
+}

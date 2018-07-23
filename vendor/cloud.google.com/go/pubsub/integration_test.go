@@ -1,4 +1,4 @@
-// Copyright 2014 Google LLC
+// Copyright 2014 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ func integrationTestClient(t *testing.T, ctx context.Context) *Client {
 	return client
 }
 
-func TestIntegration_All(t *testing.T) {
+func TestAll(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	client := integrationTestClient(t, ctx)
@@ -279,7 +279,7 @@ func testIAM(ctx context.Context, h *iam.Handle, permission string) (msg string,
 	return "", true
 }
 
-func TestIntegration_UpdateSubscription(t *testing.T) {
+func TestSubscriptionUpdate(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	client := integrationTestClient(t, ctx)
@@ -361,7 +361,7 @@ func TestIntegration_UpdateSubscription(t *testing.T) {
 	}
 }
 
-func TestIntegration_PublicTopic(t *testing.T) {
+func TestPublicTopic(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	client := integrationTestClient(t, ctx)

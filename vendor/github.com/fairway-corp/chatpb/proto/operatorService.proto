@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package fairway.chatpb;
+option go_package = "github.com/fairway-corp/chatpb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "userMessage.proto";
+import "operatorMessage.proto";
+
+service BotService {
+  rpc PostBot (CreateBotRequest) returns (Bot) {}
+  rpc GetBot (GetBotRequest) returns (Bot) {}
+}
+
+service GuestService {
+  rpc CreateUser (CreateGuestRequest) returns (swagchat.protobuf.User) {}
+  rpc GetUser (GetGuestRequest) returns (swagchat.protobuf.User) {}
+}
+
+service GuestSettingService {
+  rpc CreateGuestSetting (CreateGuestSettingRequest) returns (GuestSetting) {}
+  rpc GetGuestSetting (GetGuestSettingRequest) returns (GuestSetting) {}
+  rpc UpdateGuestSetting (UpdateGuestSettingRequest) returns (google.protobuf.Empty) {}
+}
+
+service OperatorSettingService {
+  rpc CreateOperatorSetting (CreateOperatorSettingRequest) returns (OperatorSetting) {}
+  rpc GetOperatorSetting (GetOperatorSettingRequest) returns (OperatorSetting) {}
+  rpc UpdateOperatorSetting (UpdateOperatorSettingRequest) returns (google.protobuf.Empty) {}
+}

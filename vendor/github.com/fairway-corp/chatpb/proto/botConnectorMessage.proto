@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package fairway.chatpb;
+option go_package = "github.com/fairway-corp/chatpb";
+
+message Conversations{
+  int64 allCount = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string order = 4;
+  repeated Conversation conversations = 5;
+}
+
+message Conversation{
+  // @inject_tag: db:"id"
+  uint64 ID = 1;
+  enum Service {
+    NONE = 0;
+    DIALOGFLOW = 1;
+  }
+  // @inject_tag: db:"conversation_id"
+  string conversationID = 2;
+  // @inject_tag: db:"service"
+  Service service = 3;
+  // @inject_tag: db:"service_account"
+  bytes serviceAccount = 4;
+  // @inject_tag: db:"created,notnull"
+  int64 created = 10;
+  // @inject_tag: db:"modified,notnull"
+  int64 modified = 11;
+  // @inject_tag: db:"deleted,notnull"
+  int64 deleted = 12;
+}
+
+message Agents{
+  int64 allCount = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string order = 4;
+  repeated Agent agents = 5;
+}
+
+message Agent{
+  // @inject_tag: db:"id"
+  uint64 ID = 1;
+  // @inject_tag: db:"agent_id,notnull"
+  string agentID = 2;
+  // @inject_tag: db:"name"
+  string name = 3;
+  // @inject_tag: db:"description"
+  string description = 4;
+  // @inject_tag: db:"created,notnull"
+  int64 created = 5;
+  // @inject_tag: db:"modified,notnull"
+  int64 modified = 6;
+}
+
+message Intents{
+  int64 allCount = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+  string order = 4;
+  repeated Intent intents = 5;
+}
+
+message Intent{
+  string intentID = 1;
+  string name = 2;
+  string displayName = 3;
+  repeated string phrases = 4;
+  repeated Response responses = 5;
+}
+
+// message Phrases{
+//   repeated Phrase phrases = 1;
+// }
+
+// message Phrase{
+//   string phraseID = 1;
+//   string phrase = 2;
+// }
+
+message Response{
+  enum Type {
+    TEXT = 0;
+    PAYLOAD = 1;
+  }
+  Type type = 1;
+  ConversationMessage message = 2;
+}
+
+message ConversationMessage{
+  string text = 1;
+}
+
+message QueryInput{
+  string text = 1;
+  string LanguageCode = 2;
+}
+
+message QueryResult{
+  string text = 1;
+  float score = 2;
+}

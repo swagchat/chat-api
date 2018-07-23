@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package fairway.chatpb;
+option go_package = "github.com/fairway-corp/chatpb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "messageMessage.proto";
+import "messageConnectorMessage.proto";
+
+service MessageConnector {
+  // Outgoing (MessageConnector -> Out)
+  rpc OutgoingMessageSwag (swagchat.protobuf.Message) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/outgoing/messages/swag"
+      body: "*"
+    };
+  }
+
+  // rpc OutgoingMessageBot (BotMessage) returns (google.protobuf.Empty) {
+  //   option (google.api.http) = {
+  //     post: "/outgoing/messages/bot"
+  //     body: "*"
+  //   };
+  // }
+
+  rpc OutgoingMessageLine (OutgoingMessageLineRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/outgoing/messages/line"
+      body: "*"
+    };
+  }
+
+  rpc OutgoingMessageSlack (OutgoingMessageSlackRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/outgoing/messages/slack"
+      body: "*"
+    };
+  }
+
+  // Incoming (In -> MessageConnector)
+  rpc IncomingMessageLine (LineMessage) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/incoming/messages/line"
+      body: "*"
+    };
+  }
+}

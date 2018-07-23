@@ -1,4 +1,4 @@
-// Copyright 2014 Google LLC
+// Copyright 2014 Google Inc. LiveAndArchived Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -309,7 +309,7 @@ const (
 	rfc3339Date = "2006-01-02"
 
 	// DeleteAction is a lifecycle action that deletes a live and/or archived
-	// objects. Takes precedence over SetStorageClass actions.
+	// objects. Takes precendence over SetStorageClass actions.
 	DeleteAction = "Delete"
 
 	// SetStorageClassAction changes the storage class of live and/or archived
@@ -533,9 +533,6 @@ type BucketAttrsToUpdate struct {
 	// configuration.
 	Encryption *BucketEncryption
 
-	// If set, replaces the lifecycle configuration of the bucket.
-	Lifecycle *Lifecycle
-
 	setLabels    map[string]string
 	deleteLabels map[string]bool
 }
@@ -592,9 +589,6 @@ func (ua *BucketAttrsToUpdate) toRawBucket() *raw.Bucket {
 			rb.Encryption = ua.Encryption.toRawBucketEncryption()
 		}
 	}
-	if ua.Lifecycle != nil {
-		rb.Lifecycle = toRawLifecycle(*ua.Lifecycle)
-	}
 	if ua.setLabels != nil || ua.deleteLabels != nil {
 		rb.Labels = map[string]string{}
 		for k, v := range ua.setLabels {
@@ -612,7 +606,7 @@ func (ua *BucketAttrsToUpdate) toRawBucket() *raw.Bucket {
 
 // If returns a new BucketHandle that applies a set of preconditions.
 // Preconditions already set on the BucketHandle are ignored.
-// Operations on the new handle will return an error if the preconditions are not
+// Operations on the new handle will only occur if the preconditions are
 // satisfied. The only valid preconditions for buckets are MetagenerationMatch
 // and MetagenerationNotMatch.
 func (b *BucketHandle) If(conds BucketConditions) *BucketHandle {

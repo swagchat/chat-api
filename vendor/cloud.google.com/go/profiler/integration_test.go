@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2017 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 	"text/template"
 	"time"
@@ -34,7 +33,7 @@ import (
 
 var (
 	commit = flag.String("commit", "", "git commit to test")
-	runID  = strings.Replace(time.Now().Format("2006-01-02-15-04-05.000000-0700"), ".", "-", -1)
+	runID  = time.Now().Unix()
 )
 
 const (
@@ -50,13 +49,6 @@ const startupTemplate = `
 # to stop accounting the VM for billing and cores quota.
 trap "sleep 300 && poweroff" EXIT
 
-retry() {
-  for i in {1..3}; do
-    "${@}" && return 0
-  done
-  return 1
-}
-
 # Fail on any error.
 set -eo pipefail
 
@@ -64,16 +56,16 @@ set -eo pipefail
 set -x
 
 # Install git
-retry apt-get update >/dev/null
-retry apt-get -y -q install git >/dev/null
+apt-get update  >/dev/null
+apt-get -y -q install git >/dev/null
 
 # Install desired Go version
 mkdir -p /tmp/bin
-retry curl -sL -o /tmp/bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+curl -sL -o /tmp/bin/gimme https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
 chmod +x /tmp/bin/gimme
 export PATH=$PATH:/tmp/bin
 
-retry eval "$(gimme {{.GoVersion}})"
+eval "$(gimme {{.GoVersion}})"
 
 # Set $GOPATH
 export GOPATH="$HOME/go"
@@ -82,11 +74,11 @@ export GOCLOUD_HOME=$GOPATH/src/cloud.google.com/go
 mkdir -p $GOCLOUD_HOME
 
 # Install agent
-retry git clone https://code.googlesource.com/gocloud $GOCLOUD_HOME >/dev/null
+git clone https://code.googlesource.com/gocloud $GOCLOUD_HOME >/dev/null
 
 cd $GOCLOUD_HOME/profiler/busybench
 git reset --hard {{.Commit}}
-retry go get >/dev/null
+go get >/dev/null
 
 # Run benchmark with agent
 go run busybench.go --service="{{.Service}}" --mutex_profiling="{{.MutexProfiling}}"
@@ -177,10 +169,10 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-go110-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-go110-%d", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:             fmt.Sprintf("profiler-test-go110-%s-gce", runID),
+			name:             fmt.Sprintf("profiler-test-go110-%d-gce", runID),
 			wantProfileTypes: []string{"CPU", "HEAP", "THREADS", "CONTENTION"},
 			goVersion:        "1.10",
 			mutexProfiling:   true,
@@ -189,10 +181,10 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-go19-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-go19-%d", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:             fmt.Sprintf("profiler-test-go19-%s-gce", runID),
+			name:             fmt.Sprintf("profiler-test-go19-%d-gce", runID),
 			wantProfileTypes: []string{"CPU", "HEAP", "THREADS", "CONTENTION"},
 			goVersion:        "1.9",
 			mutexProfiling:   true,
@@ -201,10 +193,10 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-go18-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-go18-%d", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:             fmt.Sprintf("profiler-test-go18-%s-gce", runID),
+			name:             fmt.Sprintf("profiler-test-go18-%d-gce", runID),
 			wantProfileTypes: []string{"CPU", "HEAP", "THREADS", "CONTENTION"},
 			goVersion:        "1.8",
 			mutexProfiling:   true,
@@ -213,10 +205,10 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-go17-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-go17-%d", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:             fmt.Sprintf("profiler-test-go17-%s-gce", runID),
+			name:             fmt.Sprintf("profiler-test-go17-%d-gce", runID),
 			wantProfileTypes: []string{"CPU", "HEAP", "THREADS"},
 			goVersion:        "1.7",
 		},
@@ -224,10 +216,10 @@ func TestAgentIntegration(t *testing.T) {
 			InstanceConfig: proftest.InstanceConfig{
 				ProjectID:   projectID,
 				Zone:        zone,
-				Name:        fmt.Sprintf("profiler-test-go16-%s", runID),
+				Name:        fmt.Sprintf("profiler-test-go16-%d", runID),
 				MachineType: "n1-standard-1",
 			},
-			name:             fmt.Sprintf("profiler-test-go16-%s-gce", runID),
+			name:             fmt.Sprintf("profiler-test-go16-%d-gce", runID),
 			wantProfileTypes: []string{"CPU", "HEAP", "THREADS"},
 			goVersion:        "1.6",
 		},

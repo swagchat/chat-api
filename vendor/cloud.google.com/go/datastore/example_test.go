@@ -1,4 +1,4 @@
-// Copyright 2014 Google LLC
+// Copyright 2014 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -218,7 +218,7 @@ func ExampleNewQuery() {
 }
 
 func ExampleNewQuery_options() {
-	// Query to order the posts by the number of comments they have received.
+	// Query to order the posts by the number of comments they have recieved.
 	q := datastore.NewQuery("Post").Order("-Comments")
 	// Start listing from an offset and limit the results.
 	q = q.Offset(20).Limit(10)

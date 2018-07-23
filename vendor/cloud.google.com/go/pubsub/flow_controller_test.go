@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2017 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -177,7 +177,6 @@ func TestFlowControllerSaturation(t *testing.T) {
 }
 
 func TestFlowControllerTryAcquire(t *testing.T) {
-	t.Parallel()
 	fc := newFlowController(3, 10)
 
 	// Successfully tryAcquire 4 bytes.
@@ -197,7 +196,6 @@ func TestFlowControllerTryAcquire(t *testing.T) {
 }
 
 func TestFlowControllerUnboundedCount(t *testing.T) {
-	t.Parallel()
 	ctx := context.Background()
 	fc := newFlowController(0, 10)
 
@@ -218,7 +216,6 @@ func TestFlowControllerUnboundedCount(t *testing.T) {
 }
 
 func TestFlowControllerUnboundedBytes(t *testing.T) {
-	t.Parallel()
 	ctx := context.Background()
 	fc := newFlowController(2, 0)
 

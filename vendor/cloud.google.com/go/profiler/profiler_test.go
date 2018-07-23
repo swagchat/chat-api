@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2017 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ const (
 	testProjectID       = "test-project-ID"
 	testInstance        = "test-instance"
 	testZone            = "test-zone"
+	testTarget          = "test-target"
 	testService         = "test-service"
 	testSvcVersion      = "test-service-version"
 	testProfileDuration = time.Second * 10
@@ -395,13 +396,13 @@ func TestInitializeAgent(t *testing.T) {
 
 		config = tt.config
 		config.ProjectID = testProjectID
-		config.Service = testService
+		config.Target = testTarget
 		mutexEnabled = tt.enableMutex
 		a := initializeAgent(nil)
 
 		wantDeployment := &pb.Deployment{
 			ProjectId: testProjectID,
-			Target:    testService,
+			Target:    testTarget,
 			Labels:    tt.wantDeploymentLabels,
 		}
 		if !testutil.Equal(a.deployment, wantDeployment) {
@@ -448,7 +449,16 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"accepts service name",
 			Config{Service: testService},
-			Config{Service: testService, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testService, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			"",
+			false,
+			true,
+			false,
+		},
+		{
+			"accepts target name",
+			Config{Target: testTarget},
+			Config{Target: testTarget, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
 			"",
 			false,
 			true,
@@ -457,7 +467,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"env project overrides GCE project",
 			Config{Service: testService},
-			Config{Service: testService, ProjectID: testEnvProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testService, ProjectID: testEnvProjectID, zone: testZone, instance: testInstance},
 			"",
 			false,
 			true,
@@ -467,7 +477,7 @@ func TestInitializeConfig(t *testing.T) {
 			"requires service name",
 			Config{},
 			Config{},
-			"service name must be configured",
+			"service name must be specified in the configuration",
 			false,
 			true,
 			false,
@@ -475,7 +485,16 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"accepts service name from config and service version from GAE",
 			Config{Service: testService},
-			Config{Service: testService, ServiceVersion: testGAEVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testService, ServiceVersion: testGAEVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			"",
+			true,
+			true,
+			false,
+		},
+		{
+			"accepts target name from config and service version from GAE",
+			Config{Target: testTarget},
+			Config{Target: testTarget, ServiceVersion: testGAEVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
 			"",
 			true,
 			true,
@@ -484,7 +503,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"reads both service name and version from GAE env vars",
 			Config{},
-			Config{Service: testGAEService, ServiceVersion: testGAEVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testGAEService, ServiceVersion: testGAEVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
 			"",
 			true,
 			true,
@@ -493,7 +512,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"accepts service version from config",
 			Config{Service: testService, ServiceVersion: testSvcVersion},
-			Config{Service: testService, ServiceVersion: testSvcVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testService, ServiceVersion: testSvcVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
 			"",
 			false,
 			true,
@@ -502,7 +521,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"configured version has priority over GAE-provided version",
 			Config{Service: testService, ServiceVersion: testSvcVersion},
-			Config{Service: testService, ServiceVersion: testSvcVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testService, ServiceVersion: testSvcVersion, ProjectID: testGCEProjectID, zone: testZone, instance: testInstance},
 			"",
 			true,
 			true,
@@ -511,7 +530,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"configured project ID has priority over metadata-provided project ID",
 			Config{Service: testService, ProjectID: testProjectID},
-			Config{Service: testService, ProjectID: testProjectID, zone: testZone, instance: testInstance},
+			Config{Target: testService, ProjectID: testProjectID, zone: testZone, instance: testInstance},
 			"",
 			false,
 			true,
@@ -520,7 +539,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"configured project ID has priority over environment project ID",
 			Config{Service: testService, ProjectID: testProjectID},
-			Config{Service: testService, ProjectID: testProjectID},
+			Config{Target: testService, ProjectID: testProjectID},
 			"",
 			false,
 			false,
@@ -529,7 +548,7 @@ func TestInitializeConfig(t *testing.T) {
 		{
 			"requires project ID if not on GCE",
 			Config{Service: testService},
-			Config{Service: testService},
+			Config{Target: testService},
 			"project ID must be specified in the configuration if running outside of GCP",
 			false,
 			false,
@@ -577,6 +596,7 @@ func TestInitializeConfig(t *testing.T) {
 		if tt.wantErrorString == "" {
 			tt.wantConfig.APIAddr = apiAddress
 		}
+		tt.wantConfig.Service = tt.config.Service
 		if config != tt.wantConfig {
 			t.Errorf("initializeConfig(%v) got: %v, want %v", tt.config, config, tt.wantConfig)
 		}
@@ -827,7 +847,7 @@ func TestAgentWithServer(t *testing.T) {
 
 	dialGRPC = gtransport.DialInsecure
 	if err := Start(Config{
-		Service:   testService,
+		Target:    testTarget,
 		ProjectID: testProjectID,
 		APIAddr:   srv.Addr,
 		instance:  testInstance,

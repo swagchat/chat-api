@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Google LLC
+Copyright 2017 Google Inc. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1072,7 +1072,7 @@ func shouldDropSession(err error) bool {
 	}
 	// If a Cloud Spanner can no longer locate the session (for example, if session is garbage collected), then caller
 	// should not try to return the session back into the session pool.
-	// TODO: once gRPC can return auxiliary error information, stop parsing the error message.
+	// TODO: once gRPC can return auxilary error information, stop parsing the error message.
 	if ErrCode(err) == codes.NotFound && strings.Contains(ErrDesc(err), "Session not found:") {
 		return true
 	}

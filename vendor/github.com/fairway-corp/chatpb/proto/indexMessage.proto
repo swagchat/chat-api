@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package fairway.chatpb;
+option go_package = "github.com/fairway-corp/chatpb";
+
+message StatusRequest{}
+
+message StatusResponse{
+  string appName = 1;
+  string status = 2;
+}

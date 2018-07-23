@@ -77,3 +77,43 @@ message CreateRoomRequest {
   optional string available_message_types = 18 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "availableMessageTypes", (gogoproto.moretags) = "db:\"available_message_types\""];
   repeated string user_ids = 41 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds,omitempty", (gogoproto.moretags) = "db:\"-\""];
 }
+
+message GetRoomsRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional int32 limit = 11 [(gogoproto.nullable) = false];
+  optional int32 offset = 12 [(gogoproto.nullable) = false];
+  optional string order = 13 [(gogoproto.nullable) = false];
+}
+
+message RoomsResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated Room rooms = 1 [(gogoproto.jsontag) = "rooms"];
+  optional int64 allCount = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "allCount"];
+  optional int32 limit = 3 [(gogoproto.nullable) = false];
+  optional int32 offset = 4 [(gogoproto.nullable) = false];
+  optional string order = 5 [(gogoproto.nullable) = false];
+}
+
+message GetRoomRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
+}
+
+message UpdateRoomRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
+  optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
+  optional string name = 13 [(gogoproto.moretags) = "db:\"name\""];
+  optional string picture_url = 14 [(gogoproto.customname) = "PictureURL", (gogoproto.jsontag) = "pictureUrl", (gogoproto.moretags) = "db:\"picture_url\""];
+  optional string information_url = 15 [(gogoproto.customname) = "InformationURL", (gogoproto.jsontag) = "informationUrl", (gogoproto.moretags) = "db:\"information_url\""];
+  optional RoomType type = 17 [(gogoproto.nullable) = false, (gogoproto.moretags) = "db:\"type\""];
+  optional bool can_Left = 18 [(gogoproto.nullable) = false, (gogoproto.customname) = "CanLeft", (gogoproto.jsontag) = "canLeft,omitempty", (gogoproto.moretags) = "db:\"can_left\""];
+  optional SpeechMode speech_mode = 19 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "speechMode", (gogoproto.moretags) = "db:\"speech_mode\""];
+  optional bytes meta_data = 20 [(gogoproto.jsontag) = "metaData", (gogoproto.moretags) = "db:\"meta_data\""];
+  optional string available_message_types = 21 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "availableMessageTypes", (gogoproto.moretags) = "db:\"available_message_types\""];
+}
+
+message DeleteRoomRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
+}

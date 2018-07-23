@@ -1,4 +1,4 @@
-// Copyright 2017 Google LLC
+// Copyright 2017 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -64,10 +64,10 @@ var (
 		"I":  intval(1),
 		"U":  intval(2),
 		"F":  floatval(3),
-		"S":  {ValueType: &pb.Value_StringValue{"four"}},
+		"S":  &pb.Value{ValueType: &pb.Value_StringValue{"four"}},
 		"Y":  bytesval([]byte{5}),
 		"T":  tsval(tm),
-		"Ts": {ValueType: &pb.Value_TimestampValue{ptm}},
+		"Ts": &pb.Value{ValueType: &pb.Value_TimestampValue{ptm}},
 		"G":  geoval(ll),
 		"L":  arrayval(intval(6)),
 		"M":  mapval(map[string]*pb.Value{"a": intval(7)}),
@@ -254,7 +254,7 @@ func TestToProtoValueEmbedded(t *testing.T) {
 	want := mapval(map[string]*pb.Value{
 		"Time":      tsval(tm),
 		"LatLng":    geoval(ll),
-		"Timestamp": {ValueType: &pb.Value_TimestampValue{ptm}},
+		"Timestamp": &pb.Value{ValueType: &pb.Value_TimestampValue{ptm}},
 	})
 	if !testEqual(got, want) {
 		t.Errorf("got %+v, want %+v", got, want)

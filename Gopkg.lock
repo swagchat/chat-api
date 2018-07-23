@@ -3,15 +3,21 @@
 
 [[projects]]
   name = "cloud.google.com/go"
-  packages = ["compute/metadata"]
-  revision = "aad3f485ee528456e0768f20397b4d9dd941e755"
-  version = "v0.25.0"
+  packages = ["compute/metadata","dialogflow/apiv2","internal/version","longrunning","longrunning/autogen"]
+  revision = "0fd7230b2a7505833d5f69b75cbd6c9582401479"
+  version = "v0.23.0"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/sdkuri","internal/shareddefaults","private/protocol","private/protocol/eventstream","private/protocol/eventstream/eventstreamapi","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sns","service/sts"]
   revision = "8cf662a972fa7fba8f2c1ec57648cf840e2bb401"
   version = "v1.14.30"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/betchi/go-gimei"
+  packages = ["."]
+  revision = "85fcd040ce98665bcb87643f3e273ce26e4274c8"
 
 [[projects]]
   branch = "master"
@@ -24,6 +30,18 @@
   packages = ["kafka"]
   revision = "5e4d04e05fc319ce5996a867aafef29059f26862"
   version = "v0.11.4"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/fairway-corp/chatpb"
+  packages = ["."]
+  revision = "8d7140c24033f5f35aec4ab9fe52cc2522162856"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/fairway-corp/operator-api"
+  packages = ["bot","datastore","idp","logger","model","pbroker","service","utils"]
+  revision = "bfa8821c3a912b99f54741ba56148f61cb4b95e9"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -66,6 +84,12 @@
   name = "github.com/golang/snappy"
   packages = ["."]
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
+
+[[projects]]
+  name = "github.com/googleapis/gax-go"
+  packages = ["."]
+  revision = "317e0006254c44a0ac427cc52a0e083ff0b9622f"
+  version = "v2.0.0"
 
 [[projects]]
   name = "github.com/grpc-ecosystem/grpc-gateway"
@@ -118,7 +142,13 @@
   branch = "master"
   name = "github.com/swagchat/protobuf"
   packages = ["."]
-  revision = "ee57dbbcfd443918bd12b81881ad65e56e6a0b8c"
+  revision = "59fb640afe9be4c5c0411af602ebda716fa20e10"
+
+[[projects]]
+  name = "go.opencensus.io"
+  packages = [".","exporter/stackdriver/propagation","internal","internal/tagencoding","plugin/ocgrpc","plugin/ochttp","plugin/ochttp/propagation/b3","stats","stats/internal","stats/view","tag","trace","trace/internal","trace/propagation"]
+  revision = "e262766cd0d230a1bb7c37281e345e465f19b41b"
+  version = "v0.14.0"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -159,24 +189,24 @@
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
-  packages = ["gensupport","googleapi","googleapi/internal/uritemplates","storage/v1"]
+  packages = ["gensupport","googleapi","googleapi/internal/uritemplates","googleapi/transport","internal","iterator","option","storage/v1","transport","transport/grpc","transport/http"]
   revision = "efcb5f25ac56eae06c8b5672456c0b7767522685"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","cloudsql","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [".","cloudsql","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/socket","internal/urlfetch","socket","urlfetch"]
   revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
   version = "v1.1.0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/api/annotations","googleapis/rpc/errdetails","googleapis/rpc/status"]
+  packages = ["googleapis/api/annotations","googleapis/cloud/dialogflow/v2","googleapis/longrunning","googleapis/rpc/errdetails","googleapis/rpc/status","googleapis/type/latlng","protobuf/field_mask"]
   revision = "fedd2861243fd1a8152376292b921b394c7bef7e"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/grpcrand","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
+  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","credentials/oauth","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/grpcrand","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
   revision = "168a6198bcb0ef175f7dacec0b8691fc141dc9b8"
   version = "v1.13.0"
 
@@ -201,6 +231,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0dded13ff03e4ce5bbc20fb1dbfa71d416dc755548be38d7e1bf55feddb85fad"
+  inputs-digest = "98b7fb86bff32d56cf65ff6783ea20e61d7601ce5c3cc990e3469f766847d4b0"
   solver-name = "gps-cdcl"
   solver-version = 1
