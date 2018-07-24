@@ -8,7 +8,7 @@ BINARY_NAME=chat-api
 all: test build
 build:
 	$(GOBUILD) -o $(BINARY_NAME) -v
-tes:
+test:
 	$(GOTEST) -covermode=count -coverprofile=coverage.out ./... && $(GOCMD) tool cover -html=coverage.out
 test-func:
 	$(GOTEST) -covermode=count -coverprofile=coverage.out ./... && $(GOCMD) tool cover -func=coverage.out
