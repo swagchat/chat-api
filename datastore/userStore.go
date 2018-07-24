@@ -10,7 +10,7 @@ type userOptions struct {
 	withDevices bool
 	withRoles   bool
 	withRooms   bool
-	orders      map[string]scpb.Order
+	orders      []*scpb.OrderInfo
 	user        interface{}
 	devices     []*model.Device
 	roles       []*model.UserRole
@@ -54,7 +54,7 @@ func UserOptionWithRooms(b bool) UserOption {
 	}
 }
 
-func UserOptionOrders(orders map[string]scpb.Order) UserOption {
+func UserOptionOrders(orders []*scpb.OrderInfo) UserOption {
 	return func(ops *userOptions) {
 		ops.orders = orders
 	}

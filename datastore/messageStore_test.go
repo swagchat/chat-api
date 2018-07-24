@@ -1,10 +1,8 @@
-package datastore_test
+package datastore
 
 import (
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
@@ -12,19 +10,19 @@ import (
 func TestMessageStore(t *testing.T) {
 	newMessage := &model.Message{}
 	newMessage.MessageID = "message-id"
-	newMessage.RoomID = "room-id-0000"
-	newMessage.UserID = "user-id-0000"
+	newMessage.RoomID = "datastore-room-id-0001"
+	newMessage.UserID = "datastore-user-id-0001"
 	newMessage.Type = "text"
 	newMessage.Payload = []byte(`{"text":"test"}`)
 	newMessage.Role = utils.RoleGeneral
 	newMessage.Created = 123456789
 	newMessage.Modified = 123456789
-	err := datastore.Provider(ctx).InsertMessage(newMessage)
+	err := Provider(ctx).InsertMessage(newMessage)
 	if err != nil {
 		t.Fatalf("failed insert message test")
 	}
 
-	messages, err := datastore.Provider(ctx).SelectMessages(10, 0)
+	messages, err := Provider(ctx).SelectMessages(10, 0)
 	if err != nil {
 		t.Fatalf("failed select messages test")
 	}
@@ -32,7 +30,7 @@ func TestMessageStore(t *testing.T) {
 		t.Fatalf("failed select messages test")
 	}
 
-	message, err := datastore.Provider(ctx).SelectMessage("message-id")
+	message, err := Provider(ctx).SelectMessage("message-id")
 	if err != nil {
 		t.Fatalf("failed select message test")
 	}
@@ -41,12 +39,12 @@ func TestMessageStore(t *testing.T) {
 	}
 
 	message.Payload = []byte(`{"text":"test-update"}`)
-	err = datastore.Provider(ctx).UpdateMessage(message)
+	err = Provider(ctx).UpdateMessage(message)
 	if err != nil {
 		t.Fatalf("failed update message test")
 	}
 
-	updatedMessage, err := datastore.Provider(ctx).SelectMessage("message-id")
+	updatedMessage, err := Provider(ctx).SelectMessage("message-id")
 	if err != nil {
 		t.Fatalf("failed select message test")
 	}

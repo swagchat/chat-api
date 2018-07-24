@@ -12,6 +12,7 @@ import (
 )
 
 type sqliteProvider struct {
+	onMemory      bool
 	dirPath       string
 	database      string
 	enableLogging bool
@@ -27,11 +28,18 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 		return nil
 	}
 
-	db, err := sql.Open("sqlite3", fmt.Sprintf("%s/%s.db", p.dirPath, p.database))
+	var db *sql.DB
+	var err error
+	if p.onMemory {
+		db, err = sql.Open("sqlite3", fmt.Sprintf("%s/%s.db?cache=shared&mode=memory", p.dirPath, p.database))
+	} else {
+		db, err = sql.Open("sqlite3", fmt.Sprintf("%s/%s.db?cache=shared", p.dirPath, p.database))
+	}
 	if err != nil {
 		logger.Error(err.Error())
 		return err
 	}
+
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	if p.enableLogging {

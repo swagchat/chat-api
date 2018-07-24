@@ -20,21 +20,10 @@ import (
 func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *model.ProblemDetail {
 	logger.Info(fmt.Sprintf("Start CreateRoomUsers. Request[%#v]", req))
 
-	room, pd := selectRoom(ctx, req.RoomID)
+	room, pd := selectRoom(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if pd != nil {
 		return pd
 	}
-
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(req.RoomID)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Failed to create room users.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return pd
-	}
-	room.Users = userForRooms
 
 	req.Room = room
 
@@ -69,7 +58,7 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 	// }
 
 	roomUsers := req.GenerateRoomUsers()
-	err = datastore.Provider(ctx).InsertRoomUsers(roomUsers)
+	err := datastore.Provider(ctx).InsertRoomUsers(roomUsers)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Failed to create room users.",
@@ -144,25 +133,14 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *model.ProblemDetail {
 	logger.Info(fmt.Sprintf("Start DeleteRoomUsers. Request[%#v]", req))
 
-	room, pd := selectRoom(ctx, req.RoomID)
+	room, pd := selectRoom(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if pd != nil {
 		return pd
 	}
 
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(req.RoomID)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Failed to create room users.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return pd
-	}
-	room.Users = userForRooms
-
 	req.Room = room
 
-	err = datastore.Provider(ctx).DeleteRoomUser(req.RoomID, req.UserIDs)
+	err := datastore.Provider(ctx).DeleteRoomUser(req.RoomID, req.UserIDs)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete room's users failed",
@@ -205,7 +183,7 @@ func selectRoomUser(ctx context.Context, roomID, userID string) (*model.RoomUser
 }
 
 func publishUserJoin(ctx context.Context, roomID string) {
-	userForRooms, err := datastore.Provider(ctx).SelectUsersForRoom(roomID)
+	room, err := datastore.Provider(ctx).SelectRoom(roomID, datastore.SelectRoomOptionWithUsers(true))
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -219,7 +197,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 		}
 
 		buffer := new(bytes.Buffer)
-		json.NewEncoder(buffer).Encode(userForRooms)
+		json.NewEncoder(buffer).Encode(room.Users)
 		rtmEvent := &pbroker.RTMEvent{
 			Type:    pbroker.UserJoin,
 			Payload: buffer.Bytes(),

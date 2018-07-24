@@ -25,10 +25,10 @@ func rdbCreateRoomStore(db string) {
 	}
 }
 
-func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) error {
+func rdbInsertRoom(db string, room *model.Room, opts ...InsertRoomOption) error {
 	master := RdbStore(db).master()
 
-	opt := roomOptions{}
+	opt := insertRoomOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -65,10 +65,10 @@ func rdbInsertRoom(db string, room *model.Room, opts ...RoomOption) error {
 	return nil
 }
 
-func rdbSelectRooms(db string, limit, offset int32, opts ...RoomOption) ([]*model.Room, error) {
+func rdbSelectRooms(db string, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
 	replica := RdbStore(db).replica()
 
-	opt := roomOptions{}
+	opt := selectRoomsOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -95,8 +95,8 @@ func rdbSelectRooms(db string, limit, offset int32, opts ...RoomOption) ([]*mode
 		query = fmt.Sprintf("%s created DESC", query)
 	} else {
 		i := 1
-		for k, v := range opt.orders {
-			query = fmt.Sprintf("%s %s %s", query, k, v.String())
+		for _, orderInfo := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, orderInfo.Field, orderInfo.Order.String())
 			if i < len(opt.orders) {
 				query = fmt.Sprintf("%s,", query)
 			}
@@ -116,8 +116,13 @@ func rdbSelectRooms(db string, limit, offset int32, opts ...RoomOption) ([]*mode
 	return rooms, nil
 }
 
-func rdbSelectRoom(db, roomID string) (*model.Room, error) {
+func rdbSelectRoom(db, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
 	replica := RdbStore(db).replica()
+
+	opt := selectRoomOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
 	var rooms []*model.Room
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
@@ -128,11 +133,22 @@ func rdbSelectRoom(db, roomID string) (*model.Room, error) {
 		return nil, err
 	}
 
-	if len(rooms) == 1 {
-		return rooms[0], nil
+	var room *model.Room
+	if len(rooms) != 1 {
+		return nil, nil
 	}
 
-	return nil, nil
+	room = rooms[0]
+
+	if opt.withUsers {
+		users, err := rdbSelectUsersForRoom(db, roomID)
+		if err != nil {
+			return nil, err
+		}
+		room.Users = users
+	}
+
+	return room, nil
 }
 
 func rdbSelectUsersForRoom(db, roomID string) ([]*model.UserForRoom, error) {
@@ -164,7 +180,7 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	return users, nil
 }
 
-func rdbSelectCountRooms(db string, opts ...RoomOption) (int64, error) {
+func rdbSelectCountRooms(db string, opts ...SelectRoomsOption) (int64, error) {
 	replica := RdbStore(db).replica()
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)

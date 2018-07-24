@@ -1,10 +1,8 @@
-package datastore_test
+package datastore
 
 import (
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 )
 
@@ -15,20 +13,21 @@ func TestUserStore(t *testing.T) {
 	newUser.MetaData = []byte(`{"key":"value"}`)
 	newUser.Created = 123456789
 	newUser.Modified = 123456789
-	err := datastore.Provider(ctx).InsertUser(newUser)
+	err := Provider(ctx).InsertUser(newUser)
 	if err != nil {
 		t.Fatalf("Failed insert user test")
 	}
 
-	users, err := datastore.Provider(ctx).SelectUsers(10, 0)
+	users, err := Provider(ctx).SelectUsers(10, 0)
 	if err != nil {
 		t.Fatalf("Failed select users test")
 	}
-	if len(users) != 2 {
+	println(len(users))
+	if len(users) != 10 {
 		t.Fatalf("Failed select users test")
 	}
 
-	user, err := datastore.Provider(ctx).SelectUser("user-id-0001")
+	user, err := Provider(ctx).SelectUser("user-id-0001")
 	if err != nil {
 		t.Fatalf("Failed select user test")
 	}
@@ -36,7 +35,7 @@ func TestUserStore(t *testing.T) {
 		t.Fatalf("Failed select user test")
 	}
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsByUserIDs([]string{"user-id-0001"})
+	userIDs, err := Provider(ctx).SelectUserIDsByUserIDs([]string{"user-id-0001"})
 	if err != nil {
 		t.Fatalf("Failed select userIDs test")
 	}
@@ -45,12 +44,12 @@ func TestUserStore(t *testing.T) {
 	}
 
 	user.Name = "name-update"
-	err = datastore.Provider(ctx).UpdateUser(user)
+	err = Provider(ctx).UpdateUser(user)
 	if err != nil {
 		t.Fatalf("Failed update user test")
 	}
 
-	updatedUser, err := datastore.Provider(ctx).SelectUser("user-id-0001")
+	updatedUser, err := Provider(ctx).SelectUser("user-id-0001")
 	if err != nil {
 		t.Fatalf("Failed select users test")
 	}
@@ -59,12 +58,12 @@ func TestUserStore(t *testing.T) {
 	}
 
 	user.Deleted = 1
-	err = datastore.Provider(ctx).UpdateUser(user)
+	err = Provider(ctx).UpdateUser(user)
 	if err != nil {
 		t.Fatalf("Failed update user test")
 	}
 
-	deletedUser, err := datastore.Provider(ctx).SelectUser("user-id-0001")
+	deletedUser, err := Provider(ctx).SelectUser("user-id-0001")
 	if err != nil {
 		t.Fatalf("Failed select users test")
 	}

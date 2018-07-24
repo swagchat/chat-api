@@ -1,26 +1,24 @@
-package datastore_test
+package datastore
 
 import (
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 )
 
 func TestUserRoleStore(t *testing.T) {
 	ur := &model.UserRole{}
-	ur.UserID = "user-id-0000"
+	ur.UserID = "datastore-user-id-0001"
 	ur.RoleID = 1
 	urs := []*model.UserRole{ur}
-	err := datastore.Provider(ctx).InsertUserRoles(urs)
+	err := Provider(ctx).InsertUserRoles(urs)
 	if err != nil {
 		t.Fatalf("Failed insert user roles test")
 	}
 
-	ur, err = datastore.Provider(ctx).SelectUserRole(
-		datastore.UserRoleOptionFilterByUserID("user-id-0000"),
-		datastore.UserRoleOptionFilterByRoleID(1),
+	ur, err = Provider(ctx).SelectUserRole(
+		UserRoleOptionFilterByUserID("datastore-user-id-0001"),
+		UserRoleOptionFilterByRoleID(1),
 	)
 	if err != nil {
 		t.Fatalf("Failed select user role test")
@@ -29,7 +27,7 @@ func TestUserRoleStore(t *testing.T) {
 		t.Fatalf("Failed select user role test")
 	}
 
-	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole("user-id")
+	roleIDs, err := Provider(ctx).SelectRoleIDsOfUserRole("datastore-user-id-0001")
 	if err != nil {
 		t.Fatalf("Failed select roleIDs of user role test")
 	}
@@ -37,7 +35,7 @@ func TestUserRoleStore(t *testing.T) {
 		t.Fatalf("Failed select roleIDs of user role test")
 	}
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(1)
+	userIDs, err := Provider(ctx).SelectUserIDsOfUserRole(1)
 	if err != nil {
 		t.Fatalf("Failed select userIDs of user role test")
 	}
@@ -45,8 +43,8 @@ func TestUserRoleStore(t *testing.T) {
 		t.Fatalf("Failed select userIDs of user role test")
 	}
 
-	err = datastore.Provider(ctx).DeleteUserRoles(
-		datastore.UserRoleOptionFilterByUserID("user-id"),
+	err = Provider(ctx).DeleteUserRoles(
+		UserRoleOptionFilterByUserID("datastore-user-id-0001"),
 	)
 	if err != nil {
 		t.Fatalf("Failed delete user roles test")
@@ -55,8 +53,8 @@ func TestUserRoleStore(t *testing.T) {
 		t.Fatalf("Failed delete user roles test")
 	}
 
-	err = datastore.Provider(ctx).DeleteUserRoles(
-		datastore.UserRoleOptionFilterByRoleID(1),
+	err = Provider(ctx).DeleteUserRoles(
+		UserRoleOptionFilterByRoleID(1),
 	)
 	if err != nil {
 		t.Fatalf("Failed delete user roles test")
@@ -65,9 +63,9 @@ func TestUserRoleStore(t *testing.T) {
 		t.Fatalf("Failed delete user roles test")
 	}
 
-	err = datastore.Provider(ctx).DeleteUserRoles(
-		datastore.UserRoleOptionFilterByUserID("user-id"),
-		datastore.UserRoleOptionFilterByRoleID(1),
+	err = Provider(ctx).DeleteUserRoles(
+		UserRoleOptionFilterByUserID("datastore-user-id-0001"),
+		UserRoleOptionFilterByRoleID(1),
 	)
 	if err != nil {
 		t.Fatalf("Failed delete user roles test")

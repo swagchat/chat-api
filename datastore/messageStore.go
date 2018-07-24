@@ -8,7 +8,7 @@ import (
 type messageOptions struct {
 	roomID  string
 	roleIDs []int32
-	orders  map[string]scpb.Order
+	orders  []*scpb.OrderInfo
 }
 
 type MessageOption func(*messageOptions)
@@ -25,7 +25,7 @@ func MessageOptionFilterByRoleIDs(roleIDs []int32) MessageOption {
 	}
 }
 
-func MessageOptionOrders(orders map[string]scpb.Order) MessageOption {
+func MessageOptionOrders(orders []*scpb.OrderInfo) MessageOption {
 	return func(ops *messageOptions) {
 		ops.orders = orders
 	}

@@ -1,26 +1,24 @@
-package datastore_test
+package datastore
 
 import (
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 )
 
 func TestRoomUserStore(t *testing.T) {
 	newRoomUser := &model.RoomUser{}
-	newRoomUser.RoomID = "room-id-0000"
-	newRoomUser.UserID = "user-id-0000"
+	newRoomUser.RoomID = "datastore-room-id-0001"
+	newRoomUser.UserID = "datastore-user-id-0001"
 	newRoomUser.UnreadCount = 1
 	newRoomUser.Display = true
 	newRoomUsers := []*model.RoomUser{newRoomUser}
-	err := datastore.Provider(ctx).InsertRoomUsers(newRoomUsers)
+	err := Provider(ctx).InsertRoomUsers(newRoomUsers)
 	if err != nil {
 		t.Fatalf("Failed insert room users test")
 	}
 
-	roomUser, err := datastore.Provider(ctx).SelectRoomUser("room-id-0000", "user-id-0000")
+	roomUser, err := Provider(ctx).SelectRoomUser("datastore-room-id-0001", "datastore-user-id-0001")
 	if err != nil {
 		t.Fatalf("Failed select room user test")
 	}
@@ -29,7 +27,7 @@ func TestRoomUserStore(t *testing.T) {
 	}
 
 	roomUser.UnreadCount = 0
-	updatedRoomUser, err := datastore.Provider(ctx).UpdateRoomUser(roomUser)
+	updatedRoomUser, err := Provider(ctx).UpdateRoomUser(roomUser)
 	if err != nil {
 		t.Fatalf("Failed update room user test")
 	}
@@ -37,8 +35,8 @@ func TestRoomUserStore(t *testing.T) {
 		t.Fatalf("Failed update room user test")
 	}
 
-	// err = datastore.Provider(ctx).DeleteUserRoles(
-	// 	datastore.UserRoleOptionFilterByUserID("user-id"),
+	// err = Provider(ctx).DeleteUserRoles(
+	// 	UserRoleOptionFilterByUserID("user-id"),
 	// )
 	// if err != nil {
 	// 	t.Fatalf("Failed delete user roles test")
@@ -47,8 +45,8 @@ func TestRoomUserStore(t *testing.T) {
 	// 	t.Fatalf("Failed delete user roles test")
 	// }
 
-	// err = datastore.Provider(ctx).DeleteUserRoles(
-	// 	datastore.UserRoleOptionFilterByRoleID(1),
+	// err = Provider(ctx).DeleteUserRoles(
+	// 	UserRoleOptionFilterByRoleID(1),
 	// )
 	// if err != nil {
 	// 	t.Fatalf("Failed delete user roles test")
@@ -57,9 +55,9 @@ func TestRoomUserStore(t *testing.T) {
 	// 	t.Fatalf("Failed delete user roles test")
 	// }
 
-	// err = datastore.Provider(ctx).DeleteUserRoles(
-	// 	datastore.UserRoleOptionFilterByUserID("user-id"),
-	// 	datastore.UserRoleOptionFilterByRoleID(1),
+	// err = Provider(ctx).DeleteUserRoles(
+	// 	UserRoleOptionFilterByUserID("user-id"),
+	// 	UserRoleOptionFilterByRoleID(1),
 	// )
 	// if err != nil {
 	// 	t.Fatalf("Failed delete user roles test")

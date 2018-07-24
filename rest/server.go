@@ -340,10 +340,10 @@ func setLastModified(w http.ResponseWriter, timestamp int64) {
 	w.Header().Set("Last-Modified", lm)
 }
 
-func setPagingParams(params url.Values) (int32, int32, map[string]scpb.Order, *model.ProblemDetail) {
+func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model.ProblemDetail) {
 	limit := int32(10)
 	offset := int32(0)
-	var orders map[string]scpb.Order
+	var orders []*scpb.OrderInfo
 
 	if limitArray, ok := params["limit"]; ok {
 		limitInt, err := strconv.Atoi(limitArray[0])
@@ -381,11 +381,15 @@ func setPagingParams(params url.Values) (int32, int32, map[string]scpb.Order, *m
 		orderString := orderArray[0] // ex) field1+desc,field2+asc
 
 		orderPairs := strings.Split(orderString, ",")
-		orders := make(map[string]scpb.Order, len(orderPairs))
+		orders := make([]*scpb.OrderInfo, len(orderPairs))
 		for _, orderPair := range orderPairs {
 			order := strings.Split(orderPair, "+")
 			if orderInt32, ok := scpb.Order_value[order[1]]; ok {
-				orders[order[0]] = scpb.Order(orderInt32)
+				orderInfo := &scpb.OrderInfo{
+					Field: order[0],
+					Order: scpb.Order(orderInt32),
+				}
+				orders = append(orders, orderInfo)
 			}
 		}
 	}

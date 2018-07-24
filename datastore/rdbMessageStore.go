@@ -167,8 +167,8 @@ func rdbSelectMessages(db string, limit, offset int32, opts ...MessageOption) ([
 		query = fmt.Sprintf("%s created ASC", query)
 	} else {
 		i := 1
-		for k, v := range opt.orders {
-			query = fmt.Sprintf("%s %s %s", query, k, v.String())
+		for _, orderInfo := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, orderInfo.Field, orderInfo.Order.String())
 			if i < len(opt.orders) {
 				query = fmt.Sprintf("%s,", query)
 			}

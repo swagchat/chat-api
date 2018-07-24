@@ -112,8 +112,8 @@ func rdbSelectUsers(db string, limit, offset int32, opts ...UserOption) ([]*mode
 		query = fmt.Sprintf("%s unread_count DESC", query)
 	} else {
 		i := 1
-		for k, v := range opt.orders {
-			query = fmt.Sprintf("%s %s %s", query, k, v.String())
+		for _, orderInfo := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, orderInfo.Field, orderInfo.Order.String())
 			if i < len(opt.orders) {
 				query = fmt.Sprintf("%s,", query)
 			}

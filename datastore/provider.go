@@ -39,6 +39,7 @@ func Provider(ctx context.Context) provider {
 	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
+			onMemory:      dsCfg.SQLite.OnMemory,
 			dirPath:       dsCfg.SQLite.DirPath,
 			database:      dsCfg.Database,
 			enableLogging: dsCfg.EnableLogging,
