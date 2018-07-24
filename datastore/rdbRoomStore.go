@@ -107,7 +107,6 @@ func rdbSelectRooms(db string, limit, offset int32, opts ...RoomOption) ([]*mode
 	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
 	params["limit"] = limit
 	params["offset"] = offset
-	println(query)
 	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting rooms. %v.", err))
@@ -202,35 +201,24 @@ func rdbUpdateRoomDeleted(db, roomID string) error {
 		return err
 	}
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
-	params := map[string]interface{}{
-		"roomId": roomID,
-	}
-	_, err = trans.Exec(query, params)
+	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
+	_, err = trans.Exec(query, roomID)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameSubscription)
-	params = map[string]interface{}{
-		"roomId":  roomID,
-		"deleted": time.Now().Unix(),
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
+	_, err = trans.Exec(query, time.Now().Unix(), roomID)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameRoom)
-	params = map[string]interface{}{
-		"roomId":  roomID,
-		"deleted": time.Now().Unix(),
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
+	_, err = trans.Exec(query, time.Now().Unix(), roomID)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))

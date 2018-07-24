@@ -110,7 +110,11 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResponse, *model.ProblemDetail) {
 	logger.Info(fmt.Sprintf("Start GetRooms. Request[%#v]", req))
 
-	rooms, err := datastore.Provider(ctx).SelectRooms(req.Limit, req.Offset)
+	rooms, err := datastore.Provider(ctx).SelectRooms(
+		req.Limit,
+		req.Offset,
+		datastore.RoomOptionOrders(req.Orders),
+	)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get rooms failed",
@@ -266,18 +270,26 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.Proble
 }
 
 // GetRoomMessages gets room messages
-func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int32, order string) (*model.Messages, *model.ProblemDetail) {
+func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.Messages, *model.ProblemDetail) {
 	userID := ctx.Value(utils.CtxUserID).(string)
 	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
 	if pd != nil {
 		return nil, pd
 	}
 
+	var roleIDs []int32
+	if req.RoleIDs == nil {
+		roleIDs = user.Roles
+	} else {
+		roleIDs = req.RoleIDs
+	}
+
 	messages, err := datastore.Provider(ctx).SelectMessages(
-		limit,
-		offset,
-		datastore.MessageOptionFilterByRoomID(roomID),
-		datastore.MessageOptionFilterByRoleIDs(user.Roles),
+		req.Limit,
+		req.Offset,
+		datastore.MessageOptionOrders(req.Orders),
+		datastore.MessageOptionFilterByRoomID(req.RoomID),
+		datastore.MessageOptionFilterByRoleIDs(roleIDs),
 	)
 	if err != nil {
 		pd := &model.ProblemDetail{
@@ -292,8 +304,8 @@ func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(
-		datastore.MessageOptionFilterByRoomID(roomID),
-		datastore.MessageOptionFilterByRoleIDs(user.Roles),
+		datastore.MessageOptionFilterByRoomID(req.RoomID),
+		datastore.MessageOptionFilterByRoleIDs(req.RoleIDs),
 	)
 	if err != nil {
 		pd := &model.ProblemDetail{
@@ -305,7 +317,7 @@ func GetRoomMessages(ctx context.Context, roomID string, limit int32, offset int
 	}
 	returnMessages.AllCount = count
 
-	updateLastAccessRoomID(ctx, roomID)
+	updateLastAccessRoomID(ctx, req.RoomID)
 
 	return returnMessages, nil
 }

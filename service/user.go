@@ -62,7 +62,11 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResponse, *model.ProblemDetail) {
 	logger.Info(fmt.Sprintf("Start GetUsers. Request[%#v]", req))
 
-	users, err := datastore.Provider(ctx).SelectUsers(req.Limit, req.Offset)
+	users, err := datastore.Provider(ctx).SelectUsers(
+		req.Limit,
+		req.Offset,
+		datastore.UserOptionOrders(req.Orders),
+	)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get users failed",
@@ -87,7 +91,7 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 	res.AllCount = count
 	res.Limit = req.Limit
 	res.Offset = req.Offset
-	res.Order = req.Order
+	res.Orders = req.Orders
 
 	logger.Info(fmt.Sprintf("Finish GetUsers."))
 	return res, nil
@@ -237,7 +241,7 @@ func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.Use
 	res.AllCount = int64(0)
 	res.Limit = req.Limit
 	res.Offset = req.Offset
-	res.Order = req.Order
+	res.Orders = req.Orders
 
 	logger.Info(fmt.Sprintf("Finish GetContacts."))
 	return res, nil

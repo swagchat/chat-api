@@ -385,3 +385,7 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ProblemDetail {
 type DeleteRoomRequest struct {
 	scpb.DeleteRoomRequest
 }
+
+type GetRoomMessagesRequest struct {
+	scpb.GetRoomMessagesRequest
+}

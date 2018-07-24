@@ -1,13 +1,16 @@
 package datastore
 
-import "github.com/swagchat/chat-api/model"
+import (
+	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf"
+)
 
 type userOptions struct {
 	withBlocks  bool
 	withDevices bool
 	withRoles   bool
 	withRooms   bool
-	orders      Orders
+	orders      map[string]scpb.Order
 	user        interface{}
 	devices     []*model.Device
 	roles       []*model.UserRole
@@ -51,7 +54,7 @@ func UserOptionWithRooms(b bool) UserOption {
 	}
 }
 
-func UserOptionOrders(orders Orders) UserOption {
+func UserOptionOrders(orders map[string]scpb.Order) UserOption {
 	return func(ops *userOptions) {
 		ops.orders = orders
 	}

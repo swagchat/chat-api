@@ -22,6 +22,7 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
 )
 
 var (
@@ -339,14 +340,15 @@ func setLastModified(w http.ResponseWriter, timestamp int64) {
 	w.Header().Set("Last-Modified", lm)
 }
 
-func setPagingParams(params url.Values) (int32, int32, string, *model.ProblemDetail) {
+func setPagingParams(params url.Values) (int32, int32, map[string]scpb.Order, *model.ProblemDetail) {
 	limit := int32(10)
 	offset := int32(0)
-	order := "ASC"
+	var orders map[string]scpb.Order
+
 	if limitArray, ok := params["limit"]; ok {
 		limitInt, err := strconv.Atoi(limitArray[0])
 		if err != nil {
-			return limit, offset, order, &model.ProblemDetail{
+			return limit, offset, orders, &model.ProblemDetail{
 				Message: "Request parameter error.",
 				Status:  http.StatusBadRequest,
 				InvalidParams: []*model.InvalidParam{
@@ -362,7 +364,7 @@ func setPagingParams(params url.Values) (int32, int32, string, *model.ProblemDet
 	if offsetArray, ok := params["offset"]; ok {
 		offsetInt, err := strconv.Atoi(offsetArray[0])
 		if err != nil {
-			return limit, offset, order, &model.ProblemDetail{
+			return limit, offset, orders, &model.ProblemDetail{
 				Message: "Request parameter error.",
 				Status:  http.StatusBadRequest,
 				InvalidParams: []*model.InvalidParam{
@@ -376,25 +378,17 @@ func setPagingParams(params url.Values) (int32, int32, string, *model.ProblemDet
 		offset = int32(offsetInt)
 	}
 	if orderArray, ok := params["order"]; ok {
-		order := orderArray[0]
-		allowedOrders := []string{
-			"DESC",
-			"desc",
-			"ASC",
-			"asc",
-		}
-		if utils.SearchStringValueInSlice(allowedOrders, order) {
-			return limit, offset, order, &model.ProblemDetail{
-				Message: "Request parameter error.",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "order",
-						Reason: "order is incorrect.",
-					},
-				},
+		orderString := orderArray[0] // ex) field1+desc,field2+asc
+
+		orderPairs := strings.Split(orderString, ",")
+		orders := make(map[string]scpb.Order, len(orderPairs))
+		for _, orderPair := range orderPairs {
+			order := strings.Split(orderPair, "+")
+			if orderInt32, ok := scpb.Order_value[order[1]]; ok {
+				orders[order[0]] = scpb.Order(orderInt32)
 			}
 		}
 	}
-	return limit, offset, order, nil
+
+	return limit, offset, orders, nil
 }

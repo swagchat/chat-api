@@ -1,11 +1,14 @@
 package datastore
 
-import "github.com/swagchat/chat-api/model"
+import (
+	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf"
+)
 
 type messageOptions struct {
 	roomID  string
 	roleIDs []int32
-	orders  Orders
+	orders  map[string]scpb.Order
 }
 
 type MessageOption func(*messageOptions)
@@ -22,7 +25,7 @@ func MessageOptionFilterByRoleIDs(roleIDs []int32) MessageOption {
 	}
 }
 
-func MessageOptionOrders(orders Orders) MessageOption {
+func MessageOptionOrders(orders map[string]scpb.Order) MessageOption {
 	return func(ops *messageOptions) {
 		ops.orders = orders
 	}

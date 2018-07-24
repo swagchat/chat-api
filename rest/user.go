@@ -45,14 +45,14 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, order, pd := setPagingParams(params)
+	limit, offset, orders, pd := setPagingParams(params)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 	req.Limit = limit
 	req.Offset = offset
-	req.Order = order
+	req.Orders = orders
 
 	users, pd := service.GetUsers(r.Context(), req)
 	if pd != nil {
@@ -135,14 +135,14 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, order, pd := setPagingParams(params)
+	limit, offset, orders, pd := setPagingParams(params)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 	req.Limit = limit
 	req.Offset = offset
-	req.Order = order
+	req.Orders = orders
 
 	contacts, pd := service.GetContacts(r.Context(), req)
 	if pd != nil {

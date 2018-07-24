@@ -12,7 +12,7 @@ func Join(stringSlice []string, delimiter string, enclosure string) string {
 	resultString := ""
 	for i, v := range stringSlice {
 		if i == (len(stringSlice) - 1) {
-			resultString = fmt.Sprintf("%s%s%s", resultString, enclosure, v, enclosure)
+			resultString = fmt.Sprintf("%s%s%s%s", resultString, enclosure, v, enclosure)
 		} else {
 			resultString = fmt.Sprintf("%s%s%s%s%s", resultString, enclosure, v, enclosure, delimiter)
 		}

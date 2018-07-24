@@ -42,14 +42,14 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, order, pd := setPagingParams(params)
+	limit, offset, orders, pd := setPagingParams(params)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
 	req.Limit = limit
 	req.Offset = offset
-	req.Order = order
+	req.Orders = orders
 
 	rooms, pd := service.GetRooms(r.Context(), req)
 	if pd != nil {
@@ -109,16 +109,27 @@ func deleteRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoomMessages(w http.ResponseWriter, r *http.Request) {
-	roomID := bone.GetValue(r, "roomId")
-	params, _ := url.ParseQuery(r.URL.RawQuery)
+	req := &model.GetRoomMessagesRequest{}
 
-	limit, offset, order, pd := setPagingParams(params)
+	roomID := bone.GetValue(r, "roomId")
+	req.RoomID = roomID
+
+	params, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		respondErr(w, r, http.StatusBadRequest, nil)
+		return
+	}
+
+	limit, offset, orders, pd := setPagingParams(params)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return
 	}
+	req.Limit = limit
+	req.Offset = offset
+	req.Orders = orders
 
-	messages, pd := service.GetRoomMessages(r.Context(), roomID, limit, offset, order)
+	messages, pd := service.GetRoomMessages(r.Context(), req)
 	if pd != nil {
 		respondErr(w, r, pd.Status, pd)
 		return

@@ -1,23 +1,26 @@
 package datastore
 
-import "github.com/swagchat/chat-api/model"
+import (
+	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf"
+)
 
 type roomOptions struct {
-	orders Orders
+	orders map[string]scpb.Order
 	users  []*model.RoomUser
 }
 
 type RoomOption func(*roomOptions)
 
-func RoomOptionInsertRoomUser(users []*model.RoomUser) RoomOption {
+func RoomOptionOrders(orders map[string]scpb.Order) RoomOption {
 	return func(ops *roomOptions) {
-		ops.users = users
+		ops.orders = orders
 	}
 }
 
-func RoomOptionOrders(orders Orders) RoomOption {
+func RoomOptionInsertRoomUser(users []*model.RoomUser) RoomOption {
 	return func(ops *roomOptions) {
-		ops.orders = orders
+		ops.users = users
 	}
 }
 

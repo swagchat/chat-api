@@ -19,7 +19,7 @@ func TestUserRoleStore(t *testing.T) {
 	}
 
 	ur, err = datastore.Provider(ctx).SelectUserRole(
-		datastore.UserRoleOptionFilterByUserID("user-id"),
+		datastore.UserRoleOptionFilterByUserID("user-id-0000"),
 		datastore.UserRoleOptionFilterByRoleID(1),
 	)
 	if err != nil {
