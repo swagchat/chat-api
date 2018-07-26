@@ -22,9 +22,9 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pd := service.CreateUserRoles(r.Context(), &req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	errRes := service.CreateUserRoles(r.Context(), &req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -61,11 +61,12 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 	if userID != "" {
 		gRIDsReq := &model.GetRoleIdsOfUserRoleRequest{}
 		gRIDsReq.UserID = userID
-		roleIDs, pd := service.GetRoleIDsOfUserRole(r.Context(), gRIDsReq)
-		if pd != nil {
-			respondErr(w, r, pd.Status, pd)
+		roleIDs, errRes := service.GetRoleIDsOfUserRole(r.Context(), gRIDsReq)
+		if errRes != nil {
+			respondError(w, r, errRes)
 			return
 		}
+
 		respond(w, r, http.StatusOK, "application/json", roleIDs)
 		return
 	}
@@ -92,11 +93,12 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 	if roleIDint32 > 0 {
 		gUIDsReq := &model.GetUserIdsOfUserRoleRequest{}
 		gUIDsReq.RoleID = roleIDint32
-		userIDs, pd := service.GetUserIDsOfUserRole(r.Context(), gUIDsReq)
-		if pd != nil {
-			respondErr(w, r, pd.Status, pd)
+		userIDs, errRes := service.GetUserIDsOfUserRole(r.Context(), gUIDsReq)
+		if errRes != nil {
+			respondError(w, r, errRes)
 			return
 		}
+
 		respond(w, r, http.StatusOK, "application/json", userIDs)
 		return
 	}
@@ -111,9 +113,9 @@ func deleteUserRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pd := service.DeleteUserRoles(r.Context(), &req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	errRes := service.DeleteUserRoles(r.Context(), &req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

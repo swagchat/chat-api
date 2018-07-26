@@ -39,7 +39,7 @@ func PutBlockUsers(ctx context.Context, userID string, reqUIDs *model.RequestBlo
 		return nil, pd
 	}
 
-	bUIDs, pd := getExistUserIDs(ctx, reqUIDs.UserIDs)
+	bUIDs, pd := getExistUserIDsOld(ctx, reqUIDs.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}
@@ -91,7 +91,7 @@ func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *model.Request
 		return nil, pd
 	}
 
-	bUIDs, pd := getExistUserIDs(ctx, reqUIDs.UserIDs)
+	bUIDs, pd := getExistUserIDsOld(ctx, reqUIDs.UserIDs)
 	if pd != nil {
 		return nil, pd
 	}

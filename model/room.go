@@ -11,10 +11,6 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-// type Rooms struct {
-// 	Rooms    []*Room `json:"rooms" db:"-"`
-// 	AllCount int64   `json:"allCount" db:"all_count"`
-// }
 type RoomsResponse struct {
 	scpb.RoomsResponse
 	Rooms []*Room `json:"rooms"`
@@ -200,71 +196,66 @@ type CreateRoomRequest struct {
 	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 }
 
-func (r *CreateRoomRequest) Validate() *ProblemDetail {
+func (r *CreateRoomRequest) Validate() *ErrorResponse {
 	if r.RoomID != "" && !IsValidID(r.RoomID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "roomId",
-					Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roomId",
+				Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if r.UserID == "" {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is required, but it's empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is required, but it's empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if !IsValidID(r.UserID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if r.Type == 0 {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "type",
-					Reason: "type is required, but it's empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "type",
+				Reason: "type is required, but it's empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	roomType := scpb.RoomType.String(r.Type)
 	if roomType == "" {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "type",
-					Reason: "type is incorrect.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "type",
+				Reason: "type is incorrect.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	if r.Type == scpb.RoomType_OneOnOne && len(r.UserIDs) == 0 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "type",
+				Reason: "In case of 1on1 type, it is necessary to set userIds.",
+			},
+		}
+		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	// if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SpeechModeEnd) {
@@ -288,6 +279,8 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 
 	if crr.RoomID == "" {
 		r.RoomID = utils.GenerateUUID()
+	} else {
+		r.RoomID = crr.RoomID
 	}
 
 	r.UserID = crr.UserID
@@ -353,30 +346,24 @@ type UpdateRoomRequest struct {
 	MetaData utils.JSONText `db:"meta_data"`
 }
 
-func (uur *UpdateRoomRequest) Validate(room *Room) *ProblemDetail {
+func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 	if uur.Type != 0 {
 		if room.Type == scpb.RoomType_OneOnOne && uur.Type != scpb.RoomType_OneOnOne {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "type",
-						Reason: "In case of 1-on-1 room type, type can not be changed.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "type",
+					Reason: "In case of 1-on-1 room type, type can not be changed.",
 				},
 			}
+			return NewErrorResponse("Failed to update room.", invalidParams, http.StatusBadRequest, nil)
 		} else if room.Type != scpb.RoomType_OneOnOne && uur.Type == scpb.RoomType_OneOnOne {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "type",
-						Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "type",
+					Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
 				},
 			}
+			return NewErrorResponse("Failed to update room.", invalidParams, http.StatusBadRequest, nil)
 		}
 	}
 	return nil

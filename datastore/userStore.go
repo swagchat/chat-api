@@ -5,68 +5,77 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-type userOptions struct {
-	withBlocks  bool
-	withDevices bool
-	withRoles   bool
-	withRooms   bool
-	orders      []*scpb.OrderInfo
-	user        interface{}
-	devices     []*model.Device
-	roles       []*model.UserRole
+type InsertUserOption func(*insertUserOptions)
+
+type insertUserOptions struct {
+	devices []*model.Device
+	roles   []*model.UserRole
 }
 
-type UserOption func(*userOptions)
-
-func UserOptionInsertDevices(devices []*model.Device) UserOption {
-	return func(ops *userOptions) {
+func InsertUserOptionWithDevices(devices []*model.Device) InsertUserOption {
+	return func(ops *insertUserOptions) {
 		ops.devices = devices
 	}
 }
 
-func UserOptionInsertRoles(roles []*model.UserRole) UserOption {
-	return func(ops *userOptions) {
+func InsertUserOptionWithRoles(roles []*model.UserRole) InsertUserOption {
+	return func(ops *insertUserOptions) {
 		ops.roles = roles
 	}
 }
 
-func UserOptionWithBlocks(b bool) UserOption {
-	return func(ops *userOptions) {
-		ops.withBlocks = b
-	}
+type SelectUsersOption func(*selectUsersOptions)
+
+type selectUsersOptions struct {
+	orders []*scpb.OrderInfo
 }
 
-func UserOptionWithDevices(b bool) UserOption {
-	return func(ops *userOptions) {
-		ops.withDevices = b
-	}
-}
-
-func UserOptionWithRoles(b bool) UserOption {
-	return func(ops *userOptions) {
-		ops.withRoles = b
-	}
-}
-
-func UserOptionWithRooms(b bool) UserOption {
-	return func(ops *userOptions) {
-		ops.withRooms = b
-	}
-}
-
-func UserOptionOrders(orders []*scpb.OrderInfo) UserOption {
-	return func(ops *userOptions) {
+func SelectUsersOptionWithOrders(orders []*scpb.OrderInfo) SelectUsersOption {
+	return func(ops *selectUsersOptions) {
 		ops.orders = orders
+	}
+}
+
+type selectUserOptions struct {
+	withBlocks  bool
+	withDevices bool
+	withRoles   bool
+	withRooms   bool
+}
+
+type SelectUserOption func(*selectUserOptions)
+
+func SelectUserOptionWithBlocks(withBlocks bool) SelectUserOption {
+	return func(ops *selectUserOptions) {
+		ops.withBlocks = withBlocks
+	}
+}
+
+func SelectUserOptionWithDevices(withDevices bool) SelectUserOption {
+	return func(ops *selectUserOptions) {
+		ops.withDevices = withDevices
+	}
+}
+
+func SelectUserOptionWithRoles(withRoles bool) SelectUserOption {
+	return func(ops *selectUserOptions) {
+		ops.withRoles = withRoles
+	}
+}
+
+func SelectUserOptionWithRooms(withRooms bool) SelectUserOption {
+	return func(ops *selectUserOptions) {
+		ops.withRooms = withRooms
 	}
 }
 
 type userStore interface {
 	createUserStore()
 
-	InsertUser(user *model.User, opts ...UserOption) error
-	SelectUsers(limit, offset int32, opts ...UserOption) ([]*model.User, error)
-	SelectUser(userID string, opts ...UserOption) (*model.User, error)
-	SelectCountUsers(opts ...UserOption) (int64, error)
+	InsertUser(user *model.User, opts ...InsertUserOption) error
+	SelectUsers(limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error)
+	SelectUser(userID string, opts ...SelectUserOption) (*model.User, error)
+	SelectCountUsers(opts ...SelectUsersOption) (int64, error)
 	SelectUserIDsByUserIDs(userIDs []string) ([]string, error)
 	UpdateUser(user *model.User) error
 

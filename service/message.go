@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
@@ -20,46 +19,26 @@ import (
 // PostMessage is post message
 func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMessages {
 	messageIds := make([]string, 0)
-	pds := make([]*model.ProblemDetail, 0)
+	pds := make([]*model.ErrorResponse, 0)
 	for _, post := range posts.Messages {
 		logger.Info(fmt.Sprintf("Start CreateMessage. Message=[%#v]", post))
-		room, pd := selectRoom(ctx, post.RoomID)
-		if pd != nil {
-			pds = append(pds, &model.ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "roomId",
-						Reason: "roomId is invalid. Not exist room.",
-					},
-				},
-				Status: http.StatusBadRequest,
-			})
+		room, errRes := confirmRoomExist(ctx, post.RoomID)
+		if errRes != nil {
+			errRes.Message = "Failed to create message."
+			pds = append(pds, errRes)
 			continue
 		}
 
-		user, pd := selectUser(ctx, post.UserID, datastore.UserOptionWithRoles(true))
-		if pd != nil {
-			pds = append(pds, &model.ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "userId",
-						Reason: "userId is invalid. Not exist user.",
-					},
-				},
-				Status: http.StatusBadRequest,
-			})
-			logger.Error(fmt.Sprintf("Message is invalid. %s", pd.Message))
+		user, errRes := confirmUserExist(ctx, post.UserID, datastore.SelectUserOptionWithRoles(true))
+		if errRes != nil {
+			errRes.Message = "Failed to create message."
+			pds = append(pds, errRes)
 			continue
 		}
 
-		pd = post.IsValid()
-		if pd != nil {
-			for _, ip := range pd.InvalidParams {
-				logger.Error(fmt.Sprintf("Message is invalid. name[%s] reason[%s]", ip.Name, ip.Reason))
-			}
-			pds = append(pds, pd)
+		errRes = post.Validate()
+		if errRes != nil {
+			pds = append(pds, errRes)
 			continue
 		}
 
@@ -72,24 +51,17 @@ func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMess
 			continue
 		}
 
-		m, _ := datastore.Provider(ctx).SelectMessage(post.MessageID)
-		if m != nil {
-			pds = append(pds, &model.ProblemDetail{
-				Message: "messageId is already exist",
-				Status:  http.StatusConflict,
-			})
-			logger.Error(fmt.Sprintf("Message is invalid. %s", pd.Message))
+		_, errRes = confirmMessageNotExist(ctx, post.MessageID)
+		if errRes != nil {
+			errRes.Message = "Failed to create message."
+			pds = append(pds, errRes)
+			continue
 		}
 
 		err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
-			pd := &model.ProblemDetail{
-				Message: "Message registration failed",
-				Status:  http.StatusInternalServerError,
-				Error:   errors.Wrap(err, ""),
-			}
-			logger.Error(fmt.Sprintf("Message is invalid. %s", pd.Message))
-			pds = append(pds, pd)
+			errRes := model.NewErrorResponse("Failed to create message.", nil, http.StatusInternalServerError, err)
+			pds = append(pds, errRes)
 			continue
 		}
 

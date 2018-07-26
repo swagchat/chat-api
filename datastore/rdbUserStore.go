@@ -16,7 +16,6 @@ func rdbCreateUserStore(db string) {
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.User{}, tableNameUser)
-	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "user_id" {
 			columnMap.SetUnique(true)
@@ -29,10 +28,10 @@ func rdbCreateUserStore(db string) {
 	}
 }
 
-func rdbInsertUser(db string, user *model.User, opts ...UserOption) error {
+func rdbInsertUser(db string, user *model.User, opts ...InsertUserOption) error {
 	master := RdbStore(db).master()
 
-	opt := userOptions{}
+	opt := insertUserOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -95,10 +94,10 @@ func rdbInsertUser(db string, user *model.User, opts ...UserOption) error {
 	return nil
 }
 
-func rdbSelectUsers(db string, limit, offset int32, opts ...UserOption) ([]*model.User, error) {
+func rdbSelectUsers(db string, limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	opt := userOptions{}
+	opt := selectUsersOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -135,10 +134,10 @@ func rdbSelectUsers(db string, limit, offset int32, opts ...UserOption) ([]*mode
 	return users, nil
 }
 
-func rdbSelectUser(db, userID string, opts ...UserOption) (*model.User, error) {
+func rdbSelectUser(db, userID string, opts ...SelectUserOption) (*model.User, error) {
 	replica := RdbStore(db).replica()
 
-	opt := userOptions{}
+	opt := selectUserOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -287,10 +286,10 @@ func rdbSelectUserByUserIDAndAccessToken(db, userID, accessToken string) (*model
 	return nil, nil
 }
 
-func rdbSelectCountUsers(db string, opts ...UserOption) (int64, error) {
+func rdbSelectCountUsers(db string, opts ...SelectUsersOption) (int64, error) {
 	replica := RdbStore(db).replica()
 
-	opt := userOptions{}
+	opt := selectUsersOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}

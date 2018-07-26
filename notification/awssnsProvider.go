@@ -80,7 +80,8 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 		}
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating topic.", err)
+			logger.Error(err.Error())
+			result.Error = err
 		} else {
 			result.Data = createTopicOutput.TopicArn
 		}
@@ -102,7 +103,8 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 		}
 		_, err := client.DeleteTopic(params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while deleting topic.", err)
+			logger.Error(err.Error())
+			result.Error = err
 		}
 
 		nc <- result
@@ -137,7 +139,8 @@ func (ap *awssnsProvider) CreateEndpoint(userId string, platform int32, deviceTo
 		}
 		createPlatformEndpointOutput, err := client.CreatePlatformEndpoint(createPlatformEndpointInputParams)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while creating endpoint.", err)
+			logger.Error(err.Error())
+			result.Error = err
 		} else {
 			result.Data = createPlatformEndpointOutput.EndpointArn
 		}
@@ -159,7 +162,8 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 		}
 		_, err := client.DeleteEndpoint(deleteEndpointInputParams)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while deleting endpoint.", err)
+			logger.Error(err.Error())
+			result.Error = err
 		}
 
 		nc <- result
@@ -181,7 +185,8 @@ func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDevi
 		}
 		subscribeOutput, err := client.Subscribe(subscribeInputParams)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while subscribing.", err)
+			logger.Error(err.Error())
+			result.Error = err
 		} else {
 			result.Data = subscribeOutput.SubscriptionArn
 		}
@@ -203,7 +208,8 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) Notificati
 		}
 		_, err := client.Unsubscribe(params)
 		if err != nil {
-			result.ProblemDetail = createProblemDetail("An error occurred while unsubscribing.", err)
+			logger.Error(err.Error())
+			result.Error = err
 		}
 
 		nc <- result
@@ -234,7 +240,8 @@ func (ap *awssnsProvider) Publish(ctx context.Context, notificationTopicId, room
 	}
 	b, err := json.Marshal(ios)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
+		logger.Error(err.Error())
+		result.Error = err
 		nc <- result
 	}
 	wrapper.APNS = string(b[:])
@@ -248,13 +255,15 @@ func (ap *awssnsProvider) Publish(ctx context.Context, notificationTopicId, room
 	}
 	b, err = json.Marshal(gcm)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
+		logger.Error(err.Error())
+		result.Error = err
 		nc <- result
 	}
 	wrapper.GCM = string(b[:])
 	pushData, err := json.Marshal(wrapper)
 	if err != nil {
-		result.ProblemDetail = createProblemDetail("An error occurred while publishing.", err)
+		logger.Error(err.Error())
+		result.Error = err
 		nc <- result
 	}
 	message := string(pushData[:])

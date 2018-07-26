@@ -6,19 +6,19 @@ func (p *mysqlProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *mysqlProvider) InsertUser(user *model.User, opts ...UserOption) error {
+func (p *mysqlProvider) InsertUser(user *model.User, opts ...InsertUserOption) error {
 	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *mysqlProvider) SelectUsers(limit, offset int32, opts ...UserOption) ([]*model.User, error) {
+func (p *mysqlProvider) SelectUsers(limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error) {
 	return rdbSelectUsers(p.database, limit, offset, opts...)
 }
 
-func (p *mysqlProvider) SelectUser(userID string, opts ...UserOption) (*model.User, error) {
+func (p *mysqlProvider) SelectUser(userID string, opts ...SelectUserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 
-func (p *mysqlProvider) SelectCountUsers(opts ...UserOption) (int64, error) {
+func (p *mysqlProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, error) {
 	return rdbSelectCountUsers(p.database, opts...)
 }
 

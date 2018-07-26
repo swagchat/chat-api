@@ -67,7 +67,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		LastAccessed     string         `json:"lastAccessed"`
 		Created          string         `json:"created"`
 		Modified         string         `json:"modified"`
-		Roles            []int32        `json:"roles,omitempty"`
+		Roles            []int32        `json:"roles"`
 		Rooms            []*RoomForUser `json:"rooms"`
 		Devices          []*Device      `json:"devices"`
 		Blocks           []string       `json:"blocks"`
@@ -250,44 +250,35 @@ type CreateUserRequest struct {
 	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 }
 
-func (u *CreateUserRequest) Validate() *ProblemDetail {
+func (u *CreateUserRequest) Validate() *ErrorResponse {
 	if u.UserID != "" && !IsValidID(u.UserID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create user.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if len(u.UserID) > 36 {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is invalid. A string up to 36 symbols long.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. A string up to 36 symbols long.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create user.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if u.Name == "" {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "name",
-					Reason: "name is required, but it's empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "name",
+				Reason: "name is required, but it's empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create user.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	return nil
@@ -318,6 +309,7 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 	u.UnreadCount = uint64(0)
 
 	nowTimestamp := time.Now().Unix()
+	u.LastAccessed = nowTimestamp
 	u.Created = nowTimestamp
 	u.Modified = nowTimestamp
 
@@ -350,7 +342,7 @@ type UpdateUserRequest struct {
 	MetaData utils.JSONText `db:"meta_data"`
 }
 
-func (uur *UpdateUserRequest) Validate() *ProblemDetail {
+func (uur *UpdateUserRequest) Validate() *ErrorResponse {
 	return nil
 }
 

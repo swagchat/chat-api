@@ -259,9 +259,9 @@ func contactsAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 		requestUserID := r.Header.Get(utils.HeaderUserID)
 		resourceUserID := bone.GetValue(r, "userId")
-		pd := service.ContactsAuthz(r.Context(), requestUserID, resourceUserID)
-		if pd != nil {
-			respondErr(w, r, pd.Status, pd)
+		errRes := service.ContactsAuthz(r.Context(), requestUserID, resourceUserID)
+		if errRes != nil {
+			respondError(w, r, errRes)
 			return
 		}
 		fn(w, r)
@@ -279,11 +279,12 @@ func roomMemberAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		roomID := bone.GetValue(r, "roomId")
 		userID := r.Header.Get(utils.HeaderUserID)
 
-		pd := service.RoomAuthz(r.Context(), roomID, userID)
-		if pd != nil {
-			respondErr(w, r, pd.Status, pd)
+		errRes := service.RoomAuthz(r.Context(), roomID, userID)
+		if errRes != nil {
+			respondError(w, r, errRes)
 			return
 		}
+
 		fn(w, r)
 	}
 }
@@ -325,6 +326,15 @@ func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *model.Pr
 		}
 	}
 	respond(w, r, status, "application/json", pd)
+}
+
+func respondError(w http.ResponseWriter, r *http.Request, errRes *model.ErrorResponse) {
+	if errRes.Error != nil {
+		if utils.Config().EnableDeveloperMessage {
+			errRes.DeveloperMessage = errRes.Error.Error()
+		}
+	}
+	respond(w, r, errRes.Status, "application/json", errRes)
 }
 
 func respondJSONDecodeError(w http.ResponseWriter, r *http.Request, title string) {
@@ -383,7 +393,10 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 		orderPairs := strings.Split(orderString, ",")
 		orders := make([]*scpb.OrderInfo, len(orderPairs))
 		for _, orderPair := range orderPairs {
-			order := strings.Split(orderPair, "+")
+			order := strings.Split(orderPair, " ")
+			if len(order) != 2 {
+				continue
+			}
 			if orderInt32, ok := scpb.Order_value[order[1]]; ok {
 				orderInfo := &scpb.OrderInfo{
 					Field: order[0],

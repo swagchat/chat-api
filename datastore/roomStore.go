@@ -17,18 +17,6 @@ func InsertRoomOptionWithRoomUser(users []*model.RoomUser) InsertRoomOption {
 	}
 }
 
-type SelectRoomOption func(*selectRoomOptions)
-
-type selectRoomOptions struct {
-	withUsers bool
-}
-
-func SelectRoomOptionWithUsers(withUsers bool) SelectRoomOption {
-	return func(ops *selectRoomOptions) {
-		ops.withUsers = withUsers
-	}
-}
-
 type SelectRoomsOption func(*selectRoomsOptions)
 
 type selectRoomsOptions struct {
@@ -38,6 +26,18 @@ type selectRoomsOptions struct {
 func SelectRoomsOptionWithOrders(orders []*scpb.OrderInfo) SelectRoomsOption {
 	return func(ops *selectRoomsOptions) {
 		ops.orders = orders
+	}
+}
+
+type SelectRoomOption func(*selectRoomOptions)
+
+type selectRoomOptions struct {
+	withUsers bool
+}
+
+func SelectRoomOptionWithUsers(withUsers bool) SelectRoomOption {
+	return func(ops *selectRoomOptions) {
+		ops.withUsers = withUsers
 	}
 }
 

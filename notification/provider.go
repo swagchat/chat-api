@@ -17,8 +17,8 @@ type MessageInfo struct {
 }
 
 type NotificationResult struct {
-	Data          interface{}
-	ProblemDetail *model.ProblemDetail
+	Data  interface{}
+	Error error
 }
 
 type NotificationChannel chan NotificationResult

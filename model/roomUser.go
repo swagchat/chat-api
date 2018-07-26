@@ -24,19 +24,16 @@ func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
 	return roomUsers
 }
 
-func (crur *CreateRoomUsersRequest) Validate() *ProblemDetail {
+func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
 	if crur.Room.Type == scpb.RoomType_OneOnOne {
 		if len(crur.UserIDs) != 1 {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "userIds",
-						Reason: "In case of 1-on-1 room type, only one user can be specified for userIDs.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "userIds",
+					Reason: "In case of 1-on-1 room type, only one user can be specified for userIDs.",
 				},
-				Status: http.StatusBadRequest,
 			}
+			return NewErrorResponse("Failed to create a user.", invalidParams, http.StatusBadRequest, nil)
 		}
 	}
 	return nil

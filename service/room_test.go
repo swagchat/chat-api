@@ -39,7 +39,7 @@ func TestRoom(t *testing.T) {
 		_, errRes := CreateRoom(ctx, req)
 		if errRes != nil {
 			if errRes.InvalidParams == nil {
-				t.Fatalf("failed %s. %s %s", TestNameCreateRoom, errRes.Message, errRes.DeveloperMessage)
+				t.Fatalf("failed %s. %s", TestNameCreateRoom, errRes.Message)
 			} else {
 				for _, invalidParam := range errRes.InvalidParams {
 					t.Fatalf("failed %s. invalid params -> name[%s] reason[%s]", TestNameCreateRoom, invalidParam.Name, invalidParam.Reason)
@@ -52,7 +52,7 @@ func TestRoom(t *testing.T) {
 		req.UserID = "service-user-id-0001"
 		res, errRes := GetRooms(ctx, req)
 		if errRes != nil {
-			t.Fatalf("failed %s. %s %s", TestNameGetRooms, errRes.Message, errRes.DeveloperMessage)
+			t.Fatalf("failed %s. %s", TestNameGetRooms, errRes.Message)
 		}
 		if res == nil {
 			t.Fatalf("failed %s", TestNameGetRooms)
@@ -65,7 +65,7 @@ func TestRoom(t *testing.T) {
 		req.RoomID = "service-room-id-0001"
 		res, errRes := GetRoom(ctx, req)
 		if errRes != nil {
-			t.Fatalf("failed %s. %s %s", TestNameGetRoom, errRes.Message, errRes.DeveloperMessage)
+			t.Fatalf("failed %s. %s", TestNameGetRoom, errRes.Message)
 		}
 		if res == nil {
 			t.Fatalf("failed %s", TestNameGetRoom)
@@ -78,7 +78,7 @@ func TestRoom(t *testing.T) {
 		req.RoomID = "service-room-id-0001"
 		res, errRes := UpdateRoom(ctx, req)
 		if errRes != nil {
-			t.Fatalf("%s. %s %s", TestNameUpdateRoom, errRes.Message, errRes.DeveloperMessage)
+			t.Fatalf("%s. %s", TestNameUpdateRoom, errRes.Message)
 		}
 		if res == nil {
 			t.Fatalf("failed %s", TestNameUpdateRoom)
@@ -89,7 +89,7 @@ func TestRoom(t *testing.T) {
 		req.RoomID = "service-room-id-0001"
 		errRes := DeleteRoom(ctx, req)
 		if errRes != nil {
-			t.Fatalf("%s. %s %s", TestNameDeleteRoom, errRes.Message, errRes.DeveloperMessage)
+			t.Fatalf("%s. %s", TestNameDeleteRoom, errRes.Message)
 		}
 	})
 	t.Run(TestNameGetRoomMessages, func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestRoom(t *testing.T) {
 		req.RoomID = "service-room-id-0001"
 		res, errRes := GetRoomMessages(ctx, req)
 		if errRes != nil {
-			t.Fatalf("%s. %s %s", TestNameGetRoomMessages, errRes.Message, errRes.DeveloperMessage)
+			t.Fatalf("%s. %s", TestNameGetRoomMessages, errRes.Message)
 		}
 		if res == nil {
 			t.Fatalf("failed %s", TestNameGetRoomMessages)

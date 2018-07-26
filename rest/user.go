@@ -28,9 +28,9 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, pd := service.CreateUser(r.Context(), &req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	user, errRes := service.CreateUser(r.Context(), &req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -54,9 +54,9 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	users, pd := service.GetUsers(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	users, errRes := service.GetUsers(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -69,9 +69,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	user, pd := service.GetUser(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	user, errRes := service.GetUser(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -87,9 +87,9 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 	req.UserID = bone.GetValue(r, "userId")
 
-	user, pd := service.UpdateUser(r.Context(), &req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	user, errRes := service.UpdateUser(r.Context(), &req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -102,9 +102,9 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	pd := service.DeleteUser(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	errRes := service.DeleteUser(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -144,9 +144,9 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	contacts, pd := service.GetContacts(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	contacts, errRes := service.GetContacts(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -159,9 +159,9 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	user, pd := service.GetProfile(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	user, errRes := service.GetProfile(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

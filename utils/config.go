@@ -63,8 +63,9 @@ type config struct {
 	HTTPPort               string `yaml:"httpPort"`
 	GRPCPort               string `yaml:"gRPCPort"`
 	Profiling              bool
-	DemoPage               bool `yaml:"demoPage"`
-	EnableDeveloperMessage bool `yaml:"enableDeveloperMessage"`
+	DemoPage               bool   `yaml:"demoPage"`
+	EnableDeveloperMessage bool   `yaml:"enableDeveloperMessage"`
+	FirstClientID          string `yaml:"firstClientId"`
 	Logger                 *Logger
 	Storage                *Storage
 	Datastore              *Datastore
@@ -248,6 +249,7 @@ func defaultSetting() *config {
 		Profiling:              false,
 		DemoPage:               false,
 		EnableDeveloperMessage: false,
+		FirstClientID:          "admin",
 		Logger: &Logger{
 			EnableConsole: true,
 			ConsoleFormat: "text",
@@ -300,6 +302,9 @@ func (c *config) loadEnv() {
 	}
 	if v = os.Getenv("SWAG_ENABLE_DEVELOPER_MESSAGE"); v == "true" {
 		c.EnableDeveloperMessage = true
+	}
+	if v = os.Getenv("SWAG_FIRST_CLIENT_ID"); v != "" {
+		c.FirstClientID = v
 	}
 
 	// Logger
@@ -629,6 +634,8 @@ func (c *config) parseFlag(args []string) error {
 
 	var enableDeveloperMessage string
 	flags.StringVar(&enableDeveloperMessage, "enableDeveloperMessage", "", "false")
+
+	flags.StringVar(&c.FirstClientID, "firstClientId", c.FirstClientID, "")
 
 	// Logging
 	flags.BoolVar(&c.Logger.EnableConsole, "logger.enableConsole", c.Logger.EnableConsole, "")

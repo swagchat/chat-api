@@ -25,9 +25,9 @@ func postRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, pd := service.CreateRoom(r.Context(), &req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	room, errRes := service.CreateRoom(r.Context(), &req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -51,9 +51,9 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	rooms, pd := service.GetRooms(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	rooms, errRes := service.GetRooms(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -66,9 +66,9 @@ func getRoom(w http.ResponseWriter, r *http.Request) {
 	roomID := bone.GetValue(r, "roomId")
 	req.RoomID = roomID
 
-	room, pd := service.GetRoom(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	room, errRes := service.GetRoom(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -84,9 +84,9 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 
 	req.RoomID = bone.GetValue(r, "roomId")
 
-	room, pd := service.UpdateRoom(r.Context(), &req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	room, errRes := service.UpdateRoom(r.Context(), &req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -99,9 +99,9 @@ func deleteRoom(w http.ResponseWriter, r *http.Request) {
 	roomID := bone.GetValue(r, "roomId")
 	req.RoomID = roomID
 
-	pd := service.DeleteRoom(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	errRes := service.DeleteRoom(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

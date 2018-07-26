@@ -15,35 +15,34 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-// CreateRoom creates room
-func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start CreateRoom. Request=[%#v]", req))
+// CreateRoom creates a room
+func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  CreateRoom. Request=[%#v]", req))
 
-	pd := req.Validate()
-	if pd != nil {
-		return nil, pd
+	errRes := req.Validate()
+	if errRes != nil {
+		return nil, errRes
 	}
 
-	_, pd = selectUser(ctx, req.UserID)
-	if pd != nil {
-		return nil, pd
+	_, errRes = confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to create room."
+		return nil, errRes
 	}
 
 	if req.Type == scpb.RoomType_OneOnOne {
 		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(req.UserID, req.UserIDs[0])
 		if err != nil {
-			pd := &model.ProblemDetail{
-				Message: "Failed to create room.",
-				Status:  http.StatusInternalServerError,
-				Error:   err,
-			}
-			return nil, pd
+			return nil, model.NewErrorResponse("Failed to create room.", nil, http.StatusBadRequest, err)
 		}
 		if roomUser != nil {
-			return nil, &model.ProblemDetail{
-				Message: "Resource already exists",
-				Status:  http.StatusConflict,
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "userId",
+					Reason: "userId does not exist",
+				},
 			}
+			return nil, model.NewErrorResponse("Failed to create a room.", invalidParams, http.StatusConflict, nil)
 		}
 	}
 
@@ -51,40 +50,31 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 	req.RoomID = r.RoomID
 
 	if len(req.UserIDs) > 0 {
-		userIDs, pd := getExistUserIDs(ctx, req.UserIDs)
-		if pd != nil {
-			return nil, pd
+		userIDs, errRes := getExistUserIDs(ctx, req.UserIDs)
+		if errRes != nil {
+			errRes.Message = "Failed to create room."
+			return nil, errRes
 		}
 		req.UserIDs = userIDs
 	}
 	rus := req.GenerateRoomUsers()
 
 	if req.UserIDs != nil {
-		notificationTopicID, pd := createTopic(req.RoomID)
-		if pd != nil {
-			return nil, pd
+		notificationTopicID, errRes := createTopic(req.RoomID)
+		if errRes != nil {
+			return nil, errRes
 		}
 		r.NotificationTopicID = notificationTopicID
 	}
 
 	err := datastore.Provider(ctx).InsertRoom(r, datastore.InsertRoomOptionWithRoomUser(rus))
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Failed to create room.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to create room.", nil, http.StatusInternalServerError, err)
 	}
 
 	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(r.RoomID)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Failed to create room.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to create room.", nil, http.StatusInternalServerError, err)
 	}
 
 	go webhookRoom(ctx, r)
@@ -96,12 +86,7 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		datastore.SelectRoomOptionWithUsers(true),
 	)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Failed to create room.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to create room.", nil, http.StatusInternalServerError, err)
 	}
 
 	logger.Info("Finish CreateRoom.")
@@ -109,8 +94,8 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 }
 
 // GetRooms gets rooms
-func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResponse, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start GetRooms. Request[%#v]", req))
+func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResponse, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  GetRooms. Request[%#v]", req))
 
 	rooms, err := datastore.Provider(ctx).SelectRooms(
 		req.Limit,
@@ -118,22 +103,12 @@ func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResp
 		datastore.SelectRoomsOptionWithOrders(req.Orders),
 	)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get rooms failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get rooms.", nil, http.StatusInternalServerError, err)
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountRooms()
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get rooms failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get rooms.", nil, http.StatusInternalServerError, err)
 	}
 
 	res := &model.RoomsResponse{}
@@ -147,18 +122,19 @@ func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResp
 }
 
 // GetRoom gets a room
-func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *model.ProblemDetail) {
+func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *model.ErrorResponse) {
 	logger.Info(fmt.Sprintf("Start  GetRoom. Request[%#v]", req))
 
 	userID := ctx.Value(utils.CtxUserID).(string)
-	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
-	if pd != nil {
-		return nil, pd
+	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
+	if errRes != nil {
+		return nil, errRes
 	}
 
-	room, pd := selectRoom(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
-	if pd != nil {
-		return nil, pd
+	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
+	if errRes != nil {
+		errRes.Message = "Failed to get room."
+		return nil, errRes
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(
@@ -166,12 +142,8 @@ func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *mode
 		datastore.MessageOptionFilterByRoleIDs(user.Roles),
 	)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get room failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get room.", nil, http.StatusInternalServerError, err)
+
 	}
 	room.MessageCount = count
 
@@ -180,29 +152,25 @@ func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *mode
 }
 
 // UpdateRoom updates room
-func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start UpdateRoom. Request[%#v]", req))
+func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  UpdateRoom. Request[%#v]", req))
 
-	room, pd := selectRoom(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
-	if pd != nil {
-		return nil, pd
+	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
+	if errRes != nil {
+		errRes.Message = "Failed to update room."
+		return nil, errRes
 	}
 
-	pd = req.Validate(room)
-	if pd != nil {
-		return nil, pd
+	errRes = req.Validate(room)
+	if errRes != nil {
+		return nil, errRes
 	}
 
 	room.UpdateRoom(req)
 
 	err := datastore.Provider(ctx).UpdateRoom(room)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Update room failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to update room.", nil, http.StatusInternalServerError, err)
 	}
 
 	logger.Info("Finish UpdateRoom.")
@@ -210,30 +178,26 @@ func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room,
 }
 
 // DeleteRoom deletes room
-func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start DeleteRoom. Request[%#v]", req))
+func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorResponse {
+	logger.Info(fmt.Sprintf("Start  DeleteRoom. Request[%#v]", req))
 
-	room, pd := selectRoom(ctx, req.RoomID)
-	if pd != nil {
-		return pd
+	room, errRes := confirmRoomExist(ctx, req.RoomID)
+	if errRes != nil {
+		errRes.Message = "Failed to delete room."
+		return errRes
 	}
 
 	if room.NotificationTopicID != "" {
 		nRes := <-notification.Provider().DeleteTopic(room.NotificationTopicID)
-		if nRes.ProblemDetail != nil {
-			return nRes.ProblemDetail
+		if nRes.Error != nil {
+			return model.NewErrorResponse("Failed to delete room.", nil, http.StatusInternalServerError, nRes.Error)
 		}
 	}
 
 	room.Deleted = time.Now().Unix()
 	err := datastore.Provider(ctx).UpdateRoom(room)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Delete room failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return pd
+		return model.NewErrorResponse("Failed to delete room.", nil, http.StatusInternalServerError, err)
 	}
 
 	go func() {
@@ -252,7 +216,7 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.Proble
 // GetRoomMessages gets room messages
 func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.Messages, *model.ProblemDetail) {
 	userID := ctx.Value(utils.CtxUserID).(string)
-	user, pd := selectUser(ctx, userID, datastore.UserOptionWithRoles(true))
+	user, pd := selectUser(ctx, userID, datastore.SelectUserOptionWithRoles(true))
 	if pd != nil {
 		return nil, pd
 	}
@@ -300,71 +264,4 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 	updateLastAccessRoomID(ctx, req.RoomID)
 
 	return returnMessages, nil
-}
-
-func selectRoom(ctx context.Context, roomID string, opts ...datastore.SelectRoomOption) (*model.Room, *model.ProblemDetail) {
-	room, err := datastore.Provider(ctx).SelectRoom(roomID, opts...)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get room failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
-	}
-	if room == nil {
-		return nil, &model.ProblemDetail{
-			Message: "Resource not found",
-			Status:  http.StatusNotFound,
-		}
-	}
-	return room, nil
-}
-
-func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByRoomID(roomID)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	<-unsubscribe(ctx, subscriptions)
-	if wg != nil {
-		wg.Done()
-	}
-}
-
-// RoomAuthz is room authorize
-func RoomAuthz(ctx context.Context, roomID, userID string) *model.ProblemDetail {
-	room, pd := selectRoom(ctx, roomID, datastore.SelectRoomOptionWithUsers(true))
-	if pd != nil {
-		return pd
-	}
-
-	if room.Type == scpb.RoomType_PublicRoom {
-		return nil
-	}
-
-	isAuthorized := false
-	for _, user := range room.Users {
-		if user.UserID == userID {
-			isAuthorized = true
-			break
-		}
-	}
-
-	if !isAuthorized {
-		return &model.ProblemDetail{
-			Message: "You are not this room member",
-			Status:  http.StatusUnauthorized,
-		}
-	}
-
-	return nil
-}
-
-func updateLastAccessRoomID(ctx context.Context, roomID string) {
-	userID := ctx.Value(utils.CtxUserID).(string)
-	user, _ := selectUser(ctx, userID)
-	user.LastAccessRoomID = roomID
-	datastore.Provider(ctx).UpdateUser(user)
 }

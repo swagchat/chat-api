@@ -10,6 +10,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/rest"
@@ -44,6 +45,10 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	if !cfg.Datastore.Dynamic {
+		datastore.Provider(ctx).CreateTables()
+	}
 
 	if cfg.GRPCPort == "" {
 		rest.Run(ctx)

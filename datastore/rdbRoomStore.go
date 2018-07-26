@@ -12,7 +12,6 @@ func rdbCreateRoomStore(db string) {
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.Room{}, tableNameRoom)
-	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "room_id" {
 			columnMap.SetUnique(true)

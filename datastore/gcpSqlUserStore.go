@@ -6,19 +6,19 @@ func (p *gcpSQLProvider) createUserStore() {
 	rdbCreateUserStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertUser(user *model.User, opts ...UserOption) error {
+func (p *gcpSQLProvider) InsertUser(user *model.User, opts ...InsertUserOption) error {
 	return rdbInsertUser(p.database, user, opts...)
 }
 
-func (p *gcpSQLProvider) SelectUsers(limit, offset int32, opts ...UserOption) ([]*model.User, error) {
+func (p *gcpSQLProvider) SelectUsers(limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error) {
 	return rdbSelectUsers(p.database, limit, offset, opts...)
 }
 
-func (p *gcpSQLProvider) SelectUser(userID string, opts ...UserOption) (*model.User, error) {
+func (p *gcpSQLProvider) SelectUser(userID string, opts ...SelectUserOption) (*model.User, error) {
 	return rdbSelectUser(p.database, userID, opts...)
 }
 
-func (p *gcpSQLProvider) SelectCountUsers(opts ...UserOption) (int64, error) {
+func (p *gcpSQLProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, error) {
 	return rdbSelectCountUsers(p.database, opts...)
 }
 

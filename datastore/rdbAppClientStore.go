@@ -26,6 +26,13 @@ func rdbCreateAppClientStore(db string) {
 		logger.Error(fmt.Sprintf("An error occurred while creating appClient table. %v.", err))
 		return
 	}
+
+	cfg := utils.Config()
+	_, err = rdbInsertAppClient(cfg.Datastore.Database, cfg.FirstClientID)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
+		return
+	}
 }
 
 func rdbInsertAppClient(db, name string) (*model.AppClient, error) {
@@ -33,7 +40,7 @@ func rdbInsertAppClient(db, name string) (*model.AppClient, error) {
 
 	appClient := &model.AppClient{
 		Name:     name,
-		ClientID: utils.GenerateClientID(),
+		ClientID: utils.Config().FirstClientID,
 		Created:  time.Now().Unix(),
 		Expired:  0,
 	}

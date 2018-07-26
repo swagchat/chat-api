@@ -31,18 +31,15 @@ type GetRoleIdsOfUserRoleRequest struct {
 	scpb.GetRoleIdsOfUserRoleRequest
 }
 
-func (grourr *GetRoleIdsOfUserRoleRequest) Validate() *ProblemDetail {
+func (grourr *GetRoleIdsOfUserRoleRequest) Validate() *ErrorResponse {
 	if grourr.UserID != "" && !IsValidID(grourr.UserID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to get roleIds of user role.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	return nil
@@ -56,31 +53,25 @@ type DeleteUserRolesRequest struct {
 	scpb.DeleteUserRolesRequest
 }
 
-func (durr *DeleteUserRolesRequest) Validate() *ProblemDetail {
+func (durr *DeleteUserRolesRequest) Validate() *ErrorResponse {
 	if durr.UserID != "" && !IsValidID(durr.UserID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "userId",
-					Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to delete user roles.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if len(durr.RoleIDs) == 0 {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "roleIds",
-					Reason: "roleIds is empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roleIds",
+				Reason: "roleIds is empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to delete user roles.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	return nil

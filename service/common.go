@@ -1,0 +1,429 @@
+package service
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"sync"
+
+	"github.com/swagchat/chat-api/datastore"
+	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/pbroker"
+	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf"
+)
+
+func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ProblemDetail) {
+	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
+	if err != nil {
+		pd := &model.ProblemDetail{
+			Message: "Get user failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
+		return nil, pd
+	}
+	if user == nil {
+		logger.Error(fmt.Sprintf("User does not exist. UserId[%s]", userID))
+		return nil, &model.ProblemDetail{
+			Status: http.StatusNotFound,
+			Error:  errors.New("Not found"),
+		}
+	}
+	return user, nil
+}
+
+func confirmUserNotExist(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ErrorResponse) {
+	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
+	if err != nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+	}
+	if user != nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. That user already exist.",
+			},
+		}
+		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	return user, nil
+}
+
+func confirmUserExist(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ErrorResponse) {
+	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
+	if err != nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+	}
+	if user == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is invalid. That user is not exist.",
+			},
+		}
+		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	return user, nil
+}
+
+func unsubscribeByUserID(ctx context.Context, userID string) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByUserID(userID)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	unsubscribe(ctx, subscriptions)
+}
+
+// ContactsAuthz is contacts authorize
+func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *model.ErrorResponse {
+	req := &model.GetContactsRequest{}
+	req.UserID = requestUserID
+
+	contacts, errRes := GetContacts(ctx, req)
+	if errRes != nil {
+		return errRes
+	}
+
+	isAuthorized := false
+	for _, contact := range contacts.Users {
+		if contact.UserID == resourceUserID {
+			isAuthorized = true
+			break
+		}
+	}
+
+	if !isAuthorized {
+		return model.NewErrorResponse("You do not have permission", nil, http.StatusUnauthorized, nil)
+	}
+
+	return nil
+}
+
+func confirmRoomExist(ctx context.Context, roomID string, opts ...datastore.SelectRoomOption) (*model.Room, *model.ErrorResponse) {
+	room, err := datastore.Provider(ctx).SelectRoom(roomID, opts...)
+	if err != nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+	}
+	if room == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roomId",
+				Reason: "roomId is invalid. That room is not exist.",
+			},
+		}
+		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	return room, nil
+}
+
+func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptionsByRoomID(roomID)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	<-unsubscribe(ctx, subscriptions)
+	if wg != nil {
+		wg.Done()
+	}
+}
+
+// RoomAuthz is room authorize
+func RoomAuthz(ctx context.Context, roomID, userID string) *model.ErrorResponse {
+	room, errRes := confirmRoomExist(ctx, roomID, datastore.SelectRoomOptionWithUsers(true))
+	if errRes != nil {
+		return errRes
+	}
+
+	if room.Type == scpb.RoomType_PublicRoom {
+		return nil
+	}
+
+	isAuthorized := false
+	for _, user := range room.Users {
+		if user.UserID == userID {
+			isAuthorized = true
+			break
+		}
+	}
+
+	if !isAuthorized {
+		return model.NewErrorResponse("You are not this room member", nil, http.StatusUnauthorized, nil)
+	}
+
+	return nil
+}
+
+func updateLastAccessRoomID(ctx context.Context, roomID string) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, _ := selectUser(ctx, userID)
+	user.LastAccessRoomID = roomID
+	datastore.Provider(ctx).UpdateUser(user)
+}
+
+func confirmMessageNotExist(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
+	message, err := datastore.Provider(ctx).SelectMessage(messageID)
+	if err != nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+	}
+	if message != nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "messageId",
+				Reason: "messageId is invalid. That message already exist.",
+			},
+		}
+		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	return message, nil
+}
+
+func confirmMessageExist(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
+	message, err := datastore.Provider(ctx).SelectMessage(messageID)
+	if err != nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+	}
+	if message == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "messageId",
+				Reason: "messageId is invalid. That message is not exist.",
+			},
+		}
+		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	return message, nil
+}
+
+func publishUserJoin(ctx context.Context, roomID string) {
+	room, err := datastore.Provider(ctx).SelectRoom(roomID, datastore.SelectRoomOptionWithUsers(true))
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	go func() {
+		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(roomID)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		buffer := new(bytes.Buffer)
+		json.NewEncoder(buffer).Encode(room.Users)
+		rtmEvent := &pbroker.RTMEvent{
+			Type:    pbroker.UserJoin,
+			Payload: buffer.Bytes(),
+			UserIDs: userIDs,
+		}
+		err = pbroker.Provider().PublishMessage(rtmEvent)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	}()
+}
+
+func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
+	doneChan := make(chan bool, 1)
+	errChan := make(chan error, 1)
+
+	d := utils.NewDispatcher(10)
+	for _, roomUser := range roomUsers {
+		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
+		d.Work(ctx, func(ctx context.Context) {
+			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+
+			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
+			if err != nil {
+				errChan <- err
+			}
+			if devices != nil {
+				for _, d := range devices {
+					if d.Token != "" {
+						if d.NotificationDeviceID == "" {
+							nRes := <-notification.Provider().CreateEndpoint("", d.Platform, d.Token)
+							if nRes.Error != nil {
+								errChan <- nRes.Error
+							} else {
+								d.NotificationDeviceID = *nRes.Data.(*string)
+								err := datastore.Provider(ctx).UpdateDevice(d)
+								if err != nil {
+									errChan <- err
+								}
+							}
+						}
+						go subscribe(ctx, roomUsers, d)
+					}
+				}
+			}
+			doneChan <- true
+
+			select {
+			case <-ctx.Done():
+				return
+			case <-doneChan:
+				return
+			case err := <-errChan:
+				logger.Error(err.Error())
+				return
+			}
+		})
+	}
+	d.Wait()
+	return
+}
+
+func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
+	doneChan := make(chan bool, 1)
+	pdChan := make(chan *model.ProblemDetail, 1)
+
+	d := utils.NewDispatcher(10)
+	for _, roomUser := range roomUsers {
+		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
+		d.Work(ctx, func(ctx context.Context) {
+			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomID, []string{ru.UserID})
+			if err != nil {
+				pd := &model.ProblemDetail{
+					Message: "Delete room's user failed",
+					Status:  http.StatusInternalServerError,
+				}
+				pdChan <- pd
+			}
+
+			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
+			if err != nil {
+				pd := &model.ProblemDetail{
+					Message: "Subscribe failed",
+					Status:  http.StatusInternalServerError,
+					Error:   err,
+				}
+				pdChan <- pd
+			}
+			if devices != nil {
+				for _, d := range devices {
+					subscription, err := datastore.Provider(ctx).SelectSubscription(ru.RoomID, ru.UserID, d.Platform)
+					if err != nil {
+						pd := &model.ProblemDetail{
+							Message: "User registration failed",
+							Status:  http.StatusInternalServerError,
+							Error:   err,
+						}
+						pdChan <- pd
+					}
+					go unsubscribe(ctx, []*model.Subscription{subscription})
+				}
+			}
+			doneChan <- true
+
+			select {
+			case <-ctx.Done():
+				return
+			case <-doneChan:
+				return
+			case pd := <-pdChan:
+				logger.Error(pd.Error.Error())
+				return
+			}
+		})
+	}
+	d.Wait()
+	return
+}
+
+func createTopic(roomID string) (string, *model.ErrorResponse) {
+	nRes := <-notification.Provider().CreateTopic(roomID)
+	if nRes.Error != nil {
+		errRes := &model.ErrorResponse{}
+		errRes.Status = http.StatusInternalServerError
+		errRes.Error = nRes.Error
+		return "", errRes
+	}
+	if nRes.Data == nil {
+		return "", nil
+	}
+	return *nRes.Data.(*string), nil
+}
+
+func getExistUserIDsOld(ctx context.Context, requestUserIDs []string) ([]string, *model.ProblemDetail) {
+	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsByUserIDs(requestUserIDs)
+	if err != nil {
+		pd := &model.ProblemDetail{
+			Message: "Getting userIds failed",
+			Status:  http.StatusInternalServerError,
+			Error:   err,
+		}
+		return nil, pd
+	}
+
+	if len(existUserIDs) != len(requestUserIDs) {
+		pd := &model.ProblemDetail{
+			Message: "Invalid params",
+			InvalidParams: []*model.InvalidParam{
+				&model.InvalidParam{
+					Name:   "userIds",
+					Reason: "It contains a userId that does not exist.",
+				},
+			},
+			Status: http.StatusBadRequest,
+		}
+		return nil, pd
+	}
+
+	return existUserIDs, nil
+}
+
+func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *model.ErrorResponse) {
+	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsByUserIDs(requestUserIDs)
+	if err != nil {
+		errRes := &model.ErrorResponse{}
+		errRes.Status = http.StatusBadRequest
+		errRes.Error = err
+		return nil, errRes
+	}
+
+	if len(existUserIDs) != len(requestUserIDs) {
+		errRes := &model.ErrorResponse{}
+		errRes.InvalidParams = []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userIds",
+				Reason: "It contains a userId that does not exist.",
+			},
+		}
+		errRes.Status = http.StatusBadRequest
+		return nil, errRes
+	}
+
+	return existUserIDs, nil
+}
+
+func confirmRoomUserExist(ctx context.Context, roomID, userID string) (*model.RoomUser, *model.ErrorResponse) {
+	roomUser, err := datastore.Provider(ctx).SelectRoomUser(roomID, userID)
+	if err != nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+	}
+	if roomUser == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roomId | userId",
+				Reason: "roomId or userId is invalid. That room user is not exist.",
+			},
+		}
+		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
+	}
+
+	return roomUser, nil
+}

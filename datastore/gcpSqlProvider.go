@@ -102,7 +102,6 @@ func (p *gcpSQLProvider) Connect(dsCfg *utils.Datastore) error {
 		}
 	}
 	rdbStores[dsCfg.Database] = rs
-	p.CreateTables()
 	return nil
 }
 

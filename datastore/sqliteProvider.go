@@ -48,7 +48,6 @@ func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
 	rs.setMaster(master)
 
 	rdbStores[dsCfg.Database] = rs
-	p.CreateTables()
 	return nil
 }
 

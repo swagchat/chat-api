@@ -101,7 +101,6 @@ func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
 		}
 	}
 	rdbStores[dsCfg.Database] = rs
-	p.CreateTables()
 	return nil
 }
 

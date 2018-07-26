@@ -56,7 +56,7 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 
 type ResponseMessages struct {
 	MessageIds []string         `json:"messageIds,omitempty"`
-	Errors     []*ProblemDetail `json:"errors,omitempty"`
+	Errors     []*ErrorResponse `json:"errors,omitempty"`
 }
 
 type PayloadText struct {
@@ -74,47 +74,38 @@ type PayloadUsers struct {
 	Users []string `json:"users"`
 }
 
-func (m *Message) IsValid() *ProblemDetail {
+func (m *Message) Validate() *ErrorResponse {
 	if m.MessageID != "" && !IsValidID(m.MessageID) {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "messageId",
-					Reason: "messageId is invalid. Available characters are alphabets, numbers and hyphens.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "messageId",
+				Reason: "messageId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if m.Payload == nil {
-		return &ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "payload",
-					Reason: "payload is empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "payload",
+				Reason: "payload is empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
 	}
 
 	if m.Type == MessageTypeText {
 		var pt PayloadText
 		json.Unmarshal(m.Payload, &pt)
 		if pt.Text == "" {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "payload",
-						Reason: "Text type needs text.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "payload",
+					Reason: "Text type needs text.",
 				},
-				Status: http.StatusBadRequest,
 			}
+			return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
 		}
 	}
 
@@ -122,29 +113,23 @@ func (m *Message) IsValid() *ProblemDetail {
 		var pi PayloadImage
 		json.Unmarshal(m.Payload, &pi)
 		if pi.Mime == "" {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "payload",
-						Reason: "Image type needs mime.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "payload",
+					Reason: "Image type needs mime.",
 				},
-				Status: http.StatusBadRequest,
 			}
+			return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
 		}
 
 		if pi.SourceUrl == "" {
-			return &ProblemDetail{
-				Status: http.StatusBadRequest,
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "payload",
-						Reason: "Image type needs sourceUrl.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "payload",
+					Reason: "Image type needs sourceUrl.",
 				},
-				Message: "Invalid params",
 			}
+			return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
 		}
 	}
 

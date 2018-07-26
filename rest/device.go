@@ -63,9 +63,9 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	put.Platform = int32(i)
 
-	device, pd := service.PutDevice(r.Context(), &put)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	device, errRes := service.PutDevice(r.Context(), &put)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -86,9 +86,9 @@ func deleteDevice(w http.ResponseWriter, r *http.Request) {
 	}
 	platform := int32(i)
 
-	pd := service.DeleteDevice(r.Context(), userID, platform)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	errRes := service.DeleteDevice(r.Context(), userID, platform)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

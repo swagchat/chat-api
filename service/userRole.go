@@ -12,18 +12,14 @@ import (
 )
 
 // CreateUserRoles creates user roles
-func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start CreateUserRoles. Request[%#v]", req))
+func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *model.ErrorResponse {
+	logger.Info(fmt.Sprintf("Start  CreateUserRoles. Request[%#v]", req))
 
 	urs := req.GenerateUserRoles()
 
 	err := datastore.Provider(ctx).InsertUserRoles(urs)
 	if err != nil {
-		return &model.ProblemDetail{
-			Message: "Failed to create user role.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
+		return model.NewErrorResponse("Failed to create user roles.", nil, http.StatusInternalServerError, err)
 	}
 
 	logger.Info(fmt.Sprintf("Finish CreateUserRoles"))
@@ -31,20 +27,18 @@ func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *mo
 }
 
 // GetRoleIDsOfUserRole gets roleIds of user roles
-func GetRoleIDsOfUserRole(ctx context.Context, req *model.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start GetRoleIDsOfUserRole. GetRoleIdsOfUserRoleRequest[%#v]", req))
+func GetRoleIDsOfUserRole(ctx context.Context, req *model.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  GetRoleIDsOfUserRole. GetRoleIdsOfUserRoleRequest[%#v]", req))
 
-	if pd := req.Validate(); pd != nil {
-		return nil, pd
+	errRes := req.Validate()
+	if errRes != nil {
+		errRes.Message = "Failed to get roleIds of user roles."
+		return nil, errRes
 	}
 
 	roleIDs, err := datastore.Provider(ctx).SelectRoleIDsOfUserRole(req.UserID)
 	if err != nil {
-		return nil, &model.ProblemDetail{
-			Message: "Failed to getting roleIds.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
+		return nil, model.NewErrorResponse("Failed to get roleIds.", nil, http.StatusInternalServerError, err)
 	}
 
 	logger.Info("Finish GetRoleIDsOfUserRole.")
@@ -54,16 +48,12 @@ func GetRoleIDsOfUserRole(ctx context.Context, req *model.GetRoleIdsOfUserRoleRe
 }
 
 // GetUserIDsOfUserRole gets userIds of user roles
-func GetUserIDsOfUserRole(ctx context.Context, req *model.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, *model.ProblemDetail) {
-	logger.Info(fmt.Sprintf("Start GetUserIDsOfUserRole. Request[%#v]", req))
+func GetUserIDsOfUserRole(ctx context.Context, req *model.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  GetUserIDsOfUserRole. Request[%#v]", req))
 
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
 	if err != nil {
-		return nil, &model.ProblemDetail{
-			Message: "Failed to getting userIds.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
+		return nil, model.NewErrorResponse("Failed to get userIds of user roles.", nil, http.StatusInternalServerError, err)
 	}
 
 	logger.Info("Finish GetUserIDsOfUserRole.")
@@ -72,12 +62,13 @@ func GetUserIDsOfUserRole(ctx context.Context, req *model.GetUserIdsOfUserRoleRe
 	}, nil
 }
 
-// DeleteUserRole deletes user role
-func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *model.ProblemDetail {
-	logger.Info(fmt.Sprintf("Start DeleteUserRoles. Request[%#v]", req))
+// DeleteUserRoles deletes user role
+func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *model.ErrorResponse {
+	logger.Info(fmt.Sprintf("Start  DeleteUserRoles. Request[%#v]", req))
 
-	if pd := req.Validate(); pd != nil {
-		return pd
+	errRes := req.Validate()
+	if errRes != nil {
+		return errRes
 	}
 
 	err := datastore.Provider(ctx).DeleteUserRoles(
@@ -85,11 +76,7 @@ func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *mo
 		datastore.UserRoleOptionFilterByRoleIDs(req.RoleIDs),
 	)
 	if err != nil {
-		return &model.ProblemDetail{
-			Message: "Failed to delete user roles.",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
+		return model.NewErrorResponse("Failed to delete user roles.", nil, http.StatusInternalServerError, err)
 	}
 
 	logger.Info("Finish DeleteUserRoles.")

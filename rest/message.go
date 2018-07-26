@@ -26,8 +26,8 @@ func postMessages(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 	if len(mRes.Errors) > 0 {
-		pd := mRes.Errors[0]
-		respondErr(w, r, pd.Status, pd)
+		errRes := mRes.Errors[0]
+		respondError(w, r, errRes)
 		return
 	}
 
