@@ -27,9 +27,14 @@ func TestRoomUserStore(t *testing.T) {
 	}
 
 	roomUser.UnreadCount = 0
-	updatedRoomUser, err := Provider(ctx).UpdateRoomUser(roomUser)
+	err = Provider(ctx).UpdateRoomUser(roomUser)
 	if err != nil {
 		t.Fatalf("Failed update room user test")
+	}
+
+	updatedRoomUser, err := Provider(ctx).SelectRoomUser(roomUser.RoomID, roomUser.UserID)
+	if err != nil {
+		t.Fatalf("Failed select room user test")
 	}
 	if updatedRoomUser.UnreadCount != 0 {
 		t.Fatalf("Failed update room user test")

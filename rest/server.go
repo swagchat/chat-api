@@ -195,7 +195,9 @@ func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 		isAppClient := false
 		clientID := r.Header.Get(utils.HeaderClientID)
 		if clientID != "" {
-			appCli, err := datastore.Provider(r.Context()).SelectLatestAppClientByClientID(clientID)
+			appCli, err := datastore.Provider(r.Context()).SelectLatestAppClient(
+				datastore.SelectAppClientOptionFilterByClientID(clientID),
+			)
 			if err != nil {
 				respondErr(w, r, http.StatusInternalServerError, &model.ProblemDetail{
 					Error: err,
@@ -320,7 +322,6 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 
 func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *model.ProblemDetail) {
 	if pd.Error != nil {
-		logger.Error(pd.Error.Error())
 		if utils.Config().EnableDeveloperMessage {
 			pd.DeveloperMessage = pd.Error.Error()
 		}
@@ -350,7 +351,7 @@ func setLastModified(w http.ResponseWriter, timestamp int64) {
 	w.Header().Set("Last-Modified", lm)
 }
 
-func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model.ProblemDetail) {
+func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model.ErrorResponse) {
 	limit := int32(10)
 	offset := int32(0)
 	var orders []*scpb.OrderInfo
@@ -358,32 +359,26 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 	if limitArray, ok := params["limit"]; ok {
 		limitInt, err := strconv.Atoi(limitArray[0])
 		if err != nil {
-			return limit, offset, orders, &model.ProblemDetail{
-				Message: "Request parameter error.",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "limit",
-						Reason: "limit is incorrect.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "limit",
+					Reason: "limit is incorrect.",
 				},
 			}
+			return limit, offset, orders, model.NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 		}
 		limit = int32(limitInt)
 	}
 	if offsetArray, ok := params["offset"]; ok {
 		offsetInt, err := strconv.Atoi(offsetArray[0])
 		if err != nil {
-			return limit, offset, orders, &model.ProblemDetail{
-				Message: "Request parameter error.",
-				Status:  http.StatusBadRequest,
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "offset",
-						Reason: "offset is incorrect.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "offset",
+					Reason: "offset is incorrect.",
 				},
 			}
+			return limit, offset, orders, model.NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
 		}
 		offset = int32(offsetInt)
 	}

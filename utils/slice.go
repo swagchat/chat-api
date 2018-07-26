@@ -60,8 +60,12 @@ func RemoveDuplicate(args []string) []string {
 	return results
 }
 
-// MergeMap is merge map
+// MergeMap merges map
 func MergeMap(baseMap map[string]interface{}, mergeMaps ...map[string]interface{}) map[string]interface{} {
+	if baseMap == nil {
+		return nil
+	}
+
 	for _, mergeMap := range mergeMaps {
 		for k, v := range mergeMap {
 			baseMap[k] = v

@@ -72,8 +72,8 @@ func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *mo
 	}
 
 	err := datastore.Provider(ctx).DeleteUserRoles(
-		datastore.UserRoleOptionFilterByUserID(req.UserID),
-		datastore.UserRoleOptionFilterByRoleIDs(req.RoleIDs),
+		datastore.DeleteUserRolesOptionFilterByUserID(req.UserID),
+		datastore.DeleteUserRolesOptionFilterByRoleIDs(req.RoleIDs),
 	)
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete user roles.", nil, http.StatusInternalServerError, err)

@@ -6,6 +6,6 @@ func (p *mysqlProvider) createWebhookStore() {
 	rdbCreateWebhookStore(p.database)
 }
 
-func (p *mysqlProvider) SelectWebhooks(event model.WebhookEventType, opts ...WebhookOption) ([]*model.Webhook, error) {
+func (p *mysqlProvider) SelectWebhooks(event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
 	return rdbSelectWebhooks(p.database, event, opts...)
 }

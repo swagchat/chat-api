@@ -10,7 +10,7 @@ func (p *mysqlProvider) InsertMessage(message *model.Message) error {
 	return rdbInsertMessage(p.database, message)
 }
 
-func (p *mysqlProvider) SelectMessages(limit, offset int32, opts ...MessageOption) ([]*model.Message, error) {
+func (p *mysqlProvider) SelectMessages(limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
 	return rdbSelectMessages(p.database, limit, offset, opts...)
 }
 
@@ -18,7 +18,7 @@ func (p *mysqlProvider) SelectMessage(messageID string) (*model.Message, error) 
 	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *mysqlProvider) SelectCountMessages(opts ...MessageOption) (int64, error) {
+func (p *mysqlProvider) SelectCountMessages(opts ...SelectMessagesOption) (int64, error) {
 	return rdbSelectCountMessages(p.database, opts...)
 }
 

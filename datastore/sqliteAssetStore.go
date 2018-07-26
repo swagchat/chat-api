@@ -6,7 +6,7 @@ func (p *sqliteProvider) createAssetStore() {
 	rdbCreateAssetStore(p.database)
 }
 
-func (p *sqliteProvider) InsertAsset(asset *model.Asset) (*model.Asset, error) {
+func (p *sqliteProvider) InsertAsset(asset *model.Asset) error {
 	return rdbInsertAsset(p.database, asset)
 }
 

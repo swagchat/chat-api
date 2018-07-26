@@ -138,10 +138,10 @@ func rdbInsertMessage(db string, message *model.Message) error {
 	return nil
 }
 
-func rdbSelectMessages(db string, limit, offset int32, opts ...MessageOption) ([]*model.Message, error) {
+func rdbSelectMessages(db string, limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
 	replica := RdbStore(db).replica()
 
-	opt := messageOptions{}
+	opt := selectMessagesOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
@@ -207,10 +207,10 @@ func rdbSelectMessage(db, messageID string) (*model.Message, error) {
 	return nil, nil
 }
 
-func rdbSelectCountMessages(db string, opts ...MessageOption) (int64, error) {
+func rdbSelectCountMessages(db string, opts ...SelectMessagesOption) (int64, error) {
 	replica := RdbStore(db).replica()
 
-	opt := messageOptions{}
+	opt := selectMessagesOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}

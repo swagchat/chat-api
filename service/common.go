@@ -295,7 +295,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
-			err := datastore.Provider(ctx).DeleteRoomUser(ru.RoomID, []string{ru.UserID})
+			err := datastore.Provider(ctx).DeleteRoomUsers(ru.RoomID, []string{ru.UserID})
 			if err != nil {
 				pd := &model.ProblemDetail{
 					Message: "Delete room's user failed",

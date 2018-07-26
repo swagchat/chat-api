@@ -6,6 +6,7 @@ import (
 
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
@@ -28,63 +29,65 @@ func rdbCreateAppClientStore(db string) {
 	}
 
 	cfg := utils.Config()
-	_, err = rdbInsertAppClient(cfg.Datastore.Database, cfg.FirstClientID)
+	appClient := &model.AppClient{
+		Name:     cfg.FirstClientID,
+		ClientID: cfg.FirstClientID,
+		Created:  time.Now().Unix(),
+		Expired:  0,
+	}
+	err = rdbInsertAppClient(cfg.Datastore.Database, appClient)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
 		return
 	}
 }
 
-func rdbInsertAppClient(db, name string) (*model.AppClient, error) {
+func rdbInsertAppClient(db string, appClient *model.AppClient) error {
 	master := RdbStore(db).master()
 
-	appClient := &model.AppClient{
-		Name:     name,
-		ClientID: utils.Config().FirstClientID,
-		Created:  time.Now().Unix(),
-		Expired:  0,
-	}
 	err := master.Insert(appClient)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
-		return nil, err
+		return err
 	}
 
-	return appClient, nil
+	return nil
 }
 
-func rdbSelectLatestAppClientByName(db, name string) (*model.AppClient, error) {
+func rdbSelectLatestAppClient(db string, opts ...SelectAppClientOption) (*model.AppClient, error) {
 	replica := RdbStore(db).replica()
 
+	opt := selectAppClientOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	if (opt.name == "" && opt.clientID == "") || (opt.name != "" && opt.clientID != "") {
+		return nil, errors.New("Be sure to specify either name or clientID。")
+	}
+
+	query := fmt.Sprintf("SELECT * FROM %s WHERE", tableNameAppClient)
 	var appClients []*model.AppClient
 	nowTimestamp := time.Now().Unix()
 	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
-	query := fmt.Sprintf("SELECT * FROM %s WHERE name=:name AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", tableNameAppClient, nowTimestampString)
-	params := map[string]interface{}{"name": name}
+
+	var params map[string]interface{}
+
+	if opt.name != "" {
+		query = fmt.Sprintf("%s name=:name", query)
+		params = map[string]interface{}{"name": opt.name}
+	}
+
+	if opt.clientID != "" {
+		query = fmt.Sprintf("%s client_id=:clientId", query)
+		params = map[string]interface{}{"clientId": opt.clientID}
+	}
+
+	query = fmt.Sprintf("%s AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", query, nowTimestampString)
+
 	_, err := replica.Select(&appClients, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting appClient by name. %v.", err))
-		return nil, err
-	}
-
-	if len(appClients) > 0 {
-		return appClients[0], nil
-	}
-
-	return nil, nil
-}
-
-func rdbSelectLatestAppClientByClientID(db, clientID string) (*model.AppClient, error) {
-	replica := RdbStore(db).replica()
-
-	var appClients []*model.AppClient
-	nowTimestamp := time.Now().Unix()
-	nowTimestampString := strconv.FormatInt(nowTimestamp, 10)
-	query := fmt.Sprintf("SELECT * FROM %s WHERE client_id=:clientID AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", tableNameAppClient, nowTimestampString)
-	params := map[string]interface{}{"clientID": clientID}
-	_, err := replica.Select(&appClients, query, params)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting appClient by clientId. %v.", err))
 		return nil, err
 	}
 

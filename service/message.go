@@ -16,8 +16,8 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-// PostMessage is post message
-func PostMessage(ctx context.Context, posts *model.Messages) *model.ResponseMessages {
+// CreateMessages creates messages
+func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseMessages {
 	messageIds := make([]string, 0)
 	pds := make([]*model.ErrorResponse, 0)
 	for _, post := range posts.Messages {
@@ -131,7 +131,10 @@ func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.P
 }
 
 func publishMessage(ctx context.Context, message *model.Message) {
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID, datastore.WithRoleIDs([]int32{message.Role}))
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
+		message.RoomID,
+		datastore.SelectUserIDsOfRoomUserOptionWithRoleIDs([]int32{message.Role}),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return

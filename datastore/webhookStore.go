@@ -6,28 +6,28 @@ const (
 	RoomIDAll = "ALL"
 )
 
-type webhookOptions struct {
+type selectWebhooksOptions struct {
 	roomID      string
 	triggerWord string
 	roleID      int32
 }
 
-type WebhookOption func(*webhookOptions)
+type SelectWebhooksOption func(*selectWebhooksOptions)
 
-func WithRoomID(roomID string) WebhookOption {
-	return func(ops *webhookOptions) {
+func SelectWebhooksOptionWithRoomID(roomID string) SelectWebhooksOption {
+	return func(ops *selectWebhooksOptions) {
 		ops.roomID = roomID
 	}
 }
 
-func WithTriggerWord(triggerWord string) WebhookOption {
-	return func(ops *webhookOptions) {
+func SelectWebhooksOptionWithTriggerWord(triggerWord string) SelectWebhooksOption {
+	return func(ops *selectWebhooksOptions) {
 		ops.triggerWord = triggerWord
 	}
 }
 
-func WithRole(roleID int32) WebhookOption {
-	return func(ops *webhookOptions) {
+func SelectWebhooksOptionWithRole(roleID int32) SelectWebhooksOption {
+	return func(ops *selectWebhooksOptions) {
 		ops.roleID = roleID
 	}
 }
@@ -35,5 +35,5 @@ func WithRole(roleID int32) WebhookOption {
 type webhookStore interface {
 	createWebhookStore()
 
-	SelectWebhooks(event model.WebhookEventType, opts ...WebhookOption) ([]*model.Webhook, error)
+	SelectWebhooks(event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error)
 }

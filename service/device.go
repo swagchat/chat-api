@@ -214,7 +214,9 @@ func selectDevice(ctx context.Context, userID string, platform int32) (*model.De
 }
 
 func subscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitGroup) {
-	roomUser, err := datastore.Provider(ctx).SelectRoomUsersByUserID(device.UserID)
+	roomUser, err := datastore.Provider(ctx).SelectRoomUsers(
+		datastore.SelectRoomUsersOptionWithUserIDs([]string{device.UserID}),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return

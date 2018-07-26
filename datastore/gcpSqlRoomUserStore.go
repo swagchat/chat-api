@@ -8,12 +8,12 @@ func (p *gcpSQLProvider) createRoomUserStore() {
 	rdbCreateRoomUserStore(p.database)
 }
 
-func (p *gcpSQLProvider) DeleteAndInsertRoomUsers(roomUsers []*model.RoomUser) error {
-	return rdbDeleteAndInsertRoomUsers(p.database, roomUsers)
+func (p *gcpSQLProvider) InsertRoomUsers(roomUsers []*model.RoomUser, opts ...InsertRoomUsersOption) error {
+	return rdbInsertRoomUsers(p.database, roomUsers, opts...)
 }
 
-func (p *gcpSQLProvider) InsertRoomUsers(roomUsers []*model.RoomUser) error {
-	return rdbInsertRoomUsers(p.database, roomUsers)
+func (p *gcpSQLProvider) SelectRoomUsers(opts ...SelectRoomUsersOption) ([]*model.RoomUser, error) {
+	return rdbSelectRoomUsers(p.database, opts...)
 }
 
 func (p *gcpSQLProvider) SelectRoomUser(roomID, userID string) (*model.RoomUser, error) {
@@ -24,26 +24,14 @@ func (p *gcpSQLProvider) SelectRoomUserOfOneOnOne(myUserID, opponentUserID strin
 	return rdbSelectRoomUserOfOneOnOne(p.database, myUserID, opponentUserID)
 }
 
-func (p *gcpSQLProvider) SelectRoomUsersByRoomID(roomID string) ([]*model.RoomUser, error) {
-	return rdbSelectRoomUsersByRoomID(p.database, roomID)
-}
-
-func (p *gcpSQLProvider) SelectRoomUsersByUserID(userID string) ([]*model.RoomUser, error) {
-	return rdbSelectRoomUsersByUserID(p.database, userID)
-}
-
-func (p *gcpSQLProvider) SelectUserIDsOfRoomUser(roomID string, opts ...RoomUserOption) ([]string, error) {
+func (p *gcpSQLProvider) SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
 	return rdbSelectUserIDsOfRoomUser(p.database, roomID, opts...)
 }
 
-func (p *gcpSQLProvider) SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*model.RoomUser, error) {
-	return rdbSelectRoomUsersByRoomIDAndUserIDs(p.database, roomID, userIDs)
-}
-
-func (p *gcpSQLProvider) UpdateRoomUser(roomUser *model.RoomUser) (*model.RoomUser, error) {
+func (p *gcpSQLProvider) UpdateRoomUser(roomUser *model.RoomUser) error {
 	return rdbUpdateRoomUser(p.database, roomUser)
 }
 
-func (p *gcpSQLProvider) DeleteRoomUser(roomID string, userIDs []string) error {
-	return rdbDeleteRoomUser(p.database, roomID, userIDs)
+func (p *gcpSQLProvider) DeleteRoomUsers(roomID string, userIDs []string) error {
+	return rdbDeleteRoomUsers(p.database, roomID, userIDs)
 }

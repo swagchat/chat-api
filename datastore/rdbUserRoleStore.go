@@ -30,7 +30,7 @@ func rdbInsertUserRoles(db string, urs []*model.UserRole) error {
 	}
 
 	for _, ur := range urs {
-		bu, err := rdbSelectUserRole(db, UserRoleOptionFilterByUserID(ur.UserID), UserRoleOptionFilterByRoleID(ur.RoleID))
+		bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
 		if err != nil {
 			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while inserting user roles")
@@ -59,19 +59,14 @@ func rdbInsertUserRoles(db string, urs []*model.UserRole) error {
 	return nil
 }
 
-func rdbSelectUserRole(db string, opts ...UserRoleOption) (*model.UserRole, error) {
+func rdbSelectUserRole(db string, userID string, roleID int32) (*model.UserRole, error) {
 	replica := RdbStore(db).replica()
-
-	opt := userRoleOptions{}
-	for _, o := range opts {
-		o(&opt)
-	}
 
 	var userRoles []*model.UserRole
 	query := fmt.Sprintf("SELECT ur.user_id, ur.role_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND ur.role_id=:roleId AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
-		"userId": opt.userID,
-		"roleId": opt.roleID,
+		"userId": userID,
+		"roleId": roleID,
 	}
 	_, err := replica.Select(&userRoles, query, params)
 	if err != nil {
@@ -125,10 +120,10 @@ func rdbSelectUserIDsOfUserRole(db string, roleID int32) ([]string, error) {
 	return userIDs, nil
 }
 
-func rdbDeleteUserRoles(db string, opts ...UserRoleOption) error {
+func rdbDeleteUserRoles(db string, opts ...DeleteUserRolesOption) error {
 	master := RdbStore(db).master()
 
-	opt := userRoleOptions{}
+	opt := deleteUserRolesOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}

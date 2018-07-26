@@ -11,7 +11,7 @@ import (
 
 // GetBlockUsers is get block users
 func GetBlockUsers(ctx context.Context, userID string) (*model.BlockUsers, *model.ProblemDetail) {
-	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsers(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Get block users failed",
@@ -63,7 +63,7 @@ func PutBlockUsers(ctx context.Context, userID string, reqUIDs *model.RequestBlo
 		return nil, pd
 	}
 
-	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsers(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Block user registration failed",
@@ -96,7 +96,7 @@ func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *model.Request
 		return nil, pd
 	}
 
-	err := datastore.Provider(ctx).DeleteBlockUser(userID, bUIDs)
+	err := datastore.Provider(ctx).DeleteBlockUsers(userID, bUIDs)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete block user failed",
@@ -106,7 +106,7 @@ func DeleteBlockUsers(ctx context.Context, userID string, reqUIDs *model.Request
 		return nil, pd
 	}
 
-	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsersByUserID(userID)
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsers(userID)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Delete block user failed",

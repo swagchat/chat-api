@@ -115,7 +115,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				}
 				ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
 
-				service.PostMessage(ctx, &model.Messages{
+				service.CreateMessages(ctx, &model.Messages{
 					Messages: msgs,
 				})
 			case kafka.PartitionEOF:

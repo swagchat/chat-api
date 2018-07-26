@@ -55,6 +55,23 @@ func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
 	return nil
 }
 
+func rdbSelectBlockUsers(db, userID string) ([]string, error) {
+	replica := RdbStore(db).replica()
+
+	var blockUserIDs []string
+	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE user_id=:userId;", tableNameBlockUser)
+	params := map[string]interface{}{
+		"userId": userID,
+	}
+	_, err := replica.Select(&blockUserIDs, query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting blockUsers by userId. %v.", err))
+		return nil, err
+	}
+
+	return blockUserIDs, nil
+}
+
 func rdbSelectBlockUser(db, userID, blockUserID string) (*model.BlockUser, error) {
 	replica := RdbStore(db).replica()
 
@@ -77,24 +94,7 @@ func rdbSelectBlockUser(db, userID, blockUserID string) (*model.BlockUser, error
 	return nil, nil
 }
 
-func rdbSelectBlockUsersByUserID(db, userID string) ([]string, error) {
-	replica := RdbStore(db).replica()
-
-	var blockUserIDs []string
-	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE user_id=:userId;", tableNameBlockUser)
-	params := map[string]interface{}{
-		"userId": userID,
-	}
-	_, err := replica.Select(&blockUserIDs, query, params)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting blockUsers by userId. %v.", err))
-		return nil, err
-	}
-
-	return blockUserIDs, nil
-}
-
-func rdbDeleteBlockUser(db, userID string, blockUserIDs []string) error {
+func rdbDeleteBlockUsers(db, userID string, blockUserIDs []string) error {
 	master := RdbStore(db).master()
 
 	var blockUserIDsQuery string

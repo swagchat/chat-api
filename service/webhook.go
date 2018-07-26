@@ -18,7 +18,10 @@ import (
 )
 
 func webhookRoom(ctx context.Context, room *model.Room) {
-	webhooks, err := datastore.Provider(ctx).SelectWebhooks(model.WebhookEventTypeRoom, datastore.WithRoomID(datastore.RoomIDAll))
+	webhooks, err := datastore.Provider(ctx).SelectWebhooks(
+		model.WebhookEventTypeRoom,
+		datastore.SelectWebhooksOptionWithRoomID(datastore.RoomIDAll),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -92,7 +95,10 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 		return
 	}
 
-	webhooks, err := datastore.Provider(ctx).SelectWebhooks(model.WebhookEventTypeMessage, datastore.WithRoomID(datastore.RoomIDAll))
+	webhooks, err := datastore.Provider(ctx).SelectWebhooks(
+		model.WebhookEventTypeMessage,
+		datastore.SelectWebhooksOptionWithRoomID(datastore.RoomIDAll),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return

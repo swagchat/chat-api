@@ -6,7 +6,7 @@ func (p *mysqlProvider) createAssetStore() {
 	rdbCreateAssetStore(p.database)
 }
 
-func (p *mysqlProvider) InsertAsset(asset *model.Asset) (*model.Asset, error) {
+func (p *mysqlProvider) InsertAsset(asset *model.Asset) error {
 	return rdbInsertAsset(p.database, asset)
 }
 

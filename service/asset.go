@@ -43,7 +43,7 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader, size int
 	}
 	asset.URL = url
 
-	asset, err = datastore.Provider(ctx).InsertAsset(asset)
+	err = datastore.Provider(ctx).InsertAsset(asset)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "File upload failed",

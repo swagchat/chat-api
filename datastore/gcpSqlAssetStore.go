@@ -6,7 +6,7 @@ func (p *gcpSQLProvider) createAssetStore() {
 	rdbCreateAssetStore(p.database)
 }
 
-func (p *gcpSQLProvider) InsertAsset(asset *model.Asset) (*model.Asset, error) {
+func (p *gcpSQLProvider) InsertAsset(asset *model.Asset) error {
 	return rdbInsertAsset(p.database, asset)
 }
 

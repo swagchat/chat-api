@@ -72,7 +72,9 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		return nil, model.NewErrorResponse("Failed to create room.", nil, http.StatusInternalServerError, err)
 	}
 
-	roomUsers, err := datastore.Provider(ctx).SelectRoomUsersByRoomID(r.RoomID)
+	roomUsers, err := datastore.Provider(ctx).SelectRoomUsers(
+		datastore.SelectRoomUsersOptionWithRoomID(r.RoomID),
+	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to create room.", nil, http.StatusInternalServerError, err)
 	}
@@ -138,8 +140,8 @@ func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *mode
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(
-		datastore.MessageOptionFilterByRoomID(req.RoomID),
-		datastore.MessageOptionFilterByRoleIDs(user.Roles),
+		datastore.SelectMessagesOptionFilterByRoomID(req.RoomID),
+		datastore.SelectMessagesOptionFilterByRoleIDs(user.Roles),
 	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get room.", nil, http.StatusInternalServerError, err)
@@ -231,9 +233,9 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 	messages, err := datastore.Provider(ctx).SelectMessages(
 		req.Limit,
 		req.Offset,
-		datastore.MessageOptionOrders(req.Orders),
-		datastore.MessageOptionFilterByRoomID(req.RoomID),
-		datastore.MessageOptionFilterByRoleIDs(roleIDs),
+		datastore.SelectMessagesOptionOrders(req.Orders),
+		datastore.SelectMessagesOptionFilterByRoomID(req.RoomID),
+		datastore.SelectMessagesOptionFilterByRoleIDs(roleIDs),
 	)
 	if err != nil {
 		pd := &model.ProblemDetail{
@@ -248,8 +250,8 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(
-		datastore.MessageOptionFilterByRoomID(req.RoomID),
-		datastore.MessageOptionFilterByRoleIDs(req.RoleIDs),
+		datastore.SelectMessagesOptionFilterByRoomID(req.RoomID),
+		datastore.SelectMessagesOptionFilterByRoleIDs(req.RoleIDs),
 	)
 	if err != nil {
 		pd := &model.ProblemDetail{

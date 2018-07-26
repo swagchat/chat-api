@@ -20,7 +20,7 @@ func postMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mRes := service.PostMessage(r.Context(), &post)
+	mRes := service.CreateMessages(r.Context(), &post)
 	// if len(mRes.MessageIds) == 0 {
 	// 	respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
 	// 	return

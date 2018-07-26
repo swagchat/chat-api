@@ -10,7 +10,7 @@ func (p *sqliteProvider) InsertMessage(message *model.Message) error {
 	return rdbInsertMessage(p.database, message)
 }
 
-func (p *sqliteProvider) SelectMessages(limit, offset int32, opts ...MessageOption) ([]*model.Message, error) {
+func (p *sqliteProvider) SelectMessages(limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
 	return rdbSelectMessages(p.database, limit, offset, opts...)
 }
 
@@ -18,7 +18,7 @@ func (p *sqliteProvider) SelectMessage(messageID string) (*model.Message, error)
 	return rdbSelectMessage(p.database, messageID)
 }
 
-func (p *sqliteProvider) SelectCountMessages(opts ...MessageOption) (int64, error) {
+func (p *sqliteProvider) SelectCountMessages(opts ...SelectMessagesOption) (int64, error) {
 	return rdbSelectCountMessages(p.database, opts...)
 }
 

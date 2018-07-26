@@ -4,28 +4,28 @@ import (
 	"github.com/swagchat/chat-api/model"
 )
 
-type userRoleOptions struct {
+type deleteUserRolesOptions struct {
 	userID  string
 	roleID  int32
 	roleIDs []int32
 }
 
-type UserRoleOption func(*userRoleOptions)
+type DeleteUserRolesOption func(*deleteUserRolesOptions)
 
-func UserRoleOptionFilterByUserID(userID string) UserRoleOption {
-	return func(ops *userRoleOptions) {
+func DeleteUserRolesOptionFilterByUserID(userID string) DeleteUserRolesOption {
+	return func(ops *deleteUserRolesOptions) {
 		ops.userID = userID
 	}
 }
 
-func UserRoleOptionFilterByRoleID(roleID int32) UserRoleOption {
-	return func(ops *userRoleOptions) {
+func DeleteUserRolesOptionFilterByRoleID(roleID int32) DeleteUserRolesOption {
+	return func(ops *deleteUserRolesOptions) {
 		ops.roleID = roleID
 	}
 }
 
-func UserRoleOptionFilterByRoleIDs(roleIDs []int32) UserRoleOption {
-	return func(ops *userRoleOptions) {
+func DeleteUserRolesOptionFilterByRoleIDs(roleIDs []int32) DeleteUserRolesOption {
+	return func(ops *deleteUserRolesOptions) {
 		ops.roleIDs = roleIDs
 	}
 }
@@ -34,8 +34,8 @@ type userRoleStore interface {
 	createUserRoleStore()
 
 	InsertUserRoles(urs []*model.UserRole) error
-	SelectUserRole(opts ...UserRoleOption) (*model.UserRole, error)
+	SelectUserRole(userID string, roleID int32) (*model.UserRole, error)
 	SelectRoleIDsOfUserRole(userID string) ([]int32, error)
 	SelectUserIDsOfUserRole(roleID int32) ([]string, error)
-	DeleteUserRoles(opts ...UserRoleOption) error
+	DeleteUserRoles(opts ...DeleteUserRolesOption) error
 }

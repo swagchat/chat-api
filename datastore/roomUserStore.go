@@ -2,14 +2,45 @@ package datastore
 
 import "github.com/swagchat/chat-api/model"
 
-type roomUserOptions struct {
+type insertRoomUsersOptions struct {
+	beforeClean bool
+}
+
+type InsertRoomUsersOption func(*insertRoomUsersOptions)
+
+func InsertRoomUsersOptionBeforeClean(beforeClean bool) InsertRoomUsersOption {
+	return func(ops *insertRoomUsersOptions) {
+		ops.beforeClean = beforeClean
+	}
+}
+
+type selectRoomUsersOptions struct {
+	roomID  string
+	userIDs []string
+}
+
+type SelectRoomUsersOption func(*selectRoomUsersOptions)
+
+func SelectRoomUsersOptionWithRoomID(roomID string) SelectRoomUsersOption {
+	return func(ops *selectRoomUsersOptions) {
+		ops.roomID = roomID
+	}
+}
+
+func SelectRoomUsersOptionWithUserIDs(userIDs []string) SelectRoomUsersOption {
+	return func(ops *selectRoomUsersOptions) {
+		ops.userIDs = userIDs
+	}
+}
+
+type selectUserIDsOfRoomUserOptions struct {
 	roleIDs []int32
 }
 
-type RoomUserOption func(*roomUserOptions)
+type SelectUserIDsOfRoomUserOption func(*selectUserIDsOfRoomUserOptions)
 
-func WithRoleIDs(roleIDs []int32) RoomUserOption {
-	return func(ops *roomUserOptions) {
+func SelectUserIDsOfRoomUserOptionWithRoleIDs(roleIDs []int32) SelectUserIDsOfRoomUserOption {
+	return func(ops *selectUserIDsOfRoomUserOptions) {
 		ops.roleIDs = roleIDs
 	}
 }
@@ -17,14 +48,11 @@ func WithRoleIDs(roleIDs []int32) RoomUserOption {
 type roomUserStore interface {
 	createRoomUserStore()
 
-	DeleteAndInsertRoomUsers(roomUsers []*model.RoomUser) error
-	InsertRoomUsers(roomUsers []*model.RoomUser) error
+	InsertRoomUsers(roomUsers []*model.RoomUser, opts ...InsertRoomUsersOption) error
+	SelectRoomUsers(opts ...SelectRoomUsersOption) ([]*model.RoomUser, error)
 	SelectRoomUser(roomID, userID string) (*model.RoomUser, error)
 	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*model.RoomUser, error)
-	SelectRoomUsersByRoomID(roomID string) ([]*model.RoomUser, error)
-	SelectRoomUsersByUserID(userID string) ([]*model.RoomUser, error)
-	SelectUserIDsOfRoomUser(roomID string, opts ...RoomUserOption) ([]string, error)
-	SelectRoomUsersByRoomIDAndUserIDs(roomID *string, userIDs []string) ([]*model.RoomUser, error)
-	UpdateRoomUser(*model.RoomUser) (*model.RoomUser, error)
-	DeleteRoomUser(roomID string, userIDs []string) error
+	SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error)
+	UpdateRoomUser(*model.RoomUser) error
+	DeleteRoomUsers(roomID string, userIDs []string) error
 }

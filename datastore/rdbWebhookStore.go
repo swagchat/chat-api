@@ -23,19 +23,19 @@ func rdbCreateWebhookStore(db string) {
 	}
 }
 
-func rdbSelectWebhooks(db string, event model.WebhookEventType, opts ...WebhookOption) ([]*model.Webhook, error) {
+func rdbSelectWebhooks(db string, event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
 	replica := RdbStore(db).replica()
+
+	opt := selectWebhooksOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
 	var webhooks []*model.Webhook
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE event=:event AND deleted=0", tableNameWebhook)
 	params := map[string]interface{}{
 		"event": event,
-	}
-
-	opt := webhookOptions{}
-	for _, o := range opts {
-		o(&opt)
 	}
 
 	if opt.roomID != "" {

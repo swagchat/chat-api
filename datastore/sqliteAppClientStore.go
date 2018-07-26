@@ -6,14 +6,10 @@ func (p *sqliteProvider) createAppClientStore() {
 	rdbCreateAppClientStore(p.database)
 }
 
-func (p *sqliteProvider) InsertAppClient(name string) (*model.AppClient, error) {
-	return rdbInsertAppClient(p.database, name)
+func (p *sqliteProvider) InsertAppClient(appClient *model.AppClient) error {
+	return rdbInsertAppClient(p.database, appClient)
 }
 
-func (p *sqliteProvider) SelectLatestAppClientByName(name string) (*model.AppClient, error) {
-	return rdbSelectLatestAppClientByName(p.database, name)
-}
-
-func (p *sqliteProvider) SelectLatestAppClientByClientID(clientID string) (*model.AppClient, error) {
-	return rdbSelectLatestAppClientByClientID(p.database, clientID)
+func (p *sqliteProvider) SelectLatestAppClient(opts ...SelectAppClientOption) (*model.AppClient, error) {
+	return rdbSelectLatestAppClient(p.database, opts...)
 }

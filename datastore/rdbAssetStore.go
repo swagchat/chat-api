@@ -24,15 +24,15 @@ func rdbCreateAssetStore(db string) {
 	}
 }
 
-func rdbInsertAsset(db string, asset *model.Asset) (*model.Asset, error) {
+func rdbInsertAsset(db string, asset *model.Asset) error {
 	master := RdbStore(db).master()
 
 	if err := master.Insert(asset); err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting assett. %v.", err))
-		return nil, err
+		return err
 	}
 
-	return asset, nil
+	return nil
 }
 
 func rdbSelectAsset(db, assetID string) (*model.Asset, error) {

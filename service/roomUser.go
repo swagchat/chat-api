@@ -70,7 +70,10 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 func GetUserIDsOfRoomUser(ctx context.Context, req *model.GetUserIdsOfRoomUserRequest) (*scpb.UserIds, *model.ErrorResponse) {
 	logger.Info(fmt.Sprintf("Start  SelectUserIDsOfRoomUser. Request[%#v]", req))
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(req.RoomID, datastore.WithRoleIDs(req.RoleIDs))
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
+		req.RoomID,
+		datastore.SelectUserIDsOfRoomUserOptionWithRoleIDs(req.RoleIDs),
+	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get userIds.", nil, http.StatusInternalServerError, err)
 	}
@@ -93,7 +96,7 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 
 	ru.UpdateRoomUser(req)
 
-	_, err := datastore.Provider(ctx).UpdateRoomUser(ru)
+	err := datastore.Provider(ctx).UpdateRoomUser(ru)
 	if err != nil {
 		return model.NewErrorResponse("Failed to update room user.", nil, http.StatusInternalServerError, err)
 	}
@@ -125,13 +128,16 @@ func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *mo
 
 	req.Room = room
 
-	err := datastore.Provider(ctx).DeleteRoomUser(req.RoomID, req.UserIDs)
+	err := datastore.Provider(ctx).DeleteRoomUsers(req.RoomID, req.UserIDs)
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete room users.", nil, http.StatusInternalServerError, err)
 	}
 
 	go func() {
-		rus, err := datastore.Provider(ctx).SelectRoomUsersByRoomIDAndUserIDs(&req.RoomID, req.UserIDs)
+		rus, err := datastore.Provider(ctx).SelectRoomUsers(
+			datastore.SelectRoomUsersOptionWithRoomID(req.RoomID),
+			datastore.SelectRoomUsersOptionWithUserIDs(req.UserIDs),
+		)
 		if err != nil {
 			logger.Error(err.Error())
 		}
