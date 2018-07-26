@@ -1,6 +1,6 @@
 {
-  "id": "408e7eb5-e4de-d19e-a525-cf369f7570f8",
-  "name": "chat-api",
+  "id": "294a0a93-1d34-46b7-8577-1290442ae6e6",
+  "name": "chat-api-e2e",
   "values": [
     {
       "key": "apiEndpoint",
@@ -10,19 +10,25 @@
     },
     {
       "key": "userSchema",
-      "value": "{\"required\":[\"userId\",\"created\",\"modified\"],\"properties\":{\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000},\"metaData\":{\"type\":\"object\"},\"isBot\":{\"type\":\"boolean\"},\"isPublic\":{\"type\":\"boolean\"},\"isCanBlock\":{\"type\":\"boolean\"},\"isShowUsers\":{\"type\":\"boolean\"},\"lang\":{\"type\":\"string\"},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"}}}",
-      "enabled": true,
-      "type": "text"
-    },
-    {
-      "key": "userUnreadCountSchema",
-      "value": "{\"required\":[\"unreadCount\"],\"properties\":{\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000}}}",
+      "value": "{\"required\":[\"userId\",\"name\",\"pictureUrl\",\"informationUrl\",\"unreadCount\",\"metaData\",\"public\",\"canBlock\",\"lang\",\"lastAccessRoomId\",\"lastAccessed\",\"created\",\"modified\"],\"properties\":{\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000},\"metaData\":{\"type\":\"object\"},\"public\":{\"type\":\"boolean\"},\"canBlock\":{\"type\":\"boolean\"},\"lang\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":2},\"lastAccessRoomId\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastAccessed\":{\"type\":\"string\"},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"},\"roles\":{\"type\":\"array\"},\"rooms\":{\"type\":\"array\"},\"devices\":{\"type\":\"array\"},\"blocks\":{\"type\":\"array\"}}}",
       "enabled": true,
       "type": "text"
     },
     {
       "key": "usersSchema",
-      "value": "{\"required\":[\"users\"],\"properties\":{\"users\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000},\"metaData\":{\"type\":\"object\"},\"isBot\":{\"type\":\"boolean\"},\"isPublic\":{\"type\":\"boolean\"},\"isCanBlock\":{\"type\":\"boolean\"},\"isShowUsers\":{\"type\":\"boolean\"},\"lang\":{\"type\":\"string\"},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"}}}},\"allCount\":{\"type\":\"integer\"}}}",
+      "value": "{\"required\":[\"allCount\",\"limit\",\"offset\",\"users\"],\"properties\":{\"allCount\":{\"type\":\"integer\"},\"limit\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"users\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000},\"metaData\":{\"type\":\"object\"},\"public\":{\"type\":\"boolean\"},\"canBlock\":{\"type\":\"boolean\"},\"lang\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":2},\"lastAccessRoomId\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastAccessed\":{\"type\":\"string\"},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"}}}}}}",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "roomSchema",
+      "value": "{\"required\":[\"roomId\",\"userId\",\"name\",\"pictureUrl\",\"informationUrl\",\"type\",\"canLeft\",\"speechMode\",\"metaData\",\"availableMessageTypes\",\"lastMessage\",\"lastMessageUpdated\",\"messageCount\",\"notificationTopicId\",\"created\",\"modified\"],\"properties\":{\"roomId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"type\":{\"type\":\"integer\"},\"canLeft\":{\"type\":\"boolean\"},\"speechMode\":{\"type\":\"integer\"},\"metaData\":{\"type\":\"object\"},\"availableMessageTypes\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastMessage\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastMessageUpdated\":{\"type\":\"string\"},\"messageCount\":{\"type\":\"integer\"},\"notificationTopicId\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"},\"users\":{\"type\":\"array\"}}}",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "roomsSchema",
+      "value": "{\"required\":[\"allCount\",\"limit\",\"offset\",\"rooms\"],\"properties\":{\"allCount\":{\"type\":\"integer\"},\"limit\":{\"type\":\"integer\"},\"offset\":{\"type\":\"integer\"},\"rooms\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"roomId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"type\":{\"type\":\"integer\"},\"canLeft\":{\"type\":\"boolean\"},\"speechMode\":{\"type\":\"integer\"},\"metaData\":{\"type\":\"object\"},\"availableMessageTypes\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastMessage\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastMessageUpdated\":{\"type\":\"string\"},\"messageCount\":{\"type\":\"integer\"},\"notificationTopicId\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"},\"users\":{\"type\":\"array\"}}}}}}",
       "enabled": true,
       "type": "text"
     },
@@ -63,31 +69,37 @@
       "type": "text"
     },
     {
-      "key": "xUserId",
-      "value": "66115696-1051-4800-bb46-e95562c8c91b",
-      "enabled": true,
-      "type": "text"
-    },
-    {
-      "key": "xClientSecret",
-      "value": "NZFP~YqiU2J/h5j5kIGmSD+gfND.frX+",
+      "key": "randomUserName",
+      "value": "hhgceefd",
       "enabled": true,
       "type": "text"
     },
     {
       "key": "xClientId",
-      "value": "a6af7f1a6c9245bd8201b923db3d97e9",
+      "value": "admin",
       "enabled": true,
       "type": "text"
     },
     {
-      "key": "randomUserName",
-      "value": "ehehbfgd",
+      "key": "randomUserId",
+      "value": "cfccdehg",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "randomRoomName",
+      "value": "hhabeebb",
+      "enabled": true,
+      "type": "text"
+    },
+    {
+      "key": "randomRoomId",
+      "value": "ebhadhha",
       "enabled": true,
       "type": "text"
     }
   ],
   "_postman_variable_scope": "environment",
-  "_postman_exported_at": "2018-04-13T15:03:16.479Z",
-  "_postman_exported_using": "Postman/6.0.10"
+  "_postman_exported_at": "2018-07-26T10:02:23.900Z",
+  "_postman_exported_using": "Postman/6.1.4"
 }

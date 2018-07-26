@@ -1,1394 +1,1180 @@
 {
 	"info": {
-		"_postman_id": "bcec8999-6826-d645-c9b8-211dcdf7af7d",
-		"name": "[swagchat][test]chat-api",
+		"_postman_id": "f65ef6ac-371a-4f5c-b813-9bd3b78cb88b",
+		"name": "Chat API E2E Test",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "SET_ENVIRONMENT",
-			"event": [
+			"name": "Set environment variables",
+			"description": "",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "a4ae8606-1f7c-4f19-9756-7afff2b8c969",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Body matches string\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
-							"});"
-						]
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "c22036c2-c76a-46c0-8b16-c93d428804dc",
-						"type": "text/javascript",
-						"exec": [
-							"const userSchema = {",
-							"    \"required\": [\"userId\", \"created\", \"modified\"],",
-							"    \"properties\": {",
-							"        \"userId\": {",
-							"            \"type\": \"string\",",
-							"            \"minLength\": 1,",
-							"            \"maxLength\": 255",
-							"        },",
-							"        \"name\": {",
-							"            \"type\": \"string\",",
-							"            \"minLength\": 1,",
-							"            \"maxLength\": 50",
-							"        },",
-							"        \"pictureUrl\": {",
-							"            \"type\": \"string\",",
-							"            \"minLength\": 0,",
-							"            \"maxLength\": 255",
-							"        },",
-							"        \"informationUrl\": {",
-							"            \"type\": \"string\",",
-							"            \"minLength\": 0,",
-							"            \"maxLength\": 255",
-							"        },",
-							"        \"unreadCount\": {",
-							"            \"type\": \"integer\",",
-							"            \"minimum\": 0,",
-							"            \"maximum\": 1000000",
-							"        },",
-							"        \"metaData\": {",
-							"            \"type\": \"object\",",
-							"        },",
-							"        \"isBot\": {",
-							"            \"type\": \"boolean\",",
-							"        },",
-							"        \"isPublic\": {",
-							"            \"type\": \"boolean\",",
-							"        },",
-							"        \"isCanBlock\": {",
-							"            \"type\": \"boolean\",",
-							"        },",
-							"        \"isShowUsers\": {",
-							"            \"type\": \"boolean\",",
-							"        },",
-							"        \"lang\": {",
-							"            \"type\": \"string\",",
-							"        },",
-							"        \"created\": {",
-							"            \"type\": \"string\",",
-							"        },",
-							"        \"modified\": {",
-							"            \"type\": \"string\",",
-							"        },",
-							"    }",
-							"};",
-							"postman.setEnvironmentVariable(\"userSchema\", JSON.stringify(userSchema));",
-							"",
-							"const usersSchema = {",
-							"    \"required\": [\"users\"],",
-							"    \"properties\": {",
-							"        \"users\": {",
-							"            \"type\": \"array\",",
-							"            \"items\": {",
-							"                \"type\": \"object\",",
-							"                \"properties\": userSchema.properties,",
-							"            }",
-							"        },",
-							"        \"allCount\": {",
-							"            \"type\": \"integer\"",
-							"        }",
-							"    }",
-							"};",
-							"postman.setEnvironmentVariable(\"usersSchema\", JSON.stringify(usersSchema));",
-							"",
-							"const userUnreadCountSchema = {",
-							"    \"required\": [\"unreadCount\"],",
-							"    \"properties\": {",
-							"        \"unreadCount\": {",
-							"            \"type\": \"integer\",",
-							"            \"minimum\": 0,",
-							"            \"maximum\": 1000000",
-							"        },",
-							"    }",
-							"};",
-							"postman.setEnvironmentVariable(\"userUnreadCountSchema\", JSON.stringify(userUnreadCountSchema));",
-							"",
-							"const deviceSchema = {",
-							"    \"required\": [\"userId\"],",
-							"    \"properties\": {",
-							"        \"userId\": {",
-							"            \"type\": \"string\",",
-							"            \"minLength\": 1,",
-							"            \"maxLength\": 50",
-							"        },",
-							"        \"platform\": {",
-							"            \"type\": \"integer\",",
-							"            \"minLength\": 1,",
-							"            \"maxLength\": 3",
-							"        },",
-							"        \"token\": {",
-							"            \"type\": \"string\"",
-							"        },",
-							"        \"notificationDeviceId\": {",
-							"            \"type\": \"string\"",
-							"        }",
-							"    }",
-							"};",
-							"postman.setEnvironmentVariable(\"deviceSchema\", JSON.stringify(deviceSchema));",
-							"",
-							"const devicesSchema = {",
-							"    \"required\": [\"devices\"],",
-							"    \"properties\": {",
-							"        \"devices\": {",
-							"            \"type\": \"array\",",
-							"            \"items\": {",
-							"                \"type\": \"object\",",
-							"                \"properties\": deviceSchema.properties,",
-							"            }",
-							"        },",
-							"        \"allCount\": {",
-							"            \"type\": \"integer\"",
-							"        }",
-							"    }",
-							"};",
-							"postman.setEnvironmentVariable(\"devicesSchema\", JSON.stringify(devicesSchema));",
-							"",
-							"const blockUsersSchema = {",
-							"    \"required\": [\"blockUsers\"],",
-							"    \"properties\": {",
-							"        \"blockUsers\": {",
-							"            \"type\": \"array\",",
-							"            \"items\": {",
-							"                \"type\": \"string\",",
-							"            }",
-							"        },",
-							"        \"allCount\": {",
-							"            \"type\": \"integer\"",
-							"        }",
-							"    }",
-							"};",
-							"postman.setEnvironmentVariable(\"blockUsersSchema\", JSON.stringify(blockUsersSchema));",
-							"",
-							"postman.setEnvironmentVariable(\"xClientId\", \"a6af7f1a6c9245bd8201b923db3d97e9\");",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}",
-					"host": [
-						"{{apiEndpoint}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "POST_USER_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "e217db06-08f1-4409-b55b-119c73f1a359",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const userSchemaString = pm.environment.get(\"userSchema\");",
-							"const userSchema = JSON.parse(userSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
-							"});",
-							"",
-							"const randomUserName = pm.environment.get(\"randomUserName\");",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.name).to.eql(randomUserName);",
-							"    pm.expect(res.pictureUrl).to.eql(\"\");",
-							"    pm.expect(res.informationUrl).to.eql(\"\");",
-							"    pm.expect(res.unreadCount).to.eql(0);",
-							"    pm.expect(res.isBot).to.eql(false);",
-							"    pm.expect(res.isPublic).to.eql(true);",
-							"    pm.expect(res.isCanBlock).to.eql(true);",
-							"    pm.expect(res.isShowUsers).to.eql(true);",
-							"    pm.expect(res.lang).to.eql(\"\");",
-							"});",
-							"",
-							"",
-							"",
-							"",
-							""
-						]
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "5a1d3d2d-9766-4d25-aa23-4060310f1348",
-						"type": "text/javascript",
-						"exec": [
-							"var randomUserName = \"\";",
-							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
-							"var len = 8;",
-							"for (var i = 0; i < len; i++){",
-							"  randomUserName += char[Math.floor(Math.random()*len)];",
-							"}",
-							"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "SET_ENVIRONMENT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a4ae8606-1f7c-4f19-9756-7afff2b8c969",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a3eb3591-f96e-4748-a735-c32a6bbd41a9",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}",
+							"host": [
+								"{{apiEndpoint}}"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"name\": \"{{randomUserName}}\"\n}"
-				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users"
-					]
-				},
-				"description": "Only set name."
-			},
-			"response": []
+					"response": []
+				}
+			]
 		},
 		{
-			"name": "POST_USER_0002",
-			"event": [
+			"name": "Management users",
+			"description": "",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "51927c9e-3ea6-411f-8eab-ed7a518874ce",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const userSchemaString = pm.environment.get(\"userSchema\");",
-							"const userSchema = JSON.parse(userSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
-							"});",
-							"",
-							"const randomUserId = pm.environment.get(\"randomUserId\");",
-							"const randomUserName = pm.environment.get(\"randomUserName\");",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.userId).to.eql(randomUserId);",
-							"    pm.expect(res.name).to.eql(randomUserName);",
-							"    pm.expect(res.pictureUrl).to.eql(\"\");",
-							"    pm.expect(res.informationUrl).to.eql(\"\");",
-							"    pm.expect(res.unreadCount).to.eql(0);",
-							"    pm.expect(res.isBot).to.eql(false);",
-							"    pm.expect(res.isPublic).to.eql(true);",
-							"    pm.expect(res.isCanBlock).to.eql(true);",
-							"    pm.expect(res.isShowUsers).to.eql(true);",
-							"    pm.expect(res.lang).to.eql(\"\");",
-							"});",
-							"",
-							"",
-							"",
-							"",
-							""
-						]
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "90b1c18e-bba7-4f08-930f-edd2bf8fa414",
-						"type": "text/javascript",
-						"exec": [
-							"var randomUserName = \"\";",
-							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
-							"var len = 8;",
-							"for (var i = 0; i < len; i++){",
-							"  randomUserName += char[Math.floor(Math.random()*len)];",
-							"}",
-							"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);",
-							"",
-							"var randomUserId = \"\";",
-							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
-							"var len = 20;",
-							"for (var i = 0; i < len; i++){",
-							"  randomUserId += char[Math.floor(Math.random()*len)];",
-							"}",
-							"",
-							"postman.setEnvironmentVariable(\"randomUserId\", randomUserId);",
-							"",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "/users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "fd822aab-7966-4a4e-977a-e587bcffa0b2",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const userSchemaString = pm.environment.get(\"userSchema\");",
+									"const userSchema = JSON.parse(userSchemaString);",
+									"console.log(res);",
+									"console.log(userSchema);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomUserName = pm.environment.get(\"randomUserName\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.name).to.eql(randomUserName);",
+									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/picture.png\");",
+									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users\");",
+									"    pm.expect(res.unreadCount).to.eql(0);",
+									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.canBlock).to.eql(true);",
+									"    pm.expect(res.lang).to.eql(\"en\");",
+									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"    pm.expect(res.roles.length).to.eql(3);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8caaca86-5b25-4fbb-9364-c3391fc36211",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": true,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roleIds\": [1, 2, 3]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"userID\": \"{{randomUserId}}\",\n  \"name\": \"{{randomUserName}}\"\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users",
-					"host": [
-						"{{apiEndpoint}}"
+				{
+					"name": "/users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "b5d237f4-133e-4b49-8bc1-4a121e550cc0",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const userSchemaString = pm.environment.get(\"userSchema\");",
+									"const userSchema = JSON.parse(userSchemaString);",
+									"console.log(res);",
+									"console.log(userSchema);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"const randomUserName = pm.environment.get(\"randomUserName\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(randomUserName);",
+									"    pm.expect(res.pictureUrl).to.eql(\"\");",
+									"    pm.expect(res.informationUrl).to.eql(\"\");",
+									"    pm.expect(res.unreadCount).to.eql(0);",
+									"    pm.expect(res.public).to.eql(false);",
+									"    pm.expect(res.canBlock).to.eql(false);",
+									"    pm.expect(res.lang).to.eql(\"\");",
+									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "aa883ed9-46f3-4033-8987-9d9082b109f2",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);",
+									"",
+									"var randomUserId = \"\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserId += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserId\", randomUserId);"
+								]
+							}
+						}
 					],
-					"path": [
-						"users"
-					]
-				},
-				"description": "Set userID."
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USERS_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "42d270b0-7b9c-4ac0-86a9-dd9810134514",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const usersSchemaString = pm.environment.get(\"usersSchema\");",
-							"const usersSchema = JSON.parse(usersSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
-							"});",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users"
-					]
-				},
-				"description": "No params"
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USER_0001",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "e89c6bea-6124-4114-a0f1-4d293bea5662",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "0cf4f95c-cccf-4f1f-b1af-c00ea0650f29",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const userSchemaString = pm.environment.get(\"userSchema\");",
-							"const userSchema = JSON.parse(userSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
-							"});",
-							"",
-							"const randomUserId = pm.environment.get(\"randomUserId\");",
-							"const randomUserName = pm.environment.get(\"randomUserName\");",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.userId).to.eql(randomUserId);",
-							"    pm.expect(res.name).to.eql(randomUserName);",
-							"    pm.expect(res.pictureUrl).to.eql(\"\");",
-							"    pm.expect(res.informationUrl).to.eql(\"\");",
-							"    pm.expect(res.unreadCount).to.eql(0);",
-							"    pm.expect(res.isBot).to.eql(false);",
-							"    pm.expect(res.isPublic).to.eql(true);",
-							"    pm.expect(res.isCanBlock).to.eql(true);",
-							"    pm.expect(res.isShowUsers).to.eql(true);",
-							"    pm.expect(res.lang).to.eql(\"\");",
-							"});",
-							"",
-							"",
-							"",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Accept",
-						"value": "application/json",
-						"disabled": true
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userId\":\"{{randomUserId}}\",\n\t\"name\":\"{{randomUserName}}\"\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USER_UNREADCOUNT_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "90223a63-c8db-4b69-b32c-c8670e4d0255",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const userUnreadCountSchemaString = pm.environment.get(\"userUnreadCountSchema\");",
-							"const userUnreadCountSchema = JSON.parse(userUnreadCountSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, userUnreadCountSchema)).to.be.true;",
-							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.unreadCount).to.eql(0);",
-							"});",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/unreadCount",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"unreadCount"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "PUT_USER_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "e59f4f3d-c62b-44bd-85c1-298585064a80",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const userSchemaString = pm.environment.get(\"userSchema\");",
-							"const userSchema = JSON.parse(userSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
-							"});",
-							"",
-							"const randomUserId = pm.environment.get(\"randomUserId\");",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.userId).to.eql(randomUserId);",
-							"    pm.expect(res.name).to.eql(\"update-name\");",
-							"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/update-picture.png\");",
-							"    pm.expect(res.informationUrl).to.eql(\"http://example.com/update-information.html\");",
-							"    pm.expect(res.unreadCount).to.eql(10);",
-							"    pm.expect(res.metaData).to.eql({\"key\": \"value\"});",
-							"    pm.expect(res.isBot).to.eql(true);",
-							"    pm.expect(res.isPublic).to.eql(true);",
-							"    pm.expect(res.isCanBlock).to.eql(false);",
-							"    pm.expect(res.isShowUsers).to.eql(false);",
-							"    pm.expect(res.lang).to.eql(\"en\");",
-							"});",
-							"",
-							"",
-							"",
-							"",
-							""
-						]
-					}
+					"response": []
 				},
 				{
-					"listen": "prerequest",
-					"script": {
-						"id": "72635527-1df0-4852-ac85-1fd4bf485fb2",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "/users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "14957a23-c31c-4b16-ada7-be7001a502e8",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const usersSchemaString = pm.environment.get(\"usersSchema\");",
+									"const usersSchema = JSON.parse(usersSchemaString);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
+									"});",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/users?limit=10&offset=0&order=created+desc,modified+asc&userId=xxxxx",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "order",
+									"value": "created+desc,modified+asc"
+								},
+								{
+									"key": "userId",
+									"value": "xxxxx"
+								}
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"name\": \"update-name\",\n\t\"pictureUrl\": \"http://example.com/update-picture.png\",\n\t\"informationUrl\": \"http://example.com/update-information.html\",\n\t\"unreadCount\": 10,\n\t\"metaData\": {\"key\": \"value\"},\n\t\"isBot\": true,\n\t\"isPublic\": true,\n\t\"isCanBlock\": false,\n    \"isShowUsers\": false,\n    \"lang\": \"en\"\n}"
-				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USER_DEVICES_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "34b8fa27-7f2d-4b22-99b9-d320fde62bba",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const devicesSchemaString = pm.environment.get(\"devicesSchema\");",
-							"const devicesSchema = JSON.parse(devicesSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, devicesSchema)).to.be.true;",
-							"});",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"devices"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USER_DEVICE_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "d68184e8-b2ff-4bb1-b6d7-f2ee6b0c3ace",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 404\", function () {",
-							"    pm.response.to.have.status(404);",
-							"});",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"devices",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "PUT_USER_DEVICE_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "e18564bd-0b20-4da1-872d-80bf14d1605a",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const deviceSchemaString = pm.environment.get(\"deviceSchema\");",
-							"const deviceSchema = JSON.parse(deviceSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, deviceSchema)).to.be.true;",
-							"});"
-						]
-					}
+					"response": []
 				},
 				{
-					"listen": "prerequest",
-					"script": {
-						"id": "a9e28c13-204d-45bf-9196-86cdf797917f",
-						"type": "text/javascript",
-						"exec": [
-							"var randomDeviceToken = \"\";",
-							"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
-							"var len = 20;",
-							"for (var i = 0; i < len; i++){",
-							"  randomDeviceToken += char[Math.floor(Math.random()*len)];",
-							"}",
-							"postman.setEnvironmentVariable(\"randomDeviceToken\", randomDeviceToken);",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "/users/{userId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "53a8b3db-bcb6-412a-b0f1-633aa7a99690",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const userSchemaString = pm.environment.get(\"userSchema\");",
+									"const userSchema = JSON.parse(userSchemaString);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"const randomUserName = pm.environment.get(\"randomUserName\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(randomUserName);",
+									"    pm.expect(res.pictureUrl).to.eql(\"\");",
+									"    pm.expect(res.informationUrl).to.eql(\"\");",
+									"    pm.expect(res.unreadCount).to.eql(0);",
+									"    pm.expect(res.public).to.eql(false);",
+									"    pm.expect(res.canBlock).to.eql(false);",
+									"    pm.expect(res.lang).to.eql(\"\");",
+									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"token\": \"{{randomDeviceToken}}\"\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"devices",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "PUT_USER_DEVICE_0002",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "b9938a1b-0c9e-4e8e-9393-c51db3773b98",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 304\", function () {",
-							"    pm.response.to.have.status(304);",
-							"});",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "/users/{userId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "03916add-e182-4816-98a6-6f247beb82b8",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const userSchemaString = pm.environment.get(\"userSchema\");",
+									"const userSchema = JSON.parse(userSchemaString);",
+									"console.log(res);",
+									"console.log(userSchema);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomUserName = pm.environment.get(\"randomUserName\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.name).to.eql(\"update\");",
+									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/update.png\");",
+									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users/update\");",
+									"    pm.expect(res.unreadCount).to.eql(0);",
+									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.canBlock).to.eql(true);",
+									"    pm.expect(res.lang).to.eql(\"en\");",
+									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\": \"http://example.com/img/update.png\",\n\t\"informationUrl\": \"http://example.com/users/update\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": true,\n\t\"canBlock\": true,\n\t\"lang\": \"en\"\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"token\": \"{{randomDeviceToken}}\"\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"devices",
-						"1"
-					]
-				},
-				"description": "Not modified"
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE_USER_DEVICE_0001",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "eddb59d7-1e85-40b6-843e-b5ffa951fb70",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/devices/1",
-					"host": [
-						"{{apiEndpoint}}"
+					"name": "/users/{userId}/contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "8c10376f-ac92-4ef3-aa53-b60f1a4f4d51",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const usersSchemaString = pm.environment.get(\"usersSchema\");",
+									"const usersSchema = JSON.parse(usersSchemaString);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
+									"});",
+									""
+								]
+							}
+						}
 					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"devices",
-						"1"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USER_BLOCKS_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "f370d955-a744-40f2-b67b-ba27d34a1ce3",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
-							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
-							"});",
-							"pm.test('Data is valid', function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(0);",
-							"});",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/contacts",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"contacts"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"userIds\": [\"73217b00-eb91-4a7f-ba51-532e4f98ed55\"]\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
-					"host": [
-						"{{apiEndpoint}}"
+				{
+					"name": "/profiles/{userId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a73835e3-3ae6-4b16-a25b-20bf36ea818f",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const userSchemaString = pm.environment.get(\"userSchema\");",
+									"const userSchema = JSON.parse(userSchemaString);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"const randomUserName = pm.environment.get(\"randomUserName\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(\"update\");",
+									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/update.png\");",
+									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users/update\");",
+									"    pm.expect(res.unreadCount).to.eql(0);",
+									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.canBlock).to.eql(true);",
+									"    pm.expect(res.lang).to.eql(\"en\");",
+									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
 					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"blocks"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USERS_0002",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "6cfed53f-8845-4887-a9a5-d9e5e35dadcc",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"pm.environment.set(\"usersRes\", responseBody);",
-							"const usersSchemaString = pm.environment.get(\"usersSchema\");",
-							"const usersSchema = JSON.parse(usersSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
-							"});",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}/users",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users"
-					]
-				},
-				"description": "No params"
-			},
-			"response": []
-		},
-		{
-			"name": "PUT_USER_BLOCKS_0001",
-			"event": [
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "de0b3d4e-6751-49fc-94f2-ab462b5af92e",
-						"type": "text/javascript",
-						"exec": [
-							"const addBlockUserCount = 4;",
-							"const apiEndpoint = pm.environment.get(\"apiEndpoint\");",
-							"const randomUserId = pm.environment.get(\"randomUserId\");",
-							"",
-							"let addBlockUserIds = [];",
-							"usersRes = pm.environment.get(\"usersRes\");",
-							"var users = JSON.parse(usersRes);",
-							"let i = 0;",
-							"for (let user of users.users) {",
-							"    if (user.userId !== randomUserId) {",
-							"        addBlockUserIds.push(user.userId);",
-							"        i++;",
-							"    }",
-							"    if (i >= addBlockUserCount) {",
-							"        break;",
-							"    }",
-							"}",
-							"pm.environment.set(\"addBlockUserIds\", JSON.stringify(addBlockUserIds));",
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "ae003546-c23e-419f-8b1b-81165bfb01c4",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
-							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
-							"});",
-							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
-							"var expectedCount = addBlockUserIds.length;",
-							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
-							"});",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/profiles/{{randomUserId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"profiles",
+								"{{randomUserId}}"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"userIds\": {{addBlockUserIds}}\n}"
-				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"blocks"
-					]
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "DELETE_USER_BLOCKS_0001",
-			"event": [
+			"name": "Management rooms",
+			"description": "",
+			"item": [
 				{
-					"listen": "prerequest",
-					"script": {
-						"id": "7dacccec-cd71-41b1-965f-8706da31b097",
-						"type": "text/javascript",
-						"exec": [
-							"const deleteBlockUserCount = 1;",
-							"const apiEndpoint = pm.environment.get(\"apiEndpoint\");",
-							"const randomUserId = pm.environment.get(\"randomUserId\");",
-							"",
-							"let deleteBlockUserIds = [];",
-							"usersRes = pm.environment.get(\"usersRes\");",
-							"var users = JSON.parse(usersRes);",
-							"let i = 0;",
-							"for (let user of users.users) {",
-							"    if (user.userId !== randomUserId) {",
-							"        deleteBlockUserIds.push(user.userId);",
-							"        i++;",
-							"    }",
-							"    if (i >= deleteBlockUserCount) {",
-							"        break;",
-							"    }",
-							"}",
-							"pm.environment.set(\"deleteBlockUserIds\", JSON.stringify(deleteBlockUserIds));",
-							"",
-							"",
-							""
-						]
-					}
-				},
-				{
-					"listen": "test",
-					"script": {
-						"id": "990a6df6-8cc1-47fb-89e0-a35b9bcaa551",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
-							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
-							"});",
-							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
-							"var expectedCount = addBlockUserIds.length - 1;",
-							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
-							"});",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "/rooms",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "de1c9f34-9168-45cf-a642-76eac3984cdb",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const roomSchemeString = pm.environment.get(\"roomSchema\");",
+									"const roomScheme = JSON.parse(roomSchemeString);",
+									"console.log(res);",
+									"console.log(roomScheme);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, roomScheme)).to.be.true;",
+									"});",
+									"",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(\"room-name-0001\");",
+									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/picture.png\");",
+									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/rooms\");",
+									"    pm.expect(res.type).to.eql(2);",
+									"    pm.expect(res.canLeft).to.eql(true);",
+									"    pm.expect(res.speechMode).to.eql(1);",
+									"    pm.expect(res.availableMessageTypes).to.eql(\"type1,type2\");",
+									"    pm.expect(res.lastMessage).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastMessageUpdated)).not.eql(null);",
+									"    pm.expect(res.messageCount).to.eql(0);",
+									"    pm.expect(res.notificationTopicId).to.eql(\"\");",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"    pm.expect(res.users.length).to.eql(1);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "079a7612-a4c6-498f-afdc-d15437dd1d78",
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userId\":\"{{randomUserId}}\",\n\t\"name\":\"room-name-0001\",\n\t\"pictureUrl\":\"http://example.com/img/picture.png\",\n\t\"informationUrl\":\"http://example.com/rooms\",\n\t\"type\": 2,\n\t\"canLeft\": true,\n\t\"speechMode\": 1,\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"availableMessageTypes\": \"type1,type2\"\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"userIds\": {{deleteBlockUserIds}}\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
-					"host": [
-						"{{apiEndpoint}}"
-					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"blocks"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "GET_USER_BLOCKS_0002",
-			"event": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "95513d2f-114a-4ad7-a10b-2e3f60a100c5",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Content-Type is present\", function () {",
-							"    pm.response.to.have.header(\"Content-Type\");",
-							"});",
-							"",
-							"var res = JSON.parse(responseBody);",
-							"",
-							"const blockUsersSchemaString = pm.environment.get(\"blockUsersSchema\");",
-							"const blockUsersSchema = JSON.parse(blockUsersSchemaString);",
-							"pm.test('Schema is valid', function() {",
-							"    pm.expect(tv4.validate(res, blockUsersSchema)).to.be.true;",
-							"});",
-							"",
-							"var addBlockUserIds = JSON.parse(pm.environment.get(\"addBlockUserIds\"));",
-							"var expectedCount = addBlockUserIds.length - 1;",
-							"pm.test('Data length is valid. The result is ' + res.blockUsers.length + ' but expected value was ' + expectedCount, function() {",
-							"    pm.expect(res.blockUsers.length).to.eql(expectedCount);",
-							"});",
-							"",
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"name": "/rooms",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "07564b45-27af-4126-978a-e561bf742056",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const roomSchemeString = pm.environment.get(\"roomSchema\");",
+									"const roomScheme = JSON.parse(roomSchemeString);",
+									"console.log(res);",
+									"console.log(roomScheme);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, roomScheme)).to.be.true;",
+									"});",
+									"",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(\"\");",
+									"    pm.expect(res.pictureUrl).to.eql(\"\");",
+									"    pm.expect(res.informationUrl).to.eql(\"\");",
+									"    pm.expect(res.type).to.eql(2);",
+									"    pm.expect(res.canLeft).to.eql(true);",
+									"    pm.expect(res.speechMode).to.eql(0);",
+									"    pm.expect(res.availableMessageTypes).to.eql(\"\");",
+									"    pm.expect(res.lastMessage).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastMessageUpdated)).not.eql(null);",
+									"    pm.expect(res.messageCount).to.eql(0);",
+									"    pm.expect(res.notificationTopicId).to.eql(\"\");",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"    pm.expect(res.users.length).to.eql(1);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "cd6f068a-1d3d-4773-8c7f-151da5389e05",
+								"type": "text/javascript",
+								"exec": [
+									"var randomRoomId = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomRoomId += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomRoomId\", randomRoomId);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId}}\",\n\t\"type\": 2\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms"
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"userIds\": [\"73217b00-eb91-4a7f-ba51-532e4f98ed55\"]\n}"
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blocks",
-					"host": [
-						"{{apiEndpoint}}"
+				{
+					"name": "/rooms",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "0a56df56-4752-4735-bb37-c21fc6a09176",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const roomsSchemaString = pm.environment.get(\"roomsSchema\");",
+									"const roomsSchema = JSON.parse(roomsSchemaString);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, roomsSchema)).to.be.true;",
+									"});",
+									""
+								]
+							}
+						}
 					],
-					"path": [
-						"users",
-						"{{randomUserId}}",
-						"blocks"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "DELETE_USER_0001",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "86c6adab-d2e1-479e-8c27-890c197faed4",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Status code is 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});",
-							""
-						]
-					}
-				},
-				{
-					"listen": "prerequest",
-					"script": {
-						"id": "72635527-1df0-4852-ac85-1fd4bf485fb2",
-						"type": "text/javascript",
-						"exec": [
-							""
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms?limit=10&offset=0&order=created+desc,modified+asc&userId=xxxxx",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "order",
+									"value": "created+desc,modified+asc"
+								},
+								{
+									"key": "userId",
+									"value": "xxxxx"
+								}
+							]
+						}
 					},
-					{
-						"key": "X-Realm",
-						"value": "swagchat"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
+					"response": []
 				},
-				"url": {
-					"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
-					"host": [
-						"{{apiEndpoint}}"
+				{
+					"name": "/rooms/{roomId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d5a4c5c0-2263-4c77-8c44-2971da28dc25",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const roomSchemaString = pm.environment.get(\"roomSchema\");",
+									"const roomSchema = JSON.parse(roomSchemaString);",
+									"console.log(roomSchema);",
+									"console.log(res);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, roomSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomRoomId = pm.environment.get(\"randomRoomId\");",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.roomId).to.eql(randomRoomId);",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(\"\");",
+									"    pm.expect(res.pictureUrl).to.eql(\"\");",
+									"    pm.expect(res.informationUrl).to.eql(\"\");",
+									"    pm.expect(res.type).to.eql(2);",
+									"    pm.expect(res.canLeft).to.eql(true);",
+									"    pm.expect(res.speechMode).to.eql(0);",
+									"    pm.expect(res.availableMessageTypes).to.eql(\"\");",
+									"    pm.expect(res.lastMessage).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastMessageUpdated)).not.eql(null);",
+									"    pm.expect(res.messageCount).to.eql(0);",
+									"    pm.expect(res.notificationTopicId).to.eql(\"\");",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"    pm.expect(res.users.length).to.eql(1);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
 					],
-					"path": [
-						"users",
-						"{{randomUserId}}"
-					]
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "X-Sub",
+								"value": "{{randomUserId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/rooms{roomId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "ac35d262-1628-4ef0-acf2-871c1717fbf1",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const roomSchemaString = pm.environment.get(\"roomSchema\");",
+									"const roomSchema = JSON.parse(roomSchemaString);",
+									"console.log(roomSchema);",
+									"console.log(res);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, roomSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomRoomId = pm.environment.get(\"randomRoomId\");",
+									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.roomId).to.eql(randomRoomId);",
+									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.name).to.eql(\"update\");",
+									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/picture.png\");",
+									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/rooms\");",
+									"    pm.expect(res.type).to.eql(3);",
+									"    pm.expect(res.canLeft).to.eql(false);",
+									"    pm.expect(res.speechMode).to.eql(1);",
+									"    pm.expect(res.availableMessageTypes).to.eql(\"type3\");",
+									"    pm.expect(res.lastMessage).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastMessageUpdated)).not.eql(null);",
+									"    pm.expect(res.messageCount).to.eql(0);",
+									"    pm.expect(res.notificationTopicId).to.eql(\"\");",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\":\"http://example.com/img/picture.png\",\n\t\"informationUrl\":\"http://example.com/rooms\",\n\t\"type\": 3,\n\t\"canLeft\": false,\n\t\"speechMode\": 1,\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"availableMessageTypes\": \"type3\"\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "DELETE_ENVIRONMENT",
-			"event": [
+			"name": "Delete resources",
+			"description": "",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"id": "56a46721-3350-4a3f-b44d-0c996890f66c",
-						"type": "text/javascript",
-						"exec": [
-							"pm.test(\"Body matches string\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
-							"});"
-						]
-					}
+					"name": "/users/{userId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "700d1832-d219-4115-88f3-0dcd440ad301",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.expect(responseBody).not.eql(null);",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}"
+							]
+						}
+					},
+					"response": []
 				},
 				{
-					"listen": "prerequest",
-					"script": {
-						"id": "4a17999e-f171-4d4b-8631-31802a673603",
-						"type": "text/javascript",
-						"exec": [
-							"pm.environment.unset(\"randomUserName\");",
-							"pm.environment.unset(\"randomUserId\");",
-							"pm.environment.unset(\"randomDeviceToken\");",
-							"pm.environment.unset(\"addBlockUserIds\");",
-							"pm.environment.unset(\"deleteBlockUserIds\");",
-							"pm.environment.unset(\"xClientId\");",
-							"pm.environment.unset(\"xC\");",
-							""
-						]
-					}
+					"name": "/rooms{roomId}",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "5e49372c-7d0e-4851-88a5-a37040c69c71",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"pm.expect(responseBody).not.eql(null);",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}"
+							]
+						}
+					},
+					"response": []
 				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"body": {},
-				"url": {
-					"raw": "{{apiEndpoint}}",
-					"host": [
-						"{{apiEndpoint}}"
-					]
+			]
+		},
+		{
+			"name": "Delete environment variables",
+			"description": "",
+			"item": [
+				{
+					"name": "DELETE_ENVIRONMENT",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "56a46721-3350-4a3f-b44d-0c996890f66c",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Body matches string\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"chat-api [API Version]0 [Build Version]0.9.1\");",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "7e48a8e7-99f2-438d-87c2-54c39ebc9b25",
+								"type": "text/javascript",
+								"exec": [
+									"pm.environment.unset(\"randomUserName\");",
+									"pm.environment.unset(\"randomUserId\");",
+									"pm.environment.unset(\"randomDeviceToken\");",
+									"pm.environment.unset(\"addBlockUserIds\");",
+									"pm.environment.unset(\"deleteBlockUserIds\");",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}",
+							"host": [
+								"{{apiEndpoint}}"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		}
 	]
 }
