@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 )
@@ -19,6 +20,9 @@ func setRoomMux() {
 }
 
 func postRoom(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postRoom")
+	defer span.Finish()
+
 	var req model.CreateRoomRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -35,6 +39,9 @@ func postRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRooms(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRooms")
+	defer span.Finish()
+
 	req := &model.GetRoomsRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
@@ -62,6 +69,9 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoom(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoom")
+	defer span.Finish()
+
 	req := &model.GetRoomRequest{}
 
 	roomID := bone.GetValue(r, "roomId")
@@ -77,6 +87,9 @@ func getRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func putRoom(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putRoom")
+	defer span.Finish()
+
 	var req model.UpdateRoomRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -95,6 +108,9 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoom(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteRoom")
+	defer span.Finish()
+
 	req := &model.DeleteRoomRequest{}
 
 	roomID := bone.GetValue(r, "roomId")
@@ -110,6 +126,9 @@ func deleteRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoomMessages(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoomMessages")
+	defer span.Finish()
+
 	req := &model.GetRoomMessagesRequest{}
 
 	roomID := bone.GetValue(r, "roomId")

@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 )
@@ -22,6 +23,9 @@ func setUserMux() {
 }
 
 func postUser(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postUser")
+	defer span.Finish()
+
 	var req model.CreateUserRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -38,6 +42,9 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUsers")
+	defer span.Finish()
+
 	req := &model.GetUsersRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
@@ -65,6 +72,9 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUser")
+	defer span.Finish()
+
 	req := &model.GetUserRequest{}
 
 	userID := bone.GetValue(r, "userId")
@@ -80,6 +90,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func putUser(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putUser")
+	defer span.Finish()
+
 	var req model.UpdateUserRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -98,6 +111,9 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteUser")
+	defer span.Finish()
+
 	req := &model.DeleteUserRequest{}
 
 	userID := bone.GetValue(r, "userId")
@@ -113,6 +129,9 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getContacts(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getContacts")
+	defer span.Finish()
+
 	req := &model.GetContactsRequest{}
 
 	userID := bone.GetValue(r, "userId")
@@ -144,6 +163,9 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProfile(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getProfile")
+	defer span.Finish()
+
 	req := &model.GetProfileRequest{}
 
 	userID := bone.GetValue(r, "userId")

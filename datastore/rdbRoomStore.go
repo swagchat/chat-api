@@ -1,14 +1,19 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateRoomStore(db string) {
+func rdbCreateRoomStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateRoomStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.Room{}, tableNameRoom)
@@ -24,7 +29,10 @@ func rdbCreateRoomStore(db string) {
 	}
 }
 
-func rdbInsertRoom(db string, room *model.Room, opts ...InsertRoomOption) error {
+func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...InsertRoomOption) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertRoom")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	opt := insertRoomOptions{}
@@ -64,7 +72,10 @@ func rdbInsertRoom(db string, room *model.Room, opts ...InsertRoomOption) error 
 	return nil
 }
 
-func rdbSelectRooms(db string, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
+func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRooms")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	opt := selectRoomsOptions{}
@@ -115,7 +126,10 @@ func rdbSelectRooms(db string, limit, offset int32, opts ...SelectRoomsOption) (
 	return rooms, nil
 }
 
-func rdbSelectRoom(db, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
+func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoom")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	opt := selectRoomOptions{}
@@ -140,7 +154,7 @@ func rdbSelectRoom(db, roomID string, opts ...SelectRoomOption) (*model.Room, er
 	room = rooms[0]
 
 	if opt.withUsers {
-		users, err := rdbSelectUsersForRoom(db, roomID)
+		users, err := rdbSelectUsersForRoom(ctx, db, roomID)
 		if err != nil {
 			return nil, err
 		}
@@ -150,7 +164,10 @@ func rdbSelectRoom(db, roomID string, opts ...SelectRoomOption) (*model.Room, er
 	return room, nil
 }
 
-func rdbSelectUsersForRoom(db, roomID string) ([]*model.UserForRoom, error) {
+func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*model.UserForRoom, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUsersForRoom")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var users []*model.UserForRoom
@@ -179,7 +196,10 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	return users, nil
 }
 
-func rdbSelectCountRooms(db string, opts ...SelectRoomsOption) (int64, error) {
+func rdbSelectCountRooms(ctx context.Context, db string, opts ...SelectRoomsOption) (int64, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectCountRooms")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
@@ -192,11 +212,14 @@ func rdbSelectCountRooms(db string, opts ...SelectRoomsOption) (int64, error) {
 	return count, nil
 }
 
-func rdbUpdateRoom(db string, room *model.Room) error {
+func rdbUpdateRoom(ctx context.Context, db string, room *model.Room) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateRoom")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	if room.Deleted != 0 {
-		return rdbUpdateRoomDeleted(db, room.RoomID)
+		return rdbUpdateRoomDeleted(ctx, db, room.RoomID)
 	}
 
 	_, err := master.Update(room)
@@ -208,7 +231,10 @@ func rdbUpdateRoom(db string, room *model.Room) error {
 	return nil
 }
 
-func rdbUpdateRoomDeleted(db, roomID string) error {
+func rdbUpdateRoomDeleted(ctx context.Context, db, roomID string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateRoomDeleted")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {

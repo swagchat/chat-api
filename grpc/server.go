@@ -9,6 +9,9 @@ import (
 	"strings"
 	"syscall"
 
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/swagchat/chat-api/tracer"
+
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
@@ -35,6 +38,17 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
+
+		tracer, closer := tracer.Provider(ctx).NewTracer(fmt.Sprintf("%s-grpc", utils.AppName))
+		if tracer == nil || closer == nil {
+			return handler(ctx, req)
+		}
+
+		defer closer.Close()
+		opentracing.SetGlobalTracer(tracer)
+
+		span := tracer.StartSpan(fmt.Sprintf("%s:%s", info.Server, info.FullMethod))
+		defer span.Finish()
 
 		reply, err := handler(ctx, req)
 		if err != nil {

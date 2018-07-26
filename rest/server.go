@@ -16,11 +16,13 @@ import (
 
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/shogo82148/go-gracedown"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
 )
@@ -96,6 +98,26 @@ func Run(ctx context.Context) {
 	}
 }
 
+type customResponseWriter struct {
+	http.ResponseWriter
+	status int
+	length int
+}
+
+func (w *customResponseWriter) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *customResponseWriter) Write(b []byte) (int, error) {
+	if w.status == 0 {
+		w.status = 200
+	}
+	n, err := w.ResponseWriter.Write(b)
+	w.length += n
+	return n, err
+}
+
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", utils.AppName, utils.APIVersion, utils.BuildVersion))
 }
@@ -120,31 +142,57 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return (colsHandler(
-		jwtHandler(
-			judgeAppClientHandler(
-				func(w http.ResponseWriter, r *http.Request) {
-					// log.Printf("url=%s\n", r.RequestURI)
-					// domain := r.Host
-					// referer := r.Header.Get("Referer")
-					// if referer != "" {
-					// 	url, err := url.Parse(referer)
-					// 	if err != nil {
-					// 		panic(err)
-					// 	}
-					// 	domain = url.Hostname()
-					// }
-					// log.Printf("domain=%s", domain)
-					// for i, v := range r.Header {
-					// 	log.Printf("%s=%s\n", i, v)
-					// }
-					fn(w, r)
-				}))))
+		traceHandler(
+			jwtHandler(
+				judgeAppClientHandler(
+					func(w http.ResponseWriter, r *http.Request) {
+						// log.Printf("url=%s\n", r.RequestURI)
+						// domain := r.Host
+						// referer := r.Header.Get("Referer")
+						// if referer != "" {
+						// 	url, err := url.Parse(referer)
+						// 	if err != nil {
+						// 		panic(err)
+						// 	}
+						// 	domain = url.Hostname()
+						// }
+						// log.Printf("domain=%s", domain)
+						// for i, v := range r.Header {
+						// 	log.Printf("%s=%s\n", i, v)
+						// }
+						fn(w, r)
+					})))))
 }
 
 func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		optionsHandler(w, r)
 		fn(w, r)
+	}
+}
+
+func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tracer, closer := tracer.Provider(r.Context()).NewTracer(fmt.Sprintf("%s-rest", utils.AppName))
+		if tracer == nil || closer == nil {
+			fn(w, r)
+			return
+		}
+
+		defer closer.Close()
+		opentracing.SetGlobalTracer(tracer)
+
+		span := tracer.StartSpan(fmt.Sprintf("%s:%s", r.Method, r.RequestURI))
+		defer span.Finish()
+
+		sw := &customResponseWriter{ResponseWriter: w}
+		ctx := opentracing.ContextWithSpan(r.Context(), span)
+		fn(sw, r.WithContext(ctx))
+
+		span.SetTag("http.method", r.Method)
+		span.SetTag("http.status_code", sw.status)
+		span.SetTag("http.content_length", sw.length)
+		span.SetTag("http.referer", r.Referer())
 	}
 }
 

@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"database/sql"
@@ -17,6 +18,7 @@ import (
 )
 
 type mysqlProvider struct {
+	ctx               context.Context
 	user              string
 	password          string
 	database          string

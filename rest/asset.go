@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
@@ -17,6 +18,9 @@ func setAssetMux() {
 }
 
 func postAsset(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postUser")
+	defer span.Finish()
+
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
 		pd := &model.ProblemDetail{

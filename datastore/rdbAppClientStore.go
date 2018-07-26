@@ -29,6 +29,19 @@ func rdbCreateAppClientStore(db string) {
 	}
 
 	cfg := utils.Config()
+
+	ac, err := rdbSelectLatestAppClient(
+		cfg.Datastore.Database,
+		SelectAppClientOptionFilterByClientID(cfg.FirstClientID),
+	)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting appClient. %v.", err))
+		return
+	}
+	if ac != nil {
+		return
+	}
+
 	appClient := &model.AppClient{
 		Name:     cfg.FirstClientID,
 		ClientID: cfg.FirstClientID,

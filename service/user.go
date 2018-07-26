@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
@@ -16,6 +17,9 @@ import (
 
 // CreateUser creates a user
 func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateUser")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  CreateUser. Request[%#v]", req))
 
 	errRes := req.Validate()
@@ -47,6 +51,9 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 
 // GetUsers gets users
 func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResponse, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetUsers")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  GetUsers. Request[%#v]", req))
 
 	users, err := datastore.Provider(ctx).SelectUsers(
@@ -76,6 +83,9 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 
 // GetUser gets a user
 func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetUser")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  GetUser. Request[%#v]", req))
 
 	user, err := datastore.Provider(ctx).SelectUser(
@@ -108,6 +118,9 @@ func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *mode
 
 // UpdateUser updates a user
 func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.UpdateUser")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  UpdateUser. Request[%#v]", req))
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
@@ -136,6 +149,9 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 
 // DeleteUser deletes a user
 func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorResponse {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteUser")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  DeleteUser. Request[%#v]", req))
 
 	dsp := datastore.Provider(ctx)
@@ -187,6 +203,9 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 
 // GetContacts gets contacts
 func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.UsersResponse, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetContacts")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  GetContacts. Request[%#v]", req))
 
 	contacts, err := datastore.Provider(ctx).SelectContacts(req.UserID)
@@ -207,6 +226,9 @@ func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.Use
 
 // GetProfile gets a profile
 func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetProfile")
+	defer span.Finish()
+
 	logger.Info(fmt.Sprintf("Start  GetProfile. Request[%#v]", req))
 
 	user, errRes := confirmUserExist(ctx, req.UserID)

@@ -1,6 +1,7 @@
 package datastore
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
@@ -12,6 +13,7 @@ import (
 )
 
 type sqliteProvider struct {
+	ctx           context.Context
 	onMemory      bool
 	dirPath       string
 	database      string

@@ -39,6 +39,7 @@ func Provider(ctx context.Context) provider {
 	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
+			ctx:           ctx,
 			onMemory:      dsCfg.SQLite.OnMemory,
 			dirPath:       dsCfg.SQLite.DirPath,
 			database:      dsCfg.Database,
@@ -46,6 +47,7 @@ func Provider(ctx context.Context) provider {
 		}
 	case "mysql":
 		p = &mysqlProvider{
+			ctx:               ctx,
 			user:              dsCfg.User,
 			password:          dsCfg.Password,
 			database:          dsCfg.Database,
@@ -57,6 +59,7 @@ func Provider(ctx context.Context) provider {
 		}
 	case "gcSql":
 		p = &gcpSQLProvider{
+			ctx:               ctx,
 			user:              dsCfg.User,
 			password:          dsCfg.Password,
 			database:          dsCfg.Database,

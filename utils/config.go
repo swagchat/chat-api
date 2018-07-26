@@ -67,6 +67,7 @@ type config struct {
 	EnableDeveloperMessage bool   `yaml:"enableDeveloperMessage"`
 	FirstClientID          string `yaml:"firstClientId"`
 	Logger                 *Logger
+	Tracer                 *Tracer
 	Storage                *Storage
 	Datastore              *Datastore
 	PBroker                *PBroker `yaml:"pBroker"`
@@ -90,6 +91,11 @@ type Logger struct {
 	FileLevel string `yaml:"fileLevel"`
 	// FilePath is a file path for file log.
 	FilePath string `yaml:"filePath"`
+}
+
+// Tracer is settings of tracer
+type Tracer struct {
+	Provider string
 }
 
 type Storage struct {
@@ -256,6 +262,7 @@ func defaultSetting() *config {
 			ConsoleLevel:  "debug",
 			EnableFile:    false,
 		},
+		Tracer: &Tracer{},
 		Storage: &Storage{
 			Provider: "local",
 			Local: struct {
@@ -328,6 +335,11 @@ func (c *config) loadEnv() {
 	}
 	if v = os.Getenv("SWAG_LOGGER_FILE_PATH"); v != "" {
 		c.Logger.FilePath = v
+	}
+
+	// Tracer
+	if v = os.Getenv("SWAG_TRACER_PROVIDER"); v != "" {
+		c.Tracer.Provider = v
 	}
 
 	// Storage
@@ -645,6 +657,9 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.Logger.FileFormat, "logger.fileFormat", c.Logger.FileFormat, "")
 	flags.StringVar(&c.Logger.FileLevel, "logger.fileLevel", c.Logger.FileLevel, "")
 	flags.StringVar(&c.Logger.FilePath, "logger.filePath", c.Logger.FilePath, "")
+
+	// Tracer
+	flags.StringVar(&c.Tracer.Provider, "tracer.provider", c.Tracer.Provider, "")
 
 	// Storage
 	flags.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
