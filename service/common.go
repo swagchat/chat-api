@@ -41,13 +41,13 @@ func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUser
 func confirmUserNotExist(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ErrorResponse) {
 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
 	if err != nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+		return nil, model.NewErrorResponse("", nil, http.StatusInternalServerError, err)
 	}
 	if user != nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
-				Reason: "userId is invalid. That user already exist.",
+				Reason: fmt.Sprintf("That user already exist. userId[%s]", userID),
 			},
 		}
 		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
@@ -59,13 +59,13 @@ func confirmUserNotExist(ctx context.Context, userID string, opts ...datastore.S
 func confirmUserExist(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ErrorResponse) {
 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
 	if err != nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+		return nil, model.NewErrorResponse("", nil, http.StatusInternalServerError, err)
 	}
 	if user == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
-				Reason: "userId is invalid. That user is not exist.",
+				Reason: fmt.Sprintf("That user is not exist. userId[%s]", userID),
 			},
 		}
 		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
@@ -111,13 +111,13 @@ func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *m
 func confirmRoomExist(ctx context.Context, roomID string, opts ...datastore.SelectRoomOption) (*model.Room, *model.ErrorResponse) {
 	room, err := datastore.Provider(ctx).SelectRoom(roomID, opts...)
 	if err != nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+		return nil, model.NewErrorResponse("", nil, http.StatusInternalServerError, err)
 	}
 	if room == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "roomId",
-				Reason: "roomId is invalid. That room is not exist.",
+				Reason: fmt.Sprintf("That room is not exist. roomId[%s]", roomID),
 			},
 		}
 		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
@@ -174,13 +174,13 @@ func updateLastAccessRoomID(ctx context.Context, roomID string) {
 func confirmMessageNotExist(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
 	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+		return nil, model.NewErrorResponse("", nil, http.StatusInternalServerError, err)
 	}
 	if message != nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "messageId",
-				Reason: "messageId is invalid. That message already exist.",
+				Reason: fmt.Sprintf("That message already exist. messageId[%s]", messageID),
 			},
 		}
 		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
@@ -192,13 +192,13 @@ func confirmMessageNotExist(ctx context.Context, messageID string) (*model.Messa
 func confirmMessageExist(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
 	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+		return nil, model.NewErrorResponse("", nil, http.StatusInternalServerError, err)
 	}
 	if message == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "messageId",
-				Reason: "messageId is invalid. That message is not exist.",
+				Reason: fmt.Sprintf("That message is not exist. messageId[%s]", messageID),
 			},
 		}
 		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)
@@ -413,13 +413,13 @@ func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *m
 func confirmRoomUserExist(ctx context.Context, roomID, userID string) (*model.RoomUser, *model.ErrorResponse) {
 	roomUser, err := datastore.Provider(ctx).SelectRoomUser(roomID, userID)
 	if err != nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusBadRequest, err)
+		return nil, model.NewErrorResponse("", nil, http.StatusInternalServerError, err)
 	}
 	if roomUser == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "roomId | userId",
-				Reason: "roomId or userId is invalid. That room user is not exist.",
+				Reason: fmt.Sprintf("That room user is not exist. roomId[%s] userId[%s]", roomID, userID),
 			},
 		}
 		return nil, model.NewErrorResponse("", invalidParams, http.StatusBadRequest, nil)

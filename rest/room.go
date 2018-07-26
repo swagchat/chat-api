@@ -131,9 +131,9 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	messages, pd := service.GetRoomMessages(r.Context(), req)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	messages, errRes := service.GetRoomMessages(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

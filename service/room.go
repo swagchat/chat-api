@@ -127,13 +127,16 @@ func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResp
 func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *model.ErrorResponse) {
 	logger.Info(fmt.Sprintf("Start  GetRoom. Request[%#v]", req))
 
-	userID := ctx.Value(utils.CtxUserID).(string)
-	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
-	if errRes != nil {
-		return nil, errRes
+	room, err := datastore.Provider(ctx).SelectRoom(req.RoomID, datastore.SelectRoomOptionWithUsers(true))
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get room.", nil, http.StatusInternalServerError, err)
+	}
+	if room == nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusNotFound, nil)
 	}
 
-	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
 	if errRes != nil {
 		errRes.Message = "Failed to get room."
 		return nil, errRes
@@ -216,11 +219,14 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorR
 }
 
 // GetRoomMessages gets room messages
-func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.Messages, *model.ProblemDetail) {
+func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.Messages, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  GetRoomMessages. Request[%#v]", req))
+
 	userID := ctx.Value(utils.CtxUserID).(string)
-	user, pd := selectUser(ctx, userID, datastore.SelectUserOptionWithRoles(true))
-	if pd != nil {
-		return nil, pd
+	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
+	if errRes != nil {
+		errRes.Message = "Failed to get messages."
+		return nil, errRes
 	}
 
 	var roleIDs []int32
@@ -238,12 +244,7 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 		datastore.SelectMessagesOptionFilterByRoleIDs(roleIDs),
 	)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get room messages failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get messages.", nil, http.StatusInternalServerError, err)
 	}
 	returnMessages := &model.Messages{
 		Messages: messages,
@@ -254,16 +255,12 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 		datastore.SelectMessagesOptionFilterByRoleIDs(req.RoleIDs),
 	)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get room messages failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get messages.", nil, http.StatusInternalServerError, err)
 	}
 	returnMessages.AllCount = count
 
 	updateLastAccessRoomID(ctx, req.RoomID)
 
+	logger.Info("Finish GetRoomMessages.")
 	return returnMessages, nil
 }

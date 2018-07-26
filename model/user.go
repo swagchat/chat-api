@@ -67,10 +67,10 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		LastAccessed     string         `json:"lastAccessed"`
 		Created          string         `json:"created"`
 		Modified         string         `json:"modified"`
-		Roles            []int32        `json:"roles"`
-		Rooms            []*RoomForUser `json:"rooms"`
-		Devices          []*Device      `json:"devices"`
-		Blocks           []string       `json:"blocks"`
+		Roles            []int32        `json:"roles,omitempty"`
+		Rooms            []*RoomForUser `json:"rooms,omitempty"`
+		Devices          []*Device      `json:"devices,omitempty"`
+		Blocks           []string       `json:"blocks,omitempty"`
 	}{
 		UserID:           u.UserID,
 		Name:             u.Name,
@@ -184,7 +184,7 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 		u.Public = *req.Public
 	}
 
-	if req.CanBlock == nil {
+	if req.CanBlock != nil {
 		u.CanBlock = *req.CanBlock
 	}
 
@@ -329,6 +329,24 @@ func (cur *CreateUserRequest) GenerateUserRoles() []*UserRole {
 	return urs
 }
 
+func (u *User) DoPostProcessing() {
+	if u.Roles == nil {
+		u.Roles = make([]int32, 0)
+	}
+
+	if u.Rooms == nil {
+		u.Rooms = make([]*RoomForUser, 0)
+	}
+
+	if u.Devices == nil {
+		u.Devices = make([]*Device, 0)
+	}
+
+	if u.Blocks == nil {
+		u.Blocks = make([]string, 0)
+	}
+}
+
 type GetUsersRequest struct {
 	scpb.GetUsersRequest
 }
@@ -339,7 +357,7 @@ type GetUserRequest struct {
 
 type UpdateUserRequest struct {
 	scpb.UpdateUserRequest
-	MetaData utils.JSONText `db:"meta_data"`
+	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
 }
 
 func (uur *UpdateUserRequest) Validate() *ErrorResponse {

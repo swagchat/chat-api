@@ -29,21 +29,20 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, errRes
 	}
 
-	u := req.GenerateUser()
-	req.UserID = u.UserID
+	user := req.GenerateUser()
+	req.UserID = user.UserID
 	urs := req.GenerateUserRoles()
 
-	err := datastore.Provider(ctx).InsertUser(u, datastore.InsertUserOptionWithRoles(urs))
+	err := datastore.Provider(ctx).InsertUser(user, datastore.InsertUserOptionWithRoles(urs))
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to create user.", nil, http.StatusInternalServerError, err)
 	}
 
-	u.Roles = req.RoleIDs
-	u.Rooms = make([]*model.RoomForUser, 0)
-	u.Devices = make([]*model.Device, 0)
-	u.Blocks = make([]string, 0)
+	user.Roles = req.RoleIDs
+	user.DoPostProcessing()
+
 	logger.Info("Finish CreateUser")
-	return u, nil
+	return user, nil
 }
 
 // GetUsers gets users
@@ -79,16 +78,17 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *model.ErrorResponse) {
 	logger.Info(fmt.Sprintf("Start  GetUser. Request[%#v]", req))
 
-	user, errRes := confirmUserExist(
-		ctx,
+	user, err := datastore.Provider(ctx).SelectUser(
 		req.UserID,
 		datastore.SelectUserOptionWithBlocks(true),
 		datastore.SelectUserOptionWithDevices(true),
 		datastore.SelectUserOptionWithRooms(true),
 	)
-	if errRes != nil {
-		errRes.Message = "Failed to get user."
-		return nil, errRes
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get user.", nil, http.StatusInternalServerError, err)
+	}
+	if user == nil {
+		return nil, model.NewErrorResponse("", nil, http.StatusNotFound, nil)
 	}
 
 	// unreadCountRooms := make([]*model.RoomForUser, 0)
@@ -127,6 +127,8 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to update user.", nil, http.StatusInternalServerError, err)
 	}
+
+	user.DoPostProcessing()
 
 	logger.Info("Finish UpdateUser.")
 	return user, nil
@@ -211,6 +213,8 @@ func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User,
 	if errRes != nil {
 		return nil, errRes
 	}
+
+	user.DoPostProcessing()
 
 	logger.Info(fmt.Sprintf("Finish GetProfile."))
 	return user, nil

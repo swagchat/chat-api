@@ -36,8 +36,6 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 	}
 
 	for _, webhook := range webhooks {
-		pbRoom.WebhookToken = webhook.Token
-
 		switch webhook.Protocol {
 		case model.WebhookProtocolHTTP:
 			logger.Info(fmt.Sprintf("[HTTP][WebhookRoom]Start Webhook. Endpoint=[%s]", webhook.Endpoint))

@@ -238,15 +238,14 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		requestUserID := r.Header.Get(utils.HeaderUserID)
 		resourceUserID := bone.GetValue(r, "userId")
 
-		if requestUserID != "" && resourceUserID != "" {
-			if requestUserID != resourceUserID {
-				respondErr(w, r, http.StatusUnauthorized, &model.ProblemDetail{
-					Message: fmt.Sprintf("Not your resource. Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
-					Status:  http.StatusUnauthorized,
-				})
-				return
-			}
+		if (requestUserID == "" && resourceUserID == "") || (requestUserID != resourceUserID) {
+			respondErr(w, r, http.StatusUnauthorized, &model.ProblemDetail{
+				Message: fmt.Sprintf("Not your resource. Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
+				Status:  http.StatusUnauthorized,
+			})
+			return
 		}
+
 		fn(w, r)
 	}
 }

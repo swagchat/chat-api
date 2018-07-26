@@ -112,18 +112,6 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNoContent, "", nil)
 }
 
-// func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
-// 	userID := bone.GetValue(r, "userId")
-
-// 	userUnreadCount, pd := service.GetUserUnreadCount(r.Context(), userID)
-// 	if pd != nil {
-// 		respondErr(w, r, pd.Status, pd)
-// 		return
-// 	}
-
-// 	respond(w, r, http.StatusOK, "application/json", userUnreadCount)
-// }
-
 func getContacts(w http.ResponseWriter, r *http.Request) {
 	req := &model.GetContactsRequest{}
 
@@ -169,3 +157,15 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 
 	respond(w, r, http.StatusOK, "application/json", user)
 }
+
+// func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
+// 	userID := bone.GetValue(r, "userId")
+
+// 	userUnreadCount, pd := service.GetUserUnreadCount(r.Context(), userID)
+// 	if pd != nil {
+// 		respondErr(w, r, pd.Status, pd)
+// 		return
+// 	}
+
+// 	respond(w, r, http.StatusOK, "application/json", userUnreadCount)
+// }

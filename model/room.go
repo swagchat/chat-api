@@ -2,7 +2,6 @@ package model
 
 import (
 	"net/http"
-	"strings"
 	"time"
 
 	"encoding/json"
@@ -69,25 +68,21 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 	if r.LastMessageUpdated != 0 {
 		lmu = time.Unix(r.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
 	}
-	var availableMessageTypesSlice []string
-	if r.AvailableMessageTypes != "" {
-		availableMessageTypesSlice = strings.Split(r.AvailableMessageTypes, ",")
-	}
 	return json.Marshal(&struct {
 		RoomID                string          `json:"roomId"`
 		UserID                string          `json:"userId"`
 		Name                  string          `json:"name"`
-		PictureURL            string          `json:"pictureUrl,omitempty"`
-		InformationURL        string          `json:"informationUrl,omitempty"`
+		PictureURL            string          `json:"pictureUrl"`
+		InformationURL        string          `json:"informationUrl"`
 		Type                  scpb.RoomType   `json:"type"`
-		CanLeft               bool            `json:"canLeft,omitempty"`
-		SpeechMode            scpb.SpeechMode `json:"speechMode,omitempty"`
+		CanLeft               bool            `json:"canLeft"`
+		SpeechMode            scpb.SpeechMode `json:"speechMode"`
 		MetaData              utils.JSONText  `json:"metaData"`
-		AvailableMessageTypes []string        `json:"availableMessageTypes,omitempty"`
+		AvailableMessageTypes string          `json:"availableMessageTypes"`
 		LastMessage           string          `json:"lastMessage"`
 		LastMessageUpdated    string          `json:"lastMessageUpdated"`
 		MessageCount          int64           `json:"messageCount"`
-		NotificationTopicID   string          `json:"notificationTopicId,omitempty"`
+		NotificationTopicID   string          `json:"notificationTopicId"`
 		Created               string          `json:"created"`
 		Modified              string          `json:"modified"`
 		Users                 []*UserForRoom  `json:"users,omitempty"`
@@ -101,7 +96,7 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		CanLeft:               r.CanLeft,
 		SpeechMode:            r.SpeechMode,
 		MetaData:              r.MetaData,
-		AvailableMessageTypes: availableMessageTypesSlice,
+		AvailableMessageTypes: r.AvailableMessageTypes,
 		LastMessage:           r.LastMessage,
 		LastMessageUpdated:    lmu,
 		MessageCount:          r.MessageCount,
@@ -124,26 +119,42 @@ func (r *Room) ConvertToPbRoom() *scpb.Room {
 	return pbRoom
 }
 
-func (u *Room) UpdateRoom(req *UpdateRoomRequest) {
+func (r *Room) UpdateRoom(req *UpdateRoomRequest) {
 	// TODO
 	if req.Name != nil {
-		u.Name = *req.Name
+		r.Name = *req.Name
 	}
 
 	if req.PictureURL != nil {
-		u.PictureURL = *req.PictureURL
+		r.PictureURL = *req.PictureURL
 	}
 
 	if req.InformationURL != nil {
-		u.InformationURL = *req.InformationURL
+		r.InformationURL = *req.InformationURL
+	}
+
+	if req.Type != nil {
+		r.Type = *req.Type
+	}
+
+	if req.CanLeft != nil {
+		r.CanLeft = *req.CanLeft
+	}
+
+	if req.SpeechMode != nil {
+		r.SpeechMode = *req.SpeechMode
 	}
 
 	if req.MetaData != nil {
-		u.MetaData = req.MetaData
+		r.MetaData = req.MetaData
+	}
+
+	if req.AvailableMessageTypes != nil {
+		r.AvailableMessageTypes = *req.AvailableMessageTypes
 	}
 
 	nowTimestamp := time.Now().Unix()
-	u.Modified = nowTimestamp
+	r.Modified = nowTimestamp
 }
 
 type UserForRoom struct {
@@ -303,6 +314,8 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 		r.MetaData = crr.MetaData
 	}
 
+	r.AvailableMessageTypes = crr.AvailableMessageTypes
+
 	nowTimestamp := time.Now().Unix()
 	r.LastMessageUpdated = nowTimestamp
 	r.Created = nowTimestamp
@@ -343,12 +356,13 @@ type GetRoomRequest struct {
 
 type UpdateRoomRequest struct {
 	scpb.UpdateRoomRequest
-	MetaData utils.JSONText `db:"meta_data"`
+	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
 }
 
 func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
-	if uur.Type != 0 {
-		if room.Type == scpb.RoomType_OneOnOne && uur.Type != scpb.RoomType_OneOnOne {
+	// TODO
+	if *uur.Type != 0 {
+		if room.Type == scpb.RoomType_OneOnOne && *uur.Type != scpb.RoomType_OneOnOne {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "type",
@@ -356,7 +370,7 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 				},
 			}
 			return NewErrorResponse("Failed to update room.", invalidParams, http.StatusBadRequest, nil)
-		} else if room.Type != scpb.RoomType_OneOnOne && uur.Type == scpb.RoomType_OneOnOne {
+		} else if room.Type != scpb.RoomType_OneOnOne && *uur.Type == scpb.RoomType_OneOnOne {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "type",
