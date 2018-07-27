@@ -1,14 +1,19 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateSubscriptionStore(db string) {
+func rdbCreateSubscriptionStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateSubscriptionStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	_ = master.AddTableWithName(model.Subscription{}, tableNameSubscription)
@@ -19,7 +24,10 @@ func rdbCreateSubscriptionStore(db string) {
 	}
 }
 
-func rdbInsertSubscription(db string, subscription *model.Subscription) (*model.Subscription, error) {
+func rdbInsertSubscription(ctx context.Context, db string, subscription *model.Subscription) (*model.Subscription, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertSubscription")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	err := master.Insert(subscription)
@@ -30,7 +38,10 @@ func rdbInsertSubscription(db string, subscription *model.Subscription) (*model.
 	return subscription, nil
 }
 
-func rdbSelectSubscription(db, roomID, userID string, platform int32) (*model.Subscription, error) {
+func rdbSelectSubscription(ctx context.Context, db, roomID, userID string, platform int32) (*model.Subscription, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectSubscription")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*model.Subscription
@@ -52,7 +63,10 @@ func rdbSelectSubscription(db, roomID, userID string, platform int32) (*model.Su
 	return nil, nil
 }
 
-func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*model.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByRoomID(ctx context.Context, db, roomID string) ([]*model.Subscription, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDeletedSubscriptionsByRoomID")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*model.Subscription
@@ -68,7 +82,10 @@ func rdbSelectDeletedSubscriptionsByRoomID(db, roomID string) ([]*model.Subscrip
 	return subscriptions, nil
 }
 
-func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*model.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByUserID(ctx context.Context, db, userID string) ([]*model.Subscription, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDeletedSubscriptionsByUserID")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*model.Subscription
@@ -84,7 +101,10 @@ func rdbSelectDeletedSubscriptionsByUserID(db, userID string) ([]*model.Subscrip
 	return subscriptions, nil
 }
 
-func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platform int32) ([]*model.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(ctx context.Context, db, userID string, platform int32) ([]*model.Subscription, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDeletedSubscriptionsByUserIDAndPlatform")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var subscriptions []*model.Subscription
@@ -101,7 +121,10 @@ func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(db, userID string, platfor
 	return subscriptions, nil
 }
 
-func rdbDeleteSubscription(db string, subscription *model.Subscription) error {
+func rdbDeleteSubscription(ctx context.Context, db string, subscription *model.Subscription) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteSubscription")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;", tableNameSubscription)

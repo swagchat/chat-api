@@ -64,7 +64,7 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 
 	if opt.roles != nil {
 		for _, ur := range opt.roles {
-			bu, err := rdbSelectUserRole(db, ur.UserID, ur.RoleID)
+			bu, err := rdbSelectUserRole(ctx, db, ur.UserID, ur.RoleID)
 			if err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
@@ -171,7 +171,7 @@ func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOpt
 	user = users[0]
 
 	if opt.withBlocks {
-		userIDs, err := rdbSelectBlockUsers(db, userID)
+		userIDs, err := rdbSelectBlockUsers(ctx, db, userID)
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting user")
 			logger.Error(err.Error())
@@ -264,7 +264,7 @@ func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOpt
 
 	user.Roles = make([]int32, 0)
 	if opt.withRoles {
-		roleIDs, err := rdbSelectRoleIDsOfUserRole(db, userID)
+		roleIDs, err := rdbSelectRoleIDsOfUserRole(ctx, db, userID)
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting user")
 			logger.Error(err.Error())

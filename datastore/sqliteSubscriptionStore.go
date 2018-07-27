@@ -3,29 +3,29 @@ package datastore
 import "github.com/swagchat/chat-api/model"
 
 func (p *sqliteProvider) createSubscriptionStore() {
-	rdbCreateSubscriptionStore(p.database)
+	rdbCreateSubscriptionStore(p.ctx, p.database)
 }
 
 func (p *sqliteProvider) InsertSubscription(room *model.Subscription) (*model.Subscription, error) {
-	return rdbInsertSubscription(p.database, room)
+	return rdbInsertSubscription(p.ctx, p.database, room)
 }
 
 func (p *sqliteProvider) SelectSubscription(roomID, userID string, platform int32) (*model.Subscription, error) {
-	return rdbSelectSubscription(p.database, roomID, userID, platform)
+	return rdbSelectSubscription(p.ctx, p.database, roomID, userID, platform)
 }
 
 func (p *sqliteProvider) SelectDeletedSubscriptionsByRoomID(roomID string) ([]*model.Subscription, error) {
-	return rdbSelectDeletedSubscriptionsByRoomID(p.database, roomID)
+	return rdbSelectDeletedSubscriptionsByRoomID(p.ctx, p.database, roomID)
 }
 
 func (p *sqliteProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*model.Subscription, error) {
-	return rdbSelectDeletedSubscriptionsByUserID(p.database, userID)
+	return rdbSelectDeletedSubscriptionsByUserID(p.ctx, p.database, userID)
 }
 
 func (p *sqliteProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int32) ([]*model.Subscription, error) {
-	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.database, userID, platform)
+	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.ctx, p.database, userID, platform)
 }
 
 func (p *sqliteProvider) DeleteSubscription(subscription *model.Subscription) error {
-	return rdbDeleteSubscription(p.database, subscription)
+	return rdbDeleteSubscription(p.ctx, p.database, subscription)
 }

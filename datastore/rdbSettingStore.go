@@ -1,16 +1,21 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateSettingStore(db string) {
+func rdbCreateSettingStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateSettingStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.Setting{}, tableNameSetting)
@@ -21,7 +26,10 @@ func rdbCreateSettingStore(db string) {
 	}
 }
 
-func rdbSelectLatestSetting(db string) (*model.Setting, error) {
+func rdbSelectLatestSetting(ctx context.Context, db string) (*model.Setting, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectLatestSetting")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var settings []*model.Setting

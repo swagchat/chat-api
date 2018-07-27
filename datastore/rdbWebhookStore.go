@@ -1,13 +1,18 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateWebhookStore(db string) {
+func rdbCreateWebhookStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateWebhookStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.Webhook{}, tableNameWebhook)
@@ -23,7 +28,10 @@ func rdbCreateWebhookStore(db string) {
 	}
 }
 
-func rdbSelectWebhooks(db string, event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
+func rdbSelectWebhooks(ctx context.Context, db string, event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectWebhooks")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	opt := selectWebhooksOptions{}

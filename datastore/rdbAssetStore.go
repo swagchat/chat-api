@@ -1,13 +1,18 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateAssetStore(db string) {
+func rdbCreateAssetStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateAssetStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.Asset{}, tableNameAsset)
@@ -24,7 +29,10 @@ func rdbCreateAssetStore(db string) {
 	}
 }
 
-func rdbInsertAsset(db string, asset *model.Asset) error {
+func rdbInsertAsset(ctx context.Context, db string, asset *model.Asset) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertAsset")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	if err := master.Insert(asset); err != nil {
@@ -35,7 +43,10 @@ func rdbInsertAsset(db string, asset *model.Asset) error {
 	return nil
 }
 
-func rdbSelectAsset(db, assetID string) (*model.Asset, error) {
+func rdbSelectAsset(ctx context.Context, db, assetID string) (*model.Asset, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectAsset")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var assets []*model.Asset

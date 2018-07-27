@@ -18,7 +18,7 @@ func setAssetMux() {
 }
 
 func postAsset(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postUser")
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postAsset")
 	defer span.Finish()
 
 	err := r.ParseMultipartForm(32 << 20)
@@ -66,6 +66,9 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAsset(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getAsset")
+	defer span.Finish()
+
 	filename := bone.GetValue(r, "filename")
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
@@ -90,6 +93,9 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAssetInfo(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getAssetInfo")
+	defer span.Finish()
+
 	filename := bone.GetValue(r, "filename")
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")

@@ -1,18 +1,23 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
-func rdbCreateAppClientStore(db string) {
+func rdbCreateAppClientStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateAppClientStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.AppClient{}, tableNameAppClient)
@@ -31,6 +36,7 @@ func rdbCreateAppClientStore(db string) {
 	cfg := utils.Config()
 
 	ac, err := rdbSelectLatestAppClient(
+		ctx,
 		cfg.Datastore.Database,
 		SelectAppClientOptionFilterByClientID(cfg.FirstClientID),
 	)
@@ -48,14 +54,17 @@ func rdbCreateAppClientStore(db string) {
 		Created:  time.Now().Unix(),
 		Expired:  0,
 	}
-	err = rdbInsertAppClient(cfg.Datastore.Database, appClient)
+	err = rdbInsertAppClient(ctx, cfg.Datastore.Database, appClient)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
 		return
 	}
 }
 
-func rdbInsertAppClient(db string, appClient *model.AppClient) error {
+func rdbInsertAppClient(ctx context.Context, db string, appClient *model.AppClient) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertAppClient")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	err := master.Insert(appClient)
@@ -67,7 +76,10 @@ func rdbInsertAppClient(db string, appClient *model.AppClient) error {
 	return nil
 }
 
-func rdbSelectLatestAppClient(db string, opts ...SelectAppClientOption) (*model.AppClient, error) {
+func rdbSelectLatestAppClient(ctx context.Context, db string, opts ...SelectAppClientOption) (*model.AppClient, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectLatestAppClient")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	opt := selectAppClientOptions{}

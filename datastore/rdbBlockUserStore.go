@@ -1,13 +1,18 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateBlockUserStore(db string) {
+func rdbCreateBlockUserStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateBlockUserStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.BlockUser{}, tableNameBlockUser)
@@ -19,7 +24,10 @@ func rdbCreateBlockUserStore(db string) {
 	}
 }
 
-func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
+func rdbInsertBlockUsers(ctx context.Context, db string, blockUsers []*model.BlockUser) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertBlockUsers")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -28,7 +36,7 @@ func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
 	}
 
 	for _, blockUser := range blockUsers {
-		bu, err := rdbSelectBlockUser(db, blockUser.UserID, blockUser.BlockUserID)
+		bu, err := rdbSelectBlockUser(ctx, db, blockUser.UserID, blockUser.BlockUserID)
 		if err != nil {
 			trans.Rollback()
 			logger.Error(fmt.Sprintf("An error occurred while inserting blockUser. %v.", err))
@@ -54,7 +62,10 @@ func rdbInsertBlockUsers(db string, blockUsers []*model.BlockUser) error {
 	return nil
 }
 
-func rdbSelectBlockUsers(db, userID string) ([]string, error) {
+func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]string, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUsers")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var blockUserIDs []string
@@ -71,7 +82,10 @@ func rdbSelectBlockUsers(db, userID string) ([]string, error) {
 	return blockUserIDs, nil
 }
 
-func rdbSelectBlockUser(db, userID, blockUserID string) (*model.BlockUser, error) {
+func rdbSelectBlockUser(ctx context.Context, db, userID, blockUserID string) (*model.BlockUser, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUser")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var blockUsers []*model.BlockUser
@@ -93,7 +107,10 @@ func rdbSelectBlockUser(db, userID, blockUserID string) (*model.BlockUser, error
 	return nil, nil
 }
 
-func rdbDeleteBlockUsers(db, userID string, blockUserIDs []string) error {
+func rdbDeleteBlockUsers(ctx context.Context, db, userID string, blockUserIDs []string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteBlockUsers")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	var blockUserIDsQuery string

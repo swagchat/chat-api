@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 )
@@ -15,6 +16,9 @@ func setBlockUserMux() {
 }
 
 func getBlockUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getBlockUsers")
+	defer span.Finish()
+
 	userID := bone.GetValue(r, "userId")
 
 	blockUsers, pd := service.GetBlockUsers(r.Context(), userID)
@@ -27,6 +31,9 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func putBlockUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putBlockUsers")
+	defer span.Finish()
+
 	var reqUIDs model.RequestBlockUserIDs
 	if err := decodeBody(r, &reqUIDs); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -45,6 +52,9 @@ func putBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteBlockUsers")
+	defer span.Finish()
+
 	var reqUIDs model.RequestBlockUserIDs
 	if err := decodeBody(r, &reqUIDs); err != nil {
 		respondJSONDecodeError(w, r, "")

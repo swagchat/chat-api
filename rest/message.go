@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 )
@@ -14,6 +15,9 @@ func setMessageMux() {
 }
 
 func postMessages(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postMessages")
+	defer span.Finish()
+
 	var post model.Messages
 	if err := decodeBody(r, &post); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -35,6 +39,9 @@ func postMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMessage(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getMessage")
+	defer span.Finish()
+
 	messageID := bone.GetValue(r, "messageId")
 
 	message, pd := service.GetMessage(r.Context(), messageID)

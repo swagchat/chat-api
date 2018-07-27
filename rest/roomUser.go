@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
@@ -18,6 +19,9 @@ func setRoomUserMux() {
 }
 
 func postRoomUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postRoomUsers")
+	defer span.Finish()
+
 	var req model.CreateRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -36,6 +40,9 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoomUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoomUsers")
+	defer span.Finish()
+
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
 	gUIDsReq := &model.GetUserIdsOfRoomUserRequest{}
@@ -68,6 +75,9 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func putRoomUser(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putRoomUser")
+	defer span.Finish()
+
 	var req model.UpdateRoomUserRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -87,6 +97,9 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteRoomUsers")
+	defer span.Finish()
+
 	var req model.DeleteRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")

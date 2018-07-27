@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/go-zoo/bone"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 )
@@ -17,6 +18,9 @@ func setDeviceMux() {
 }
 
 func getDevices(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getDevices")
+	defer span.Finish()
+
 	userID := bone.GetValue(r, "userId")
 
 	devices, pd := service.GetDevices(r.Context(), userID)
@@ -29,6 +33,9 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDevice(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getDevice")
+	defer span.Finish()
+
 	userID := bone.GetValue(r, "userId")
 	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
 	if err != nil {
@@ -48,6 +55,9 @@ func getDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func putDevice(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putDevice")
+	defer span.Finish()
+
 	var put model.Device
 	if err := decodeBody(r, &put); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -77,6 +87,9 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteDevice(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteDevice")
+	defer span.Finish()
+
 	userID := bone.GetValue(r, "userId")
 	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
 	if err != nil {

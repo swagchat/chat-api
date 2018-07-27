@@ -1,14 +1,19 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
-func rdbCreateDeviceStore(db string) {
+func rdbCreateDeviceStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateDeviceStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.Device{}, tableNameDevice)
@@ -25,7 +30,10 @@ func rdbCreateDeviceStore(db string) {
 	}
 }
 
-func rdbInsertDevice(db string, device *model.Device) (*model.Device, error) {
+func rdbInsertDevice(ctx context.Context, db string, device *model.Device) (*model.Device, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertDevice")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	if err := master.Insert(device); err != nil {
@@ -36,7 +44,10 @@ func rdbInsertDevice(db string, device *model.Device) (*model.Device, error) {
 	return device, nil
 }
 
-func rdbSelectDevices(db, userID string) ([]*model.Device, error) {
+func rdbSelectDevices(ctx context.Context, db, userID string) ([]*model.Device, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevices")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var devices []*model.Device
@@ -53,7 +64,10 @@ func rdbSelectDevices(db, userID string) ([]*model.Device, error) {
 	return devices, nil
 }
 
-func rdbSelectDevice(db, userID string, platform int32) (*model.Device, error) {
+func rdbSelectDevice(ctx context.Context, db, userID string, platform int32) (*model.Device, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevice")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var devices []*model.Device
@@ -75,7 +89,10 @@ func rdbSelectDevice(db, userID string, platform int32) (*model.Device, error) {
 	return nil, nil
 }
 
-func rdbSelectDevicesByUserID(db, userID string) ([]*model.Device, error) {
+func rdbSelectDevicesByUserID(ctx context.Context, db, userID string) ([]*model.Device, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevicesByUserID")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var devices []*model.Device
@@ -92,7 +109,10 @@ func rdbSelectDevicesByUserID(db, userID string) ([]*model.Device, error) {
 	return devices, nil
 }
 
-func rdbSelectDevicesByToken(db, token string) ([]*model.Device, error) {
+func rdbSelectDevicesByToken(ctx context.Context, db, token string) ([]*model.Device, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevicesByToken")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var devices []*model.Device
@@ -109,7 +129,10 @@ func rdbSelectDevicesByToken(db, token string) ([]*model.Device, error) {
 	return devices, nil
 }
 
-func rdbUpdateDevice(db string, device *model.Device) error {
+func rdbUpdateDevice(ctx context.Context, db string, device *model.Device) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateDevice")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -154,7 +177,10 @@ func rdbUpdateDevice(db string, device *model.Device) error {
 	return nil
 }
 
-func rdbDeleteDevice(db, userID string, platform int32) error {
+func rdbDeleteDevice(ctx context.Context, db, userID string, platform int32) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteDevice")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {

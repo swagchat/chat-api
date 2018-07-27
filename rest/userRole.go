@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 )
@@ -16,6 +17,9 @@ func setUserRoleMux() {
 }
 
 func postUserRole(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postUserRole")
+	defer span.Finish()
+
 	var req model.CreateUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
@@ -32,6 +36,9 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUserRole(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUserRole")
+	defer span.Finish()
+
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
 	userID := ""
@@ -107,6 +114,9 @@ func getUserRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUserRole(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteUserRole")
+	defer span.Finish()
+
 	var req model.DeleteUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")

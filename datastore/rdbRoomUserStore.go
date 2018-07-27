@@ -1,9 +1,11 @@
 package datastore
 
 import (
+	"context"
 	"fmt"
 	"time"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
@@ -12,7 +14,10 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-func rdbCreateRoomUserStore(db string) {
+func rdbCreateRoomUserStore(ctx context.Context, db string) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateRoomUserStore")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.RoomUser{}, tableNameRoomUser)
@@ -24,7 +29,10 @@ func rdbCreateRoomUserStore(db string) {
 	}
 }
 
-func rdbInsertRoomUsers(db string, roomUsers []*model.RoomUser, opts ...InsertRoomUsersOption) error {
+func rdbInsertRoomUsers(ctx context.Context, db string, roomUsers []*model.RoomUser, opts ...InsertRoomUsersOption) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertRoomUsers")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -70,7 +78,10 @@ func rdbInsertRoomUsers(db string, roomUsers []*model.RoomUser, opts ...InsertRo
 	return nil
 }
 
-func rdbSelectRoomUsers(db string, opts ...SelectRoomUsersOption) ([]*model.RoomUser, error) {
+func rdbSelectRoomUsers(ctx context.Context, db string, opts ...SelectRoomUsersOption) ([]*model.RoomUser, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoomUsers")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	opt := selectRoomUsersOptions{}
@@ -124,7 +135,10 @@ func rdbSelectRoomUsers(db string, opts ...SelectRoomUsersOption) ([]*model.Room
 	return roomUsers, nil
 }
 
-func rdbSelectRoomUser(db, roomID, userID string) (*model.RoomUser, error) {
+func rdbSelectRoomUser(ctx context.Context, db, roomID, userID string) (*model.RoomUser, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoomUser")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*model.RoomUser
@@ -147,7 +161,10 @@ func rdbSelectRoomUser(db, roomID, userID string) (*model.RoomUser, error) {
 	return nil, nil
 }
 
-func rdbSelectRoomUserOfOneOnOne(db, myUserID, opponentUserID string) (*model.RoomUser, error) {
+func rdbSelectRoomUserOfOneOnOne(ctx context.Context, db, myUserID, opponentUserID string) (*model.RoomUser, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoomUserOfOneOnOne")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	var roomUsers []*model.RoomUser
@@ -174,7 +191,10 @@ WHERE room_id IN (
 	return nil, nil
 }
 
-func rdbSelectUserIDsOfRoomUser(db string, roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
+func rdbSelectUserIDsOfRoomUser(ctx context.Context, db string, roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsOfRoomUser")
+	defer span.Finish()
+
 	replica := RdbStore(db).replica()
 
 	opt := selectUserIDsOfRoomUserOptions{}
@@ -208,7 +228,10 @@ func rdbSelectUserIDsOfRoomUser(db string, roomID string, opts ...SelectUserIDsO
 	return userIDs, nil
 }
 
-func rdbUpdateRoomUser(db string, ru *model.RoomUser) error {
+func rdbUpdateRoomUser(ctx context.Context, db string, ru *model.RoomUser) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateRoomUser")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 
 	query := fmt.Sprintf("UPDATE %s SET unread_count=:unreadCount WHERE room_id=:roomId AND user_id=:userId;", tableNameRoomUser)
@@ -227,7 +250,10 @@ func rdbUpdateRoomUser(db string, ru *model.RoomUser) error {
 	return nil
 }
 
-func rdbDeleteRoomUsers(db, roomID string, userIDs []string) error {
+func rdbDeleteRoomUsers(ctx context.Context, db, roomID string, userIDs []string) error {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteRoomUsers")
+	defer span.Finish()
+
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
@@ -300,7 +326,7 @@ func rdbDeleteRoomUsers(db, roomID string, userIDs []string) error {
 	return nil
 }
 
-// func rdbUpdateRoomUser(db string, roomUser *model.RoomUser) (*model.RoomUser, error) {
+// func rdbUpdateRoomUser(ctx context.Context, db string, roomUser *model.RoomUser) (*model.RoomUser, error) {
 // 	master := RdbStore(db).master()
 // 	trans, err := master.Begin()
 // 	if err != nil {

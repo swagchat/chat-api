@@ -3,25 +3,25 @@ package datastore
 import "github.com/swagchat/chat-api/model"
 
 func (p *gcpSQLProvider) createMessageStore() {
-	rdbCreateMessageStore(p.database)
+	rdbCreateMessageStore(p.ctx, p.database)
 }
 
 func (p *gcpSQLProvider) InsertMessage(message *model.Message) error {
-	return rdbInsertMessage(p.database, message)
+	return rdbInsertMessage(p.ctx, p.database, message)
 }
 
 func (p *gcpSQLProvider) SelectMessages(limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
-	return rdbSelectMessages(p.database, limit, offset, opts...)
+	return rdbSelectMessages(p.ctx, p.database, limit, offset, opts...)
 }
 
 func (p *gcpSQLProvider) SelectMessage(messageID string) (*model.Message, error) {
-	return rdbSelectMessage(p.database, messageID)
+	return rdbSelectMessage(p.ctx, p.database, messageID)
 }
 
 func (p *gcpSQLProvider) SelectCountMessages(opts ...SelectMessagesOption) (int64, error) {
-	return rdbSelectCountMessages(p.database, opts...)
+	return rdbSelectCountMessages(p.ctx, p.database, opts...)
 }
 
 func (p *gcpSQLProvider) UpdateMessage(message *model.Message) error {
-	return rdbUpdateMessage(p.database, message)
+	return rdbUpdateMessage(p.ctx, p.database, message)
 }
