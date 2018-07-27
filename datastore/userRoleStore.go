@@ -18,12 +18,6 @@ func DeleteUserRolesOptionFilterByUserID(userID string) DeleteUserRolesOption {
 	}
 }
 
-func DeleteUserRolesOptionFilterByRoleID(roleID int32) DeleteUserRolesOption {
-	return func(ops *deleteUserRolesOptions) {
-		ops.roleID = roleID
-	}
-}
-
 func DeleteUserRolesOptionFilterByRoleIDs(roleIDs []int32) DeleteUserRolesOption {
 	return func(ops *deleteUserRolesOptions) {
 		ops.roleIDs = roleIDs

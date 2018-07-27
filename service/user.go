@@ -208,7 +208,12 @@ func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.Use
 
 	logger.Info(fmt.Sprintf("Start  GetContacts. Request[%#v]", req))
 
-	contacts, err := datastore.Provider(ctx).SelectContacts(req.UserID)
+	contacts, err := datastore.Provider(ctx).SelectContacts(
+		req.UserID,
+		req.Limit,
+		req.Offset,
+		datastore.SelectContactsOptionWithOrders(req.Orders),
+	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get contacts.", nil, http.StatusInternalServerError, err)
 	}

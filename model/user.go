@@ -9,37 +9,6 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-type UsersResponse struct {
-	scpb.UsersResponse
-	Users []*User `json:"users"`
-}
-
-func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
-	users := make([]*scpb.User, len(u.Users))
-	for i, v := range u.Users {
-		metaData, _ := v.MetaData.MarshalJSON()
-		users[i] = &scpb.User{
-			UserID:           v.UserID,
-			Name:             v.Name,
-			PictureURL:       v.PictureURL,
-			InformationURL:   v.InformationURL,
-			UnreadCount:      v.UnreadCount,
-			MetaData:         metaData,
-			Public:           v.Public,
-			CanBlock:         v.CanBlock,
-			Lang:             v.Lang,
-			AccessToken:      v.AccessToken,
-			LastAccessRoomID: v.LastAccessRoomID,
-			LastAccessed:     v.LastAccessed,
-			Created:          v.Created,
-			Modified:         v.Modified,
-		}
-	}
-	return &scpb.UsersResponse{
-		Users: users,
-	}
-}
-
 type User struct {
 	scpb.User
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
@@ -241,10 +210,6 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type UserUnreadCount struct {
-	UnreadCount uint64 `json:"unreadCount" db:"unread_count"`
-}
-
 type CreateUserRequest struct {
 	scpb.CreateUserRequest
 	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
@@ -351,6 +316,37 @@ type GetUsersRequest struct {
 	scpb.GetUsersRequest
 }
 
+type UsersResponse struct {
+	scpb.UsersResponse
+	Users []*User `json:"users"`
+}
+
+func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
+	users := make([]*scpb.User, len(u.Users))
+	for i, v := range u.Users {
+		metaData, _ := v.MetaData.MarshalJSON()
+		users[i] = &scpb.User{
+			UserID:           v.UserID,
+			Name:             v.Name,
+			PictureURL:       v.PictureURL,
+			InformationURL:   v.InformationURL,
+			UnreadCount:      v.UnreadCount,
+			MetaData:         metaData,
+			Public:           v.Public,
+			CanBlock:         v.CanBlock,
+			Lang:             v.Lang,
+			AccessToken:      v.AccessToken,
+			LastAccessRoomID: v.LastAccessRoomID,
+			LastAccessed:     v.LastAccessed,
+			Created:          v.Created,
+			Modified:         v.Modified,
+		}
+	}
+	return &scpb.UsersResponse{
+		Users: users,
+	}
+}
+
 type GetUserRequest struct {
 	scpb.GetUserRequest
 }
@@ -375,84 +371,3 @@ type GetContactsRequest struct {
 type GetProfileRequest struct {
 	scpb.GetProfileRequest
 }
-
-// func (u *User) ConvertFromPbCreateUserRequest(req *scpb.CreateUserRequest) {
-// 	u.UserID = req.UserID
-// 	u.Name = req.Name
-// 	u.PictureURL = req.PictureUrl
-// 	u.InformationURL = req.InformationUrl
-// 	// u.MetaData = req.MetaData
-// 	u.Public = &req.Public
-// 	u.CanBlock = &req.CanBlock
-// 	u.Lang = req.Lang
-// }
-
-// func (u *User) ConvertToPbUser() *scpb.User {
-// 	pbUser := &scpb.User{
-// 		UserID:         u.UserID,
-// 		Name:           u.Name,
-// 		PictureURL:     u.PictureURL,
-// 		InformationURL: u.InformationURL,
-// 		// MetaData:       u.MetaData,
-// 		Public:   *u.Public,
-// 		CanBlock: *u.CanBlock,
-// 		Lang:     u.Lang,
-// 	}
-
-// if u.Roles != nil {
-// 	pbUser.Roles = u.Roles
-// }
-// if u.Rooms != nil {
-// 	pbRoomForUser := make([]*scpb.RoomForUser, len(u.Rooms))
-// 	for i, rfu := range u.Rooms {
-// 		pbUserForRoom := make([]*scpb.UserForRoom, len(rfu.Users))
-// 		for i, ufr := range rfu.Users {
-// 			pbUserForRoom[i] = &scpb.UserForRoom{
-// 				RoomID:         ufr.RoomID,
-// 				UserID:         ufr.UserID,
-// 				Name:           ufr.Name,
-// 				PictureURL:     ufr.PictureURL,
-// 				InformationURL: ufr.PictureURL,
-// 				MetaData:       ufr.MetaData,
-// 				CanBlock:       *ufr.CanBlock,
-// 				LastAccessed:   ufr.LastAccessed,
-// 				Created:        ufr.Created,
-// 				Modified:       ufr.Modified,
-// 				RuDisplay:      ufr.RuDisplay,
-// 			}
-// 		}
-
-// 		pbRoomForUser[i] = &scpb.RoomForUser{
-// 			RoomID:             rfu.RoomID,
-// 			UserID:             rfu.UserID,
-// 			Name:               rfu.Name,
-// 			PictureURL:         rfu.PictureURL,
-// 			InformationURL:     rfu.InformationURL,
-// 			MetaData:           rfu.MetaData,
-// 			Type:               scpb.RoomType(rfu.Type.Int32()),
-// 			LastMessage:        rfu.LastMessage,
-// 			LastMessageUpdated: rfu.LastMessageUpdated,
-// 			CanLeft:            *rfu.CanLeft,
-// 			Created:            rfu.Created,
-// 			Modified:           rfu.Modified,
-// 			Users:              pbUserForRoom,
-// 			RuUnreadCount:      rfu.RuUnreadCount,
-// 		}
-// 	}
-// }
-// if u.Devices != nil {
-// 	pbDevices := make([]*scpb.Device, len(u.Devices))
-// 	for i, d := range u.Devices {
-// 		pbDevices[i] = &scpb.Device{
-// 			UserID:               d.UserID,
-// 			Platform:             d.Platform,
-// 			Token:                d.Token,
-// 			NotificationDeviceID: d.NotificationDeviceID,
-// 		}
-// 	}
-// }
-// if u.Blocks != nil {
-// 	pbUser.Blocks = u.Blocks
-// }
-// 	return pbUser
-// }

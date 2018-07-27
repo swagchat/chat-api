@@ -22,14 +22,14 @@ func (p *gcpSQLProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, err
 	return rdbSelectCountUsers(p.ctx, p.database, opts...)
 }
 
-func (p *gcpSQLProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
-	return rdbSelectUserIDsByUserIDs(p.ctx, p.database, userIDs)
+func (p *gcpSQLProvider) SelectUserIDsOfUser(userIDs []string) ([]string, error) {
+	return rdbSelectUserIDsOfUser(p.ctx, p.database, userIDs)
 }
 
 func (p *gcpSQLProvider) UpdateUser(user *model.User) error {
 	return rdbUpdateUser(p.ctx, p.database, user)
 }
 
-func (p *gcpSQLProvider) SelectContacts(userID string) ([]*model.User, error) {
-	return rdbSelectContacts(p.ctx, p.database, userID)
+func (p *gcpSQLProvider) SelectContacts(userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error) {
+	return rdbSelectContacts(p.ctx, p.database, userID, limit, offset, opts...)
 }

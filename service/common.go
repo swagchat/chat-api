@@ -359,7 +359,7 @@ func createTopic(roomID string) (string, *model.ErrorResponse) {
 }
 
 func getExistUserIDsOld(ctx context.Context, requestUserIDs []string) ([]string, *model.ProblemDetail) {
-	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsByUserIDs(requestUserIDs)
+	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "Getting userIds failed",
@@ -387,7 +387,7 @@ func getExistUserIDsOld(ctx context.Context, requestUserIDs []string) ([]string,
 }
 
 func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *model.ErrorResponse) {
-	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsByUserIDs(requestUserIDs)
+	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
 	if err != nil {
 		errRes := &model.ErrorResponse{}
 		errRes.Status = http.StatusBadRequest

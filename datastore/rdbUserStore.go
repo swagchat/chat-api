@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf"
 )
 
@@ -53,7 +52,7 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 	}
 
 	if opt.devices != nil {
-		for _, device := range user.Devices {
+		for _, device := range opt.devices {
 			if err := trans.Insert(device); err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
@@ -277,32 +276,6 @@ func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOpt
 	return user, nil
 }
 
-func rdbSelectUserByUserIDAndAccessToken(ctx context.Context, db, userID, accessToken string) (*model.User, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserByUserIDAndAccessToken")
-	defer span.Finish()
-
-	replica := RdbStore(db).replica()
-
-	var users []*model.User
-	query := fmt.Sprintf("SELECT id FROM %s WHERE user_id=:userId AND access_token=:accessToken AND deleted=0;", tableNameUser)
-	params := map[string]interface{}{
-		"userId":      userID,
-		"accessToken": accessToken,
-	}
-	_, err := replica.Select(&users, query, params)
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while getting user")
-		logger.Error(err.Error())
-		return nil, err
-	}
-
-	if len(users) == 1 {
-		return users[0], nil
-	}
-
-	return nil, nil
-}
-
 func rdbSelectCountUsers(ctx context.Context, db string, opts ...SelectUsersOption) (int64, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectCountUsers")
 	defer span.Finish()
@@ -326,14 +299,14 @@ func rdbSelectCountUsers(ctx context.Context, db string, opts ...SelectUsersOpti
 	return count, nil
 }
 
-func rdbSelectUserIDsByUserIDs(ctx context.Context, db string, userIDs []string) ([]string, error) {
+func rdbSelectUserIDsOfUser(ctx context.Context, db string, userIDs []string) ([]string, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsByUserIDs")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
 
 	var users []*model.User
-	userIdsQuery, params := utils.MakePrepareForInExpression(userIDs)
+	userIdsQuery, params := makePrepareExpressionParamsForInOperand(userIDs)
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id in (%s) AND deleted = 0;", tableNameUser, userIdsQuery)
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
@@ -433,11 +406,16 @@ func rdbUpdateUserDeleted(ctx context.Context, db, userID string) error {
 	return nil
 }
 
-func rdbSelectContacts(ctx context.Context, db, userID string) ([]*model.User, error) {
+func rdbSelectContacts(ctx context.Context, db, userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectContacts")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
+
+	opt := selectContactsOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
 	var users []*model.User
 	query := fmt.Sprintf(`SELECT
@@ -463,10 +441,28 @@ WHERE
 		u.public=1 AND
 		u.deleted=0
 	)
-GROUP BY u.user_id ORDER BY u.modified DESC`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(scpb.RoomType_NoticeRoom)))
-	params := map[string]interface{}{
-		"userId": userID,
+GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(scpb.RoomType_NoticeRoom)))
+	params := make(map[string]interface{})
+
+	query = fmt.Sprintf("%s ORDER BY", query)
+	if opt.orders == nil {
+		query = fmt.Sprintf("%s u.modified DESC", query)
+	} else {
+		i := 1
+		for _, orderInfo := range opt.orders {
+			query = fmt.Sprintf("%s %s %s", query, orderInfo.Field, orderInfo.Order.String())
+			if i < len(opt.orders) {
+				query = fmt.Sprintf("%s,", query)
+			}
+			i++
+		}
 	}
+
+	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
+	params["limit"] = limit
+	params["offset"] = offset
+	params["userId"] = userID
+
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting contacts")

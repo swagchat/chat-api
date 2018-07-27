@@ -156,7 +156,7 @@ func rdbSelectMessages(db string, limit, offset int32, opts ...SelectMessagesOpt
 	}
 
 	if opt.roleIDs != nil {
-		roleIDsQuery, roleIDsParam := utils.MakePrepareForInExpression(opt.roleIDs)
+		roleIDsQuery, roleIDsParam := makePrepareExpressionParamsForInOperand(opt.roleIDs)
 		params = utils.MergeMap(params, roleIDsParam)
 		query = fmt.Sprintf("%s AND role IN (%s)", query, roleIDsQuery)
 	}
@@ -224,7 +224,7 @@ func rdbSelectCountMessages(db string, opts ...SelectMessagesOption) (int64, err
 	}
 
 	if opt.roleIDs != nil {
-		roleIDsQuery, roleIDsParam := utils.MakePrepareForInExpression(opt.roleIDs)
+		roleIDsQuery, roleIDsParam := makePrepareExpressionParamsForInOperand(opt.roleIDs)
 		params = utils.MergeMap(params, roleIDsParam)
 		query = fmt.Sprintf("%s AND role IN (%s)", query, roleIDsQuery)
 	}

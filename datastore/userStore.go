@@ -36,6 +36,18 @@ func SelectUsersOptionWithOrders(orders []*scpb.OrderInfo) SelectUsersOption {
 	}
 }
 
+type SelectContactsOption func(*selectContactsOptions)
+
+type selectContactsOptions struct {
+	orders []*scpb.OrderInfo
+}
+
+func SelectContactsOptionWithOrders(orders []*scpb.OrderInfo) SelectContactsOption {
+	return func(ops *selectContactsOptions) {
+		ops.orders = orders
+	}
+}
+
 type selectUserOptions struct {
 	withBlocks  bool
 	withDevices bool
@@ -76,8 +88,8 @@ type userStore interface {
 	SelectUsers(limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error)
 	SelectUser(userID string, opts ...SelectUserOption) (*model.User, error)
 	SelectCountUsers(opts ...SelectUsersOption) (int64, error)
-	SelectUserIDsByUserIDs(userIDs []string) ([]string, error)
+	SelectUserIDsOfUser(userIDs []string) ([]string, error)
 	UpdateUser(user *model.User) error
 
-	SelectContacts(userID string) ([]*model.User, error)
+	SelectContacts(userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error)
 }

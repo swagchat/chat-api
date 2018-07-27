@@ -3,14 +3,14 @@ package datastore
 import "github.com/swagchat/chat-api/model"
 
 type insertRoomUsersOptions struct {
-	beforeClean bool
+	beforeCleanRoomID string
 }
 
 type InsertRoomUsersOption func(*insertRoomUsersOptions)
 
-func InsertRoomUsersOptionBeforeClean(beforeClean bool) InsertRoomUsersOption {
+func InsertRoomUsersOptionBeforeCleanRoomID(beforeCleanRoomID string) InsertRoomUsersOption {
 	return func(ops *insertRoomUsersOptions) {
-		ops.beforeClean = beforeClean
+		ops.beforeCleanRoomID = beforeCleanRoomID
 	}
 }
 

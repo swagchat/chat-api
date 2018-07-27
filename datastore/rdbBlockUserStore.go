@@ -5,7 +5,6 @@ import (
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateBlockUserStore(db string) {
@@ -98,7 +97,7 @@ func rdbDeleteBlockUsers(db, userID string, blockUserIDs []string) error {
 	master := RdbStore(db).master()
 
 	var blockUserIDsQuery string
-	blockUserIDsQuery, params := utils.MakePrepareForInExpression(blockUserIDs)
+	blockUserIDsQuery, params := makePrepareExpressionParamsForInOperand(blockUserIDs)
 	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND block_user_id IN (%s);", tableNameBlockUser, blockUserIDsQuery)
 	params["userId"] = userID
 	_, err := master.Exec(query, params)

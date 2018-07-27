@@ -38,7 +38,15 @@ func TestMain(m *testing.M) {
 		newUser.Modified = nowTimestamp + int64(i)
 		err := datastore.Provider(ctx).InsertUser(newUser)
 		if err != nil {
-			fmt.Errorf("Failed insert room test")
+			fmt.Errorf("Failed to insert user on main test")
+		}
+
+		newDevice := &model.Device{}
+		newDevice.UserID = newUser.UserID
+		newDevice.Platform = 1
+		_, err = datastore.Provider(ctx).InsertDevice(newDevice)
+		if err != nil {
+			fmt.Errorf("Failed to insert device on main test")
 		}
 	}
 	for i := 11; i <= 20; i++ {
@@ -50,7 +58,15 @@ func TestMain(m *testing.M) {
 		newUser.Modified = nowTimestamp + int64(i)
 		err := datastore.Provider(ctx).InsertUser(newUser)
 		if err != nil {
-			fmt.Errorf("Failed insert room test")
+			fmt.Errorf("Failed to insert user on main test")
+		}
+
+		newDevice := &model.Device{}
+		newDevice.UserID = newUser.UserID
+		newDevice.Platform = 2
+		_, err = datastore.Provider(ctx).InsertDevice(newDevice)
+		if err != nil {
+			fmt.Errorf("Failed to insert device on main test")
 		}
 	}
 
@@ -65,7 +81,7 @@ func TestMain(m *testing.M) {
 		newRoom.Modified = nowTimestamp + int64(i)
 		err := datastore.Provider(ctx).InsertRoom(newRoom)
 		if err != nil {
-			fmt.Errorf("Failed insert room test")
+			fmt.Errorf("Failed to insert room on main test")
 		}
 	}
 	for i := 11; i <= 20; i++ {
@@ -78,7 +94,7 @@ func TestMain(m *testing.M) {
 		newRoom.Modified = nowTimestamp + int64(i)
 		err := datastore.Provider(ctx).InsertRoom(newRoom)
 		if err != nil {
-			fmt.Errorf("Failed insert room test")
+			fmt.Errorf("Failed to insert room on main test")
 		}
 	}
 

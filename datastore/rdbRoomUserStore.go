@@ -38,10 +38,9 @@ func rdbInsertRoomUsers(db string, roomUsers []*model.RoomUser, opts ...InsertRo
 		o(&opt)
 	}
 
-	if opt.beforeClean {
+	if opt.beforeCleanRoomID != "" {
 		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
-		params := map[string]interface{}{"roomId": roomUsers[0].RoomID}
-		_, err = trans.Exec(query, params)
+		_, err = trans.Exec(query, opt.beforeCleanRoomID)
 		if err != nil {
 			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while recreating roomUser")
@@ -79,6 +78,12 @@ func rdbSelectRoomUsers(db string, opts ...SelectRoomUsersOption) ([]*model.Room
 		o(&opt)
 	}
 
+	if opt.roomID == "" && opt.userIDs == nil {
+		err := errors.New("Be sure to specify roomID or userIDs.")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
 	var roomUsers []*model.RoomUser
 	var userIDsQuery string
 	var userIDsParams map[string]interface{}
@@ -88,7 +93,7 @@ func rdbSelectRoomUsers(db string, opts ...SelectRoomUsersOption) ([]*model.Room
 		roomIDParams = map[string]interface{}{"roomId": opt.roomID}
 	}
 	if opt.userIDs != nil {
-		userIDsQuery, userIDsParams = utils.MakePrepareForInExpression(opt.userIDs)
+		userIDsQuery, userIDsParams = makePrepareExpressionParamsForInOperand(opt.userIDs)
 	}
 	params := make(map[string]interface{}, len(userIDsParams)+len(roomIDParams))
 	params = utils.MergeMap(params, userIDsParams, roomIDParams)
@@ -187,7 +192,7 @@ func rdbSelectUserIDsOfRoomUser(db string, roomID string, opts ...SelectUserIDsO
 			"roomId": roomID,
 		}
 	} else {
-		roleIDsQuery, pms := utils.MakePrepareForInExpression(opt.roleIDs)
+		roleIDsQuery, pms := makePrepareExpressionParamsForInOperand(opt.roleIDs)
 		params = pms
 		query = fmt.Sprintf("SELECT ru.user_id FROM %s AS ru LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role_id IN (%s) GROUP BY ru.user_id;", tableNameRoomUser, tableNameUserRole, roleIDsQuery)
 		params["roomId"] = roomID
@@ -232,11 +237,10 @@ func rdbDeleteRoomUsers(db, roomID string, userIDs []string) error {
 	}
 
 	var query string
-	var params map[string]interface{}
+	nowTimestamp := time.Now().Unix()
 	if userIDs == nil {
-		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
-		params = map[string]interface{}{"roomId": roomID}
-		_, err = trans.Exec(query, params)
+		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
+		_, err = trans.Exec(query, roomID)
 		if err != nil {
 			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
@@ -244,12 +248,8 @@ func rdbDeleteRoomUsers(db, roomID string, userIDs []string) error {
 			return err
 		}
 
-		query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId;", tableNameSubscription)
-		params = map[string]interface{}{
-			"roomId":  roomID,
-			"deleted": time.Now().Unix(),
-		}
-		_, err = trans.Exec(query, params)
+		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
+		_, err = trans.Exec(query, nowTimestamp, roomID)
 		if err != nil {
 			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
@@ -258,10 +258,14 @@ func rdbDeleteRoomUsers(db, roomID string, userIDs []string) error {
 		}
 	} else {
 		var userIdsQuery string
-		userIdsQuery, params = utils.MakePrepareForInExpression(userIDs)
-		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId AND user_id IN (%s);", tableNameRoomUser, userIdsQuery)
-		params["roomId"] = roomID
-		_, err = trans.Exec(query, params)
+		userIdsQuery, userIDsParams := makePrepareExpressionForInOperand(userIDs)
+		params := make([]interface{}, len(userIDsParams)+1)
+		params[0] = interface{}(roomID)
+		for i := 0; i < len(userIDsParams); i++ {
+			params[i+1] = userIDsParams[i]
+		}
+		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=? AND user_id IN (%s);", tableNameRoomUser, userIdsQuery)
+		_, err = trans.Exec(query, params...)
 		if err != nil {
 			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
@@ -269,9 +273,14 @@ func rdbDeleteRoomUsers(db, roomID string, userIDs []string) error {
 			return err
 		}
 
-		query = fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE room_id=:roomId AND user_id IN (%s);", tableNameSubscription, userIdsQuery)
-		params["deleted"] = time.Now().Unix()
-		_, err = trans.Exec(query, params)
+		params = make([]interface{}, len(userIDsParams)+2)
+		params[0] = interface{}(nowTimestamp)
+		params[1] = interface{}(roomID)
+		for i := 0; i < len(userIDsParams); i++ {
+			params[i+2] = userIDsParams[i]
+		}
+		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=? AND user_id IN (%s);", tableNameSubscription, userIdsQuery)
+		_, err = trans.Exec(query, params...)
 		if err != nil {
 			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")

@@ -22,14 +22,14 @@ func (p *mysqlProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, erro
 	return rdbSelectCountUsers(p.ctx, p.database, opts...)
 }
 
-func (p *mysqlProvider) SelectUserIDsByUserIDs(userIDs []string) ([]string, error) {
-	return rdbSelectUserIDsByUserIDs(p.ctx, p.database, userIDs)
+func (p *mysqlProvider) SelectUserIDsOfUser(userIDs []string) ([]string, error) {
+	return rdbSelectUserIDsOfUser(p.ctx, p.database, userIDs)
 }
 
 func (p *mysqlProvider) UpdateUser(user *model.User) error {
 	return rdbUpdateUser(p.ctx, p.database, user)
 }
 
-func (p *mysqlProvider) SelectContacts(userID string) ([]*model.User, error) {
-	return rdbSelectContacts(p.ctx, p.database, userID)
+func (p *mysqlProvider) SelectContacts(userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error) {
+	return rdbSelectContacts(p.ctx, p.database, userID, limit, offset, opts...)
 }

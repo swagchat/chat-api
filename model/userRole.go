@@ -6,6 +6,10 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
+type UserRole struct {
+	scpb.UserRole
+}
+
 type CreateUserRolesRequest struct {
 	scpb.CreateUserRolesRequest
 }
@@ -21,10 +25,6 @@ func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
 	b := &UserRole{}
 	b.UserID = ""
 	return userRoles
-}
-
-type UserRole struct {
-	scpb.UserRole
 }
 
 type GetRoleIdsOfUserRoleRequest struct {

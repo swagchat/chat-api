@@ -10,31 +10,6 @@ import (
 	scpb "github.com/swagchat/protobuf"
 )
 
-type RoomsResponse struct {
-	scpb.RoomsResponse
-	Rooms []*Room `json:"rooms"`
-}
-
-func (rr *RoomsResponse) ConvertToPbRooms() *scpb.RoomsResponse {
-	rooms := make([]*scpb.Room, len(rr.Rooms))
-	for i, v := range rr.Rooms {
-		metaData, _ := v.MetaData.MarshalJSON()
-		rooms[i] = &scpb.Room{
-			RoomID:         v.RoomID,
-			UserID:         v.UserID,
-			Name:           v.Name,
-			PictureURL:     v.PictureURL,
-			InformationURL: v.InformationURL,
-			MetaData:       metaData,
-			Created:        v.Created,
-			Modified:       v.Modified,
-		}
-	}
-	return &scpb.RoomsResponse{
-		Rooms: rooms,
-	}
-}
-
 type Room struct {
 	scpb.Room
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
@@ -159,20 +134,6 @@ func (r *Room) UpdateRoom(req *UpdateRoomRequest) {
 
 type UserForRoom struct {
 	scpb.UserForRoom
-	// // from User
-	// RoomID         string         `json:"roomId" db:"room_id"`
-	// UserID         string         `json:"userId" db:"user_id"`
-	// Name           string         `json:"name" db:"name"`
-	// PictureURL     string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	// InformationURL string         `json:"informationUrl,omitempty" db:"information_url"`
-	// MetaData       utils.JSONText `json:"metaData" db:"meta_data"`
-	// CanBlock       *bool          `json:"canBlock,omitempty" db:"can_block"`
-	// LastAccessed   int64          `json:"lastAccessed" db:"last_accessed"`
-	// Created        int64          `json:"created" db:"created"`
-	// Modified       int64          `json:"modified" db:"modified"`
-
-	// // from RoomUser
-	// RuDisplay bool `json:"ruDisplay" db:"ru_display"`
 }
 
 func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
@@ -350,6 +311,31 @@ type GetRoomsRequest struct {
 	scpb.GetRoomsRequest
 }
 
+type RoomsResponse struct {
+	scpb.RoomsResponse
+	Rooms []*Room `json:"rooms"`
+}
+
+func (rr *RoomsResponse) ConvertToPbRooms() *scpb.RoomsResponse {
+	rooms := make([]*scpb.Room, len(rr.Rooms))
+	for i, v := range rr.Rooms {
+		metaData, _ := v.MetaData.MarshalJSON()
+		rooms[i] = &scpb.Room{
+			RoomID:         v.RoomID,
+			UserID:         v.UserID,
+			Name:           v.Name,
+			PictureURL:     v.PictureURL,
+			InformationURL: v.InformationURL,
+			MetaData:       metaData,
+			Created:        v.Created,
+			Modified:       v.Modified,
+		}
+	}
+	return &scpb.RoomsResponse{
+		Rooms: rooms,
+	}
+}
+
 type GetRoomRequest struct {
 	scpb.GetRoomRequest
 }
@@ -361,7 +347,7 @@ type UpdateRoomRequest struct {
 
 func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 	// TODO
-	if *uur.Type != 0 {
+	if uur.Type != nil {
 		if room.Type == scpb.RoomType_OneOnOne && *uur.Type != scpb.RoomType_OneOnOne {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{

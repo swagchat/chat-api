@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
 )
@@ -18,33 +17,6 @@ func Join(stringSlice []string, delimiter string, enclosure string) string {
 		}
 	}
 	return resultString
-}
-
-// MakePrepareForInExpression is make prepare for in expression
-func MakePrepareForInExpression(target interface{}) (string, map[string]interface{}) {
-	bindParams := make(map[string]interface{})
-	query := ""
-	rv := reflect.ValueOf(target)
-
-	switch rv.Kind() {
-	case reflect.Array:
-		for i := 0; i < rv.Len(); i++ {
-			if len(query) > 0 {
-				query += ", "
-			}
-			bindParams["id"+strconv.Itoa(i)] = rv.Index(i)
-			query += ":id" + strconv.Itoa(i)
-		}
-	case reflect.Slice:
-		for i := 0; i < rv.Len(); i++ {
-			if len(query) > 0 {
-				query += ", "
-			}
-			bindParams["id"+strconv.Itoa(i)] = rv.Index(i).Interface()
-			query += ":id" + strconv.Itoa(i)
-		}
-	}
-	return query, bindParams
 }
 
 // RemoveDuplicate is remove duplicate
