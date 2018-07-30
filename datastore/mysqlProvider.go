@@ -188,3 +188,12 @@ func (p *mysqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB
 	}
 	return db, nil
 }
+
+func (p *mysqlProvider) Close() {
+	if _, ok := rdbStores[p.database]; ok {
+		rdbStores[p.database].masterDbMap.Db.Close()
+		for _, replica := range rdbStores[p.database].replicaDbMaps {
+			replica.Db.Close()
+		}
+	}
+}

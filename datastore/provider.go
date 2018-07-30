@@ -11,6 +11,7 @@ type provider interface {
 	Connect(dsCfg *utils.Datastore) error
 	CreateTables()
 	DropDatabase() error
+	Close()
 	appClientStore
 	assetStore
 	blockUserStore

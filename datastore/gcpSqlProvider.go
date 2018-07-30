@@ -189,3 +189,12 @@ func (p *gcpSQLProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.D
 	}
 	return db, nil
 }
+
+func (p *gcpSQLProvider) Close() {
+	if _, ok := rdbStores[p.database]; ok {
+		rdbStores[p.database].masterDbMap.Db.Close()
+		for _, replica := range rdbStores[p.database].replicaDbMaps {
+			replica.Db.Close()
+		}
+	}
+}

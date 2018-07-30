@@ -76,3 +76,9 @@ func (p *sqliteProvider) DropDatabase() error {
 	}
 	return nil
 }
+
+func (p *sqliteProvider) Close() {
+	if _, ok := rdbStores[p.database]; ok {
+		rdbStores[p.database].master().Db.Close()
+	}
+}
