@@ -39,7 +39,7 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 
 	err := datastore.Provider(ctx).InsertUser(user, datastore.InsertUserOptionWithRoles(urs))
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to create user.", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Failed to create user.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	user.Roles = req.RoleIDs
@@ -62,12 +62,12 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 		datastore.SelectUsersOptionWithOrders(req.Orders),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Get users failed", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Get users failed", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountUsers()
 	if err != nil {
-		return nil, model.NewErrorResponse("Get users failed", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Get users failed", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res := &model.UsersResponse{}
@@ -95,10 +95,10 @@ func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *mode
 		datastore.SelectUserOptionWithRooms(true),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get user.", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Failed to get user.", http.StatusInternalServerError, model.WithError(err))
 	}
 	if user == nil {
-		return nil, model.NewErrorResponse("", nil, http.StatusNotFound, nil)
+		return nil, model.NewErrorResponse("", http.StatusNotFound)
 	}
 
 	// unreadCountRooms := make([]*model.RoomForUser, 0)
@@ -135,10 +135,11 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 	}
 
 	user.UpdateUser(req)
+	urs := req.GenerateUserRoles()
 
-	err := datastore.Provider(ctx).UpdateUser(user)
+	err := datastore.Provider(ctx).UpdateUser(user, datastore.UpdateUserOptionWithRoles(urs))
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to update user.", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Failed to update user.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	user.DoPostProcessing()
@@ -163,14 +164,14 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 
 	devices, err := dsp.SelectDevicesByUserID(req.UserID)
 	if err != nil {
-		return model.NewErrorResponse("Failed to delete user.", nil, http.StatusInternalServerError, err)
+		return model.NewErrorResponse("Failed to delete user.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	if devices != nil {
 		for _, device := range devices {
 			nRes := <-notification.Provider().DeleteEndpoint(device.NotificationDeviceID)
 			if nRes.Error != nil {
-				return model.NewErrorResponse("Failed to delete user.", nil, http.StatusInternalServerError, nRes.Error)
+				return model.NewErrorResponse("Failed to delete user.", http.StatusInternalServerError, model.WithError(nRes.Error))
 			}
 		}
 	}
@@ -178,7 +179,7 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 	user.Deleted = time.Now().Unix()
 	err = dsp.UpdateUser(user)
 	if err != nil {
-		return model.NewErrorResponse("Failed to delete user.", nil, http.StatusInternalServerError, err)
+		return model.NewErrorResponse("Failed to delete user.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	go unsubscribeByUserID(ctx, req.UserID)
@@ -215,7 +216,7 @@ func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.Use
 		datastore.SelectContactsOptionWithOrders(req.Orders),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get contacts.", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Failed to get contacts.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res := &model.UsersResponse{}

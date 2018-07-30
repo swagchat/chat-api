@@ -22,16 +22,6 @@ func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.
 	return &empty.Empty{}, nil
 }
 
-func (urs *userRoleServiceServer) GetRoleIdsOfUserRole(ctx context.Context, in *scpb.GetRoleIdsOfUserRoleRequest) (*scpb.RoleIds, error) {
-	req := &model.GetRoleIdsOfUserRoleRequest{*in}
-	roleIDs, pd := service.GetRoleIDsOfUserRole(ctx, req)
-	if pd != nil {
-		return &scpb.RoleIds{}, pd.Error
-	}
-
-	return roleIDs, nil
-}
-
 func (urs *userRoleServiceServer) GetUserIdsOfUserRole(ctx context.Context, in *scpb.GetUserIdsOfUserRoleRequest) (*scpb.UserIds, error) {
 	req := &model.GetUserIdsOfUserRoleRequest{*in}
 	userIDs, pd := service.GetUserIDsOfUserRole(ctx, req)

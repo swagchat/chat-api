@@ -10,13 +10,14 @@ import (
 )
 
 const (
-	TestNameCreateUser = "Create user test"
-	TestNameGetUsers   = "Get users test"
-	TestNameGetUser    = "Get user test"
-	TestNameUpdateUser = "Update user test"
-	TestNameDeleteUser = "Delete user test"
+	TestNameCreateUser = "create user test"
+	TestNameGetUsers   = "get users test"
+	TestNameGetUser    = "get user test"
+	TestNameUpdateUser = "update user test"
+	TestNameDeleteUser = "delete user test"
 
-	TestNameGetUserMessages = "Get user messages test"
+	TestNameGetContacts = "get contacts test"
+	TestNameGetProfile  = "get profile test"
 )
 
 func TestUser(t *testing.T) {
@@ -24,7 +25,7 @@ func TestUser(t *testing.T) {
 		metaData := utils.JSONText{}
 		err := metaData.UnmarshalJSON([]byte(`{"key":"value"}`))
 		if err != nil {
-			t.Fatalf("failed create user test")
+			t.Fatalf("Failed to %s", TestNameCreateUser)
 		}
 		req := &model.CreateUserRequest{}
 		req.Name = "Name"
@@ -36,10 +37,10 @@ func TestUser(t *testing.T) {
 		_, errRes := CreateUser(ctx, req)
 		if errRes != nil {
 			if errRes.InvalidParams == nil {
-				t.Fatalf("failed %s. %s", TestNameCreateUser, errRes.Message)
+				t.Fatalf("Failed to %s %s", TestNameCreateUser, errRes.Message)
 			} else {
 				for _, invalidParam := range errRes.InvalidParams {
-					t.Fatalf("failed %s. invalid params -> name[%s] reason[%s]", TestNameCreateUser, invalidParam.Name, invalidParam.Reason)
+					t.Fatalf("Failed to %s. invalid params -> name[%s] reason[%s]", TestNameCreateUser, invalidParam.Name, invalidParam.Reason)
 				}
 			}
 		}
@@ -48,10 +49,10 @@ func TestUser(t *testing.T) {
 		req := &model.GetUsersRequest{}
 		res, errRes := GetUsers(ctx, req)
 		if errRes != nil {
-			t.Fatalf("failed %s. %s", TestNameGetUsers, errRes.Message)
+			t.Fatalf("Failed to %s %s", TestNameGetUsers, errRes.Message)
 		}
 		if res == nil {
-			t.Fatalf("failed %s", TestNameGetUsers)
+			t.Fatalf("Failed to %s", TestNameGetUsers)
 		}
 	})
 	t.Run(TestNameGetUser, func(t *testing.T) {
@@ -61,10 +62,10 @@ func TestUser(t *testing.T) {
 		req.UserID = "service-user-id-0001"
 		res, errRes := GetUser(ctx, req)
 		if errRes != nil {
-			t.Fatalf("failed %s. %s", TestNameGetUser, errRes.Message)
+			t.Fatalf("Failed to %s. %s", TestNameGetUser, errRes.Message)
 		}
 		if res == nil {
-			t.Fatalf("failed %s", TestNameGetUser)
+			t.Fatalf("Failed to %s", TestNameGetUser)
 		}
 	})
 	t.Run(TestNameUpdateUser, func(t *testing.T) {
@@ -74,10 +75,10 @@ func TestUser(t *testing.T) {
 		req.UserID = "service-user-id-0001"
 		res, errRes := UpdateUser(ctx, req)
 		if errRes != nil {
-			t.Fatalf("%s. %s", TestNameUpdateUser, errRes.Message)
+			t.Fatalf("Failed to %s. %s", TestNameUpdateUser, errRes.Message)
 		}
 		if res == nil {
-			t.Fatalf("failed %s", TestNameUpdateUser)
+			t.Fatalf("Failed to %s", TestNameUpdateUser)
 		}
 	})
 	t.Run(TestNameDeleteUser, func(t *testing.T) {
@@ -85,7 +86,23 @@ func TestUser(t *testing.T) {
 		req.UserID = "service-user-id-0001"
 		errRes := DeleteUser(ctx, req)
 		if errRes != nil {
-			t.Fatalf("%s. %s", TestNameDeleteUser, errRes.Message)
+			t.Fatalf("Failed to %s. %s", TestNameDeleteUser, errRes.Message)
+		}
+	})
+	t.Run(TestNameGetContacts, func(t *testing.T) {
+		req := &model.GetContactsRequest{}
+		req.UserID = "service-user-id-0001"
+		_, errRes := GetContacts(ctx, req)
+		if errRes != nil {
+			t.Fatalf("Failed to %s. %s", TestNameGetContacts, errRes.Message)
+		}
+	})
+	t.Run(TestNameGetProfile, func(t *testing.T) {
+		req := &model.GetProfileRequest{}
+		req.UserID = "service-user-id-0002"
+		_, errRes := GetProfile(ctx, req)
+		if errRes != nil {
+			t.Fatalf("Failed to %s. %s", TestNameGetProfile, errRes.Message)
 		}
 	})
 }

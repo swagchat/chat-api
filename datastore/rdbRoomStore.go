@@ -6,6 +6,7 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
@@ -24,7 +25,8 @@ func rdbCreateRoomStore(ctx context.Context, db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating room table. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating room table")
+		logger.Error(err.Error())
 		return
 	}
 }
@@ -33,31 +35,42 @@ func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...Ins
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertRoom")
 	defer span.Finish()
 
-	master := RdbStore(db).master()
-
 	opt := insertRoomOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
 
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting room")
+		logger.Error(err.Error())
 		return err
 	}
 
 	err = trans.Insert(room)
 	if err != nil {
 		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting room")
+		logger.Error(err.Error())
 		return err
 	}
 
 	for _, ru := range opt.users {
+		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
+		_, err = trans.Exec(query, room.RoomID)
+		if err != nil {
+			trans.Rollback()
+			err := errors.Wrap(err, "An error occurred while inserting room")
+			logger.Error(err.Error())
+			return err
+		}
+
 		err = trans.Insert(ru)
 		if err != nil {
 			trans.Rollback()
-			logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+			err = errors.Wrap(err, "An error occurred while inserting room")
+			logger.Error(err.Error())
 			return err
 		}
 	}
@@ -65,7 +78,8 @@ func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...Ins
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting room")
+		logger.Error(err.Error())
 		return err
 	}
 
@@ -76,12 +90,12 @@ func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ..
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRooms")
 	defer span.Finish()
 
-	replica := RdbStore(db).replica()
-
 	opt := selectRoomsOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
+
+	replica := RdbStore(db).replica()
 
 	var rooms []*model.Room
 	query := fmt.Sprintf(`SELECT
@@ -119,7 +133,8 @@ func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ..
 	params["offset"] = offset
 	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting rooms. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting rooms")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -130,19 +145,20 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoom")
 	defer span.Finish()
 
-	replica := RdbStore(db).replica()
-
 	opt := selectRoomOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
+
+	replica := RdbStore(db).replica()
 
 	var rooms []*model.Room
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&rooms, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting room")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -156,6 +172,8 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 	if opt.withUsers {
 		users, err := rdbSelectUsersForRoom(ctx, db, roomID)
 		if err != nil {
+			err = errors.Wrap(err, "An error occurred while getting room")
+			logger.Error(err.Error())
 			return nil, err
 		}
 		room.Users = users
@@ -189,7 +207,8 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	params := map[string]interface{}{"roomId": roomID}
 	_, err := replica.Select(&users, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting users for room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting users for room")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -205,71 +224,91 @@ func rdbSelectCountRooms(ctx context.Context, db string, opts ...SelectRoomsOpti
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
 	count, err := replica.SelectInt(query)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting room count. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting room count")
+		logger.Error(err.Error())
 		return 0, err
 	}
 
 	return count, nil
 }
 
-func rdbUpdateRoom(ctx context.Context, db string, room *model.Room) error {
+func rdbUpdateRoom(ctx context.Context, db string, room *model.Room, opts ...UpdateRoomOption) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateRoom")
 	defer span.Finish()
 
-	master := RdbStore(db).master()
-
-	if room.Deleted != 0 {
-		return rdbUpdateRoomDeleted(ctx, db, room.RoomID)
+	opt := updateRoomOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
-
-	_, err := master.Update(room)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while updating room. %v.", err))
-		return err
-	}
-
-	return nil
-}
-
-func rdbUpdateRoomDeleted(ctx context.Context, db, roomID string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateRoomDeleted")
-	defer span.Finish()
 
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(err.Error())
 		return err
 	}
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-	_, err = trans.Exec(query, roomID)
+	if room.Deleted != 0 {
+		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
+		_, err = trans.Exec(query, room.RoomID)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while deleting room")
+			logger.Error(err.Error())
+			return err
+		}
+
+		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
+		_, err = trans.Exec(query, time.Now().Unix(), room.RoomID)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while deleting room")
+			logger.Error(err.Error())
+			return err
+		}
+
+		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
+		_, err = trans.Exec(query, time.Now().Unix(), room.RoomID)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while deleting room")
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	_, err = trans.Update(room)
 	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		err = errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(err.Error())
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
-	_, err = trans.Exec(query, time.Now().Unix(), roomID)
-	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
-		return err
-	}
+	for _, ru := range opt.users {
+		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
+		_, err = trans.Exec(query, room.RoomID)
+		if err != nil {
+			trans.Rollback()
+			err := errors.Wrap(err, "An error occurred while inserting room")
+			logger.Error(err.Error())
+			return err
+		}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
-	_, err = trans.Exec(query, time.Now().Unix(), roomID)
-	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
-		return err
+		err = trans.Insert(ru)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while updating room")
+			logger.Error(err.Error())
+			return err
+		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
-		err := trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while deleting room. %v.", err))
+		trans.Rollback()
+		err = errors.Wrap(err, "An error occurred while updating room")
+		logger.Error(err.Error())
 		return err
 	}
 

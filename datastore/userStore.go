@@ -81,6 +81,25 @@ func SelectUserOptionWithRooms(withRooms bool) SelectUserOption {
 	}
 }
 
+type UpdateUserOption func(*updateUserOptions)
+
+type updateUserOptions struct {
+	devices []*model.Device
+	roles   []*model.UserRole
+}
+
+func UpdateUserOptionWithDevices(devices []*model.Device) UpdateUserOption {
+	return func(ops *updateUserOptions) {
+		ops.devices = devices
+	}
+}
+
+func UpdateUserOptionWithRoles(roles []*model.UserRole) UpdateUserOption {
+	return func(ops *updateUserOptions) {
+		ops.roles = roles
+	}
+}
+
 type userStore interface {
 	createUserStore()
 
@@ -89,7 +108,7 @@ type userStore interface {
 	SelectUser(userID string, opts ...SelectUserOption) (*model.User, error)
 	SelectCountUsers(opts ...SelectUsersOption) (int64, error)
 	SelectUserIDsOfUser(userIDs []string) ([]string, error)
-	UpdateUser(user *model.User) error
+	UpdateUser(user *model.User, opts ...UpdateUserOption) error
 
 	SelectContacts(userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error)
 }

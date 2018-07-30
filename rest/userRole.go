@@ -2,18 +2,19 @@ package rest
 
 import (
 	"net/http"
-	"net/url"
 	"strconv"
 
+	"github.com/go-zoo/bone"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	scpb "github.com/swagchat/protobuf"
 )
 
 func setUserRoleMux() {
-	mux.PostFunc("/userRoles", commonHandler(adminAuthzHandler(postUserRole)))
-	mux.GetFunc("/userRoles", commonHandler(adminAuthzHandler(getUserRole)))
-	mux.DeleteFunc("/userRoles", commonHandler(adminAuthzHandler(deleteUserRole)))
+	mux.PostFunc("/users/#userId^[a-z0-9-]$/roles", commonHandler(adminAuthzHandler(postUserRole)))
+	mux.GetFunc("/roles/#roleId^[0-9]$/userIds", commonHandler(adminAuthzHandler(getUserIDsOfUserRole)))
+	mux.DeleteFunc("/users/#userId^[a-z0-9-]$/roles", commonHandler(adminAuthzHandler(deleteUserRole)))
 }
 
 func postUserRole(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +27,9 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID := bone.GetValue(r, "userId")
+	req.UserID = userID
+
 	errRes := service.CreateUserRoles(r.Context(), &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
@@ -35,82 +39,33 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNoContent, "application/json", nil)
 }
 
-func getUserRole(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUserRole")
+func getUserIDsOfUserRole(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUserIDsOfUserRole")
 	defer span.Finish()
 
-	params, _ := url.ParseQuery(r.URL.RawQuery)
+	req := &model.GetUserIdsOfUserRoleRequest{}
 
-	userID := ""
-	if userIDSli, ok := params["userId"]; ok {
-		userID = userIDSli[0]
-	}
-
-	roleID := ""
-	if roleIDSli, ok := params["roleId"]; ok {
-		roleID = roleIDSli[0]
-	}
-
-	if userID != "" && roleID != "" {
-		respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*model.InvalidParam{
-				&model.InvalidParam{
-					Name:   "userId, roleId",
-					Reason: "Be sure to specify either userId or roleId.",
-				},
+	roleIDString := bone.GetValue(r, "roleId")
+	roleIDInt, err := strconv.ParseInt(roleIDString, 10, 32)
+	if err != nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roleId",
+				Reason: "roleId must be numeric.",
 			},
-			Status: http.StatusBadRequest,
-		})
+		}
+		errRes := model.NewErrorResponse("Failed to get userIds of user role.", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+		respondError(w, r, errRes)
 		return
 	}
 
-	if userID != "" {
-		gRIDsReq := &model.GetRoleIdsOfUserRoleRequest{}
-		gRIDsReq.UserID = userID
-		roleIDs, errRes := service.GetRoleIDsOfUserRole(r.Context(), gRIDsReq)
-		if errRes != nil {
-			respondError(w, r, errRes)
-			return
-		}
-
-		respond(w, r, http.StatusOK, "application/json", roleIDs)
+	req.RoleID = int32(roleIDInt)
+	userIDs, errRes := service.GetUserIDsOfUserRole(r.Context(), req)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
-
-	var roleIDint32 int32
-	if roleID != "" {
-		i, err := strconv.ParseInt(roleID, 10, 32)
-		if err != nil {
-			respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*model.InvalidParam{
-					&model.InvalidParam{
-						Name:   "roleId",
-						Reason: "roleId must be numeric.",
-					},
-				},
-				Status: http.StatusBadRequest,
-			})
-			return
-		}
-		roleIDint32 = int32(i)
-	}
-
-	if roleIDint32 > 0 {
-		gUIDsReq := &model.GetUserIdsOfUserRoleRequest{}
-		gUIDsReq.RoleID = roleIDint32
-		userIDs, errRes := service.GetUserIDsOfUserRole(r.Context(), gUIDsReq)
-		if errRes != nil {
-			respondError(w, r, errRes)
-			return
-		}
-
-		respond(w, r, http.StatusOK, "application/json", userIDs)
-		return
-	}
-
-	respond(w, r, http.StatusNotFound, "application/json", nil)
+	respond(w, r, http.StatusOK, "application/json", userIDs)
 }
 
 func deleteUserRole(w http.ResponseWriter, r *http.Request) {
@@ -123,11 +78,14 @@ func deleteUserRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userID := bone.GetValue(r, "userId")
+	req.UserID = userID
+
 	errRes := service.DeleteUserRoles(r.Context(), &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
 	}
 
-	respond(w, r, http.StatusNotFound, "application/json", nil)
+	respond(w, r, http.StatusNoContent, "application/json", nil)
 }

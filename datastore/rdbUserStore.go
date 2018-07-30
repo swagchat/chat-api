@@ -27,7 +27,8 @@ func rdbCreateUserStore(ctx context.Context, db string) {
 	}
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating user table. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating user table")
+		logger.Error(err.Error())
 		return
 	}
 }
@@ -36,15 +37,21 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertUser")
 	defer span.Finish()
 
-	master := RdbStore(db).master()
-
 	opt := insertUserOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
 
+	master := RdbStore(db).master()
 	trans, err := master.Begin()
-	if err = trans.Insert(user); err != nil {
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while inserting user")
+		logger.Error(err.Error())
+		return err
+	}
+
+	err = trans.Insert(user)
+	if err != nil {
 		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while inserting user")
 		logger.Error(err.Error())
@@ -63,22 +70,27 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 	}
 
 	if opt.roles != nil {
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
+		_, err := trans.Exec(query, user.UserID)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while inserting user")
+			logger.Error(err.Error())
+			return err
+		}
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while inserting user")
+			logger.Error(err.Error())
+			return err
+		}
 		for _, ur := range opt.roles {
-			bu, err := rdbSelectUserRole(ctx, db, ur.UserID, ur.RoleID)
+			err = trans.Insert(ur)
 			if err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
 				logger.Error(err.Error())
 				return err
-			}
-			if bu == nil {
-				err = trans.Insert(ur)
-				if err != nil {
-					trans.Rollback()
-					err = errors.Wrap(err, "An error occurred while inserting user")
-					logger.Error(err.Error())
-					return err
-				}
 			}
 		}
 
@@ -105,12 +117,12 @@ func rdbSelectUsers(ctx context.Context, db string, limit, offset int32, opts ..
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUsers")
 	defer span.Finish()
 
-	replica := RdbStore(db).replica()
-
 	opt := selectUsersOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
+
+	replica := RdbStore(db).replica()
 
 	var users []*model.User
 	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0", tableNameUser)
@@ -148,12 +160,12 @@ func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOpt
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUser")
 	defer span.Finish()
 
-	replica := RdbStore(db).replica()
-
 	opt := selectUserOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
+
+	replica := RdbStore(db).replica()
 
 	var users []*model.User
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND deleted=0;", tableNameUser)
@@ -280,12 +292,12 @@ func rdbSelectCountUsers(ctx context.Context, db string, opts ...SelectUsersOpti
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectCountUsers")
 	defer span.Finish()
 
-	replica := RdbStore(db).replica()
-
 	opt := selectUsersOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
+
+	replica := RdbStore(db).replica()
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0", tableNameUser)
 	params := make(map[string]interface{})
@@ -300,7 +312,7 @@ func rdbSelectCountUsers(ctx context.Context, db string, opts ...SelectUsersOpti
 }
 
 func rdbSelectUserIDsOfUser(ctx context.Context, db string, userIDs []string) ([]string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsByUserIDs")
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsOfUser")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
@@ -323,19 +335,67 @@ func rdbSelectUserIDsOfUser(ctx context.Context, db string, userIDs []string) ([
 	return resultUserIDs, nil
 }
 
-func rdbUpdateUser(ctx context.Context, db string, user *model.User) error {
+func rdbUpdateUser(ctx context.Context, db string, user *model.User, opts ...UpdateUserOption) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateUser")
 	defer span.Finish()
 
+	opt := updateUserOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
 	master := RdbStore(db).master()
+	trans, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while updating user")
+		logger.Error(err.Error())
+		return err
+	}
 
 	if user.Deleted != 0 {
 		return rdbUpdateUserDeleted(ctx, db, user.UserID)
 	}
 
-	_, err := master.Update(user)
+	_, err = master.Update(user)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while updating user. %v.", err))
+		trans.Rollback()
+		err = errors.Wrap(err, "An error occurred while inserting user")
+		logger.Error(err.Error())
+		return err
+	}
+
+	if opt.roles != nil {
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
+		_, err := trans.Exec(query, user.UserID)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while inserting user")
+			logger.Error(err.Error())
+			return err
+		}
+		for _, ur := range opt.roles {
+			err = trans.Insert(ur)
+			if err != nil {
+				trans.Rollback()
+				err = errors.Wrap(err, "An error occurred while inserting user")
+				logger.Error(err.Error())
+				return err
+			}
+		}
+
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while inserting user")
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	err = trans.Commit()
+	if err != nil {
+		trans.Rollback()
+		err = errors.Wrap(err, "An error occurred while inserting user")
+		logger.Error(err.Error())
 		return err
 	}
 
@@ -348,6 +408,11 @@ func rdbUpdateUserDeleted(ctx context.Context, db, userID string) error {
 
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while deleting user")
+		logger.Error(err.Error())
+		return err
+	}
 
 	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameRoomUser)
 	_, err = trans.Exec(query, userID)

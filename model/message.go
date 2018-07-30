@@ -82,7 +82,7 @@ func (m *Message) Validate() *ErrorResponse {
 				Reason: "messageId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
 		}
-		return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if m.Payload == nil {
@@ -92,7 +92,7 @@ func (m *Message) Validate() *ErrorResponse {
 				Reason: "payload is empty.",
 			},
 		}
-		return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if m.Type == MessageTypeText {
@@ -105,7 +105,7 @@ func (m *Message) Validate() *ErrorResponse {
 					Reason: "Text type needs text.",
 				},
 			}
-			return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
+			return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
 
@@ -119,7 +119,7 @@ func (m *Message) Validate() *ErrorResponse {
 					Reason: "Image type needs mime.",
 				},
 			}
-			return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
+			return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 
 		if pi.SourceUrl == "" {
@@ -129,7 +129,7 @@ func (m *Message) Validate() *ErrorResponse {
 					Reason: "Image type needs sourceUrl.",
 				},
 			}
-			return NewErrorResponse("Failed to create a message.", invalidParams, http.StatusBadRequest, nil)
+			return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
 

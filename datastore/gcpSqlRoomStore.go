@@ -22,6 +22,6 @@ func (p *gcpSQLProvider) SelectCountRooms(opts ...SelectRoomsOption) (int64, err
 	return rdbSelectCountRooms(p.ctx, p.database, opts...)
 }
 
-func (p *gcpSQLProvider) UpdateRoom(room *model.Room) error {
-	return rdbUpdateRoom(p.ctx, p.database, room)
+func (p *gcpSQLProvider) UpdateRoom(room *model.Room, opts ...UpdateRoomOption) error {
+	return rdbUpdateRoom(p.ctx, p.database, room, opts...)
 }

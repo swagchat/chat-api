@@ -57,7 +57,7 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 	roomUsers := req.GenerateRoomUsers()
 	err := datastore.Provider(ctx).InsertRoomUsers(roomUsers)
 	if err != nil {
-		return model.NewErrorResponse("Failed to create room users.", nil, http.StatusInternalServerError, err)
+		return model.NewErrorResponse("Failed to create room users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	go subscribeByRoomUsers(ctx, roomUsers)
@@ -75,7 +75,7 @@ func GetUserIDsOfRoomUser(ctx context.Context, req *model.GetUserIdsOfRoomUserRe
 		datastore.SelectUserIDsOfRoomUserOptionWithRoleIDs(req.RoleIDs),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get userIds.", nil, http.StatusInternalServerError, err)
+		return nil, model.NewErrorResponse("Failed to get userIds.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	logger.Info("Finish SelectUserIDsOfRoomUser.")
@@ -98,7 +98,7 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 
 	err := datastore.Provider(ctx).UpdateRoomUser(ru)
 	if err != nil {
-		return model.NewErrorResponse("Failed to update room user.", nil, http.StatusInternalServerError, err)
+		return model.NewErrorResponse("Failed to update room user.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	// var p json.RawMessage
@@ -130,7 +130,7 @@ func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *mo
 
 	err := datastore.Provider(ctx).DeleteRoomUsers(req.RoomID, req.UserIDs)
 	if err != nil {
-		return model.NewErrorResponse("Failed to delete room users.", nil, http.StatusInternalServerError, err)
+		return model.NewErrorResponse("Failed to delete room users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	go func() {

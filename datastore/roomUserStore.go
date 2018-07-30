@@ -53,6 +53,6 @@ type roomUserStore interface {
 	SelectRoomUser(roomID, userID string) (*model.RoomUser, error)
 	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*model.RoomUser, error)
 	SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error)
-	UpdateRoomUser(*model.RoomUser) error
+	UpdateRoomUser(roomUser *model.RoomUser) error
 	DeleteRoomUsers(roomID string, userIDs []string) error
 }

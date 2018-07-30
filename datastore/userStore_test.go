@@ -85,7 +85,15 @@ func TestUserStore(t *testing.T) {
 
 	t.Run(TestNameUpdateUser, func(t *testing.T) {
 		user.Name = "name-update"
-		err = Provider(ctx).UpdateUser(user)
+
+		newUserRole := &model.UserRole{}
+		newUserRole.UserID = user.UserID
+		newUserRole.RoleID = 1
+
+		err = Provider(ctx).UpdateUser(
+			user,
+			UpdateUserOptionWithRoles([]*model.UserRole{newUserRole}),
+		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameUpdateUser)
 		}

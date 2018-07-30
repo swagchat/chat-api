@@ -41,9 +41,12 @@ func TestMain(m *testing.M) {
 			fmt.Errorf("Failed to insert user on main test")
 		}
 
+		token := utils.GenerateUUID()
 		newDevice := &model.Device{}
 		newDevice.UserID = newUser.UserID
 		newDevice.Platform = 1
+		newDevice.Token = token
+		newDevice.NotificationDeviceID = token
 		_, err = datastore.Provider(ctx).InsertDevice(newDevice)
 		if err != nil {
 			fmt.Errorf("Failed to insert device on main test")
@@ -61,9 +64,12 @@ func TestMain(m *testing.M) {
 			fmt.Errorf("Failed to insert user on main test")
 		}
 
+		token := utils.GenerateUUID()
 		newDevice := &model.Device{}
 		newDevice.UserID = newUser.UserID
 		newDevice.Platform = 2
+		newDevice.Token = token
+		newDevice.NotificationDeviceID = token
 		_, err = datastore.Provider(ctx).InsertDevice(newDevice)
 		if err != nil {
 			fmt.Errorf("Failed to insert device on main test")
@@ -101,5 +107,6 @@ func TestMain(m *testing.M) {
 	time.Sleep(1 * time.Second)
 
 	code := m.Run()
+	datastore.Provider(ctx).Close()
 	os.Exit(code)
 }

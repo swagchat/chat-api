@@ -22,6 +22,6 @@ func (p *mysqlProvider) SelectCountRooms(opts ...SelectRoomsOption) (int64, erro
 	return rdbSelectCountRooms(p.ctx, p.database, opts...)
 }
 
-func (p *mysqlProvider) UpdateRoom(room *model.Room) error {
-	return rdbUpdateRoom(p.ctx, p.database, room)
+func (p *mysqlProvider) UpdateRoom(room *model.Room, opts ...UpdateRoomOption) error {
+	return rdbUpdateRoom(p.ctx, p.database, room, opts...)
 }

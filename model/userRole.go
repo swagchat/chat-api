@@ -27,24 +27,6 @@ func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
 	return userRoles
 }
 
-type GetRoleIdsOfUserRoleRequest struct {
-	scpb.GetRoleIdsOfUserRoleRequest
-}
-
-func (grourr *GetRoleIdsOfUserRoleRequest) Validate() *ErrorResponse {
-	if grourr.UserID != "" && !IsValidID(grourr.UserID) {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "userId",
-				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-			},
-		}
-		return NewErrorResponse("Failed to get roleIds of user role.", invalidParams, http.StatusBadRequest, nil)
-	}
-
-	return nil
-}
-
 type GetUserIdsOfUserRoleRequest struct {
 	scpb.GetUserIdsOfUserRoleRequest
 }
@@ -61,7 +43,7 @@ func (durr *DeleteUserRolesRequest) Validate() *ErrorResponse {
 				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
 		}
-		return NewErrorResponse("Failed to delete user roles.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to delete user roles.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if len(durr.RoleIDs) == 0 {
@@ -71,7 +53,7 @@ func (durr *DeleteUserRolesRequest) Validate() *ErrorResponse {
 				Reason: "roleIds is empty.",
 			},
 		}
-		return NewErrorResponse("Failed to delete user roles.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to delete user roles.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	return nil

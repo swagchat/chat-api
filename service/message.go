@@ -60,7 +60,7 @@ func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseM
 
 		err := datastore.Provider(ctx).InsertMessage(post)
 		if err != nil {
-			errRes := model.NewErrorResponse("Failed to create message.", nil, http.StatusInternalServerError, err)
+			errRes := model.NewErrorResponse("Failed to create message.", http.StatusInternalServerError, model.WithError(err))
 			pds = append(pds, errRes)
 			continue
 		}

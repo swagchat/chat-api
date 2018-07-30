@@ -223,7 +223,7 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
 		}
-		return NewErrorResponse("Failed to create user.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if len(u.UserID) > 36 {
@@ -233,7 +233,7 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 				Reason: "userId is invalid. A string up to 36 symbols long.",
 			},
 		}
-		return NewErrorResponse("Failed to create user.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if u.Name == "" {
@@ -243,7 +243,7 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 				Reason: "name is required, but it's empty.",
 			},
 		}
-		return NewErrorResponse("Failed to create user.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	return nil
@@ -358,6 +358,19 @@ type UpdateUserRequest struct {
 
 func (uur *UpdateUserRequest) Validate() *ErrorResponse {
 	return nil
+}
+
+func (uur *UpdateUserRequest) GenerateUserRoles() []*UserRole {
+	urs := make([]*UserRole, len(uur.RoleIDs))
+
+	for i, v := range uur.RoleIDs {
+		ru := &UserRole{}
+		ru.UserID = uur.UserID
+		ru.RoleID = v
+
+		urs[i] = ru
+	}
+	return urs
 }
 
 type DeleteUserRequest struct {

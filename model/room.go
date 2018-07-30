@@ -176,7 +176,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 				Reason: "roomId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
 		}
-		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if r.UserID == "" {
@@ -186,7 +186,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 				Reason: "userId is required, but it's empty.",
 			},
 		}
-		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if !IsValidID(r.UserID) {
@@ -196,7 +196,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
 			},
 		}
-		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if r.Type == 0 {
@@ -206,7 +206,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 				Reason: "type is required, but it's empty.",
 			},
 		}
-		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	roomType := scpb.RoomType.String(r.Type)
@@ -217,7 +217,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 				Reason: "type is incorrect.",
 			},
 		}
-		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	if r.Type == scpb.RoomType_OneOnOne && len(r.UserIDs) == 0 {
@@ -227,7 +227,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 				Reason: "In case of 1on1 type, it is necessary to set userIds.",
 			},
 		}
-		return NewErrorResponse("Failed to create room.", invalidParams, http.StatusBadRequest, nil)
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	// if r.SpeechMode != nil && !(*r.SpeechMode > 0 && *r.SpeechMode < SpeechModeEnd) {
@@ -286,23 +286,21 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 }
 
 func (crr *CreateRoomRequest) GenerateRoomUsers() []*RoomUser {
-	userIDs := crr.UserIDs
-	if userIDs == nil {
-		userIDs = make([]string, 0)
-	}
-	userIDs = append(userIDs, crr.UserID)
-	userIDs = utils.RemoveDuplicate(userIDs)
+	rus := make([]*RoomUser, len(crr.UserIDs)+1)
+	me := &RoomUser{}
+	me.RoomID = crr.RoomID
+	me.UserID = crr.UserID
+	me.UnreadCount = int32(0)
+	me.Display = true
 
-	rus := make([]*RoomUser, len(userIDs))
-
-	for i, v := range userIDs {
+	rus[0] = me
+	for i := 0; i < len(crr.UserIDs); i++ {
 		ru := &RoomUser{}
 		ru.RoomID = crr.RoomID
-		ru.UserID = v
+		ru.UserID = crr.UserIDs[i]
 		ru.UnreadCount = int32(0)
 		ru.Display = true
-
-		rus[i] = ru
+		rus[i+1] = ru
 	}
 	return rus
 }
@@ -355,7 +353,7 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 					Reason: "In case of 1-on-1 room type, type can not be changed.",
 				},
 			}
-			return NewErrorResponse("Failed to update room.", invalidParams, http.StatusBadRequest, nil)
+			return NewErrorResponse("Failed to update room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		} else if room.Type != scpb.RoomType_OneOnOne && *uur.Type == scpb.RoomType_OneOnOne {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
@@ -363,10 +361,30 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 					Reason: "In case of not 1-on-1 room type, type can not change to 1-on-1 room type.",
 				},
 			}
-			return NewErrorResponse("Failed to update room.", invalidParams, http.StatusBadRequest, nil)
+			return NewErrorResponse("Failed to update room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
 	return nil
+}
+
+func (uur *UpdateRoomRequest) GenerateRoomUsers(room *Room) []*RoomUser {
+	rus := make([]*RoomUser, len(uur.UserIDs)+1)
+	me := &RoomUser{}
+	me.RoomID = room.RoomID
+	me.UserID = room.UserID
+	me.UnreadCount = int32(0)
+	me.Display = true
+
+	rus[0] = me
+	for i := 0; i < len(uur.UserIDs); i++ {
+		ru := &RoomUser{}
+		ru.RoomID = room.RoomID
+		ru.UserID = uur.UserIDs[i]
+		ru.UnreadCount = int32(0)
+		ru.Display = true
+		rus[i+1] = ru
+	}
+	return rus
 }
 
 type DeleteRoomRequest struct {

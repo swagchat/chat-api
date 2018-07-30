@@ -47,7 +47,7 @@ func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
 					Reason: "In case of 1-on-1 room type, only one user can be specified for userIDs.",
 				},
 			}
-			return NewErrorResponse("Failed to create a user.", invalidParams, http.StatusBadRequest, nil)
+			return NewErrorResponse("Failed to create a user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
 	return nil

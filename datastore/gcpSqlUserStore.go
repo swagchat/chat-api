@@ -26,8 +26,8 @@ func (p *gcpSQLProvider) SelectUserIDsOfUser(userIDs []string) ([]string, error)
 	return rdbSelectUserIDsOfUser(p.ctx, p.database, userIDs)
 }
 
-func (p *gcpSQLProvider) UpdateUser(user *model.User) error {
-	return rdbUpdateUser(p.ctx, p.database, user)
+func (p *gcpSQLProvider) UpdateUser(user *model.User, opts ...UpdateUserOption) error {
+	return rdbUpdateUser(p.ctx, p.database, user, opts...)
 }
 
 func (p *gcpSQLProvider) SelectContacts(userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error) {

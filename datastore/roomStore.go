@@ -41,6 +41,18 @@ func SelectRoomOptionWithUsers(withUsers bool) SelectRoomOption {
 	}
 }
 
+type UpdateRoomOption func(*updateRoomOptions)
+
+type updateRoomOptions struct {
+	users []*model.RoomUser
+}
+
+func UpdateRoomOptionWithRoomUser(users []*model.RoomUser) UpdateRoomOption {
+	return func(ops *updateRoomOptions) {
+		ops.users = users
+	}
+}
+
 type roomStore interface {
 	createRoomStore()
 
@@ -48,5 +60,5 @@ type roomStore interface {
 	SelectRooms(limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error)
 	SelectRoom(roomID string, opts ...SelectRoomOption) (*model.Room, error)
 	SelectCountRooms(opts ...SelectRoomsOption) (int64, error)
-	UpdateRoom(room *model.Room) error
+	UpdateRoom(room *model.Room, opts ...UpdateRoomOption) error
 }
