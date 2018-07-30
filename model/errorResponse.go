@@ -1,7 +1,7 @@
 package model
 
 import (
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type errorResponseOptions struct {

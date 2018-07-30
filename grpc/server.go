@@ -10,11 +10,12 @@ import (
 	"syscall"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/tracer"
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/reflection"
@@ -80,7 +81,7 @@ func Run(ctx context.Context) {
 	reflection.Register(s)
 
 	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)
 	errCh := make(chan error)
 	go func() {
 		errCh <- s.Serve(lis)
@@ -89,12 +90,12 @@ func Run(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
+		datastore.Provider(ctx).Close()
 		s.GracefulStop()
-	case signal := <-signalChan:
-		if signal == syscall.SIGTERM || signal == syscall.SIGINT {
-			logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
-			s.GracefulStop()
-		}
+	case <-signalChan:
+		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
+		datastore.Provider(ctx).Close()
+		s.GracefulStop()
 	case err = <-errCh:
 		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", utils.AppName, err))
 	}

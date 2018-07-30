@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateUserStore(ctx context.Context, db string) {

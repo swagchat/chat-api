@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type chatIncomingServer struct{}

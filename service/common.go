@@ -15,7 +15,7 @@ import (
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ProblemDetail) {

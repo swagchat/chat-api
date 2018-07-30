@@ -24,7 +24,7 @@ import (
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 var (
@@ -78,7 +78,7 @@ func Run(ctx context.Context) {
 
 	logger.Info(fmt.Sprintf("Starting %s server[REST] on listen tcp :%s", utils.AppName, cfg.HTTPPort))
 	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)
 	errCh := make(chan error)
 	go func() {
 		errCh <- gracedown.ListenAndServe(fmt.Sprintf(":%s", cfg.HTTPPort), mux)
@@ -87,12 +87,11 @@ func Run(ctx context.Context) {
 	select {
 	case <-ctx.Done():
 		logger.Info(fmt.Sprintf("Stopping %s server[REST]", utils.AppName))
+		datastore.Provider(ctx).Close()
 		gracedown.Close()
-	case s := <-signalChan:
-		if s == syscall.SIGTERM || s == syscall.SIGINT {
-			logger.Info(fmt.Sprintf("Stopping %s server[REST]", utils.AppName))
-			gracedown.Close()
-		}
+	case <-signalChan:
+		datastore.Provider(ctx).Close()
+		gracedown.Close()
 	case err := <-errCh:
 		logger.Error(fmt.Sprintf("Failed to serve %s server[REST]. %v", utils.AppName, err))
 	}

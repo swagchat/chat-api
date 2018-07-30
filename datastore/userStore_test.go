@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/swagchat/chat-api/model"
-	scpb "github.com/swagchat/protobuf"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 const (
