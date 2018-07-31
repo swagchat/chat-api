@@ -7,6 +7,7 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateBlockUsers creates block users
@@ -39,15 +40,25 @@ func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetBlockUsers")
 	defer span.Finish()
 
-	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUsers(req.UserID)
+	res := &model.BlockUsersResponse{}
+
+	if req.ResponseType == scpb.ResponseType_UserIdList {
+		blockUserIDs, err := datastore.Provider(ctx).SelectBlockUserIDs(req.UserID)
+		if err != nil {
+			return nil, model.NewErrorResponse("Failed to get block users.", http.StatusInternalServerError, model.WithError(err))
+		}
+
+		res.BlockUserIDs = blockUserIDs
+		return res, nil
+	}
+
+	blockUsers, err := datastore.Provider(ctx).SelectBlockUsers(req.UserID)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get block users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
-	blockUsers := &model.BlockUsersResponse{}
-	blockUsers.BlockUserIDs = blockUserIDs
-
-	return blockUsers, nil
+	res.BlockUsers = blockUsers
+	return res, nil
 }
 
 // GetBlockedUsers gets blocked users
@@ -55,15 +66,25 @@ func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*m
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetBlockedUsers")
 	defer span.Finish()
 
-	blockedUserIDs, err := datastore.Provider(ctx).SelectBlockUsers(req.BlockUserID)
+	res := &model.BlockedUsersResponse{}
+
+	if req.ResponseType == scpb.ResponseType_UserIdList {
+		blockedUserIDs, err := datastore.Provider(ctx).SelectBlockedUserIDs(req.UserID)
+		if err != nil {
+			return nil, model.NewErrorResponse("Failed to get blocked users.", http.StatusInternalServerError, model.WithError(err))
+		}
+
+		res.BlockedUserIDs = blockedUserIDs
+		return res, nil
+	}
+
+	blockedUsers, err := datastore.Provider(ctx).SelectBlockedUsers(req.UserID)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get blocked users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
-	blockedUsers := &model.BlockedUsersResponse{}
-	blockedUsers.BlockedUserIDs = blockedUserIDs
-
-	return blockedUsers, nil
+	res.BlockedUsers = blockedUsers
+	return res, nil
 }
 
 // AddBlockUsers adds block users

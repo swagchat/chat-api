@@ -72,10 +72,10 @@ type UpdateDeviceRequest struct {
 }
 
 func (udr *UpdateDeviceRequest) Validate() *ErrorResponse {
-	if !(udr.Platform > 0 && udr.Platform < int32(PlatformEnd)) {
+	if udr.Platform != scpb.Platform_PlatformIos && udr.Platform != scpb.Platform_PlatformAndroid {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
-				Name:   "device.platform",
+				Name:   "platform",
 				Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
 			},
 		}

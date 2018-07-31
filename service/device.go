@@ -27,7 +27,7 @@ func GetDevices(ctx context.Context, req *model.GetDevicesRequest) (*model.Devic
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetDevices")
 	defer span.Finish()
 
-	devices, err := datastore.Provider(ctx).SelectDevices(req.UserID)
+	devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(req.UserID))
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get devices.", http.StatusInternalServerError, model.WithError(err))
 	}
@@ -56,7 +56,7 @@ func UpdateDevice(ctx context.Context, req *model.UpdateDeviceRequest) *model.Er
 	if device == nil || (device.Token != req.Token) {
 		// When using another user on the same device, delete the notification information
 		// of the olderuser in order to avoid duplication of the device token
-		deleteDevices, err := datastore.Provider(ctx).SelectDevicesByToken(req.Token)
+		deleteDevices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByToken(req.Token))
 		if err != nil {
 			return model.NewErrorResponse("Failed to update device.", http.StatusInternalServerError, model.WithError(err))
 		}

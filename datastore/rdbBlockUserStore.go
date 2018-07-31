@@ -84,8 +84,40 @@ func rdbInsertBlockUsers(ctx context.Context, db string, bus []*model.BlockUser,
 	return nil
 }
 
-func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]string, error) {
+func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]*model.MiniUser, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUsers")
+	defer span.Finish()
+
+	replica := RdbStore(db).replica()
+
+	var blockUsers []*model.MiniUser
+	query := fmt.Sprintf(`SELECT
+	u.user_id,
+	u.name,
+	u.picture_url,
+	u.information_url,
+	u.meta_data,
+	u.can_block,
+	u.last_accessed,
+	u.created,
+	u.modified
+	FROM %s AS bu 
+	LEFT JOIN %s AS u ON bu.user_id = u.user_id
+	WHERE bu.user_id=:userId;`, tableNameBlockUser, tableNameUser)
+	params := map[string]interface{}{
+		"userId": userID,
+	}
+	_, err := replica.Select(&blockUsers, query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting block users by userId. %v.", err))
+		return nil, err
+	}
+
+	return blockUsers, nil
+}
+
+func rdbSelectBlockUserIDs(ctx context.Context, db, userID string) ([]string, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUserIDs")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
@@ -97,7 +129,59 @@ func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]string, erro
 	}
 	_, err := replica.Select(&blockUserIDs, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting blockUsers by userId. %v.", err))
+		logger.Error(fmt.Sprintf("An error occurred while getting block userIds by userId. %v.", err))
+		return nil, err
+	}
+
+	return blockUserIDs, nil
+}
+
+func rdbSelectBlockedUsers(ctx context.Context, db, userID string) ([]*model.MiniUser, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockedUsers")
+	defer span.Finish()
+
+	replica := RdbStore(db).replica()
+
+	var blockedUsers []*model.MiniUser
+	query := fmt.Sprintf(`SELECT
+	u.user_id,
+	u.name,
+	u.picture_url,
+	u.information_url,
+	u.meta_data,
+	u.can_block,
+	u.last_accessed,
+	u.created,
+	u.modified
+	FROM %s AS bu 
+	LEFT JOIN %s AS u ON bu.user_id = u.user_id
+	WHERE bu.block_user_id=:userId;`, tableNameBlockUser, tableNameUser)
+	params := map[string]interface{}{
+		"userId": userID,
+	}
+	_, err := replica.Select(&blockedUsers, query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting blocked users by userId. %v.", err))
+		return nil, err
+	}
+
+	return blockedUsers, nil
+}
+
+func rdbSelectBlockedUserIDs(ctx context.Context, db, userID string) ([]string, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockedUserIDs")
+	defer span.Finish()
+
+	replica := RdbStore(db).replica()
+
+	var blockUserIDs []string
+	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE block_user_id=:userId;", tableNameBlockUser)
+	params := map[string]interface{}{
+		"userId": userID,
+	}
+	_, err := replica.Select(&blockUserIDs, query, params)
+	if err != nil {
+		logger.Error(fmt.Sprintf("An error occurred while getting blocked userIds by userId. %v.", err))
 		return nil, err
 	}
 

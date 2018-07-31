@@ -30,7 +30,7 @@ func TestRoom(t *testing.T) {
 		req := &model.CreateRoomRequest{}
 		userID := "service-user-id-0001"
 		name := "Name"
-		roomType := scpb.RoomType_OneOnOne
+		roomType := scpb.RoomType_RoomTypeOneOnOne
 		pictureURL := "http://example.com/dummy.png"
 		informationURL := "http://example.com"
 		req.UserID = &userID

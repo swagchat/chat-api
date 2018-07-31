@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // [APNS] https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/PayloadKeyReference.html
@@ -24,7 +25,7 @@ type NotificationChannel chan NotificationResult
 type provider interface {
 	CreateTopic(string) NotificationChannel
 	DeleteTopic(string) NotificationChannel
-	CreateEndpoint(string, int32, string) NotificationChannel
+	CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel
 	DeleteEndpoint(string) NotificationChannel
 	Subscribe(string, string) NotificationChannel
 	Unsubscribe(string) NotificationChannel

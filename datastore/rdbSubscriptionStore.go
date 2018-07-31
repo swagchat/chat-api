@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateSubscriptionStore(ctx context.Context, db string) {
@@ -38,7 +39,7 @@ func rdbInsertSubscription(ctx context.Context, db string, subscription *model.S
 	return subscription, nil
 }
 
-func rdbSelectSubscription(ctx context.Context, db, roomID, userID string, platform int32) (*model.Subscription, error) {
+func rdbSelectSubscription(ctx context.Context, db, roomID, userID string, platform scpb.Platform) (*model.Subscription, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectSubscription")
 	defer span.Finish()
 
@@ -101,7 +102,7 @@ func rdbSelectDeletedSubscriptionsByUserID(ctx context.Context, db, userID strin
 	return subscriptions, nil
 }
 
-func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(ctx context.Context, db, userID string, platform int32) ([]*model.Subscription, error) {
+func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(ctx context.Context, db, userID string, platform scpb.Platform) ([]*model.Subscription, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDeletedSubscriptionsByUserIDAndPlatform")
 	defer span.Finish()
 

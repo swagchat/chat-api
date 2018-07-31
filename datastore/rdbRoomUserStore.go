@@ -90,7 +90,7 @@ func rdbSelectRoomUsers(ctx context.Context, db string, opts ...SelectRoomUsersO
 	}
 
 	if opt.roomID == "" && opt.userIDs == nil {
-		err := errors.New("Be sure to specify roomID or userIDs.")
+		err := errors.New("Be sure to specify roomID or userIDs")
 		logger.Error(err.Error())
 		return nil, err
 	}
@@ -173,7 +173,7 @@ WHERE room_id IN (
 	SELECT room_id FROM %s WHERE type=:type AND user_id=:myUserId
 ) AND user_id=:opponentUserId;`, tableNameRoomUser, tableNameRoom)
 	params := map[string]interface{}{
-		"type":           scpb.RoomType_OneOnOne,
+		"type":           scpb.RoomType_RoomTypeOneOnOne,
 		"myUserId":       myUserID,
 		"opponentUserId": opponentUserID,
 	}

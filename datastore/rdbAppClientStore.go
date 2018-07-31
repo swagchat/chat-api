@@ -88,7 +88,7 @@ func rdbSelectLatestAppClient(ctx context.Context, db string, opts ...SelectAppC
 	}
 
 	if (opt.name == "" && opt.clientID == "") || (opt.name != "" && opt.clientID != "") {
-		return nil, errors.New("Be sure to specify either name or clientID。")
+		return nil, errors.New("Be sure to specify either name or clientID.")
 	}
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE", tableNameAppClient)

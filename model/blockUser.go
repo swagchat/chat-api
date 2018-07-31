@@ -49,14 +49,39 @@ type GetBlockUsersRequest struct {
 
 type BlockUsersResponse struct {
 	scpb.BlockUsersResponse
+	BlockUsers []*MiniUser `json:"blockUsers,omitempty"`
 }
 
 func (bur *BlockUsersResponse) ConvertToPbBlockUsers() *scpb.BlockUsersResponse {
-	blockUsers := &scpb.BlockUsersResponse{
-		BlockUsers:   bur.BlockUsers,
-		BlockUserIDs: bur.BlockUserIDs,
+	res := &scpb.BlockUsersResponse{}
+
+	if bur.BlockUsers != nil {
+		blockUsers := make([]*scpb.MiniUser, len(bur.BlockUsers))
+		for i := 0; i < len(bur.BlockUsers); i++ {
+			bu := bur.BlockUsers[i]
+			blockUser := &scpb.MiniUser{
+				RoomID:         bu.RoomID,
+				UserID:         bu.UserID,
+				Name:           bu.Name,
+				PictureURL:     bu.PictureURL,
+				InformationURL: bu.InformationURL,
+				MetaData:       bu.MetaData,
+				CanBlock:       bu.CanBlock,
+				LastAccessed:   bu.LastAccessed,
+				RuDisplay:      bu.RuDisplay,
+				Created:        bu.Created,
+				Modified:       bu.Modified,
+			}
+			blockUsers[i] = blockUser
+		}
+		res.BlockUsers = blockUsers
 	}
-	return blockUsers
+
+	if bur.BlockUserIDs != nil {
+		res.BlockUserIDs = bur.BlockUserIDs
+	}
+
+	return res
 }
 
 type GetBlockedUsersRequest struct {
@@ -65,14 +90,39 @@ type GetBlockedUsersRequest struct {
 
 type BlockedUsersResponse struct {
 	scpb.BlockedUsersResponse
+	BlockedUsers []*MiniUser `json:"blockedUsers,omitempty"`
 }
 
 func (bur *BlockedUsersResponse) ConvertToPbBlockedUsers() *scpb.BlockedUsersResponse {
-	blockedUsers := &scpb.BlockedUsersResponse{
-		BlockedUsers:   bur.BlockedUsers,
-		BlockedUserIDs: bur.BlockedUserIDs,
+	res := &scpb.BlockedUsersResponse{}
+
+	if bur.BlockedUsers != nil {
+		blockedUsers := make([]*scpb.MiniUser, len(bur.BlockedUsers))
+		for i := 0; i < len(bur.BlockedUsers); i++ {
+			bu := bur.BlockedUsers[i]
+			blockedUser := &scpb.MiniUser{
+				RoomID:         bu.RoomID,
+				UserID:         bu.UserID,
+				Name:           bu.Name,
+				PictureURL:     bu.PictureURL,
+				InformationURL: bu.InformationURL,
+				MetaData:       bu.MetaData,
+				CanBlock:       bu.CanBlock,
+				LastAccessed:   bu.LastAccessed,
+				RuDisplay:      bu.RuDisplay,
+				Created:        bu.Created,
+				Modified:       bu.Modified,
+			}
+			blockedUsers[i] = blockedUser
+		}
+		res.BlockedUsers = blockedUsers
 	}
-	return blockedUsers
+
+	if bur.BlockedUserIDs != nil {
+		res.BlockedUserIDs = bur.BlockedUserIDs
+	}
+
+	return res
 }
 
 type AddBlockUsersRequest struct {

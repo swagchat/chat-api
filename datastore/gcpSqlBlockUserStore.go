@@ -10,8 +10,20 @@ func (p *gcpSQLProvider) InsertBlockUsers(blockUsers []*model.BlockUser, opts ..
 	return rdbInsertBlockUsers(p.ctx, p.database, blockUsers, opts...)
 }
 
-func (p *gcpSQLProvider) SelectBlockUsers(userID string) ([]string, error) {
+func (p *gcpSQLProvider) SelectBlockUsers(userID string) ([]*model.MiniUser, error) {
 	return rdbSelectBlockUsers(p.ctx, p.database, userID)
+}
+
+func (p *gcpSQLProvider) SelectBlockUserIDs(userID string) ([]string, error) {
+	return rdbSelectBlockUserIDs(p.ctx, p.database, userID)
+}
+
+func (p *gcpSQLProvider) SelectBlockedUsers(userID string) ([]*model.MiniUser, error) {
+	return rdbSelectBlockedUsers(p.ctx, p.database, userID)
+}
+
+func (p *gcpSQLProvider) SelectBlockedUserIDs(userID string) ([]string, error) {
+	return rdbSelectBlockedUserIDs(p.ctx, p.database, userID)
 }
 
 func (p *gcpSQLProvider) SelectBlockUser(userID, blockUserID string) (*model.BlockUser, error) {

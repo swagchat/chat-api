@@ -8,6 +8,7 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateRoomUsers creates room users
@@ -70,18 +71,23 @@ func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.R
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoomUsers")
 	defer span.Finish()
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
-		req.RoomID,
-		datastore.SelectUserIDsOfRoomUserOptionWithRoles(req.RoleIDs),
-	)
-	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get userIds.", http.StatusInternalServerError, model.WithError(err))
+	res := &model.RoomUsersResponse{}
+
+	if req.ResponseType == scpb.ResponseType_UserIdList {
+		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
+			req.RoomID,
+			datastore.SelectUserIDsOfRoomUserOptionWithRoles(req.RoleIDs),
+		)
+		if err != nil {
+			return nil, model.NewErrorResponse("Failed to get userIds.", http.StatusInternalServerError, model.WithError(err))
+		}
+
+		res.UserIDs = userIDs
+		return res, nil
 	}
 
-	roomUsers := &model.RoomUsersResponse{}
-	roomUsers.UserIDs = userIDs
-
-	return roomUsers, nil
+	// TODO
+	return res, nil
 }
 
 // UpdateRoomUser updates room user

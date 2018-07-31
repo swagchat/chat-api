@@ -94,7 +94,7 @@ func TestRoomUserStore(t *testing.T) {
 		}
 
 		roomUsers, err = Provider(ctx).SelectRoomUsers()
-		if err.Error() != "Be sure to specify roomID or userIDs." {
+		if err.Error() != "Be sure to specify roomID or userIDs" {
 			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
 		}
 	})

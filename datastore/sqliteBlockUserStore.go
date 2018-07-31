@@ -10,8 +10,20 @@ func (p *sqliteProvider) InsertBlockUsers(blockUsers []*model.BlockUser, opts ..
 	return rdbInsertBlockUsers(p.ctx, p.database, blockUsers, opts...)
 }
 
-func (p *sqliteProvider) SelectBlockUsers(userID string) ([]string, error) {
+func (p *sqliteProvider) SelectBlockUsers(userID string) ([]*model.MiniUser, error) {
 	return rdbSelectBlockUsers(p.ctx, p.database, userID)
+}
+
+func (p *sqliteProvider) SelectBlockUserIDs(userID string) ([]string, error) {
+	return rdbSelectBlockUserIDs(p.ctx, p.database, userID)
+}
+
+func (p *sqliteProvider) SelectBlockedUsers(userID string) ([]*model.MiniUser, error) {
+	return rdbSelectBlockedUsers(p.ctx, p.database, userID)
+}
+
+func (p *sqliteProvider) SelectBlockedUserIDs(userID string) ([]string, error) {
+	return rdbSelectBlockedUserIDs(p.ctx, p.database, userID)
 }
 
 func (p *sqliteProvider) SelectBlockUser(userID, blockUserID string) (*model.BlockUser, error) {

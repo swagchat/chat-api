@@ -58,9 +58,9 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 		return err
 	}
 
-	if opt.devices != nil {
-		for _, device := range opt.devices {
-			if err := trans.Insert(device); err != nil {
+	if opt.blockUsers != nil {
+		for _, blockUser := range opt.blockUsers {
+			if err := trans.Insert(blockUser); err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user")
 				logger.Error(err.Error())
@@ -78,12 +78,6 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 			logger.Error(err.Error())
 			return err
 		}
-		if err != nil {
-			trans.Rollback()
-			err = errors.Wrap(err, "An error occurred while inserting user")
-			logger.Error(err.Error())
-			return err
-		}
 		for _, ur := range opt.roles {
 			err = trans.Insert(ur)
 			if err != nil {
@@ -92,13 +86,6 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 				logger.Error(err.Error())
 				return err
 			}
-		}
-
-		if err != nil {
-			trans.Rollback()
-			err = errors.Wrap(err, "An error occurred while inserting user")
-			logger.Error(err.Error())
-			return err
 		}
 	}
 
@@ -183,7 +170,7 @@ func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOpt
 	user = users[0]
 
 	if opt.withBlocks {
-		userIDs, err := rdbSelectBlockUsers(ctx, db, userID)
+		userIDs, err := rdbSelectBlockUserIDs(ctx, db, userID)
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting user")
 			logger.Error(err.Error())
@@ -359,9 +346,29 @@ func rdbUpdateUser(ctx context.Context, db string, user *model.User, opts ...Upd
 	_, err = master.Update(user)
 	if err != nil {
 		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while inserting user")
+		err = errors.Wrap(err, "An error occurred while updating user")
 		logger.Error(err.Error())
 		return err
+	}
+
+	if opt.blockUsers != nil {
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameBlockUser)
+		_, err := trans.Exec(query, user.UserID)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while updating user")
+			logger.Error(err.Error())
+			return err
+		}
+		for _, bu := range opt.blockUsers {
+			err = trans.Insert(bu)
+			if err != nil {
+				trans.Rollback()
+				err = errors.Wrap(err, "An error occurred while updating user")
+				logger.Error(err.Error())
+				return err
+			}
+		}
 	}
 
 	if opt.roles != nil {
@@ -369,7 +376,7 @@ func rdbUpdateUser(ctx context.Context, db string, user *model.User, opts ...Upd
 		_, err := trans.Exec(query, user.UserID)
 		if err != nil {
 			trans.Rollback()
-			err = errors.Wrap(err, "An error occurred while inserting user")
+			err = errors.Wrap(err, "An error occurred while updating user")
 			logger.Error(err.Error())
 			return err
 		}
@@ -377,24 +384,17 @@ func rdbUpdateUser(ctx context.Context, db string, user *model.User, opts ...Upd
 			err = trans.Insert(ur)
 			if err != nil {
 				trans.Rollback()
-				err = errors.Wrap(err, "An error occurred while inserting user")
+				err = errors.Wrap(err, "An error occurred while updating user")
 				logger.Error(err.Error())
 				return err
 			}
-		}
-
-		if err != nil {
-			trans.Rollback()
-			err = errors.Wrap(err, "An error occurred while inserting user")
-			logger.Error(err.Error())
-			return err
 		}
 	}
 
 	err = trans.Commit()
 	if err != nil {
 		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while inserting user")
+		err = errors.Wrap(err, "An error occurred while updating user")
 		logger.Error(err.Error())
 		return err
 	}
@@ -506,7 +506,7 @@ WHERE
 		u.public=1 AND
 		u.deleted=0
 	)
-GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(scpb.RoomType_NoticeRoom)))
+GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(scpb.RoomType_RoomTypeNoticeRoom)))
 	params := make(map[string]interface{})
 
 	query = fmt.Sprintf("%s ORDER BY", query)

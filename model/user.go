@@ -137,13 +137,13 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 	u.Modified = nowTimestamp
 }
 
-type RoomForUser struct {
-	scpb.RoomForUser
+type MiniRoom struct {
+	scpb.MiniRoom
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
-	Users    []*UserForRoom `json:"users,omitempty" db:"-"`
+	Users    []*MiniUser    `json:"users,omitempty" db:"-"`
 }
 
-func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
+func (rfu *MiniRoom) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	lmu := ""
 	if rfu.LastMessageUpdated != 0 {
@@ -162,7 +162,7 @@ func (rfu *RoomForUser) MarshalJSON() ([]byte, error) {
 		CanLeft            bool           `json:"canLeft,omitempty"`
 		Created            string         `json:"created"`
 		Modified           string         `json:"modified"`
-		Users              []*UserForRoom `json:"users"`
+		Users              []*MiniUser    `json:"users"`
 		RuUnreadCount      int64          `json:"ruUnreadCount"`
 	}{
 		RoomID:             rfu.RoomID,
@@ -282,13 +282,26 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 	return u
 }
 
+func (cur *CreateUserRequest) GenerateBlockUsers() []*BlockUser {
+	bus := make([]*BlockUser, len(cur.BlockUsers))
+
+	for i, blockUserID := range cur.BlockUsers {
+		ru := &BlockUser{}
+		ru.UserID = *cur.UserID
+		ru.BlockUserID = blockUserID
+
+		bus[i] = ru
+	}
+	return bus
+}
+
 func (cur *CreateUserRequest) GenerateUserRoles() []*UserRole {
 	urs := make([]*UserRole, len(cur.Roles))
 
-	for i, v := range cur.Roles {
+	for i, role := range cur.Roles {
 		ru := &UserRole{}
 		ru.UserID = *cur.UserID
-		ru.Role = v
+		ru.Role = role
 
 		urs[i] = ru
 	}
@@ -383,13 +396,13 @@ type UserRoomsResponse struct {
 }
 
 func (urr *UserRoomsResponse) ConvertToPbUserRooms() *scpb.UserRoomsResponse {
-	rfus := make([]*scpb.RoomForUser, len(urr.Rooms))
+	rfus := make([]*scpb.MiniRoom, len(urr.Rooms))
 	for i := 0; i < len(urr.Rooms); i++ {
 		r := urr.Rooms[i]
-		// ufrs := make([]*scpb.UserForRoom, len(r.Users))
+		// ufrs := make([]*scpb.MiniUser, len(r.Users))
 		// for j := 0; j < len(r.Users); j++ {
 		// 	u := r.Users[j]
-		// 	ufrs[i] = &scpb.UserForRoom{
+		// 	ufrs[i] = &scpb.MiniUser{
 		// 		RoomID:         u.RoomID,
 		// 		UserID:         u.UserID,
 		// 		Name:           u.Name,
@@ -403,7 +416,7 @@ func (urr *UserRoomsResponse) ConvertToPbUserRooms() *scpb.UserRoomsResponse {
 		// 		Modified:       u.Modified,
 		// 	}
 		// }
-		rfus[i] = &scpb.RoomForUser{
+		rfus[i] = &scpb.MiniRoom{
 			RoomID:             r.RoomID,
 			UserID:             r.UserID,
 			Name:               r.Name,

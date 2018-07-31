@@ -6,8 +6,10 @@ import (
 	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateDeviceStore(ctx context.Context, db string) {
@@ -44,17 +46,42 @@ func rdbInsertDevice(ctx context.Context, db string, device *model.Device) (*mod
 	return device, nil
 }
 
-func rdbSelectDevices(ctx context.Context, db, userID string) ([]*model.Device, error) {
+func rdbSelectDevices(ctx context.Context, db string, opts ...SelectDevicesOption) ([]*model.Device, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevices")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
 
-	var devices []*model.Device
-	query := fmt.Sprintf("SELECT user_id, platform, token, notification_device_id FROM %s WHERE user_id=:userId;", tableNameDevice)
-	params := map[string]interface{}{
-		"userId": userID,
+	opt := selectDevicesOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
+
+	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone && opt.token == "" {
+		return nil, errors.New("Be sure to specify either userId or platform or token")
+	}
+
+	var devices []*model.Device
+	query := fmt.Sprintf("SELECT * FROM %s WHERE ", tableNameDevice)
+	params := map[string]interface{}{}
+
+	if opt.userID != "" {
+		query = fmt.Sprintf("%s user_id=:userId AND", query)
+		params["userId"] = opt.userID
+	}
+
+	if opt.platform != scpb.Platform_PlatformNone {
+		query = fmt.Sprintf("%s platform=:platform AND", query)
+		params["platform"] = opt.platform
+	}
+
+	if opt.token != "" {
+		query = fmt.Sprintf("%s token=:token AND", query)
+		params["token"] = opt.token
+	}
+
+	query = query[0 : len(query)-len(" AND")]
+
 	_, err := replica.Select(&devices, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting devices. %v.", err))
@@ -64,7 +91,7 @@ func rdbSelectDevices(ctx context.Context, db, userID string) ([]*model.Device, 
 	return devices, nil
 }
 
-func rdbSelectDevice(ctx context.Context, db, userID string, platform int32) (*model.Device, error) {
+func rdbSelectDevice(ctx context.Context, db, userID string, platform scpb.Platform) (*model.Device, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevice")
 	defer span.Finish()
 
@@ -177,7 +204,7 @@ func rdbUpdateDevice(ctx context.Context, db string, device *model.Device) error
 	return nil
 }
 
-func rdbDeleteDevice(ctx context.Context, db, userID string, platform int32) error {
+func rdbDeleteDevice(ctx context.Context, db, userID string, platform scpb.Platform) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteDevice")
 	defer span.Finish()
 

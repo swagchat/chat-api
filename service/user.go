@@ -33,8 +33,13 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 	}
 
 	urs := req.GenerateUserRoles()
+	brs := req.GenerateBlockUsers()
 
-	err := datastore.Provider(ctx).InsertUser(user, datastore.InsertUserOptionWithRoles(urs))
+	err := datastore.Provider(ctx).InsertUser(
+		user,
+		datastore.InsertUserOptionWithBlockUsers(brs),
+		datastore.InsertUserOptionWithRoles(urs),
+	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to create user.", http.StatusInternalServerError, model.WithError(err))
 	}
@@ -147,7 +152,7 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 		return errRes
 	}
 
-	devices, err := dsp.SelectDevicesByUserID(req.UserID)
+	devices, err := dsp.SelectDevices(datastore.SelectDevicesOptionFilterByUserID(req.UserID))
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete user.", http.StatusInternalServerError, model.WithError(err))
 	}

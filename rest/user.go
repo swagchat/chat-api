@@ -236,16 +236,29 @@ func getDeviceUsers(w http.ResponseWriter, r *http.Request) {
 	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getDevices")
 	defer span.Finish()
 
-	req := &model.GetDevicesRequest{}
-	req.UserID = bone.GetValue(r, "userId")
+	req := &model.GetDeviceUsersRequest{}
+	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
+	if err != nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "platform",
+				Reason: "Platform must be numeric.",
+			},
+		}
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+		respondError(w, r, errRes)
+		return
+	}
 
-	devices, errRes := service.GetDevices(r.Context(), req)
+	req.Platform = int32(i)
+
+	deviceUsers, errRes := service.GetDeviceUsers(r.Context(), req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
 	}
 
-	respond(w, r, http.StatusOK, "application/json", devices)
+	respond(w, r, http.StatusOK, "application/json", deviceUsers)
 }
 
 func getRoleUsers(w http.ResponseWriter, r *http.Request) {

@@ -26,7 +26,7 @@ type CreateRoomUsersRequest struct {
 }
 
 func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
-	if crur.Room.Type == scpb.RoomType_OneOnOne {
+	if crur.Room.Type == scpb.RoomType_RoomTypeOneOnOne {
 		if len(crur.UserIDs) != 1 {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
@@ -78,7 +78,7 @@ type DeleteRoomUsersRequest struct {
 }
 
 func (drur *DeleteRoomUsersRequest) Validate() *ErrorResponse {
-	if drur.Room.Type == scpb.RoomType_OneOnOne {
+	if drur.Room.Type == scpb.RoomType_RoomTypeOneOnOne {
 		if len(drur.Room.Users)-len(drur.UserIDs) != 1 {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{

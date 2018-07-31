@@ -9,6 +9,7 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func setRoomUserMux() {
@@ -47,6 +48,13 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	req := &model.GetRoomUsersRequest{}
 	req.RoomID = bone.GetValue(r, "roomId")
+
+	responseType := bone.GetValue(r, "responseType")
+	if responseType == "UserIdList" {
+		req.ResponseType = scpb.ResponseType_UserIdList
+	} else {
+		req.ResponseType = scpb.ResponseType_UserList
+	}
 
 	commaSeparatedRoleIDs := ""
 	if commaSeparatedRoleIDsSli, ok := params["roleIds"]; ok {

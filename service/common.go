@@ -144,7 +144,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *model.ErrorResponse 
 		return errRes
 	}
 
-	if room.Type == scpb.RoomType_PublicRoom {
+	if room.Type == scpb.RoomType_RoomTypePublicRoom {
 		return nil
 	}
 
@@ -245,7 +245,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 		d.Work(ctx, func(ctx context.Context) {
 			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
 
-			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
+			devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(ru.UserID))
 			if err != nil {
 				errChan <- err
 			}
@@ -300,7 +300,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 				errResChan <- errRes
 			}
 
-			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
+			devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(ru.UserID))
 			if err != nil {
 				errRes := model.NewErrorResponse("Failed to unsubscribe.", http.StatusInternalServerError, model.WithError(err))
 				errResChan <- errRes
@@ -415,7 +415,7 @@ func confirmRoomUserExist(ctx context.Context, roomID, userID string) (*model.Ro
 	return roomUser, nil
 }
 
-func confirmDeviceNotExist(ctx context.Context, userID string, platform int32) (*model.Device, *model.ErrorResponse) {
+func confirmDeviceNotExist(ctx context.Context, userID string, platform scpb.Platform) (*model.Device, *model.ErrorResponse) {
 	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
 	if err != nil {
 		return nil, model.NewErrorResponse("", http.StatusInternalServerError, model.WithError(err))
@@ -433,7 +433,7 @@ func confirmDeviceNotExist(ctx context.Context, userID string, platform int32) (
 	return device, nil
 }
 
-func confirmDeviceExist(ctx context.Context, userID string, platform int32) (*model.Device, *model.ErrorResponse) {
+func confirmDeviceExist(ctx context.Context, userID string, platform scpb.Platform) (*model.Device, *model.ErrorResponse) {
 	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
 	if err != nil {
 		return nil, model.NewErrorResponse("", http.StatusInternalServerError, model.WithError(err))

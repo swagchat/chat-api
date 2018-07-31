@@ -37,7 +37,10 @@ type blockUserStore interface {
 	createBlockUserStore()
 
 	InsertBlockUsers(blockUsers []*model.BlockUser, opts ...InsertBlockUsersOption) error
-	SelectBlockUsers(userID string) ([]string, error)
+	SelectBlockUsers(userID string) ([]*model.MiniUser, error)
+	SelectBlockUserIDs(userID string) ([]string, error)
+	SelectBlockedUsers(userID string) ([]*model.MiniUser, error)
+	SelectBlockedUserIDs(userID string) ([]string, error)
 	SelectBlockUser(userID, blockUserID string) (*model.BlockUser, error)
 	DeleteBlockUsers(opts ...DeleteBlockUsersOption) error
 }

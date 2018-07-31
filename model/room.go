@@ -13,7 +13,7 @@ import (
 type Room struct {
 	scpb.Room
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
-	// Users    []*UserForRoom `json:"users" db:"-"`
+	// Users    []*MiniUser `json:"users" db:"-"`
 	// ID                    uint64         `json:"-" db:"id"`
 	// RoomID                string         `json:"roomId" db:"room_id,notnull"`
 	// UserID                string         `json:"userId" db:"user_id,notnull"`
@@ -33,7 +33,7 @@ type Room struct {
 	// Modified              int64          `json:"modified" db:"modified,notnull"`
 	// Deleted               int64          `json:"-" db:"deleted,notnull"`
 
-	// Users   []*UserForRoom `json:"users,omitempty" db:"-"`
+	// Users   []*MiniUser `json:"users,omitempty" db:"-"`
 	// UserIDs []string       `json:"userIds,omitempty" db:"-"`
 }
 
@@ -44,23 +44,23 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		lmu = time.Unix(r.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
-		RoomID                string              `json:"roomId"`
-		UserID                string              `json:"userId"`
-		Name                  string              `json:"name"`
-		PictureURL            string              `json:"pictureUrl"`
-		InformationURL        string              `json:"informationUrl"`
-		Type                  scpb.RoomType       `json:"type"`
-		CanLeft               bool                `json:"canLeft"`
-		SpeechMode            scpb.SpeechMode     `json:"speechMode"`
-		MetaData              utils.JSONText      `json:"metaData"`
-		AvailableMessageTypes string              `json:"availableMessageTypes"`
-		LastMessage           string              `json:"lastMessage"`
-		LastMessageUpdated    string              `json:"lastMessageUpdated"`
-		MessageCount          int64               `json:"messageCount"`
-		NotificationTopicID   string              `json:"notificationTopicId"`
-		Created               string              `json:"created"`
-		Modified              string              `json:"modified"`
-		Users                 []*scpb.UserForRoom `json:"users,omitempty"`
+		RoomID                string           `json:"roomId"`
+		UserID                string           `json:"userId"`
+		Name                  string           `json:"name"`
+		PictureURL            string           `json:"pictureUrl"`
+		InformationURL        string           `json:"informationUrl"`
+		Type                  scpb.RoomType    `json:"type"`
+		CanLeft               bool             `json:"canLeft"`
+		SpeechMode            scpb.SpeechMode  `json:"speechMode"`
+		MetaData              utils.JSONText   `json:"metaData"`
+		AvailableMessageTypes string           `json:"availableMessageTypes"`
+		LastMessage           string           `json:"lastMessage"`
+		LastMessageUpdated    string           `json:"lastMessageUpdated"`
+		MessageCount          int64            `json:"messageCount"`
+		NotificationTopicID   string           `json:"notificationTopicId"`
+		Created               string           `json:"created"`
+		Modified              string           `json:"modified"`
+		Users                 []*scpb.MiniUser `json:"users,omitempty"`
 	}{
 		RoomID:                r.RoomID,
 		UserID:                r.UserID,
@@ -132,11 +132,11 @@ func (r *Room) UpdateRoom(req *UpdateRoomRequest) {
 	r.Modified = nowTimestamp
 }
 
-type UserForRoom struct {
-	scpb.UserForRoom
+type MiniUser struct {
+	scpb.MiniUser
 }
 
-func (ufr *UserForRoom) MarshalJSON() ([]byte, error) {
+func (ufr *MiniUser) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
 		UserID         string         `json:"userId"`
@@ -220,7 +220,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if *r.Type == scpb.RoomType_OneOnOne && len(r.UserIDs) == 0 {
+	if *r.Type == scpb.RoomType_RoomTypeOneOnOne && len(r.UserIDs) == 0 {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "type",
@@ -276,7 +276,7 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 	}
 
 	if crr.Type == nil {
-		r.Type = scpb.RoomType_PublicRoom
+		r.Type = scpb.RoomType_RoomTypePublicRoom
 	} else {
 		r.Type = *crr.Type
 	}
@@ -374,7 +374,7 @@ type UpdateRoomRequest struct {
 func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 	// TODO
 	if uur.Type != nil {
-		if room.Type == scpb.RoomType_OneOnOne && *uur.Type != scpb.RoomType_OneOnOne {
+		if room.Type == scpb.RoomType_RoomTypeOneOnOne && *uur.Type != scpb.RoomType_RoomTypeOneOnOne {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "type",
@@ -382,7 +382,7 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 				},
 			}
 			return NewErrorResponse("Failed to update room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-		} else if room.Type != scpb.RoomType_OneOnOne && *uur.Type == scpb.RoomType_OneOnOne {
+		} else if room.Type != scpb.RoomType_RoomTypeOneOnOne && *uur.Type == scpb.RoomType_RoomTypeOneOnOne {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "type",

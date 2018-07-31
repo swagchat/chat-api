@@ -4,6 +4,7 @@ import (
 	"context"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type notuseProvider struct {
@@ -32,7 +33,7 @@ func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationCh
 	return notificationChannel
 }
 
-func (np *notuseProvider) CreateEndpoint(userId string, platform int32, deviceToken string) NotificationChannel {
+func (np *notuseProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
 	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.CreateEndpoint")
 	defer span.Finish()
 

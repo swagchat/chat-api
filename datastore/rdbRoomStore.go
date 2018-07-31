@@ -183,13 +183,13 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 	return room, nil
 }
 
-func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*scpb.UserForRoom, error) {
+func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*scpb.MiniUser, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUsersForRoom")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
 
-	var users []*scpb.UserForRoom
+	var users []*scpb.MiniUser
 	query := fmt.Sprintf(`SELECT
 u.user_id,
 u.name,

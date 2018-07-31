@@ -1,9 +1,11 @@
 package service
 
 import (
+	"log"
 	"testing"
 
 	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 const (
@@ -24,6 +26,7 @@ func TestBlockUser(t *testing.T) {
 			t.Fatalf("Failed to %s", TestNameCreateBlockUsers)
 		}
 	})
+
 	t.Run(TestNameGetBlockUsers, func(t *testing.T) {
 		req := &model.GetBlockUsersRequest{}
 		req.UserID = "service-user-id-0001"
@@ -34,18 +37,39 @@ func TestBlockUser(t *testing.T) {
 		if len(blockUsers.BlockUserIDs) != 3 {
 			t.Fatalf("Failed to %s", TestNameGetBlockUsers)
 		}
+
+		req.ResponseType = scpb.ResponseType_UserList
+		blockUsers, errRes = GetBlockUsers(ctx, req)
+		if errRes != nil {
+			t.Fatalf("Failed to %s", TestNameGetBlockUsers)
+		}
+		if len(blockUsers.BlockUsers) != 3 {
+			t.Fatalf("Failed to %s", TestNameGetBlockUsers)
+		}
 	})
+
 	t.Run(TestNameGetBlockedUsers, func(t *testing.T) {
 		req := &model.GetBlockedUsersRequest{}
-		req.BlockUserID = "service-user-id-0002"
-		_, errRes := GetBlockedUsers(ctx, req)
+		req.UserID = "service-user-id-0002"
+		blockedUsers, errRes := GetBlockedUsers(ctx, req)
 		if errRes != nil {
 			t.Fatalf("Failed to %s", TestNameGetBlockedUsers)
 		}
-		// if len(blockUsers.BlockedUserIDs) != 1 {
-		// 	t.Fatalf("Failed to %s", TestNameGetBlockedUsers)
-		// }
+		log.Printf("%#v\n", blockedUsers)
+		if len(blockedUsers.BlockedUserIDs) != 1 {
+			t.Fatalf("Failed to %s", TestNameGetBlockedUsers)
+		}
+
+		req.ResponseType = scpb.ResponseType_UserList
+		blockedUsers, errRes = GetBlockedUsers(ctx, req)
+		if errRes != nil {
+			t.Fatalf("Failed to %s", TestNameGetBlockedUsers)
+		}
+		if len(blockedUsers.BlockedUsers) != 1 {
+			t.Fatalf("Failed to %s", TestNameGetBlockedUsers)
+		}
 	})
+
 	t.Run(TestNameAddBlockUsers, func(t *testing.T) {
 		req := &model.AddBlockUsersRequest{}
 		req.UserID = "service-user-id-0001"
@@ -55,6 +79,7 @@ func TestBlockUser(t *testing.T) {
 			t.Fatalf("Failed to %s", TestNameAddBlockUsers)
 		}
 	})
+
 	t.Run(TestNameDeleteBlockUsers, func(t *testing.T) {
 		req := &model.DeleteBlockUsersRequest{}
 		req.UserID = "service-user-id-0001"

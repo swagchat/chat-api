@@ -8,13 +8,13 @@ import (
 type InsertUserOption func(*insertUserOptions)
 
 type insertUserOptions struct {
-	devices []*model.Device
-	roles   []*model.UserRole
+	blockUsers []*model.BlockUser
+	roles      []*model.UserRole
 }
 
-func InsertUserOptionWithDevices(devices []*model.Device) InsertUserOption {
+func InsertUserOptionWithBlockUsers(blockUsers []*model.BlockUser) InsertUserOption {
 	return func(ops *insertUserOptions) {
-		ops.devices = devices
+		ops.blockUsers = blockUsers
 	}
 }
 
@@ -84,13 +84,13 @@ func SelectUserOptionWithRooms(withRooms bool) SelectUserOption {
 type UpdateUserOption func(*updateUserOptions)
 
 type updateUserOptions struct {
-	devices []*model.Device
-	roles   []*model.UserRole
+	blockUsers []*model.BlockUser
+	roles      []*model.UserRole
 }
 
-func UpdateUserOptionWithDevices(devices []*model.Device) UpdateUserOption {
+func UpdateUserOptionWithBlockUsers(blockUsers []*model.BlockUser) UpdateUserOption {
 	return func(ops *updateUserOptions) {
-		ops.devices = devices
+		ops.blockUsers = blockUsers
 	}
 }
 

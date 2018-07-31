@@ -1,6 +1,9 @@
 package datastore
 
-import "github.com/swagchat/chat-api/model"
+import (
+	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
+)
 
 func (p *gcpSQLProvider) createSubscriptionStore() {
 	rdbCreateSubscriptionStore(p.ctx, p.database)
@@ -10,7 +13,7 @@ func (p *gcpSQLProvider) InsertSubscription(room *model.Subscription) (*model.Su
 	return rdbInsertSubscription(p.ctx, p.database, room)
 }
 
-func (p *gcpSQLProvider) SelectSubscription(roomID, userID string, platform int32) (*model.Subscription, error) {
+func (p *gcpSQLProvider) SelectSubscription(roomID, userID string, platform scpb.Platform) (*model.Subscription, error) {
 	return rdbSelectSubscription(p.ctx, p.database, roomID, userID, platform)
 }
 
@@ -22,7 +25,7 @@ func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*m
 	return rdbSelectDeletedSubscriptionsByUserID(p.ctx, p.database, userID)
 }
 
-func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform int32) ([]*model.Subscription, error) {
+func (p *gcpSQLProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform scpb.Platform) ([]*model.Subscription, error) {
 	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.ctx, p.database, userID, platform)
 }
 

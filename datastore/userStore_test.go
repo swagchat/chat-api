@@ -33,14 +33,14 @@ func TestUserStore(t *testing.T) {
 		newUserRole.UserID = newUser.UserID
 		newUserRole.Role = 1
 
-		newDevice := &model.Device{}
-		newDevice.UserID = newUser.UserID
-		newDevice.Platform = 1
+		newBlockUser := &model.BlockUser{}
+		newBlockUser.UserID = newUser.UserID
+		newBlockUser.BlockUserID = "datastore-user-0001"
 
 		err = Provider(ctx).InsertUser(
 			newUser,
+			InsertUserOptionWithBlockUsers([]*model.BlockUser{newBlockUser}),
 			InsertUserOptionWithRoles([]*model.UserRole{newUserRole}),
-			InsertUserOptionWithDevices([]*model.Device{newDevice}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameInsertUser)

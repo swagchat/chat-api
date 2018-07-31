@@ -15,6 +15,7 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type awssnsProvider struct {
@@ -120,7 +121,7 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 	return nc
 }
 
-func (ap *awssnsProvider) CreateEndpoint(userId string, platform int32, deviceToken string) NotificationChannel {
+func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
 	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.CreateEndpoint")
 	defer span.Finish()
 
@@ -145,8 +146,8 @@ func (ap *awssnsProvider) CreateEndpoint(userId string, platform int32, deviceTo
 		client := ap.newSnsClient()
 		createPlatformEndpointInputParams := &sns.CreatePlatformEndpointInput{
 			PlatformApplicationArn: aws.String(platformApplicationArn),
-			Token:          aws.String(deviceToken),
-			CustomUserData: aws.String(userId),
+			Token:          aws.String(token),
+			CustomUserData: aws.String(userID),
 		}
 		createPlatformEndpointOutput, err := client.CreatePlatformEndpoint(createPlatformEndpointInputParams)
 		if err != nil {

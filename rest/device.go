@@ -78,7 +78,7 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Platform = int32(i)
+	req.Platform = scpb.Platform(i)
 
 	errRes := service.UpdateDevice(r.Context(), &req)
 	if errRes != nil {
@@ -114,7 +114,7 @@ func deleteDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.Platform = int32(i)
+	req.Platform = scpb.Platform(i)
 
 	errRes := service.DeleteDevice(r.Context(), req)
 	if errRes != nil {

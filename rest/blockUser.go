@@ -7,6 +7,7 @@ import (
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func setBlockUserMux() {
@@ -45,6 +46,13 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 	req := &model.GetBlockUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
 
+	responseType := bone.GetValue(r, "responseType")
+	if responseType == "UserIdList" {
+		req.ResponseType = scpb.ResponseType_UserIdList
+	} else {
+		req.ResponseType = scpb.ResponseType_UserList
+	}
+
 	blockUsers, errRes := service.GetBlockUsers(r.Context(), req)
 	if errRes != nil {
 		respondError(w, r, errRes)
@@ -59,7 +67,14 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 	defer span.Finish()
 
 	req := &model.GetBlockedUsersRequest{}
-	req.BlockUserID = bone.GetValue(r, "userId")
+	req.UserID = bone.GetValue(r, "userId")
+
+	responseType := bone.GetValue(r, "responseType")
+	if responseType == "UserIdList" {
+		req.ResponseType = scpb.ResponseType_UserIdList
+	} else {
+		req.ResponseType = scpb.ResponseType_UserList
+	}
 
 	blockedUsers, errRes := service.GetBlockedUsers(r.Context(), req)
 	if errRes != nil {
