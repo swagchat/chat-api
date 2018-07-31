@@ -44,9 +44,9 @@ func getMessage(w http.ResponseWriter, r *http.Request) {
 
 	messageID := bone.GetValue(r, "messageId")
 
-	message, pd := service.GetMessage(r.Context(), messageID)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	message, errRes := service.GetMessage(r.Context(), messageID)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

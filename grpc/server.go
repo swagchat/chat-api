@@ -73,6 +73,7 @@ func Run(ctx context.Context) {
 	s := grpc.NewServer(ops...)
 	logger.Info(fmt.Sprintf("Starting %s server[GRPC] on listen tcp :%s", utils.AppName, cfg.GRPCPort))
 
+	scpb.RegisterBlockUserServiceServer(s, &blockUserServiceServer{})
 	scpb.RegisterDeviceServiceServer(s, &deviceServiceServer{})
 	scpb.RegisterMessageServiceServer(s, &messageServer{})
 	scpb.RegisterRoomUserServiceServer(s, &roomUserServiceServer{})

@@ -15,9 +15,9 @@ func getSetting(w http.ResponseWriter, r *http.Request) {
 	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getSetting")
 	defer span.Finish()
 
-	setting, pd := service.GetSetting(r.Context())
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	setting, errRes := service.GetSetting(r.Context())
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

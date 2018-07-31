@@ -2,12 +2,10 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 )
 
@@ -15,8 +13,6 @@ import (
 func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *model.ErrorResponse {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateUserRoles")
 	defer span.Finish()
-
-	logger.Info(fmt.Sprintf("Start  CreateUserRoles. Request[%#v]", req))
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -26,12 +22,35 @@ func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *mo
 
 	urs := req.GenerateUserRoles()
 
-	err := datastore.Provider(ctx).InsertUserRoles(urs)
+	err := datastore.Provider(ctx).InsertUserRoles(
+		urs,
+		datastore.InsertUserRolesOptionBeforeClean(true),
+	)
 	if err != nil {
 		return model.NewErrorResponse("Failed to create user roles.", http.StatusInternalServerError, model.WithError(err))
 	}
 
-	logger.Info(fmt.Sprintf("Finish CreateUserRoles"))
+	return nil
+}
+
+// AddUserRoles adds user roles
+func AddUserRoles(ctx context.Context, req *model.AddUserRolesRequest) *model.ErrorResponse {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.AddUserRoles")
+	defer span.Finish()
+
+	_, errRes := confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to add user roles."
+		return errRes
+	}
+
+	urs := req.GenerateUserRoles()
+
+	err := datastore.Provider(ctx).InsertUserRoles(urs)
+	if err != nil {
+		return model.NewErrorResponse("Failed to add user roles.", http.StatusInternalServerError, model.WithError(err))
+	}
+
 	return nil
 }
 
@@ -39,13 +58,6 @@ func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *mo
 func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *model.ErrorResponse {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteUserRoles")
 	defer span.Finish()
-
-	logger.Info(fmt.Sprintf("Start  DeleteUserRoles. Request[%#v]", req))
-
-	errRes := req.Validate()
-	if errRes != nil {
-		return errRes
-	}
 
 	err := datastore.Provider(ctx).DeleteUserRoles(
 		datastore.DeleteUserRolesOptionFilterByUserID(req.UserID),
@@ -55,6 +67,5 @@ func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *mo
 		return model.NewErrorResponse("Failed to delete user roles.", http.StatusInternalServerError, model.WithError(err))
 	}
 
-	logger.Info("Finish DeleteUserRoles.")
 	return nil
 }

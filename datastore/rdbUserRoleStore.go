@@ -25,11 +25,17 @@ func rdbCreateUserRoleStore(ctx context.Context, db string) {
 	}
 }
 
-func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole) error {
+func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole, opts ...InsertUserRolesOption) error {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertUserRoles")
 	defer span.Finish()
 
 	master := RdbStore(db).master()
+
+	opt := insertUserRolesOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
 	trans, err := master.Begin()
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting user roles")
@@ -37,22 +43,35 @@ func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole) e
 		return err
 	}
 
-	for _, ur := range urs {
-		bu, err := rdbSelectUserRole(ctx, db, ur.UserID, ur.Role)
+	if opt.beforeClean {
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
+		_, err = trans.Exec(query, urs[0].UserID)
 		if err != nil {
 			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while inserting user roles")
 			logger.Error(err.Error())
 			return err
 		}
-		if bu == nil {
-			err = trans.Insert(ur)
+	}
+
+	for _, ur := range urs {
+		if !opt.beforeClean {
+			existUserRole, err := rdbSelectUserRole(ctx, db, ur.UserID, ur.Role)
 			if err != nil {
-				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while inserting user roles")
 				logger.Error(err.Error())
 				return err
 			}
+			if existUserRole != nil {
+				continue
+			}
+		}
+		err = trans.Insert(ur)
+		if err != nil {
+			trans.Rollback()
+			err = errors.Wrap(err, "An error occurred while inserting user roles")
+			logger.Error(err.Error())
+			return err
 		}
 	}
 
@@ -149,6 +168,11 @@ func rdbDeleteUserRoles(ctx context.Context, db string, opts ...DeleteUserRolesO
 	}
 
 	trans, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while deleting user roles")
+		logger.Error(err.Error())
+		return err
+	}
 
 	if opt.userID != "" && opt.roles != nil {
 		for _, role := range opt.roles {

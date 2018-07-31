@@ -53,7 +53,8 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	req := &model.GetUsersRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		respondErr(w, r, http.StatusBadRequest, nil)
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -144,7 +145,8 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		respondErr(w, r, http.StatusBadRequest, nil)
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -188,7 +190,8 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		respondErr(w, r, http.StatusBadRequest, nil)
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
+		respondError(w, r, errRes)
 		return
 	}
 

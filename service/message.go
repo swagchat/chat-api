@@ -14,6 +14,7 @@ import (
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateMessages creates messages
@@ -97,34 +98,23 @@ func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseM
 }
 
 // GetMessage is get message
-func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.ProblemDetail) {
+func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
 	if messageID == "" {
-		return nil, &model.ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*model.InvalidParam{
-				&model.InvalidParam{
-					Name:   "messageId",
-					Reason: "messageId is required, but it's empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "messageId",
+				Reason: "messageId is required, but it's empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return nil, model.NewErrorResponse("Failed to get message.", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 	}
 
 	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Create message failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get message.", http.StatusInternalServerError, model.WithError(err))
 	}
 	if message == nil {
-		return nil, &model.ProblemDetail{
-			Message: "Resource not found",
-			Status:  http.StatusNotFound,
-		}
+		return nil, model.NewErrorResponse("", http.StatusNotFound)
 	}
 
 	return message, nil

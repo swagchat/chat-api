@@ -77,19 +77,16 @@ type DeleteRoomUsersRequest struct {
 	Room *Room
 }
 
-func (drur *DeleteRoomUsersRequest) Validate() *ProblemDetail {
+func (drur *DeleteRoomUsersRequest) Validate() *ErrorResponse {
 	if drur.Room.Type == scpb.RoomType_OneOnOne {
 		if len(drur.Room.Users)-len(drur.UserIDs) != 1 {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "userIds",
-						Reason: "In case of 1-on-1 room type, only one user must be specified.",
-					},
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "userIds",
+					Reason: "In case of 1-on-1 room type, only one user must be specified.",
 				},
-				Status: http.StatusBadRequest,
 			}
+			return NewErrorResponse("Failed to delete room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
 	return nil

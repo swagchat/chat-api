@@ -247,9 +247,8 @@ func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 				datastore.SelectAppClientOptionFilterByClientID(clientID),
 			)
 			if err != nil {
-				respondErr(w, r, http.StatusInternalServerError, &model.ProblemDetail{
-					Error: err,
-				})
+				errRes := model.NewErrorResponse("", http.StatusInternalServerError, model.WithError(err))
+				respondError(w, r, errRes)
 				return
 			}
 			if appCli != nil {
@@ -265,10 +264,8 @@ func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
 		if !isAppClient {
-			respondErr(w, r, http.StatusUnauthorized, &model.ProblemDetail{
-				Message: "Unauthorized",
-				Status:  http.StatusUnauthorized,
-			})
+			errRes := model.NewErrorResponse("Unauthorized", http.StatusUnauthorized)
+			respondError(w, r, errRes)
 			return
 		}
 		fn(w, r)
@@ -287,10 +284,8 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 		resourceUserID := bone.GetValue(r, "userId")
 
 		if (requestUserID == "" && resourceUserID == "") || (requestUserID != resourceUserID) {
-			respondErr(w, r, http.StatusUnauthorized, &model.ProblemDetail{
-				Message: fmt.Sprintf("Not your resource. Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID),
-				Status:  http.StatusUnauthorized,
-			})
+			errRes := model.NewErrorResponse(fmt.Sprintf("Not your resource. Resource UserID is %s, but request UserID is %s.", resourceUserID, requestUserID), http.StatusUnauthorized)
+			respondError(w, r, errRes)
 			return
 		}
 
@@ -367,15 +362,6 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 	}
 }
 
-func respondErr(w http.ResponseWriter, r *http.Request, status int, pd *model.ProblemDetail) {
-	if pd.Error != nil {
-		if utils.Config().EnableDeveloperMessage {
-			pd.DeveloperMessage = pd.Error.Error()
-		}
-	}
-	respond(w, r, status, "application/json", pd)
-}
-
 func respondError(w http.ResponseWriter, r *http.Request, errRes *model.ErrorResponse) {
 	if errRes.Error != nil {
 		if utils.Config().EnableDeveloperMessage {
@@ -386,10 +372,8 @@ func respondError(w http.ResponseWriter, r *http.Request, errRes *model.ErrorRes
 }
 
 func respondJSONDecodeError(w http.ResponseWriter, r *http.Request, title string) {
-	respondErr(w, r, http.StatusBadRequest, &model.ProblemDetail{
-		Message: fmt.Sprintf("Json parse error. (%s)", title),
-		Status:  http.StatusBadRequest,
-	})
+	errRes := model.NewErrorResponse(fmt.Sprintf("Json parse error. (%s)", title), http.StatusBadRequest)
+	respondError(w, r, errRes)
 }
 
 func setLastModified(w http.ResponseWriter, timestamp int64) {

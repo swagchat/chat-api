@@ -4,6 +4,18 @@ import (
 	"github.com/swagchat/chat-api/model"
 )
 
+type insertUserRolesOptions struct {
+	beforeClean bool
+}
+
+type InsertUserRolesOption func(*insertUserRolesOptions)
+
+func InsertUserRolesOptionBeforeClean(beforeClean bool) InsertUserRolesOption {
+	return func(ops *insertUserRolesOptions) {
+		ops.beforeClean = beforeClean
+	}
+}
+
 type deleteUserRolesOptions struct {
 	userID string
 	roles  []int32
@@ -26,7 +38,7 @@ func DeleteUserRolesOptionFilterByRoles(roles []int32) DeleteUserRolesOption {
 type userRoleStore interface {
 	createUserRoleStore()
 
-	InsertUserRoles(urs []*model.UserRole) error
+	InsertUserRoles(urs []*model.UserRole, opts ...InsertUserRolesOption) error
 	SelectUserRole(userID string, roleID int32) (*model.UserRole, error)
 	SelectRolesOfUserRole(userID string) ([]int32, error)
 	SelectUserIDsOfUserRole(roleID int32) ([]string, error)

@@ -13,9 +13,9 @@ type deviceServiceServer struct{}
 
 func (urs *deviceServiceServer) CreateDevice(ctx context.Context, in *scpb.CreateDeviceRequest) (*empty.Empty, error) {
 	req := &model.CreateDeviceRequest{*in}
-	pd := service.CreateDevice(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.CreateDevice(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil
@@ -23,9 +23,9 @@ func (urs *deviceServiceServer) CreateDevice(ctx context.Context, in *scpb.Creat
 
 func (urs *deviceServiceServer) GetDevices(ctx context.Context, in *scpb.GetDevicesRequest) (*scpb.DevicesResponse, error) {
 	req := &model.GetDevicesRequest{*in}
-	res, pd := service.GetDevices(ctx, req)
-	if pd != nil {
-		return &scpb.DevicesResponse{}, pd.Error
+	res, errRes := service.GetDevices(ctx, req)
+	if errRes != nil {
+		return &scpb.DevicesResponse{}, errRes.Error
 	}
 
 	roomUsers := res.ConvertToPbDevices()
@@ -34,9 +34,9 @@ func (urs *deviceServiceServer) GetDevices(ctx context.Context, in *scpb.GetDevi
 
 func (urs *deviceServiceServer) UpdateDevice(ctx context.Context, in *scpb.UpdateDeviceRequest) (*empty.Empty, error) {
 	req := &model.UpdateDeviceRequest{*in}
-	pd := service.UpdateDevice(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.UpdateDevice(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil
@@ -44,9 +44,9 @@ func (urs *deviceServiceServer) UpdateDevice(ctx context.Context, in *scpb.Updat
 
 func (urs *deviceServiceServer) DeleteDevice(ctx context.Context, in *scpb.DeleteDeviceRequest) (*empty.Empty, error) {
 	req := &model.DeleteDeviceRequest{*in, nil}
-	pd := service.DeleteDevice(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.DeleteDevice(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil

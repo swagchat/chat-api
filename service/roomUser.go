@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	opentracing "github.com/opentracing/opentracing-go"
@@ -15,8 +14,6 @@ import (
 func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *model.ErrorResponse {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateRoomUsers")
 	defer span.Finish()
-
-	logger.Info(fmt.Sprintf("Start  CreateRoomUsers. Request[%#v]", req))
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {
@@ -66,15 +63,12 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 	go subscribeByRoomUsers(ctx, roomUsers)
 	go publishUserJoin(ctx, req.RoomID)
 
-	logger.Info("Finish CreateRoomUsers.")
 	return nil
 }
 
 func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.RoomUsersResponse, *model.ErrorResponse) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoomUsers")
 	defer span.Finish()
-
-	logger.Info(fmt.Sprintf("Start  GetRoomUsers. Request[%#v]", req))
 
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
 		req.RoomID,
@@ -87,7 +81,6 @@ func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.R
 	roomUsers := &model.RoomUsersResponse{}
 	roomUsers.UserIDs = userIDs
 
-	logger.Info("Finish GetRoomUsers.")
 	return roomUsers, nil
 }
 
@@ -95,8 +88,6 @@ func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.R
 func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *model.ErrorResponse {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.UpdateRoomUser")
 	defer span.Finish()
-
-	logger.Info(fmt.Sprintf("Start UpdateRoomUser. Request[%#v]", req))
 
 	ru, errRes := confirmRoomUserExist(ctx, req.RoomID, req.UserID)
 	if errRes != nil {
@@ -122,7 +113,6 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 	// }
 	// rtmPublish(ctx, m)
 
-	logger.Info("Finish UpdateRoomUser.")
 	return nil
 }
 
@@ -130,8 +120,6 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *model.ErrorResponse {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteRoomUsers")
 	defer span.Finish()
-
-	logger.Info(fmt.Sprintf("Start DeleteRoomUsers. Request[%#v]", req))
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {
@@ -158,6 +146,5 @@ func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *mo
 		unsubscribeByRoomUsers(ctx, rus)
 	}()
 
-	logger.Info(fmt.Sprintf("Finish DeleteRoomUsers."))
 	return nil
 }

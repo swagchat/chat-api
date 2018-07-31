@@ -9,6 +9,7 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func setAssetMux() {
@@ -23,27 +24,21 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "MultipartForm parse error. (Create asset item)",
-			Error:   err,
-		}
-		respondErr(w, r, http.StatusBadRequest, pd)
+		errRes := model.NewErrorResponse("MultipartForm parse error.", http.StatusBadRequest, model.WithError(err))
+		respondError(w, r, errRes)
 		return
 	}
 
 	file, header, err := r.FormFile("asset")
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Request error",
-			Status:  http.StatusBadRequest,
-			InvalidParams: []*model.InvalidParam{
-				&model.InvalidParam{
-					Name:   "asset",
-					Reason: "asset is required, but it's empty.",
-				},
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "asset",
+				Reason: "asset is required, but it's empty.",
 			},
 		}
-		respondErr(w, r, http.StatusBadRequest, pd)
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+		respondError(w, r, errRes)
 		return
 	}
 	defer file.Close()
@@ -56,9 +51,9 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 	width, _ := strconv.Atoi(r.FormValue("width"))
 	height, _ := strconv.Atoi(r.FormValue("height"))
 
-	asset, pd := service.PostAsset(r.Context(), contentType, file, size, width, height)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
+	asset, errRes := service.PostAsset(r.Context(), contentType, file, size, width, height)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -73,14 +68,9 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
 
-	bytes, asset, pd := service.GetAsset(r.Context(), assetID, ifModifiedSince)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	if asset == nil {
-		respondErr(w, r, http.StatusNotFound, nil)
+	bytes, asset, errRes := service.GetAsset(r.Context(), assetID, ifModifiedSince)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -100,14 +90,9 @@ func getAssetInfo(w http.ResponseWriter, r *http.Request) {
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
 
-	asset, pd := service.GetAssetInfo(r.Context(), assetID, ifModifiedSince)
-	if pd != nil {
-		respondErr(w, r, pd.Status, pd)
-		return
-	}
-
-	if asset == nil {
-		respondErr(w, r, http.StatusNotFound, nil)
+	asset, errRes := service.GetAssetInfo(r.Context(), assetID, ifModifiedSince)
+	if errRes != nil {
+		respondError(w, r, errRes)
 		return
 	}
 

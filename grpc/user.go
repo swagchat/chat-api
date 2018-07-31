@@ -21,9 +21,9 @@ func (us *userServiceServer) CreateUser(ctx context.Context, in *scpb.CreateUser
 		}
 	}
 	req := &model.CreateUserRequest{*in, metaData}
-	user, pd := service.CreateUser(ctx, req)
-	if pd != nil {
-		return &scpb.User{}, pd.Error
+	user, errRes := service.CreateUser(ctx, req)
+	if errRes != nil {
+		return &scpb.User{}, errRes.Error
 	}
 
 	pbUser := user.ConvertToPbUser()
@@ -32,9 +32,9 @@ func (us *userServiceServer) CreateUser(ctx context.Context, in *scpb.CreateUser
 
 func (us *userServiceServer) GetUsers(ctx context.Context, in *scpb.GetUsersRequest) (*scpb.UsersResponse, error) {
 	req := &model.GetUsersRequest{*in}
-	users, pd := service.GetUsers(ctx, req)
-	if pd != nil {
-		return &scpb.UsersResponse{}, pd.Error
+	users, errRes := service.GetUsers(ctx, req)
+	if errRes != nil {
+		return &scpb.UsersResponse{}, errRes.Error
 	}
 
 	pbUsers := users.ConvertToPbUsers()
@@ -43,9 +43,9 @@ func (us *userServiceServer) GetUsers(ctx context.Context, in *scpb.GetUsersRequ
 
 func (us *userServiceServer) GetUser(ctx context.Context, in *scpb.GetUserRequest) (*scpb.User, error) {
 	req := &model.GetUserRequest{*in}
-	user, pd := service.GetUser(ctx, req)
-	if pd != nil {
-		return &scpb.User{}, pd.Error
+	user, errRes := service.GetUser(ctx, req)
+	if errRes != nil {
+		return &scpb.User{}, errRes.Error
 	}
 
 	pbUser := user.ConvertToPbUser()
@@ -61,9 +61,9 @@ func (us *userServiceServer) UpdateUser(ctx context.Context, in *scpb.UpdateUser
 		}
 	}
 	req := &model.UpdateUserRequest{*in, metaData}
-	user, pd := service.UpdateUser(ctx, req)
-	if pd != nil {
-		return &scpb.User{}, pd.Error
+	user, errRes := service.UpdateUser(ctx, req)
+	if errRes != nil {
+		return &scpb.User{}, errRes.Error
 	}
 
 	pbUser := user.ConvertToPbUser()
@@ -72,9 +72,9 @@ func (us *userServiceServer) UpdateUser(ctx context.Context, in *scpb.UpdateUser
 
 func (us *userServiceServer) DeleteUser(ctx context.Context, in *scpb.DeleteUserRequest) (*empty.Empty, error) {
 	req := &model.DeleteUserRequest{*in}
-	pd := service.DeleteUser(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.DeleteUser(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil
@@ -82,9 +82,9 @@ func (us *userServiceServer) DeleteUser(ctx context.Context, in *scpb.DeleteUser
 
 func (urs *userServiceServer) GetUserRooms(ctx context.Context, in *scpb.GetUserRoomsRequest) (*scpb.UserRoomsResponse, error) {
 	req := &model.GetUserRoomsRequest{*in}
-	res, pd := service.GetUserRooms(ctx, req)
-	if pd != nil {
-		return &scpb.UserRoomsResponse{}, pd.Error
+	res, errRes := service.GetUserRooms(ctx, req)
+	if errRes != nil {
+		return &scpb.UserRoomsResponse{}, errRes.Error
 	}
 
 	userRooms := res.ConvertToPbUserRooms()
@@ -93,9 +93,9 @@ func (urs *userServiceServer) GetUserRooms(ctx context.Context, in *scpb.GetUser
 
 func (us *userServiceServer) GetContacts(ctx context.Context, in *scpb.GetContactsRequest) (*scpb.UsersResponse, error) {
 	req := &model.GetContactsRequest{*in}
-	users, pd := service.GetContacts(ctx, req)
-	if pd != nil {
-		return &scpb.UsersResponse{}, pd.Error
+	users, errRes := service.GetContacts(ctx, req)
+	if errRes != nil {
+		return &scpb.UsersResponse{}, errRes.Error
 	}
 
 	pbUsers := users.ConvertToPbUsers()
@@ -104,9 +104,9 @@ func (us *userServiceServer) GetContacts(ctx context.Context, in *scpb.GetContac
 
 func (us *userServiceServer) GetProfile(ctx context.Context, in *scpb.GetProfileRequest) (*scpb.User, error) {
 	req := &model.GetProfileRequest{*in}
-	user, pd := service.GetProfile(ctx, req)
-	if pd != nil {
-		return &scpb.User{}, pd.Error
+	user, errRes := service.GetProfile(ctx, req)
+	if errRes != nil {
+		return &scpb.User{}, errRes.Error
 	}
 
 	pbUser := user.ConvertToPbUser()
@@ -115,9 +115,9 @@ func (us *userServiceServer) GetProfile(ctx context.Context, in *scpb.GetProfile
 
 func (us *userServiceServer) GetDeviceUsers(ctx context.Context, in *scpb.GetDeviceUsersRequest) (*scpb.DeviceUsersResponse, error) {
 	req := &model.GetDeviceUsersRequest{*in}
-	res, pd := service.GetDeviceUsers(ctx, req)
-	if pd != nil {
-		return &scpb.DeviceUsersResponse{}, pd.Error
+	res, errRes := service.GetDeviceUsers(ctx, req)
+	if errRes != nil {
+		return &scpb.DeviceUsersResponse{}, errRes.Error
 	}
 
 	deviceUsers := res.ConvertToPbDeviceUsers()
@@ -126,9 +126,9 @@ func (us *userServiceServer) GetDeviceUsers(ctx context.Context, in *scpb.GetDev
 
 func (us *userServiceServer) GetRoleUsers(ctx context.Context, in *scpb.GetRoleUsersRequest) (*scpb.RoleUsersResponse, error) {
 	req := &model.GetRoleUsersRequest{*in}
-	res, pd := service.GetRoleUsers(ctx, req)
-	if pd != nil {
-		return &scpb.RoleUsersResponse{}, pd.Error
+	res, errRes := service.GetRoleUsers(ctx, req)
+	if errRes != nil {
+		return &scpb.RoleUsersResponse{}, errRes.Error
 	}
 
 	roleUsers := res.ConvertToPbRoleUsers()

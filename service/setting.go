@@ -10,22 +10,14 @@ import (
 	"github.com/swagchat/chat-api/model"
 )
 
-// GetSetting is get setting
-func GetSetting(ctx context.Context) (*model.Setting, *model.ProblemDetail) {
+// GetSetting gets setting
+func GetSetting(ctx context.Context) (*model.Setting, *model.ErrorResponse) {
 	setting, err := datastore.Provider(ctx).SelectLatestSetting()
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get setting failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to get setting.", http.StatusInternalServerError, model.WithError(err))
 	}
 	if setting == nil {
-		return nil, &model.ProblemDetail{
-			Message: "Resource not found",
-			Status:  http.StatusNotFound,
-		}
+		return nil, model.NewErrorResponse("Resource not found.", http.StatusNotFound)
 	}
 
 	return setting, nil

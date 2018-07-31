@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -18,25 +17,25 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ProblemDetail) {
-	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Get user failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
-	}
-	if user == nil {
-		logger.Error(fmt.Sprintf("User does not exist. UserId[%s]", userID))
-		return nil, &model.ProblemDetail{
-			Status: http.StatusNotFound,
-			Error:  errors.New("Not found"),
-		}
-	}
-	return user, nil
-}
+// func selectUser(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ProblemDetail) {
+// 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
+// 	if err != nil {
+// 		pd := &model.ProblemDetail{
+// 			Message: "Get user failed",
+// 			Status:  http.StatusInternalServerError,
+// 			Error:   err,
+// 		}
+// 		return nil, pd
+// 	}
+// 	if user == nil {
+// 		logger.Error(fmt.Sprintf("User does not exist. UserId[%s]", userID))
+// 		return nil, &model.ProblemDetail{
+// 			Status: http.StatusNotFound,
+// 			Error:  errors.New("Not found"),
+// 		}
+// 	}
+// 	return user, nil
+// }
 
 func confirmUserNotExist(ctx context.Context, userID string, opts ...datastore.SelectUserOption) (*model.User, *model.ErrorResponse) {
 	user, err := datastore.Provider(ctx).SelectUser(userID, opts...)
@@ -166,7 +165,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *model.ErrorResponse 
 
 func updateLastAccessRoomID(ctx context.Context, roomID string) {
 	userID := ctx.Value(utils.CtxUserID).(string)
-	user, _ := selectUser(ctx, userID)
+	user, _ := confirmUserExist(ctx, userID)
 	user.LastAccessRoomID = roomID
 	datastore.Provider(ctx).UpdateUser(user)
 }
@@ -288,7 +287,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 
 func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	doneChan := make(chan bool, 1)
-	pdChan := make(chan *model.ProblemDetail, 1)
+	errResChan := make(chan *model.ErrorResponse, 1)
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
@@ -297,32 +296,21 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
 			err := datastore.Provider(ctx).DeleteRoomUsers(ru.RoomID, []string{ru.UserID})
 			if err != nil {
-				pd := &model.ProblemDetail{
-					Message: "Delete room's user failed",
-					Status:  http.StatusInternalServerError,
-				}
-				pdChan <- pd
+				errRes := model.NewErrorResponse("Failed to unsubscribe.", http.StatusInternalServerError, model.WithError(err))
+				errResChan <- errRes
 			}
 
 			devices, err := datastore.Provider(ctx).SelectDevicesByUserID(ru.UserID)
 			if err != nil {
-				pd := &model.ProblemDetail{
-					Message: "Subscribe failed",
-					Status:  http.StatusInternalServerError,
-					Error:   err,
-				}
-				pdChan <- pd
+				errRes := model.NewErrorResponse("Failed to unsubscribe.", http.StatusInternalServerError, model.WithError(err))
+				errResChan <- errRes
 			}
 			if devices != nil {
 				for _, d := range devices {
 					subscription, err := datastore.Provider(ctx).SelectSubscription(ru.RoomID, ru.UserID, d.Platform)
 					if err != nil {
-						pd := &model.ProblemDetail{
-							Message: "User registration failed",
-							Status:  http.StatusInternalServerError,
-							Error:   err,
-						}
-						pdChan <- pd
+						errRes := model.NewErrorResponse("Failed to unsubscribe.", http.StatusInternalServerError, model.WithError(err))
+						errResChan <- errRes
 					}
 					go unsubscribe(ctx, []*model.Subscription{subscription})
 				}
@@ -334,8 +322,7 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 				return
 			case <-doneChan:
 				return
-			case pd := <-pdChan:
-				logger.Error(pd.Error.Error())
+			case <-errResChan:
 				return
 			}
 		})
@@ -358,33 +345,33 @@ func createTopic(ctx context.Context, roomID string) (string, *model.ErrorRespon
 	return *nRes.Data.(*string), nil
 }
 
-func getExistUserIDsOld(ctx context.Context, requestUserIDs []string) ([]string, *model.ProblemDetail) {
-	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "Getting userIds failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
-	}
+// func getExistUserIDsOld(ctx context.Context, requestUserIDs []string) ([]string, *model.ProblemDetail) {
+// 	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
+// 	if err != nil {
+// 		pd := &model.ProblemDetail{
+// 			Message: "Getting userIds failed",
+// 			Status:  http.StatusInternalServerError,
+// 			Error:   err,
+// 		}
+// 		return nil, pd
+// 	}
 
-	if len(existUserIDs) != len(requestUserIDs) {
-		pd := &model.ProblemDetail{
-			Message: "Invalid params",
-			InvalidParams: []*model.InvalidParam{
-				&model.InvalidParam{
-					Name:   "userIds",
-					Reason: "It contains a userId that does not exist.",
-				},
-			},
-			Status: http.StatusBadRequest,
-		}
-		return nil, pd
-	}
+// 	if len(existUserIDs) != len(requestUserIDs) {
+// 		pd := &model.ProblemDetail{
+// 			Message: "Invalid params",
+// 			InvalidParams: []*model.InvalidParam{
+// 				&model.InvalidParam{
+// 					Name:   "userIds",
+// 					Reason: "It contains a userId that does not exist.",
+// 				},
+// 			},
+// 			Status: http.StatusBadRequest,
+// 		}
+// 		return nil, pd
+// 	}
 
-	return existUserIDs, nil
-}
+// 	return existUserIDs, nil
+// }
 
 func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *model.ErrorResponse) {
 	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
@@ -462,4 +449,21 @@ func confirmDeviceExist(ctx context.Context, userID string, platform int32) (*mo
 	}
 
 	return device, nil
+}
+
+func confirmAssetExist(ctx context.Context, assetID string) (*model.Asset, *model.ErrorResponse) {
+	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
+	if err != nil {
+		return nil, model.NewErrorResponse("", http.StatusInternalServerError, model.WithError(err))
+	}
+	if asset == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId, platform",
+				Reason: fmt.Sprintf("That asset is not exist. assetId[%s]", assetID),
+			},
+		}
+		return nil, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+	}
+	return asset, nil
 }

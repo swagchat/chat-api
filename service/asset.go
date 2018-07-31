@@ -13,16 +13,16 @@ import (
 )
 
 // PostAsset is post asset
-func PostAsset(ctx context.Context, contentType string, file io.Reader, size int64, width, height int) (*model.Asset, *model.ProblemDetail) {
+func PostAsset(ctx context.Context, contentType string, file io.Reader, size int64, width, height int) (*model.Asset, *model.ErrorResponse) {
 	asset := &model.Asset{
 		Mime:   contentType,
 		Size:   size,
 		Width:  width,
 		Height: height,
 	}
-	pd := asset.IsValidPost()
-	if pd != nil {
-		return nil, pd
+	errRes := asset.Validate()
+	if errRes != nil {
+		return nil, errRes
 	}
 
 	asset.BeforePost()
@@ -34,44 +34,30 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader, size int
 
 	url, err := storage.Provider(ctx).Post(assetInfo)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "File upload failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to upload file.", http.StatusInternalServerError, model.WithError(err))
 	}
 	asset.URL = url
 
 	err = datastore.Provider(ctx).InsertAsset(asset)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "File upload failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
+		return nil, model.NewErrorResponse("Failed to upload file.", http.StatusInternalServerError, model.WithError(err))
 	}
 	return asset, nil
 }
 
-// GetAsset is get asset
-func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *model.Asset, *model.ProblemDetail) {
+// GetAsset gets asset
+func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *model.Asset, *model.ErrorResponse) {
 	if ifModifiedSince != "" {
 		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
 		if err != nil {
-			pd := &model.ProblemDetail{
-				Message: "Date format error [If-Modified-Since]",
-				Status:  http.StatusInternalServerError,
-				Error:   err,
-			}
-			return nil, nil, pd
+			return nil, nil, model.NewErrorResponse("Date format error [If-Modified-Since].", http.StatusInternalServerError, model.WithError(err))
 		}
 	}
 
-	asset, pd := selectAsset(ctx, assetID)
-	if pd != nil {
-		return nil, nil, pd
+	asset, errRes := confirmAssetExist(ctx, assetID)
+	if errRes != nil {
+		errRes.Message = "Failed to get asset."
+		return nil, nil, errRes
 	}
 
 	assetInfo := &storage.AssetInfo{
@@ -79,42 +65,19 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 	}
 	bytes, err := storage.Provider(ctx).Get(assetInfo)
 	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "File download error",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, nil, pd
+		return nil, nil, model.NewErrorResponse("Failed to download file.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	return bytes, asset, nil
 }
 
-// GetAssetInfo is get asset info
-func GetAssetInfo(ctx context.Context, assetID, ifModifiedSince string) (*model.Asset, *model.ProblemDetail) {
-	asset, pd := selectAsset(ctx, assetID)
-	if pd != nil {
-		return nil, pd
+// GetAssetInfo gets asset info
+func GetAssetInfo(ctx context.Context, assetID, ifModifiedSince string) (*model.Asset, *model.ErrorResponse) {
+	asset, errRes := confirmAssetExist(ctx, assetID)
+	if errRes != nil {
+		errRes.Message = "Failed to get asset info."
+		return nil, errRes
 	}
 
-	return asset, nil
-}
-
-func selectAsset(ctx context.Context, assetID string) (*model.Asset, *model.ProblemDetail) {
-	asset, err := datastore.Provider(ctx).SelectAsset(assetID)
-	if err != nil {
-		pd := &model.ProblemDetail{
-			Message: "File download failed",
-			Status:  http.StatusInternalServerError,
-			Error:   err,
-		}
-		return nil, pd
-	}
-	if asset == nil {
-		return nil, &model.ProblemDetail{
-			Message: "Resource not found",
-			Status:  http.StatusNotFound,
-		}
-	}
 	return asset, nil
 }

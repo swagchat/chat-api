@@ -19,10 +19,23 @@ func Join(stringSlice []string, delimiter string, enclosure string) string {
 	return resultString
 }
 
-// RemoveDuplicate is remove duplicate
-func RemoveDuplicate(args []string) []string {
+// RemoveDuplicateString removes duplicate string value
+func RemoveDuplicateString(args []string) []string {
 	results := make([]string, 0, len(args))
 	encountered := map[string]bool{}
+	for i := 0; i < len(args); i++ {
+		if !encountered[args[i]] {
+			encountered[args[i]] = true
+			results = append(results, args[i])
+		}
+	}
+	return results
+}
+
+// RemoveDuplicateInt32 removes duplicate int32 value
+func RemoveDuplicateInt32(args []int32) []int32 {
+	results := make([]int32, 0, len(args))
+	encountered := map[int32]bool{}
 	for i := 0; i < len(args); i++ {
 		if !encountered[args[i]] {
 			encountered[args[i]] = true

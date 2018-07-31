@@ -2,9 +2,7 @@ package notification
 
 import (
 	"context"
-	"net/http"
 
-	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -55,12 +53,4 @@ func Provider(ctx context.Context) provider {
 	}
 
 	return p
-}
-
-func createProblemDetail(msg string, err error) *model.ProblemDetail {
-	return &model.ProblemDetail{
-		Message: msg,
-		Status:  http.StatusInternalServerError,
-		Error:   err,
-	}
 }

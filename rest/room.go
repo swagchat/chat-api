@@ -45,7 +45,8 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 	req := &model.GetRoomsRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		respondErr(w, r, http.StatusBadRequest, nil)
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
+		respondError(w, r, errRes)
 		return
 	}
 
@@ -136,7 +137,8 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		respondErr(w, r, http.StatusBadRequest, nil)
+		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
+		respondError(w, r, errRes)
 		return
 	}
 

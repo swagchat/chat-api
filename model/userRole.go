@@ -1,8 +1,7 @@
 package model
 
 import (
-	"net/http"
-
+	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -15,10 +14,29 @@ type CreateUserRolesRequest struct {
 }
 
 func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
-	userRoles := make([]*UserRole, len(curr.Roles))
-	for i, role := range curr.Roles {
+	roles := utils.RemoveDuplicateInt32(curr.Roles)
+
+	userRoles := make([]*UserRole, len(roles))
+	for i, role := range roles {
 		ur := &UserRole{}
 		ur.UserID = curr.UserID
+		ur.Role = role
+		userRoles[i] = ur
+	}
+	return userRoles
+}
+
+type AddUserRolesRequest struct {
+	scpb.AddUserRolesRequest
+}
+
+func (aurr *AddUserRolesRequest) GenerateUserRoles() []*UserRole {
+	roles := utils.RemoveDuplicateInt32(aurr.Roles)
+
+	userRoles := make([]*UserRole, len(roles))
+	for i, role := range roles {
+		ur := &UserRole{}
+		ur.UserID = aurr.UserID
 		ur.Role = role
 		userRoles[i] = ur
 	}
@@ -29,28 +47,4 @@ func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
 
 type DeleteUserRolesRequest struct {
 	scpb.DeleteUserRolesRequest
-}
-
-func (durr *DeleteUserRolesRequest) Validate() *ErrorResponse {
-	if durr.UserID != "" && !IsValidID(durr.UserID) {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "userId",
-				Reason: "userId is invalid. Available characters are alphabets, numbers and hyphens.",
-			},
-		}
-		return NewErrorResponse("Failed to delete user roles.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-	}
-
-	if len(durr.Roles) == 0 {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "roles",
-				Reason: "roles is empty.",
-			},
-		}
-		return NewErrorResponse("Failed to delete user roles.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-	}
-
-	return nil
 }

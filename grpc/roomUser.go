@@ -13,9 +13,9 @@ type roomUserServiceServer struct{}
 
 func (urs *roomUserServiceServer) CreateRoomUsers(ctx context.Context, in *scpb.CreateRoomUsersRequest) (*empty.Empty, error) {
 	req := &model.CreateRoomUsersRequest{*in, nil}
-	pd := service.CreateRoomUsers(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.CreateRoomUsers(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil
@@ -23,9 +23,9 @@ func (urs *roomUserServiceServer) CreateRoomUsers(ctx context.Context, in *scpb.
 
 func (urs *roomUserServiceServer) GetRoomUsers(ctx context.Context, in *scpb.GetRoomUsersRequest) (*scpb.RoomUsersResponse, error) {
 	req := &model.GetRoomUsersRequest{*in}
-	res, pd := service.GetRoomUsers(ctx, req)
-	if pd != nil {
-		return &scpb.RoomUsersResponse{}, pd.Error
+	res, errRes := service.GetRoomUsers(ctx, req)
+	if errRes != nil {
+		return &scpb.RoomUsersResponse{}, errRes.Error
 	}
 
 	roomUsers := res.ConvertToPbRoomUsers()
@@ -34,9 +34,9 @@ func (urs *roomUserServiceServer) GetRoomUsers(ctx context.Context, in *scpb.Get
 
 func (urs *roomUserServiceServer) UpdateRoomUser(ctx context.Context, in *scpb.UpdateRoomUserRequest) (*empty.Empty, error) {
 	req := &model.UpdateRoomUserRequest{*in}
-	pd := service.UpdateRoomUser(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.UpdateRoomUser(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil
@@ -44,9 +44,9 @@ func (urs *roomUserServiceServer) UpdateRoomUser(ctx context.Context, in *scpb.U
 
 func (urs *roomUserServiceServer) DeleteRoomUsers(ctx context.Context, in *scpb.DeleteRoomUsersRequest) (*empty.Empty, error) {
 	req := &model.DeleteRoomUsersRequest{*in, nil}
-	pd := service.DeleteRoomUsers(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.DeleteRoomUsers(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil

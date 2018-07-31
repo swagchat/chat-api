@@ -8,8 +8,8 @@ func (p *mysqlProvider) createUserRoleStore() {
 	rdbCreateUserRoleStore(p.ctx, p.database)
 }
 
-func (p *mysqlProvider) InsertUserRoles(urs []*model.UserRole) error {
-	return rdbInsertUserRoles(p.ctx, p.database, urs)
+func (p *mysqlProvider) InsertUserRoles(urs []*model.UserRole, opts ...InsertUserRolesOption) error {
+	return rdbInsertUserRoles(p.ctx, p.database, urs, opts...)
 }
 
 func (p *mysqlProvider) SelectUserRole(userID string, roleID int32) (*model.UserRole, error) {

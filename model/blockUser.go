@@ -1,58 +1,112 @@
 package model
 
 import (
-	"encoding/json"
 	"net/http"
-	"time"
 
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type BlockUser struct {
-	UserID      string `json:"userId" db:"user_id,notnull"`
-	BlockUserID string `json:"blockUserId" db:"block_user_id,notnull"`
-	Created     int64  `json:"created" db:"created,notnull"`
+	scpb.BlockUser
 }
 
-type RequestBlockUserIDs struct {
-	UserIDs []string `json:"userIds,omitempty"`
+type CreateBlockUsersRequest struct {
+	scpb.CreateBlockUsersRequest
 }
 
-type BlockUsers struct {
-	BlockUsers []string `json:"blockUsers"`
-}
-
-func (reqUIDs *RequestBlockUserIDs) RemoveDuplicate() {
-	reqUIDs.UserIDs = utils.RemoveDuplicate(reqUIDs.UserIDs)
-}
-
-func (reqUIDs *RequestBlockUserIDs) IsValid(userId string) *ProblemDetail {
-	for _, reqUID := range reqUIDs.UserIDs {
-		if reqUID == userId {
-			return &ProblemDetail{
-				Message: "Invalid params",
-				InvalidParams: []*InvalidParam{
-					&InvalidParam{
-						Name:   "userIds",
-						Reason: "userIds can not include own UserId.",
-					},
+func (cbur *CreateBlockUsersRequest) Validate() *ErrorResponse {
+	for _, blockUserID := range cbur.BlockUserIDs {
+		if blockUserID == cbur.UserID {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "blockUserIds",
+					Reason: "blockUserIds can not include own UserId.",
 				},
-				Status: http.StatusBadRequest,
 			}
+			return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
 	return nil
 }
 
-func (bu *BlockUser) MarshalJSON() ([]byte, error) {
-	l, _ := time.LoadLocation("Etc/GMT")
-	return json.Marshal(&struct {
-		UserID      string `json:"userId"`
-		BlockUserID string `json:"blockUserId"`
-		Created     string `json:"created"`
-	}{
-		UserID:      bu.UserID,
-		BlockUserID: bu.BlockUserID,
-		Created:     time.Unix(bu.Created, 0).In(l).Format(time.RFC3339),
-	})
+func (cbur *CreateBlockUsersRequest) GenerateBlockUsers() []*BlockUser {
+	blockUserIDs := utils.RemoveDuplicateString(cbur.BlockUserIDs)
+
+	blockUsers := make([]*BlockUser, len(blockUserIDs))
+	for i, blockUserID := range blockUserIDs {
+		bu := &BlockUser{}
+		bu.UserID = cbur.UserID
+		bu.BlockUserID = blockUserID
+		blockUsers[i] = bu
+	}
+	return blockUsers
+}
+
+type GetBlockUsersRequest struct {
+	scpb.GetBlockUsersRequest
+}
+
+type BlockUsersResponse struct {
+	scpb.BlockUsersResponse
+}
+
+func (bur *BlockUsersResponse) ConvertToPbBlockUsers() *scpb.BlockUsersResponse {
+	blockUsers := &scpb.BlockUsersResponse{
+		BlockUsers:   bur.BlockUsers,
+		BlockUserIDs: bur.BlockUserIDs,
+	}
+	return blockUsers
+}
+
+type GetBlockedUsersRequest struct {
+	scpb.GetBlockedUsersRequest
+}
+
+type BlockedUsersResponse struct {
+	scpb.BlockedUsersResponse
+}
+
+func (bur *BlockedUsersResponse) ConvertToPbBlockedUsers() *scpb.BlockedUsersResponse {
+	blockedUsers := &scpb.BlockedUsersResponse{
+		BlockedUsers:   bur.BlockedUsers,
+		BlockedUserIDs: bur.BlockedUserIDs,
+	}
+	return blockedUsers
+}
+
+type AddBlockUsersRequest struct {
+	scpb.AddBlockUsersRequest
+}
+
+func (abur *AddBlockUsersRequest) Validate() *ErrorResponse {
+	for _, blockUserID := range abur.BlockUserIDs {
+		if blockUserID == abur.UserID {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "blockUserIds",
+					Reason: "blockUserIds can not include own UserId.",
+				},
+			}
+			return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+		}
+	}
+	return nil
+}
+
+func (abur *AddBlockUsersRequest) GenerateBlockUsers() []*BlockUser {
+	blockUserIDs := utils.RemoveDuplicateString(abur.BlockUserIDs)
+
+	blockUsers := make([]*BlockUser, len(blockUserIDs))
+	for i, blockUserID := range blockUserIDs {
+		bu := &BlockUser{}
+		bu.UserID = abur.UserID
+		bu.BlockUserID = blockUserID
+		blockUsers[i] = bu
+	}
+	return blockUsers
+}
+
+type DeleteBlockUsersRequest struct {
+	scpb.DeleteBlockUsersRequest
 }

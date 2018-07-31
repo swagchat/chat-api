@@ -14,9 +14,19 @@ type userRoleServiceServer struct{}
 
 func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.CreateUserRolesRequest) (*empty.Empty, error) {
 	req := &model.CreateUserRolesRequest{*in}
-	pd := service.CreateUserRoles(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.CreateUserRoles(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
+	}
+
+	return &empty.Empty{}, nil
+}
+
+func (urs *userRoleServiceServer) AddUserRoles(ctx context.Context, in *scpb.AddUserRolesRequest) (*empty.Empty, error) {
+	req := &model.AddUserRolesRequest{*in}
+	errRes := service.AddUserRoles(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil
@@ -24,9 +34,9 @@ func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.
 
 func (urs *userRoleServiceServer) DeleteUserRoles(ctx context.Context, in *scpb.DeleteUserRolesRequest) (*empty.Empty, error) {
 	req := &model.DeleteUserRolesRequest{*in}
-	pd := service.DeleteUserRoles(ctx, req)
-	if pd != nil {
-		return &empty.Empty{}, pd.Error
+	errRes := service.DeleteUserRoles(ctx, req)
+	if errRes != nil {
+		return &empty.Empty{}, errRes.Error
 	}
 
 	return &empty.Empty{}, nil

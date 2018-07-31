@@ -6,8 +6,8 @@ func (p *sqliteProvider) createBlockUserStore() {
 	rdbCreateBlockUserStore(p.ctx, p.database)
 }
 
-func (p *sqliteProvider) InsertBlockUsers(blockUsers []*model.BlockUser) error {
-	return rdbInsertBlockUsers(p.ctx, p.database, blockUsers)
+func (p *sqliteProvider) InsertBlockUsers(blockUsers []*model.BlockUser, opts ...InsertBlockUsersOption) error {
+	return rdbInsertBlockUsers(p.ctx, p.database, blockUsers, opts...)
 }
 
 func (p *sqliteProvider) SelectBlockUsers(userID string) ([]string, error) {
@@ -18,6 +18,6 @@ func (p *sqliteProvider) SelectBlockUser(userID, blockUserID string) (*model.Blo
 	return rdbSelectBlockUser(p.ctx, p.database, userID, blockUserID)
 }
 
-func (p *sqliteProvider) DeleteBlockUsers(userID string, blockUserIDs []string) error {
-	return rdbDeleteBlockUsers(p.ctx, p.database, userID, blockUserIDs)
+func (p *sqliteProvider) DeleteBlockUsers(opts ...DeleteBlockUsersOption) error {
+	return rdbDeleteBlockUsers(p.ctx, p.database, opts...)
 }

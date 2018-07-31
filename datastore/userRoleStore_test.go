@@ -19,11 +19,26 @@ func TestUserRoleStore(t *testing.T) {
 	var err error
 
 	t.Run(TestNameInsertUserRoles, func(t *testing.T) {
-		ur := &model.UserRole{}
-		ur.UserID = "datastore-user-id-0001"
-		ur.Role = 3
-		urs := []*model.UserRole{ur}
+		newUserRole1 := &model.UserRole{}
+		newUserRole1.UserID = "datastore-user-id-0001"
+		newUserRole1.Role = 3
+		urs := []*model.UserRole{newUserRole1}
 		err := Provider(ctx).InsertUserRoles(urs)
+		if err != nil {
+			t.Fatalf("Failed to %s", TestNameInsertUserRoles)
+		}
+
+		newUserRole2 := &model.UserRole{}
+		newUserRole2.UserID = "datastore-user-id-0001"
+		newUserRole2.Role = 1
+		newUserRole3 := &model.UserRole{}
+		newUserRole3.UserID = "datastore-user-id-0001"
+		newUserRole3.Role = 4
+		urs = []*model.UserRole{newUserRole2, newUserRole3}
+		err = Provider(ctx).InsertUserRoles(
+			urs,
+			InsertUserRolesOptionBeforeClean(true),
+		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameInsertUserRoles)
 		}
@@ -31,6 +46,13 @@ func TestUserRoleStore(t *testing.T) {
 
 	t.Run(TestNameSelectUserRole, func(t *testing.T) {
 		userRole, err = Provider(ctx).SelectUserRole("datastore-user-id-0001", 3)
+		if err != nil {
+			t.Fatalf("Failed to %s", TestNameSelectUserRole)
+		}
+		if userRole != nil {
+			t.Fatalf("Failed to %s", TestNameSelectUserRole)
+		}
+		userRole, err = Provider(ctx).SelectUserRole("datastore-user-id-0001", 4)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameSelectUserRole)
 		}
@@ -50,7 +72,7 @@ func TestUserRoleStore(t *testing.T) {
 	})
 
 	t.Run(TestNameSelectUserIDsOfUserRole, func(t *testing.T) {
-		userIDs, err := Provider(ctx).SelectUserIDsOfUserRole(3)
+		userIDs, err := Provider(ctx).SelectUserIDsOfUserRole(4)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
 		}
@@ -76,7 +98,7 @@ func TestUserRoleStore(t *testing.T) {
 
 		err = Provider(ctx).DeleteUserRoles(
 			DeleteUserRolesOptionFilterByUserID("datastore-user-id-0001"),
-			DeleteUserRolesOptionFilterByRoles([]int32{3}),
+			DeleteUserRolesOptionFilterByRoles([]int32{4}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
