@@ -34,14 +34,14 @@ func SelectRoomUsersOptionWithUserIDs(userIDs []string) SelectRoomUsersOption {
 }
 
 type selectUserIDsOfRoomUserOptions struct {
-	roleIDs []int32
+	roles []int32
 }
 
 type SelectUserIDsOfRoomUserOption func(*selectUserIDsOfRoomUserOptions)
 
-func SelectUserIDsOfRoomUserOptionWithRoleIDs(roleIDs []int32) SelectUserIDsOfRoomUserOption {
+func SelectUserIDsOfRoomUserOptionWithRoles(roles []int32) SelectUserIDsOfRoomUserOption {
 	return func(ops *selectUserIDsOfRoomUserOptions) {
-		ops.roleIDs = roleIDs
+		ops.roles = roles
 	}
 }
 

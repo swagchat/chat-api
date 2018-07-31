@@ -1,6 +1,8 @@
 package sbroker
 
 import (
+	"context"
+
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -9,17 +11,23 @@ type provider interface {
 	UnsubscribeMessage() error
 }
 
-func Provider() provider {
+func Provider(ctx context.Context) provider {
 	cfg := utils.Config()
 
 	var p provider
 	switch cfg.SBroker.Provider {
 	case "":
-		p = &notuseProvider{}
+		p = &notuseProvider{
+			ctx: ctx,
+		}
 	case "nsq":
-		p = &nsqProvider{}
+		p = &nsqProvider{
+			ctx: ctx,
+		}
 	case "kafka":
-		p = &kafkaProvider{}
+		p = &kafkaProvider{
+			ctx: ctx,
+		}
 	}
 
 	return p

@@ -36,15 +36,15 @@ func main() {
 		}()
 	}
 
-	if err := storage.Provider().Init(); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err := storage.Provider(ctx).Init(); err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
-	go sbroker.Provider().SubscribeMessage()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	go sbroker.Provider(ctx).SubscribeMessage()
 
 	if !cfg.Datastore.Dynamic {
 		datastore.Provider(ctx).CreateTables()

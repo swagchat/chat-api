@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateRoomStore(ctx context.Context, db string) {
@@ -182,13 +183,13 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 	return room, nil
 }
 
-func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*model.UserForRoom, error) {
+func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*scpb.UserForRoom, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUsersForRoom")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
 
-	var users []*model.UserForRoom
+	var users []*scpb.UserForRoom
 	query := fmt.Sprintf(`SELECT
 u.user_id,
 u.name,

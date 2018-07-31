@@ -79,7 +79,7 @@ func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseM
 				mi.Badge = dBadgeCount
 			}
 		}
-		go notification.Provider().Publish(ctx, room.NotificationTopicID, room.RoomID, mi)
+		go notification.Provider(ctx).Publish(room.NotificationTopicID, room.RoomID, mi)
 
 		publishMessage(ctx, post)
 		webhookMessage(ctx, post, user)
@@ -133,7 +133,7 @@ func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.P
 func publishMessage(ctx context.Context, message *model.Message) {
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
 		message.RoomID,
-		datastore.SelectUserIDsOfRoomUserOptionWithRoleIDs([]int32{message.Role}),
+		datastore.SelectUserIDsOfRoomUserOptionWithRoles([]int32{message.Role}),
 	)
 	if err != nil {
 		logger.Error(err.Error())
@@ -147,7 +147,7 @@ func publishMessage(ctx context.Context, message *model.Message) {
 		Payload: buffer.Bytes(),
 		UserIDs: userIDs,
 	}
-	err = pbroker.Provider().PublishMessage(rtmEvent)
+	err = pbroker.Provider(ctx).PublishMessage(rtmEvent)
 	if err != nil {
 		logger.Error(err.Error())
 		return

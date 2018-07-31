@@ -11,12 +11,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/utils"
 )
 
 type awssnsProvider struct {
+	ctx                   context.Context
 	region                string
 	accessKeyId           string
 	secretAccessKey       string
@@ -69,6 +71,9 @@ func (ap *awssnsProvider) newSnsClient() *sns.SNS {
 }
 
 func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.CreateTopic")
+	defer span.Finish()
+
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
@@ -92,6 +97,9 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 }
 
 func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.DeleteTopic")
+	defer span.Finish()
+
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
@@ -113,6 +121,9 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 }
 
 func (ap *awssnsProvider) CreateEndpoint(userId string, platform int32, deviceToken string) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.CreateEndpoint")
+	defer span.Finish()
+
 	cfg := utils.Config()
 
 	nc := make(NotificationChannel, 1)
@@ -151,6 +162,9 @@ func (ap *awssnsProvider) CreateEndpoint(userId string, platform int32, deviceTo
 }
 
 func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.DeleteEndpoint")
+	defer span.Finish()
+
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
@@ -172,6 +186,9 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 }
 
 func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.Subscribe")
+	defer span.Finish()
+
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
@@ -197,6 +214,9 @@ func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDevi
 }
 
 func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.Unsubscribe")
+	defer span.Finish()
+
 	nc := make(NotificationChannel, 1)
 	go func() {
 		defer close(nc)
@@ -217,7 +237,10 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) Notificati
 	return nc
 }
 
-func (ap *awssnsProvider) Publish(ctx context.Context, notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
+func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
+	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.Publish")
+	defer span.Finish()
+
 	nc := make(NotificationChannel, 1)
 	defer close(nc)
 	result := NotificationResult{}
@@ -284,7 +307,7 @@ func (ap *awssnsProvider) Publish(ctx context.Context, notificationTopicId, room
 	nc <- result
 
 	select {
-	case <-ctx.Done():
+	case <-ap.ctx.Done():
 		return nc
 	case <-nc:
 		return nc

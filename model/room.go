@@ -13,7 +13,7 @@ import (
 type Room struct {
 	scpb.Room
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
-	Users    []*UserForRoom `json:"users" db:"-"`
+	// Users    []*UserForRoom `json:"users" db:"-"`
 	// ID                    uint64         `json:"-" db:"id"`
 	// RoomID                string         `json:"roomId" db:"room_id,notnull"`
 	// UserID                string         `json:"userId" db:"user_id,notnull"`
@@ -44,23 +44,23 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		lmu = time.Unix(r.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
-		RoomID                string          `json:"roomId"`
-		UserID                string          `json:"userId"`
-		Name                  string          `json:"name"`
-		PictureURL            string          `json:"pictureUrl"`
-		InformationURL        string          `json:"informationUrl"`
-		Type                  scpb.RoomType   `json:"type"`
-		CanLeft               bool            `json:"canLeft"`
-		SpeechMode            scpb.SpeechMode `json:"speechMode"`
-		MetaData              utils.JSONText  `json:"metaData"`
-		AvailableMessageTypes string          `json:"availableMessageTypes"`
-		LastMessage           string          `json:"lastMessage"`
-		LastMessageUpdated    string          `json:"lastMessageUpdated"`
-		MessageCount          int64           `json:"messageCount"`
-		NotificationTopicID   string          `json:"notificationTopicId"`
-		Created               string          `json:"created"`
-		Modified              string          `json:"modified"`
-		Users                 []*UserForRoom  `json:"users,omitempty"`
+		RoomID                string              `json:"roomId"`
+		UserID                string              `json:"userId"`
+		Name                  string              `json:"name"`
+		PictureURL            string              `json:"pictureUrl"`
+		InformationURL        string              `json:"informationUrl"`
+		Type                  scpb.RoomType       `json:"type"`
+		CanLeft               bool                `json:"canLeft"`
+		SpeechMode            scpb.SpeechMode     `json:"speechMode"`
+		MetaData              utils.JSONText      `json:"metaData"`
+		AvailableMessageTypes string              `json:"availableMessageTypes"`
+		LastMessage           string              `json:"lastMessage"`
+		LastMessageUpdated    string              `json:"lastMessageUpdated"`
+		MessageCount          int64               `json:"messageCount"`
+		NotificationTopicID   string              `json:"notificationTopicId"`
+		Created               string              `json:"created"`
+		Modified              string              `json:"modified"`
+		Users                 []*scpb.UserForRoom `json:"users,omitempty"`
 	}{
 		RoomID:                r.RoomID,
 		UserID:                r.UserID,
@@ -169,7 +169,7 @@ type CreateRoomRequest struct {
 }
 
 func (r *CreateRoomRequest) Validate() *ErrorResponse {
-	if r.RoomID != "" && !IsValidID(r.RoomID) {
+	if r.RoomID != nil && *r.RoomID != "" && !IsValidID(*r.RoomID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "roomId",
@@ -179,7 +179,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if r.UserID == "" {
+	if r.UserID == nil || *r.UserID == "" {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -189,7 +189,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if !IsValidID(r.UserID) {
+	if !IsValidID(*r.UserID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -199,7 +199,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if r.Type == 0 {
+	if r.Type == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "type",
@@ -209,7 +209,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	roomType := scpb.RoomType.String(r.Type)
+	roomType := scpb.RoomType.String(*r.Type)
 	if roomType == "" {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
@@ -220,7 +220,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if r.Type == scpb.RoomType_OneOnOne && len(r.UserIDs) == 0 {
+	if *r.Type == scpb.RoomType_OneOnOne && len(r.UserIDs) == 0 {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "type",
@@ -249,17 +249,37 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 func (crr *CreateRoomRequest) GenerateRoom() *Room {
 	r := &Room{}
 
-	if crr.RoomID == "" {
+	if crr.RoomID == nil || *crr.RoomID == "" {
 		r.RoomID = utils.GenerateUUID()
 	} else {
-		r.RoomID = crr.RoomID
+		r.RoomID = *crr.RoomID
 	}
 
-	r.UserID = crr.UserID
-	r.Name = crr.Name
-	r.PictureURL = crr.PictureURL
-	r.InformationURL = crr.InformationURL
-	r.Type = crr.Type
+	r.UserID = *crr.UserID
+
+	if crr.Name == nil {
+		r.Name = ""
+	} else {
+		r.Name = *crr.Name
+	}
+
+	if crr.PictureURL == nil {
+		r.PictureURL = ""
+	} else {
+		r.PictureURL = *crr.PictureURL
+	}
+
+	if crr.InformationURL == nil {
+		r.InformationURL = ""
+	} else {
+		r.InformationURL = *crr.InformationURL
+	}
+
+	if crr.Type == nil {
+		r.Type = scpb.RoomType_PublicRoom
+	} else {
+		r.Type = *crr.Type
+	}
 
 	if crr.CanLeft == nil {
 		r.CanLeft = true
@@ -267,7 +287,11 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 		r.CanLeft = *crr.CanLeft
 	}
 
-	r.SpeechMode = crr.SpeechMode
+	if crr.SpeechMode == nil {
+		r.SpeechMode = scpb.SpeechMode_SpeechModeNone
+	} else {
+		r.SpeechMode = *crr.SpeechMode
+	}
 
 	if crr.MetaData == nil {
 		r.MetaData = []byte("{}")
@@ -275,7 +299,11 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 		r.MetaData = crr.MetaData
 	}
 
-	r.AvailableMessageTypes = crr.AvailableMessageTypes
+	if crr.AvailableMessageTypes == nil {
+		r.AvailableMessageTypes = ""
+	} else {
+		r.AvailableMessageTypes = *crr.AvailableMessageTypes
+	}
 
 	nowTimestamp := time.Now().Unix()
 	r.LastMessageUpdated = nowTimestamp
@@ -288,15 +316,15 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 func (crr *CreateRoomRequest) GenerateRoomUsers() []*RoomUser {
 	rus := make([]*RoomUser, len(crr.UserIDs)+1)
 	me := &RoomUser{}
-	me.RoomID = crr.RoomID
-	me.UserID = crr.UserID
+	me.RoomID = *crr.RoomID
+	me.UserID = *crr.UserID
 	me.UnreadCount = int32(0)
 	me.Display = true
 
 	rus[0] = me
 	for i := 0; i < len(crr.UserIDs); i++ {
 		ru := &RoomUser{}
-		ru.RoomID = crr.RoomID
+		ru.RoomID = *crr.RoomID
 		ru.UserID = crr.UserIDs[i]
 		ru.UnreadCount = int32(0)
 		ru.Display = true

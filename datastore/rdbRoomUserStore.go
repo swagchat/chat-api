@@ -206,15 +206,15 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, db string, roomID string, o
 
 	var query string
 	var params map[string]interface{}
-	if opt.roleIDs == nil {
+	if opt.roles == nil {
 		query = fmt.Sprintf("SELECT ru.user_id FROM %s AS ru LEFT JOIN %s AS u ON ru.user_id = u.user_id WHERE ru.room_id=:roomId;", tableNameRoomUser, tableNameUser)
 		params = map[string]interface{}{
 			"roomId": roomID,
 		}
 	} else {
-		roleIDsQuery, pms := makePrepareExpressionParamsForInOperand(opt.roleIDs)
+		rolesQuery, pms := makePrepareExpressionParamsForInOperand(opt.roles)
 		params = pms
-		query = fmt.Sprintf("SELECT ru.user_id FROM %s AS ru LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role_id IN (%s) GROUP BY ru.user_id;", tableNameRoomUser, tableNameUserRole, roleIDsQuery)
+		query = fmt.Sprintf("SELECT ru.user_id FROM %s AS ru LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role IN (%s) GROUP BY ru.user_id;", tableNameRoomUser, tableNameUserRole, rolesQuery)
 		params["roomId"] = roomID
 	}
 

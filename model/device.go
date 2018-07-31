@@ -20,54 +20,86 @@ type Device struct {
 	scpb.Device
 }
 
-func (d *Device) ConvertToPbDevice() *scpb.Device {
-	pbDevice := &scpb.Device{
-		UserID:               d.UserID,
-		Platform:             d.Platform,
-		Token:                d.Token,
-		NotificationDeviceID: d.NotificationDeviceID,
+func (d *Device) UpdateDevice(req *UpdateDeviceRequest) {
+	if req.Token != "" {
+		d.Token = req.Token
 	}
-
-	return pbDevice
 }
 
-// type Device struct {
-// 	UserID               string `json:"userId,omitempty" db:"user_id,notnull"`
-// 	Platform             int32  `json:"platform,omitempty" db:"platform,notnull"`
-// 	Token                string `json:"token,omitempty" db:"token,notnull"`
-// 	NotificationDeviceID string `json:"notificationDeviceId,omitempty" db:"notification_device_id"`
-// }
-
-func IsValidDevicePlatform(platform int) bool {
-	return platform > 0 && platform < int(PlatformEnd)
+type CreateDeviceRequest struct {
+	scpb.CreateDeviceRequest
 }
 
-func (d *Device) IsValid() *ProblemDetail {
-	if !(d.Platform > 0 && d.Platform < int32(PlatformEnd)) {
-		return &ProblemDetail{
-			Message: "Request error",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "device.platform",
-					Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
-				},
-			},
-			Status: http.StatusBadRequest,
+func (crur *CreateDeviceRequest) Validate() *ErrorResponse {
+	return nil
+}
+
+func (cdr *CreateDeviceRequest) GenerateDevice() *Device {
+	device := &Device{}
+	device.UserID = cdr.UserID
+	device.Platform = cdr.Platform
+	device.Token = cdr.Token
+	return device
+}
+
+type GetDevicesRequest struct {
+	scpb.GetDevicesRequest
+}
+
+type DevicesResponse struct {
+	Devices []*Device
+}
+
+func (dr *DevicesResponse) ConvertToPbDevices() *scpb.DevicesResponse {
+	devices := make([]*scpb.Device, len(dr.Devices))
+	for i := 0; i < len(dr.Devices); i++ {
+		d := dr.Devices[i]
+		device := &scpb.Device{
+			UserID:               d.UserID,
+			Platform:             d.Platform,
+			Token:                d.Token,
+			NotificationDeviceID: d.NotificationDeviceID,
 		}
+		devices[i] = device
+	}
+	return &scpb.DevicesResponse{
+		Devices: devices,
+	}
+}
+
+type UpdateDeviceRequest struct {
+	scpb.UpdateDeviceRequest
+}
+
+func (udr *UpdateDeviceRequest) Validate() *ErrorResponse {
+	if !(udr.Platform > 0 && udr.Platform < int32(PlatformEnd)) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "device.platform",
+				Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
+			},
+		}
+		return NewErrorResponse("Failed to update device.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if d.Token == "" {
-		return &ProblemDetail{
-			Message: "Request error",
-			InvalidParams: []*InvalidParam{
-				&InvalidParam{
-					Name:   "token",
-					Reason: "token is required, but it's empty.",
-				},
+	if udr.Token == "" {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "token",
+				Reason: "token is required, but it's empty.",
 			},
-			Status: http.StatusBadRequest,
 		}
+		return NewErrorResponse("Failed to update device.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
+	return nil
+}
+
+type DeleteDeviceRequest struct {
+	scpb.DeleteDeviceRequest
+	Room *Room
+}
+
+func (ddr *DeleteDeviceRequest) Validate() *ErrorResponse {
 	return nil
 }

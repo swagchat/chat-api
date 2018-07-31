@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 
 		newUserRole := &model.UserRole{}
 		newUserRole.UserID = userID
-		newUserRole.RoleID = 1
+		newUserRole.Role = 1
 		userRoles[i-1] = newUserRole
 	}
 	for i := 11; i <= 20; i++ {
@@ -65,7 +65,7 @@ func TestMain(m *testing.M) {
 
 		newUserRole := &model.UserRole{}
 		newUserRole.UserID = userID
-		newUserRole.RoleID = 2
+		newUserRole.Role = 2
 		userRoles[i-1] = newUserRole
 	}
 

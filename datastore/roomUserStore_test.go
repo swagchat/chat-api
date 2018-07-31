@@ -138,7 +138,7 @@ func TestRoomUserStore(t *testing.T) {
 
 		userIDs, err = Provider(ctx).SelectUserIDsOfRoomUser(
 			"datastore-room-id-0001",
-			SelectUserIDsOfRoomUserOptionWithRoleIDs([]int32{1}),
+			SelectUserIDsOfRoomUserOptionWithRoles([]int32{1}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)

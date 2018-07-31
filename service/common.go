@@ -228,7 +228,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 			Payload: buffer.Bytes(),
 			UserIDs: userIDs,
 		}
-		err = pbroker.Provider().PublishMessage(rtmEvent)
+		err = pbroker.Provider(ctx).PublishMessage(rtmEvent)
 		if err != nil {
 			logger.Error(err.Error())
 			return
@@ -254,7 +254,7 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 				for _, d := range devices {
 					if d.Token != "" {
 						if d.NotificationDeviceID == "" {
-							nRes := <-notification.Provider().CreateEndpoint("", d.Platform, d.Token)
+							nRes := <-notification.Provider(ctx).CreateEndpoint("", d.Platform, d.Token)
 							if nRes.Error != nil {
 								errChan <- nRes.Error
 							} else {
@@ -344,8 +344,8 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	return
 }
 
-func createTopic(roomID string) (string, *model.ErrorResponse) {
-	nRes := <-notification.Provider().CreateTopic(roomID)
+func createTopic(ctx context.Context, roomID string) (string, *model.ErrorResponse) {
+	nRes := <-notification.Provider(ctx).CreateTopic(roomID)
 	if nRes.Error != nil {
 		errRes := &model.ErrorResponse{}
 		errRes.Status = http.StatusInternalServerError
@@ -426,4 +426,40 @@ func confirmRoomUserExist(ctx context.Context, roomID, userID string) (*model.Ro
 	}
 
 	return roomUser, nil
+}
+
+func confirmDeviceNotExist(ctx context.Context, userID string, platform int32) (*model.Device, *model.ErrorResponse) {
+	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
+	if err != nil {
+		return nil, model.NewErrorResponse("", http.StatusInternalServerError, model.WithError(err))
+	}
+	if device != nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId, platform",
+				Reason: fmt.Sprintf("That device already exist. userId[%s] platform[%d]", userID, platform),
+			},
+		}
+		return nil, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+	}
+
+	return device, nil
+}
+
+func confirmDeviceExist(ctx context.Context, userID string, platform int32) (*model.Device, *model.ErrorResponse) {
+	device, err := datastore.Provider(ctx).SelectDevice(userID, platform)
+	if err != nil {
+		return nil, model.NewErrorResponse("", http.StatusInternalServerError, model.WithError(err))
+	}
+	if device == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId, platform",
+				Reason: fmt.Sprintf("That device is not exist. userId[%s] platform[%d]", userID, platform),
+			},
+		}
+		return nil, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+	}
+
+	return device, nil
 }

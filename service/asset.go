@@ -32,7 +32,7 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader, size int
 		Data:     file,
 	}
 
-	url, err := storage.Provider().Post(assetInfo)
+	url, err := storage.Provider(ctx).Post(assetInfo)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "File upload failed",
@@ -77,7 +77,7 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 	assetInfo := &storage.AssetInfo{
 		Filename: fmt.Sprintf("%s.%s", asset.AssetID, asset.Extension),
 	}
-	bytes, err := storage.Provider().Get(assetInfo)
+	bytes, err := storage.Provider(ctx).Get(assetInfo)
 	if err != nil {
 		pd := &model.ProblemDetail{
 			Message: "File download error",

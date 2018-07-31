@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 
@@ -14,6 +15,7 @@ import (
 )
 
 type gcsProvider struct {
+	ctx                context.Context
 	projectId          string
 	scope              string
 	jwtPath            string
@@ -50,6 +52,9 @@ func (gp *gcsProvider) Init() error {
 }
 
 func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
+	span, _ := opentracing.StartSpanFromContext(gp.ctx, "storage.gcsProvider.Post")
+	defer span.Finish()
+
 	filePath := fmt.Sprintf("%s/%s", gp.uploadDirectory, assetInfo.Filename)
 	object := &storage.Object{
 		Name: filePath,
@@ -71,5 +76,8 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (gp *gcsProvider) Get(assetInfo *AssetInfo) ([]byte, error) {
+	span, _ := opentracing.StartSpanFromContext(gp.ctx, "storage.gcsProvider.Get")
+	defer span.Finish()
+
 	return nil, nil
 }

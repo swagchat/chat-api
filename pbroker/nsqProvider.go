@@ -2,6 +2,7 @@ package pbroker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,13 +11,16 @@ import (
 	"unsafe"
 
 	nsq "github.com/nsqio/go-nsq"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/utils"
 )
 
 var NSQConsumer *nsq.Consumer
 
-type nsqProvider struct{}
+type nsqProvider struct {
+	ctx context.Context
+}
 
 func b2s(b []byte) string {
 	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
@@ -25,6 +29,9 @@ func b2s(b []byte) string {
 }
 
 func (np nsqProvider) PublishMessage(rtmEvent *RTMEvent) error {
+	span, _ := opentracing.StartSpanFromContext(np.ctx, "pbroker.nsqProvider.PublishMessage")
+	defer span.Finish()
+
 	cfg := utils.Config()
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)

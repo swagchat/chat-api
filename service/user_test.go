@@ -28,11 +28,14 @@ func TestUser(t *testing.T) {
 			t.Fatalf("Failed to %s", TestNameCreateUser)
 		}
 		req := &model.CreateUserRequest{}
-		req.Name = "Name"
-		req.PictureURL = "http://example.com/dummy.png"
-		req.InformationURL = "http://example.com"
+		name := "Name"
+		pictureURL := "http://example.com/dummy.png"
+		informationURL := "http://example.com"
+		req.Name = &name
+		req.PictureURL = &pictureURL
+		req.InformationURL = &informationURL
 		req.MetaData = metaData
-		req.RoleIDs = []int32{1, 2, 3}
+		req.Roles = []int32{1, 2, 3}
 
 		_, errRes := CreateUser(ctx, req)
 		if errRes != nil {

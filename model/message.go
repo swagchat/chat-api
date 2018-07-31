@@ -26,7 +26,7 @@ type Messages struct {
 type Message struct {
 	scpb.Message
 	Payload utils.JSONText `json:"payload" db:"payload"`
-	UserIDs []string       `json:"userIds" db:"-"`
+	// UserIDs []string       `json:"userIds" db:"-"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {

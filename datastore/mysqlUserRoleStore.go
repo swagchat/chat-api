@@ -16,8 +16,8 @@ func (p *mysqlProvider) SelectUserRole(userID string, roleID int32) (*model.User
 	return rdbSelectUserRole(p.ctx, p.database, userID, roleID)
 }
 
-func (p *mysqlProvider) SelectRoleIDsOfUserRole(userID string) ([]int32, error) {
-	return rdbSelectRoleIDsOfUserRole(p.ctx, p.database, userID)
+func (p *mysqlProvider) SelectRolesOfUserRole(userID string) ([]int32, error) {
+	return rdbSelectRolesOfUserRole(p.ctx, p.database, userID)
 }
 
 func (p *mysqlProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error) {

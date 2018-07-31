@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io"
 
 	"github.com/swagchat/chat-api/utils"
@@ -17,17 +18,19 @@ type provider interface {
 	Get(*AssetInfo) ([]byte, error)
 }
 
-func Provider() provider {
+func Provider(ctx context.Context) provider {
 	cfg := utils.Config()
 	var p provider
 
 	switch cfg.Storage.Provider {
 	case "local":
 		p = &localStorageProvider{
+			ctx:       ctx,
 			localPath: cfg.Storage.Local.Path,
 		}
 	case "gcs":
 		p = &gcsProvider{
+			ctx:                ctx,
 			projectId:          cfg.Storage.GCS.ProjectID,
 			jwtPath:            cfg.Storage.GCS.JwtPath,
 			scope:              "https://www.googleapis.com/auth/devstorage.full_control",
@@ -38,6 +41,7 @@ func Provider() provider {
 		}
 	case "awss3":
 		p = &awss3Provider{
+			ctx:                ctx,
 			accessKeyId:        cfg.Storage.AWSS3.AccessKeyID,
 			secretAccessKey:    cfg.Storage.AWSS3.SecretAccessKey,
 			region:             cfg.Storage.AWSS3.Region,

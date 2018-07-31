@@ -7,8 +7,8 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-type chatIncomingServer struct{}
+type messageServer struct{}
 
-func (s *chatIncomingServer) PostMessage(ctx context.Context, in *scpb.Message) (*empty.Empty, error) {
+func (s *messageServer) PostMessage(ctx context.Context, in *scpb.Message) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
 }

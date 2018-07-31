@@ -5,9 +5,8 @@ import (
 )
 
 type deleteUserRolesOptions struct {
-	userID  string
-	roleID  int32
-	roleIDs []int32
+	userID string
+	roles  []int32
 }
 
 type DeleteUserRolesOption func(*deleteUserRolesOptions)
@@ -18,9 +17,9 @@ func DeleteUserRolesOptionFilterByUserID(userID string) DeleteUserRolesOption {
 	}
 }
 
-func DeleteUserRolesOptionFilterByRoleIDs(roleIDs []int32) DeleteUserRolesOption {
+func DeleteUserRolesOptionFilterByRoles(roles []int32) DeleteUserRolesOption {
 	return func(ops *deleteUserRolesOptions) {
-		ops.roleIDs = roleIDs
+		ops.roles = roles
 	}
 }
 
@@ -29,7 +28,7 @@ type userRoleStore interface {
 
 	InsertUserRoles(urs []*model.UserRole) error
 	SelectUserRole(userID string, roleID int32) (*model.UserRole, error)
-	SelectRoleIDsOfUserRole(userID string) ([]int32, error)
+	SelectRolesOfUserRole(userID string) ([]int32, error)
 	SelectUserIDsOfUserRole(roleID int32) ([]string, error)
 	DeleteUserRoles(opts ...DeleteUserRolesOption) error
 }

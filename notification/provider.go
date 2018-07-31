@@ -30,16 +30,17 @@ type provider interface {
 	DeleteEndpoint(string) NotificationChannel
 	Subscribe(string, string) NotificationChannel
 	Unsubscribe(string) NotificationChannel
-	Publish(context.Context, string, string, *MessageInfo) NotificationChannel
+	Publish(string, string, *MessageInfo) NotificationChannel
 }
 
-func Provider() provider {
+func Provider(ctx context.Context) provider {
 	cfg := utils.Config()
 	var p provider
 
 	switch cfg.Notification.Provider {
 	case "awsSns":
 		p = &awssnsProvider{
+			ctx:                   ctx,
 			region:                cfg.Notification.AmazonSNS.Region,
 			accessKeyId:           cfg.Notification.AmazonSNS.AccessKeyID,
 			secretAccessKey:       cfg.Notification.AmazonSNS.SecretAccessKey,
@@ -48,7 +49,9 @@ func Provider() provider {
 			applicationArnAndroid: cfg.Notification.AmazonSNS.ApplicationArnAndroid,
 		}
 	default:
-		p = &notuseProvider{}
+		p = &notuseProvider{
+			ctx: ctx,
+		}
 	}
 
 	return p

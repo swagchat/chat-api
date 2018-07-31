@@ -2,10 +2,12 @@ package pbroker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
@@ -13,9 +15,14 @@ import (
 
 var KafkaConsumer *kafka.Consumer
 
-type kafkaProvider struct{}
+type kafkaProvider struct {
+	ctx context.Context
+}
 
 func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
+	span, _ := opentracing.StartSpanFromContext(kp.ctx, "pbroker.kafkaProvider.PublishMessage")
+	defer span.Finish()
+
 	cfg := utils.Config()
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)

@@ -1,6 +1,8 @@
 package pbroker
 
 import (
+	"context"
+
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -23,19 +25,27 @@ type provider interface {
 	PublishMessage(*RTMEvent) error
 }
 
-func Provider() provider {
+func Provider(ctx context.Context) provider {
 	cfg := utils.Config()
 
 	var p provider
 	switch cfg.PBroker.Provider {
 	case "":
-		p = &notuseProvider{}
+		p = &notuseProvider{
+			ctx: ctx,
+		}
 	case "direct":
-		p = &directProvider{}
+		p = &directProvider{
+			ctx: ctx,
+		}
 	case "nsq":
-		p = &nsqProvider{}
+		p = &nsqProvider{
+			ctx: ctx,
+		}
 	case "kafka":
-		p = &kafkaProvider{}
+		p = &kafkaProvider{
+			ctx: ctx,
+		}
 	}
 
 	return p

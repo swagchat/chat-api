@@ -2,18 +2,25 @@ package pbroker
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/utils"
 )
 
-type directProvider struct{}
+type directProvider struct {
+	ctx context.Context
+}
 
 func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
+	span, _ := opentracing.StartSpanFromContext(dp.ctx, "pbroker.directProvider.PublishMessage")
+	defer span.Finish()
+
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 

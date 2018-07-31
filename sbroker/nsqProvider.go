@@ -1,11 +1,13 @@
 package sbroker
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 
 	nsq "github.com/nsqio/go-nsq"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/utils"
@@ -13,9 +15,14 @@ import (
 
 var NSQConsumer *nsq.Consumer
 
-type nsqProvider struct{}
+type nsqProvider struct {
+	ctx context.Context
+}
 
 func (np *nsqProvider) SubscribeMessage() error {
+	span, _ := opentracing.StartSpanFromContext(np.ctx, "sbroker.nsqProvider.SubscribeMessage")
+	defer span.Finish()
+
 	c := utils.Config()
 	if c.SBroker.NSQ.NsqlookupdHost != "" {
 		config := nsq.NewConfig()
@@ -47,6 +54,9 @@ func (np *nsqProvider) SubscribeMessage() error {
 }
 
 func (np *nsqProvider) UnsubscribeMessage() error {
+	span, _ := opentracing.StartSpanFromContext(np.ctx, "sbroker.nsqProvider.UnsubscribeMessage")
+	defer span.Finish()
+
 	if NSQConsumer == nil {
 		return nil
 	}

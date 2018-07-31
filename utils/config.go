@@ -922,7 +922,7 @@ func (c *config) validate() error {
 }
 
 func (c *config) after() error {
-	if c.Datastore.Provider == "sqlite" && !c.Datastore.SQLite.OnMemory && c.Datastore.SQLite.DirPath == "" {
+	if c.Datastore.Provider == "sqlite" && c.Datastore.SQLite.DirPath == "" {
 		tmpDirPath, err := ioutil.TempDir("", "")
 		if err != nil {
 			return err

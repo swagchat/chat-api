@@ -16,8 +16,8 @@ func (p *sqliteProvider) SelectUserRole(userID string, roleID int32) (*model.Use
 	return rdbSelectUserRole(p.ctx, p.database, userID, roleID)
 }
 
-func (p *sqliteProvider) SelectRoleIDsOfUserRole(userID string) ([]int32, error) {
-	return rdbSelectRoleIDsOfUserRole(p.ctx, p.database, userID)
+func (p *sqliteProvider) SelectRolesOfUserRole(userID string) ([]int32, error) {
+	return rdbSelectRolesOfUserRole(p.ctx, p.database, userID)
 }
 
 func (p *sqliteProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error) {

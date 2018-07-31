@@ -80,6 +80,17 @@ func (us *userServiceServer) DeleteUser(ctx context.Context, in *scpb.DeleteUser
 	return &empty.Empty{}, nil
 }
 
+func (urs *userServiceServer) GetUserRooms(ctx context.Context, in *scpb.GetUserRoomsRequest) (*scpb.UserRoomsResponse, error) {
+	req := &model.GetUserRoomsRequest{*in}
+	res, pd := service.GetUserRooms(ctx, req)
+	if pd != nil {
+		return &scpb.UserRoomsResponse{}, pd.Error
+	}
+
+	userRooms := res.ConvertToPbUserRooms()
+	return userRooms, nil
+}
+
 func (us *userServiceServer) GetContacts(ctx context.Context, in *scpb.GetContactsRequest) (*scpb.UsersResponse, error) {
 	req := &model.GetContactsRequest{*in}
 	users, pd := service.GetContacts(ctx, req)
@@ -100,4 +111,26 @@ func (us *userServiceServer) GetProfile(ctx context.Context, in *scpb.GetProfile
 
 	pbUser := user.ConvertToPbUser()
 	return pbUser, nil
+}
+
+func (us *userServiceServer) GetDeviceUsers(ctx context.Context, in *scpb.GetDeviceUsersRequest) (*scpb.DeviceUsersResponse, error) {
+	req := &model.GetDeviceUsersRequest{*in}
+	res, pd := service.GetDeviceUsers(ctx, req)
+	if pd != nil {
+		return &scpb.DeviceUsersResponse{}, pd.Error
+	}
+
+	deviceUsers := res.ConvertToPbDeviceUsers()
+	return deviceUsers, nil
+}
+
+func (us *userServiceServer) GetRoleUsers(ctx context.Context, in *scpb.GetRoleUsersRequest) (*scpb.RoleUsersResponse, error) {
+	req := &model.GetRoleUsersRequest{*in}
+	res, pd := service.GetRoleUsers(ctx, req)
+	if pd != nil {
+		return &scpb.RoleUsersResponse{}, pd.Error
+	}
+
+	roleUsers := res.ConvertToPbRoleUsers()
+	return roleUsers, nil
 }

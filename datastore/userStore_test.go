@@ -31,7 +31,7 @@ func TestUserStore(t *testing.T) {
 
 		newUserRole := &model.UserRole{}
 		newUserRole.UserID = newUser.UserID
-		newUserRole.RoleID = 1
+		newUserRole.Role = 1
 
 		newDevice := &model.Device{}
 		newDevice.UserID = newUser.UserID
@@ -88,7 +88,7 @@ func TestUserStore(t *testing.T) {
 
 		newUserRole := &model.UserRole{}
 		newUserRole.UserID = user.UserID
-		newUserRole.RoleID = 1
+		newUserRole.Role = 1
 
 		err = Provider(ctx).UpdateUser(
 			user,

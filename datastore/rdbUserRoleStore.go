@@ -17,7 +17,7 @@ func rdbCreateUserRoleStore(ctx context.Context, db string) {
 	master := RdbStore(db).master()
 
 	tableMap := master.AddTableWithName(model.UserRole{}, tableNameUserRole)
-	tableMap.SetUniqueTogether("user_id", "role_id")
+	tableMap.SetUniqueTogether("user_id", "role")
 	err := master.CreateTablesIfNotExists()
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while creating userRole table. %v.", err))
@@ -38,7 +38,7 @@ func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole) e
 	}
 
 	for _, ur := range urs {
-		bu, err := rdbSelectUserRole(ctx, db, ur.UserID, ur.RoleID)
+		bu, err := rdbSelectUserRole(ctx, db, ur.UserID, ur.Role)
 		if err != nil {
 			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while inserting user roles")
@@ -67,17 +67,17 @@ func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole) e
 	return nil
 }
 
-func rdbSelectUserRole(ctx context.Context, db string, userID string, roleID int32) (*model.UserRole, error) {
+func rdbSelectUserRole(ctx context.Context, db string, userID string, role int32) (*model.UserRole, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserRole")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
 
 	var userRoles []*model.UserRole
-	query := fmt.Sprintf("SELECT ur.user_id, ur.role_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND ur.role_id=:roleId AND u.deleted=0;", tableNameUserRole, tableNameUser)
+	query := fmt.Sprintf("SELECT ur.user_id, ur.role FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND ur.role=:role AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
 		"userId": userID,
-		"roleId": roleID,
+		"role":   role,
 	}
 	_, err := replica.Select(&userRoles, query, params)
 	if err != nil {
@@ -93,14 +93,14 @@ func rdbSelectUserRole(ctx context.Context, db string, userID string, roleID int
 	return nil, nil
 }
 
-func rdbSelectRoleIDsOfUserRole(ctx context.Context, db, userID string) ([]int32, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoleIDsOfUserRole")
+func rdbSelectRolesOfUserRole(ctx context.Context, db, userID string) ([]int32, error) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRolesOfUserRole")
 	defer span.Finish()
 
 	replica := RdbStore(db).replica()
 
 	var roleIDs []int32
-	query := fmt.Sprintf("SELECT ur.role_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND u.deleted=0;", tableNameUserRole, tableNameUser)
+	query := fmt.Sprintf("SELECT ur.role FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
@@ -114,7 +114,7 @@ func rdbSelectRoleIDsOfUserRole(ctx context.Context, db, userID string) ([]int32
 	return roleIDs, nil
 }
 
-func rdbSelectUserIDsOfUserRole(ctx context.Context, db string, roleID int32) ([]string, error) {
+func rdbSelectUserIDsOfUserRole(ctx context.Context, db string, role int32) ([]string, error) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsOfUserRole")
 	defer span.Finish()
 
@@ -122,9 +122,9 @@ func rdbSelectUserIDsOfUserRole(ctx context.Context, db string, roleID int32) ([
 
 	var userIDs []string
 
-	query := fmt.Sprintf("SELECT ur.user_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id  WHERE ur.role_id=:roleId AND u.deleted=0;", tableNameUserRole, tableNameUser)
+	query := fmt.Sprintf("SELECT ur.user_id FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id  WHERE ur.role=:role AND u.deleted=0;", tableNameUserRole, tableNameUser)
 	params := map[string]interface{}{
-		"roleId": roleID,
+		"role": role,
 	}
 	_, err := replica.Select(&userIDs, query, params)
 
@@ -150,10 +150,10 @@ func rdbDeleteUserRoles(ctx context.Context, db string, opts ...DeleteUserRolesO
 
 	trans, err := master.Begin()
 
-	if opt.userID != "" && opt.roleIDs != nil {
-		for _, roleID := range opt.roleIDs {
-			query := fmt.Sprintf("DELETE FROM %s WHERE user_id=? AND role_id=?", tableNameUserRole)
-			_, err := trans.Exec(query, opt.userID, roleID)
+	if opt.userID != "" && opt.roles != nil {
+		for _, role := range opt.roles {
+			query := fmt.Sprintf("DELETE FROM %s WHERE user_id=? AND role=?", tableNameUserRole)
+			_, err := trans.Exec(query, opt.userID, role)
 			if err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while deleting user roles")
@@ -161,10 +161,10 @@ func rdbDeleteUserRoles(ctx context.Context, db string, opts ...DeleteUserRolesO
 				return err
 			}
 		}
-	} else if opt.userID == "" && opt.roleIDs != nil {
-		for _, roleID := range opt.roleIDs {
-			query := fmt.Sprintf("DELETE FROM %s WHERE role_id=?", tableNameUserRole)
-			_, err := trans.Exec(query, roleID)
+	} else if opt.userID == "" && opt.roles != nil {
+		for _, role := range opt.roles {
+			query := fmt.Sprintf("DELETE FROM %s WHERE role=?", tableNameUserRole)
+			_, err := trans.Exec(query, role)
 			if err != nil {
 				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while deleting user roles")
@@ -172,7 +172,7 @@ func rdbDeleteUserRoles(ctx context.Context, db string, opts ...DeleteUserRolesO
 				return err
 			}
 		}
-	} else if opt.userID != "" && opt.roleIDs == nil {
+	} else if opt.userID != "" && opt.roles == nil {
 		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
 		_, err := trans.Exec(query, opt.userID)
 		if err != nil {

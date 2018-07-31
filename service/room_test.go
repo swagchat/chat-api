@@ -28,11 +28,16 @@ func TestRoom(t *testing.T) {
 			t.Fatalf("failed create room test")
 		}
 		req := &model.CreateRoomRequest{}
-		req.UserID = "service-user-id-0001"
-		req.Name = "Name"
-		req.Type = scpb.RoomType_OneOnOne
-		req.PictureURL = "http://example.com/dummy.png"
-		req.InformationURL = "http://example.com"
+		userID := "service-user-id-0001"
+		name := "Name"
+		roomType := scpb.RoomType_OneOnOne
+		pictureURL := "http://example.com/dummy.png"
+		informationURL := "http://example.com"
+		req.UserID = &userID
+		req.Name = &name
+		req.Type = &roomType
+		req.PictureURL = &pictureURL
+		req.InformationURL = &informationURL
 		req.MetaData = metaData
 		req.UserIDs = []string{"service-user-id-0002"}
 

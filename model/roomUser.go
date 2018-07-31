@@ -25,19 +25,6 @@ type CreateRoomUsersRequest struct {
 	Room *Room
 }
 
-func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
-	roomUsers := make([]*RoomUser, len(crur.UserIDs))
-	for i, userID := range crur.UserIDs {
-		ru := &RoomUser{}
-		ru.RoomID = crur.RoomID
-		ru.UserID = userID
-		ru.UnreadCount = int32(0)
-		ru.Display = crur.Display
-		roomUsers[i] = ru
-	}
-	return roomUsers
-}
-
 func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
 	if crur.Room.Type == scpb.RoomType_OneOnOne {
 		if len(crur.UserIDs) != 1 {
@@ -53,8 +40,32 @@ func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
 	return nil
 }
 
-type GetUserIdsOfRoomUserRequest struct {
-	scpb.GetUserIdsOfRoomUserRequest
+func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
+	roomUsers := make([]*RoomUser, len(crur.UserIDs))
+	for i, userID := range crur.UserIDs {
+		ru := &RoomUser{}
+		ru.RoomID = crur.RoomID
+		ru.UserID = userID
+		ru.UnreadCount = int32(0)
+		ru.Display = crur.Display
+		roomUsers[i] = ru
+	}
+	return roomUsers
+}
+
+type GetRoomUsersRequest struct {
+	scpb.GetRoomUsersRequest
+}
+
+type RoomUsersResponse struct {
+	scpb.RoomUsersResponse
+}
+
+func (rur *RoomUsersResponse) ConvertToPbRoomUsers() *scpb.RoomUsersResponse {
+	return &scpb.RoomUsersResponse{
+		Users:   rur.Users,
+		UserIDs: rur.UserIDs,
+	}
 }
 
 type UpdateRoomUserRequest struct {

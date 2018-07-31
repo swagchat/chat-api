@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
@@ -19,9 +20,14 @@ import (
 
 var client *kafka.Consumer
 
-type kafkaProvider struct{}
+type kafkaProvider struct {
+	ctx context.Context
+}
 
 func (kp *kafkaProvider) SubscribeMessage() error {
+	span, _ := opentracing.StartSpanFromContext(kp.ctx, "sbroker.kafkaProvider.SubscribeMessage")
+	defer span.Finish()
+
 	cfg := utils.Config()
 
 	host := cfg.SBroker.Kafka.Host
@@ -100,7 +106,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 					break
 				}
 
-				msg := &model.Message{pbMsg, payload, nil}
+				msg := &model.Message{pbMsg, payload}
 				msgs := []*model.Message{msg}
 
 				ctx := context.Background()
@@ -136,6 +142,9 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 }
 
 func (kp *kafkaProvider) UnsubscribeMessage() error {
+	span, _ := opentracing.StartSpanFromContext(kp.ctx, "sbroker.kafkaProvider.UnsubscribeMessage")
+	defer span.Finish()
+
 	if client == nil {
 		return nil
 	}

@@ -16,8 +16,8 @@ func (p *gcpSQLProvider) SelectUserRole(userID string, roleID int32) (*model.Use
 	return rdbSelectUserRole(p.ctx, p.database, userID, roleID)
 }
 
-func (p *gcpSQLProvider) SelectRoleIDsOfUserRole(userID string) ([]int32, error) {
-	return rdbSelectRoleIDsOfUserRole(p.ctx, p.database, userID)
+func (p *gcpSQLProvider) SelectRolesOfUserRole(userID string) ([]int32, error) {
+	return rdbSelectRolesOfUserRole(p.ctx, p.database, userID)
 }
 
 func (p *gcpSQLProvider) SelectUserIDsOfUserRole(roleID int32) ([]string, error) {

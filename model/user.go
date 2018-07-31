@@ -12,10 +12,6 @@ import (
 type User struct {
 	scpb.User
 	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
-	Roles    []int32        `json:"roles" db:"-"`
-	Rooms    []*RoomForUser `json:"rooms" db:"-"`
-	Devices  []*Device      `json:"devices" db:"-"`
-	Blocks   []string       `json:"blocks" db:"-"`
 }
 
 func (u *User) MarshalJSON() ([]byte, error) {
@@ -36,10 +32,9 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		LastAccessed     string         `json:"lastAccessed"`
 		Created          string         `json:"created"`
 		Modified         string         `json:"modified"`
+		BlockUsers       []string       `json:"blockUsers,omitempty"`
+		Devices          []*scpb.Device `json:"devices,omitempty"`
 		Roles            []int32        `json:"roles,omitempty"`
-		Rooms            []*RoomForUser `json:"rooms,omitempty"`
-		Devices          []*Device      `json:"devices,omitempty"`
-		Blocks           []string       `json:"blocks,omitempty"`
 	}{
 		UserID:           u.UserID,
 		Name:             u.Name,
@@ -55,10 +50,9 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
 		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
 		Modified:         time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
-		Roles:            u.Roles,
-		Rooms:            u.Rooms,
+		BlockUsers:       u.BlockUsers,
 		Devices:          u.Devices,
-		Blocks:           u.Blocks,
+		Roles:            u.Roles,
 	})
 }
 
@@ -77,27 +71,6 @@ func (u *User) IsRole(role int32) bool {
 }
 
 func (u *User) ConvertToPbUser() *scpb.User {
-	rooms := make([]*scpb.RoomForUser, len(u.Rooms))
-	for i, v := range u.Rooms {
-		metaData, _ := v.MetaData.MarshalJSON()
-		rooms[i] = &scpb.RoomForUser{
-			RoomID:             v.RoomID,
-			UserID:             v.UserID,
-			Name:               v.Name,
-			PictureURL:         v.PictureURL,
-			InformationURL:     v.InformationURL,
-			MetaData:           metaData,
-			Type:               v.Type,
-			LastMessage:        v.LastMessage,
-			LastMessageUpdated: v.LastMessageUpdated,
-			CanLeft:            v.CanLeft,
-			Created:            v.Created,
-			Modified:           v.Modified,
-			Users:              nil,
-			RuUnreadCount:      v.RuUnreadCount,
-		}
-	}
-
 	devices := make([]*scpb.Device, len(u.Devices))
 	for i, v := range u.Devices {
 		devices[i] = &scpb.Device{
@@ -123,10 +96,9 @@ func (u *User) ConvertToPbUser() *scpb.User {
 		LastAccessed:     u.LastAccessed,
 		Created:          u.Created,
 		Modified:         u.Modified,
-		Roles:            u.Roles,
-		Rooms:            rooms,
+		BlockUsers:       u.BlockUsers,
 		Devices:          devices,
-		Blocks:           u.Blocks,
+		Roles:            u.Roles,
 	}
 
 	return pbUser
@@ -216,7 +188,7 @@ type CreateUserRequest struct {
 }
 
 func (u *CreateUserRequest) Validate() *ErrorResponse {
-	if u.UserID != "" && !IsValidID(u.UserID) {
+	if u.UserID != nil && *u.UserID != "" && !IsValidID(*u.UserID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -226,7 +198,7 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if len(u.UserID) > 36 {
+	if u.UserID != nil && len(*u.UserID) > 36 {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -236,7 +208,7 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if u.Name == "" {
+	if *u.Name == "" {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "name",
@@ -252,15 +224,29 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 func (cur *CreateUserRequest) GenerateUser() *User {
 	u := &User{}
 
-	if cur.UserID == "" {
+	if cur.UserID == nil || *cur.UserID == "" {
 		u.UserID = utils.GenerateUUID()
 	} else {
-		u.UserID = cur.UserID
+		u.UserID = *cur.UserID
 	}
 
-	u.Name = cur.Name
-	u.PictureURL = cur.PictureURL
-	u.InformationURL = cur.InformationURL
+	if cur.Name == nil {
+		u.Name = ""
+	} else {
+		u.Name = *cur.Name
+	}
+
+	if cur.PictureURL == nil {
+		u.PictureURL = ""
+	} else {
+		u.PictureURL = *cur.PictureURL
+	}
+
+	if cur.InformationURL == nil {
+		u.InformationURL = ""
+	} else {
+		u.InformationURL = *cur.InformationURL
+	}
 
 	if cur.MetaData == nil || cur.MetaData.String() == "" {
 		u.MetaData = []byte("{}")
@@ -268,9 +254,24 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 		u.MetaData = cur.MetaData
 	}
 
-	u.Public = cur.Public
-	u.CanBlock = cur.CanBlock
-	u.Lang = cur.Lang
+	if cur.Public == nil {
+		u.Public = true
+	} else {
+		u.Public = *cur.Public
+	}
+
+	if cur.CanBlock == nil {
+		u.CanBlock = true
+	} else {
+		u.CanBlock = *cur.CanBlock
+	}
+
+	if cur.Lang == nil {
+		u.Lang = ""
+	} else {
+		u.Lang = *cur.Lang
+	}
+
 	u.UnreadCount = uint64(0)
 
 	nowTimestamp := time.Now().Unix()
@@ -282,12 +283,12 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 }
 
 func (cur *CreateUserRequest) GenerateUserRoles() []*UserRole {
-	urs := make([]*UserRole, len(cur.RoleIDs))
+	urs := make([]*UserRole, len(cur.Roles))
 
-	for i, v := range cur.RoleIDs {
+	for i, v := range cur.Roles {
 		ru := &UserRole{}
-		ru.UserID = cur.UserID
-		ru.RoleID = v
+		ru.UserID = *cur.UserID
+		ru.Role = v
 
 		urs[i] = ru
 	}
@@ -295,20 +296,16 @@ func (cur *CreateUserRequest) GenerateUserRoles() []*UserRole {
 }
 
 func (u *User) DoPostProcessing() {
-	if u.Roles == nil {
-		u.Roles = make([]int32, 0)
-	}
-
-	if u.Rooms == nil {
-		u.Rooms = make([]*RoomForUser, 0)
+	if u.BlockUsers == nil {
+		u.BlockUsers = make([]string, 0)
 	}
 
 	if u.Devices == nil {
-		u.Devices = make([]*Device, 0)
+		u.Devices = make([]*scpb.Device, 0)
 	}
 
-	if u.Blocks == nil {
-		u.Blocks = make([]string, 0)
+	if u.Roles == nil {
+		u.Roles = make([]int32, 0)
 	}
 }
 
@@ -361,12 +358,12 @@ func (uur *UpdateUserRequest) Validate() *ErrorResponse {
 }
 
 func (uur *UpdateUserRequest) GenerateUserRoles() []*UserRole {
-	urs := make([]*UserRole, len(uur.RoleIDs))
+	urs := make([]*UserRole, len(uur.Roles))
 
-	for i, v := range uur.RoleIDs {
+	for i, v := range uur.Roles {
 		ru := &UserRole{}
 		ru.UserID = uur.UserID
-		ru.RoleID = v
+		ru.Role = v
 
 		urs[i] = ru
 	}
@@ -377,10 +374,96 @@ type DeleteUserRequest struct {
 	scpb.DeleteUserRequest
 }
 
+type GetUserRoomsRequest struct {
+	scpb.GetUserRoomsRequest
+}
+
+type UserRoomsResponse struct {
+	scpb.UserRoomsResponse
+}
+
+func (urr *UserRoomsResponse) ConvertToPbUserRooms() *scpb.UserRoomsResponse {
+	rfus := make([]*scpb.RoomForUser, len(urr.Rooms))
+	for i := 0; i < len(urr.Rooms); i++ {
+		r := urr.Rooms[i]
+		// ufrs := make([]*scpb.UserForRoom, len(r.Users))
+		// for j := 0; j < len(r.Users); j++ {
+		// 	u := r.Users[j]
+		// 	ufrs[i] = &scpb.UserForRoom{
+		// 		RoomID:         u.RoomID,
+		// 		UserID:         u.UserID,
+		// 		Name:           u.Name,
+		// 		PictureURL:     u.PictureURL,
+		// 		InformationURL: u.InformationURL,
+		// 		MetaData:       u.MetaData,
+		// 		CanBlock:       u.CanBlock,
+		// 		LastAccessed:   u.LastAccessed,
+		// 		RuDisplay:      u.RuDisplay,
+		// 		Created:        u.Created,
+		// 		Modified:       u.Modified,
+		// 	}
+		// }
+		rfus[i] = &scpb.RoomForUser{
+			RoomID:             r.RoomID,
+			UserID:             r.UserID,
+			Name:               r.Name,
+			PictureURL:         r.PictureURL,
+			InformationURL:     r.InformationURL,
+			MetaData:           r.MetaData,
+			Type:               r.Type,
+			LastMessage:        r.LastMessage,
+			LastMessageUpdated: r.LastMessageUpdated,
+			CanLeft:            r.CanLeft,
+			Created:            r.Created,
+			Modified:           r.Modified,
+			Users:              r.Users,
+			RuUnreadCount:      r.RuUnreadCount,
+		}
+	}
+	userRooms := &scpb.UserRoomsResponse{}
+	userRooms.Rooms = rfus
+	userRooms.AllCount = urr.AllCount
+	userRooms.Limit = urr.Limit
+	userRooms.Offset = urr.Offset
+	userRooms.Orders = urr.Orders
+
+	return userRooms
+}
+
 type GetContactsRequest struct {
 	scpb.GetContactsRequest
 }
 
 type GetProfileRequest struct {
 	scpb.GetProfileRequest
+}
+
+type GetDeviceUsersRequest struct {
+	scpb.GetDeviceUsersRequest
+}
+
+type DeviceUsersResponse struct {
+	scpb.DeviceUsersResponse
+}
+
+func (dur *DeviceUsersResponse) ConvertToPbDeviceUsers() *scpb.DeviceUsersResponse {
+	return &scpb.DeviceUsersResponse{
+		Users:   dur.Users,
+		UserIDs: dur.UserIDs,
+	}
+}
+
+type GetRoleUsersRequest struct {
+	scpb.GetRoleUsersRequest
+}
+
+type RoleUsersResponse struct {
+	scpb.RoleUsersResponse
+}
+
+func (rur *RoleUsersResponse) ConvertToPbRoleUsers() *scpb.RoleUsersResponse {
+	return &scpb.RoleUsersResponse{
+		Users:   rur.Users,
+		UserIDs: rur.UserIDs,
+	}
 }

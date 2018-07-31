@@ -13,7 +13,7 @@ import (
 
 func setRoomUserMux() {
 	mux.PostFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(postRoomUsers)))
-	mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/userIds", commonHandler(roomMemberAuthzHandler(getRoomUserIDs)))
+	mux.GetFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(getRoomUsers)))
 	mux.PutFunc("/rooms/#roomId^[a-z0-9-]$/users/#userId^[a-z0-9-]$", commonHandler(roomMemberAuthzHandler(putRoomUser)))
 	mux.DeleteFunc("/rooms/#roomId^[a-z0-9-]$/users", commonHandler(roomMemberAuthzHandler(deleteRoomUsers)))
 }
@@ -39,14 +39,14 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusNoContent, "application/json", nil)
 }
 
-func getRoomUserIDs(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoomUserIDs")
+func getRoomUsers(w http.ResponseWriter, r *http.Request) {
+	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoomUsers")
 	defer span.Finish()
 
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
-	gUIDsReq := &model.GetUserIdsOfRoomUserRequest{}
-	gUIDsReq.RoomID = bone.GetValue(r, "roomId")
+	req := &model.GetRoomUsersRequest{}
+	req.RoomID = bone.GetValue(r, "roomId")
 
 	commaSeparatedRoleIDs := ""
 	if commaSeparatedRoleIDsSli, ok := params["roleIds"]; ok {
@@ -57,16 +57,16 @@ func getRoomUserIDs(w http.ResponseWriter, r *http.Request) {
 	if commaSeparatedRoleIDs != "" {
 		roleIDs = utils.CommaSeparatedStringsToInt32(commaSeparatedRoleIDs)
 		if len(roleIDs) > 0 {
-			gUIDsReq.RoleIDs = roleIDs
+			req.RoleIDs = roleIDs
 		}
 	}
 
-	userIDs, errRes := service.GetUserIDsOfRoomUser(r.Context(), gUIDsReq)
+	roomUsers, errRes := service.GetRoomUsers(r.Context(), req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
 	}
-	respond(w, r, http.StatusOK, "application/json", userIDs)
+	respond(w, r, http.StatusOK, "application/json", roomUsers)
 	return
 }
 

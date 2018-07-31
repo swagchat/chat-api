@@ -21,14 +21,15 @@ func (urs *roomUserServiceServer) CreateRoomUsers(ctx context.Context, in *scpb.
 	return &empty.Empty{}, nil
 }
 
-func (urs *roomUserServiceServer) GetUserIdsOfRoomUser(ctx context.Context, in *scpb.GetUserIdsOfRoomUserRequest) (*scpb.UserIds, error) {
-	req := &model.GetUserIdsOfRoomUserRequest{*in}
-	userIDs, pd := service.GetUserIDsOfRoomUser(ctx, req)
+func (urs *roomUserServiceServer) GetRoomUsers(ctx context.Context, in *scpb.GetRoomUsersRequest) (*scpb.RoomUsersResponse, error) {
+	req := &model.GetRoomUsersRequest{*in}
+	res, pd := service.GetRoomUsers(ctx, req)
 	if pd != nil {
-		return &scpb.UserIds{}, pd.Error
+		return &scpb.RoomUsersResponse{}, pd.Error
 	}
 
-	return userIDs, nil
+	roomUsers := res.ConvertToPbRoomUsers()
+	return roomUsers, nil
 }
 
 func (urs *roomUserServiceServer) UpdateRoomUser(ctx context.Context, in *scpb.UpdateRoomUserRequest) (*empty.Empty, error) {

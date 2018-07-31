@@ -15,20 +15,16 @@ type CreateUserRolesRequest struct {
 }
 
 func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
-	userRoles := make([]*UserRole, len(curr.RoleIDs))
-	for i, roleID := range curr.RoleIDs {
+	userRoles := make([]*UserRole, len(curr.Roles))
+	for i, role := range curr.Roles {
 		ur := &UserRole{}
 		ur.UserID = curr.UserID
-		ur.RoleID = roleID
+		ur.Role = role
 		userRoles[i] = ur
 	}
 	b := &UserRole{}
 	b.UserID = ""
 	return userRoles
-}
-
-type GetUserIdsOfUserRoleRequest struct {
-	scpb.GetUserIdsOfUserRoleRequest
 }
 
 type DeleteUserRolesRequest struct {
@@ -46,11 +42,11 @@ func (durr *DeleteUserRolesRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to delete user roles.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if len(durr.RoleIDs) == 0 {
+	if len(durr.Roles) == 0 {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
-				Name:   "roleIds",
-				Reason: "roleIds is empty.",
+				Name:   "roles",
+				Reason: "roles is empty.",
 			},
 		}
 		return NewErrorResponse("Failed to delete user roles.", http.StatusBadRequest, WithInvalidParams(invalidParams))

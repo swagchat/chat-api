@@ -27,14 +27,15 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, errRes
 	}
 
-	_, errRes = confirmUserNotExist(ctx, req.UserID)
+	user := req.GenerateUser()
+	req.UserID = &user.UserID
+
+	_, errRes = confirmUserNotExist(ctx, *req.UserID)
 	if errRes != nil {
 		errRes.Message = "Failed to create a user."
 		return nil, errRes
 	}
 
-	user := req.GenerateUser()
-	req.UserID = user.UserID
 	urs := req.GenerateUserRoles()
 
 	err := datastore.Provider(ctx).InsertUser(user, datastore.InsertUserOptionWithRoles(urs))
@@ -42,7 +43,7 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 		return nil, model.NewErrorResponse("Failed to create user.", http.StatusInternalServerError, model.WithError(err))
 	}
 
-	user.Roles = req.RoleIDs
+	user.Roles = req.Roles
 	user.DoPostProcessing()
 
 	logger.Info("Finish CreateUser")
@@ -169,7 +170,7 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 
 	if devices != nil {
 		for _, device := range devices {
-			nRes := <-notification.Provider().DeleteEndpoint(device.NotificationDeviceID)
+			nRes := <-notification.Provider(ctx).DeleteEndpoint(device.NotificationDeviceID)
 			if nRes.Error != nil {
 				return model.NewErrorResponse("Failed to delete user.", http.StatusInternalServerError, model.WithError(nRes.Error))
 			}
@@ -203,6 +204,14 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 // }
 
 // GetContacts gets contacts
+
+func GetUserRooms(ctx context.Context, req *model.GetUserRoomsRequest) (*model.UserRoomsResponse, *model.ErrorResponse) {
+	logger.Info(fmt.Sprintf("Start  GetUserRooms. Request[%#v]", req))
+
+	logger.Info("Finish GetUserRooms")
+	return &model.UserRoomsResponse{}, nil
+}
+
 func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.UsersResponse, *model.ErrorResponse) {
 	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetContacts")
 	defer span.Finish()
@@ -246,4 +255,42 @@ func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User,
 
 	logger.Info(fmt.Sprintf("Finish GetProfile."))
 	return user, nil
+}
+
+// GetDeviceUsers gets users or userIds of devices
+func GetDeviceUsers(ctx context.Context, req *model.GetDeviceUsersRequest) (*model.DeviceUsersResponse, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetDeviceUsers")
+	defer span.Finish()
+
+	logger.Info(fmt.Sprintf("Start  GetDeviceUsers. Request[%#v]", req))
+
+	// userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
+	// if err != nil {
+	// 	return nil, model.NewErrorResponse("Failed to get userIds of user roles.", http.StatusInternalServerError, model.WithError(err))
+	// }
+
+	deviceUsers := &model.DeviceUsersResponse{}
+	// deviceUsers.UserIDs = userIDs
+
+	logger.Info("Finish GetDeviceUsers.")
+	return deviceUsers, nil
+}
+
+// GetRoleUsers gets users or userIds of user roles
+func GetRoleUsers(ctx context.Context, req *model.GetRoleUsersRequest) (*model.RoleUsersResponse, *model.ErrorResponse) {
+	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoleUsers")
+	defer span.Finish()
+
+	logger.Info(fmt.Sprintf("Start  GetRoleUsers. Request[%#v]", req))
+
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get userIds of user roles.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	roleUsers := &model.RoleUsersResponse{}
+	roleUsers.UserIDs = userIDs
+
+	logger.Info("Finish GetRoleUsers.")
+	return roleUsers, nil
 }
