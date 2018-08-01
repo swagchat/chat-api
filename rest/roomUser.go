@@ -5,9 +5,9 @@ import (
 	"net/url"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -20,8 +20,9 @@ func setRoomUserMux() {
 }
 
 func postRoomUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postRoomUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postRoomUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.CreateRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -31,7 +32,7 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.RoomID = bone.GetValue(r, "roomId")
 
-	errRes := service.CreateRoomUsers(r.Context(), &req)
+	errRes := service.CreateRoomUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -41,8 +42,9 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoomUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoomUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getRoomUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
@@ -69,7 +71,7 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	roomUsers, errRes := service.GetRoomUsers(r.Context(), req)
+	roomUsers, errRes := service.GetRoomUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -79,8 +81,9 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func putRoomUser(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putRoomUser")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("putRoomUser", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.UpdateRoomUserRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -91,7 +94,7 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 	req.RoomID = bone.GetValue(r, "roomId")
 	req.UserID = bone.GetValue(r, "userId")
 
-	errRes := service.UpdateRoomUser(r.Context(), &req)
+	errRes := service.UpdateRoomUser(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -101,8 +104,9 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteRoomUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("deleteRoomUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.DeleteRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -112,7 +116,7 @@ func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.RoomID = bone.GetValue(r, "roomId")
 
-	errRes := service.DeleteRoomUsers(r.Context(), &req)
+	errRes := service.DeleteRoomUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

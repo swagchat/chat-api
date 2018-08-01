@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func rdbCreateUserRoleStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateUserRoleStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateUserRoleStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -26,8 +26,8 @@ func rdbCreateUserRoleStore(ctx context.Context, db string) {
 }
 
 func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole, opts ...InsertUserRolesOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertUserRoles")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertUserRoles", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -87,8 +87,8 @@ func rdbInsertUserRoles(ctx context.Context, db string, urs []*model.UserRole, o
 }
 
 func rdbSelectUserRole(ctx context.Context, db string, userID string, role int32) (*model.UserRole, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserRole")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectUserRole", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -113,8 +113,8 @@ func rdbSelectUserRole(ctx context.Context, db string, userID string, role int32
 }
 
 func rdbSelectRolesOfUserRole(ctx context.Context, db, userID string) ([]int32, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRolesOfUserRole")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectRolesOfUserRole", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -134,8 +134,8 @@ func rdbSelectRolesOfUserRole(ctx context.Context, db, userID string) ([]int32, 
 }
 
 func rdbSelectUserIDsOfUserRole(ctx context.Context, db string, role int32) ([]string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsOfUserRole")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectUserIDsOfUserRole", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -157,8 +157,8 @@ func rdbSelectUserIDsOfUserRole(ctx context.Context, db string, role int32) ([]s
 }
 
 func rdbDeleteUserRoles(ctx context.Context, db string, opts ...DeleteUserRolesOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteUserRoles")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbDeleteUserRoles", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 

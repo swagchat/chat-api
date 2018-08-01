@@ -6,16 +6,16 @@ import (
 	"strconv"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateUserStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateUserStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateUserStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -34,8 +34,8 @@ func rdbCreateUserStore(ctx context.Context, db string) {
 }
 
 func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...InsertUserOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertUser", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := insertUserOptions{}
 	for _, o := range opts {
@@ -101,8 +101,8 @@ func rdbInsertUser(ctx context.Context, db string, user *model.User, opts ...Ins
 }
 
 func rdbSelectUsers(ctx context.Context, db string, limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := selectUsersOptions{}
 	for _, o := range opts {
@@ -144,8 +144,8 @@ func rdbSelectUsers(ctx context.Context, db string, limit, offset int32, opts ..
 }
 
 func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOption) (*model.User, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectUser", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := selectUserOptions{}
 	for _, o := range opts {
@@ -276,8 +276,8 @@ func rdbSelectUser(ctx context.Context, db, userID string, opts ...SelectUserOpt
 }
 
 func rdbSelectCountUsers(ctx context.Context, db string, opts ...SelectUsersOption) (int64, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectCountUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectCountUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := selectUsersOptions{}
 	for _, o := range opts {
@@ -299,8 +299,8 @@ func rdbSelectCountUsers(ctx context.Context, db string, opts ...SelectUsersOpti
 }
 
 func rdbSelectUserIDsOfUser(ctx context.Context, db string, userIDs []string) ([]string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUserIDsOfUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectUserIDsOfUser", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -323,8 +323,8 @@ func rdbSelectUserIDsOfUser(ctx context.Context, db string, userIDs []string) ([
 }
 
 func rdbUpdateUser(ctx context.Context, db string, user *model.User, opts ...UpdateUserOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbUpdateUser", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := updateUserOptions{}
 	for _, o := range opts {
@@ -403,8 +403,8 @@ func rdbUpdateUser(ctx context.Context, db string, user *model.User, opts ...Upd
 }
 
 func rdbUpdateUserDeleted(ctx context.Context, db, userID string) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateUserDeleted")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbUpdateUserDeleted", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
@@ -472,8 +472,8 @@ func rdbUpdateUserDeleted(ctx context.Context, db, userID string) error {
 }
 
 func rdbSelectContacts(ctx context.Context, db, userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectContacts")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectContacts", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 

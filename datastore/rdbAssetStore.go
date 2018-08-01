@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func rdbCreateAssetStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateAssetStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateAssetStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -30,8 +30,8 @@ func rdbCreateAssetStore(ctx context.Context, db string) {
 }
 
 func rdbInsertAsset(ctx context.Context, db string, asset *model.Asset) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertAsset")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertAsset", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -44,8 +44,8 @@ func rdbInsertAsset(ctx context.Context, db string, asset *model.Asset) error {
 }
 
 func rdbSelectAsset(ctx context.Context, db, assetID string) (*model.Asset, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectAsset")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectAsset", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 

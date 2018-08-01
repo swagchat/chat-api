@@ -451,21 +451,6 @@ type GetProfileRequest struct {
 	scpb.GetProfileRequest
 }
 
-type GetDeviceUsersRequest struct {
-	scpb.GetDeviceUsersRequest
-}
-
-type DeviceUsersResponse struct {
-	scpb.DeviceUsersResponse
-}
-
-func (dur *DeviceUsersResponse) ConvertToPbDeviceUsers() *scpb.DeviceUsersResponse {
-	return &scpb.DeviceUsersResponse{
-		Users:   dur.Users,
-		UserIDs: dur.UserIDs,
-	}
-}
-
 type GetRoleUsersRequest struct {
 	scpb.GetRoleUsersRequest
 }

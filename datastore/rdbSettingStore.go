@@ -7,14 +7,14 @@ import (
 
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func rdbCreateSettingStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateSettingStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateSettingStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -27,8 +27,8 @@ func rdbCreateSettingStore(ctx context.Context, db string) {
 }
 
 func rdbSelectLatestSetting(ctx context.Context, db string) (*model.Setting, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectLatestSetting")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectLatestSetting", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 

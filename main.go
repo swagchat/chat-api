@@ -16,6 +16,7 @@ import (
 	"github.com/swagchat/chat-api/rest"
 	"github.com/swagchat/chat-api/sbroker"
 	"github.com/swagchat/chat-api/storage"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -48,6 +49,12 @@ func main() {
 
 	if !cfg.Datastore.Dynamic {
 		datastore.Provider(ctx).CreateTables()
+	}
+
+	err := tracer.Provider(ctx).NewTracer()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
 	if cfg.GRPCPort == "" {

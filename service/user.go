@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 // CreateUser creates a user
 func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("CreateUser", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {
@@ -52,8 +52,8 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 
 // GetUsers gets users
 func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	users, err := datastore.Provider(ctx).SelectUsers(
 		req.Limit,
@@ -81,8 +81,8 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 
 // GetUser gets a user
 func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetUser", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	user, err := datastore.Provider(ctx).SelectUser(
 		req.UserID,
@@ -113,8 +113,8 @@ func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *mode
 
 // UpdateUser updates a user
 func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.UpdateUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("UpdateUser", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -142,8 +142,8 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 
 // DeleteUser deletes a user
 func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("DeleteUser", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	dsp := datastore.Provider(ctx)
 	user, errRes := confirmUserExist(ctx, req.UserID)
@@ -194,15 +194,15 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 // GetContacts gets contacts
 
 func GetUserRooms(ctx context.Context, req *model.GetUserRoomsRequest) (*model.UserRoomsResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetUserRooms")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetUserRooms", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	return &model.UserRoomsResponse{}, nil
 }
 
 func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.UsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetContacts")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetContacts", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	contacts, err := datastore.Provider(ctx).SelectContacts(
 		req.UserID,
@@ -226,8 +226,8 @@ func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.Use
 
 // GetProfile gets a profile
 func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetProfile")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetProfile", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -239,26 +239,10 @@ func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User,
 	return user, nil
 }
 
-// GetDeviceUsers gets users or userIds of devices
-func GetDeviceUsers(ctx context.Context, req *model.GetDeviceUsersRequest) (*model.DeviceUsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetDeviceUsers")
-	defer span.Finish()
-
-	// userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
-	// if err != nil {
-	// 	return nil, model.NewErrorResponse("Failed to get userIds of user roles.", http.StatusInternalServerError, model.WithError(err))
-	// }
-
-	deviceUsers := &model.DeviceUsersResponse{}
-	// deviceUsers.UserIDs = userIDs
-
-	return deviceUsers, nil
-}
-
 // GetRoleUsers gets users or userIds of user roles
 func GetRoleUsers(ctx context.Context, req *model.GetRoleUsersRequest) (*model.RoleUsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoleUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetRoleUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
 	if err != nil {

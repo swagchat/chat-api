@@ -6,26 +6,26 @@ import (
 	"sync"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
 // CreateDevice creates device
 func CreateDevice(ctx context.Context, req *model.CreateDeviceRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateDevice")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("CreateDevice", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	return nil
 }
 
 // GetDevices gets devices
 func GetDevices(ctx context.Context, req *model.GetDevicesRequest) (*model.DevicesResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetDevices")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetDevices", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(req.UserID))
 	if err != nil {
@@ -39,8 +39,8 @@ func GetDevices(ctx context.Context, req *model.GetDevicesRequest) (*model.Devic
 
 // UpdateDevice updates device
 func UpdateDevice(ctx context.Context, req *model.UpdateDeviceRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.UpdateDevice")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("UpdateDevice", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {
@@ -103,7 +103,7 @@ func UpdateDevice(ctx context.Context, req *model.UpdateDeviceRequest) *model.Er
 				go subscribeByDevice(ctx, device, nil)
 			}()
 		} else {
-			device, err = datastore.Provider(ctx).InsertDevice(device)
+			err = datastore.Provider(ctx).InsertDevice(device)
 			if err != nil {
 				return model.NewErrorResponse("Failed to update device.", http.StatusInternalServerError, model.WithError(err))
 			}
@@ -117,8 +117,8 @@ func UpdateDevice(ctx context.Context, req *model.UpdateDeviceRequest) *model.Er
 
 // DeleteDevice deletes device
 func DeleteDevice(ctx context.Context, req *model.DeleteDeviceRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteDevices")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("DeleteDevice", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	device, errRes := confirmDeviceExist(ctx, req.UserID, req.Platform)
 	if errRes != nil {

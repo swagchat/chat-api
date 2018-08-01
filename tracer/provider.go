@@ -2,14 +2,17 @@ package tracer
 
 import (
 	"context"
-	"io"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/utils"
 )
 
 type provider interface {
-	NewTracer(service string) (opentracing.Tracer, io.Closer)
+	NewTracer() error
+	StartTransaction(name, transactionType string) context.Context
+	StartSpan(name, spanType string) interface{}
+	SetTag(key string, value interface{})
+	Finish(span interface{})
+	Close()
 }
 
 func Provider(ctx context.Context) provider {
@@ -23,6 +26,10 @@ func Provider(ctx context.Context) provider {
 		}
 	case "jaeger":
 		p = &jaegerProvider{
+			ctx: ctx,
+		}
+	case "elasticapm":
+		p = &elasticapmProvider{
 			ctx: ctx,
 		}
 	}

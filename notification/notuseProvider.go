@@ -3,7 +3,6 @@ package notification
 import (
 	"context"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -12,9 +11,6 @@ type notuseProvider struct {
 }
 
 func (np *notuseProvider) CreateTopic(roomId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.CreateTopic")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -23,9 +19,6 @@ func (np *notuseProvider) CreateTopic(roomId string) NotificationChannel {
 }
 
 func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.DeleteTopic")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -34,9 +27,6 @@ func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationCh
 }
 
 func (np *notuseProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.CreateEndpoint")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -45,9 +35,6 @@ func (np *notuseProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 }
 
 func (np *notuseProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.DeleteEndpoint")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -56,9 +43,6 @@ func (np *notuseProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 }
 
 func (np *notuseProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.Subscribe")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -67,9 +51,6 @@ func (np *notuseProvider) Subscribe(notificationTopicId string, notificationDevi
 }
 
 func (np *notuseProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.Unsubscribe")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -78,9 +59,6 @@ func (np *notuseProvider) Unsubscribe(notificationSubscribeId string) Notificati
 }
 
 func (np *notuseProvider) Publish(notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "notification.awssnsProvider.Publish")
-	defer span.Finish()
-
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}

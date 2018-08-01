@@ -47,6 +47,8 @@ const (
 	CtxWorkspace
 	CtxRoomUser
 	CtxSubscription
+	CtxTracerTransaction
+	CtxTracerSpan
 
 	RoleGeneral int32 = 1
 )

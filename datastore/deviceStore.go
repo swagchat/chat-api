@@ -34,9 +34,8 @@ func SelectDevicesOptionFilterByToken(token string) SelectDevicesOption {
 type deviceStore interface {
 	createDeviceStore()
 
-	InsertDevice(device *model.Device) (*model.Device, error)
+	InsertDevice(device *model.Device) error
 	SelectDevices(opts ...SelectDevicesOption) ([]*model.Device, error)
-	// SelectDeviceUserIDs(opts ...SelectDevicesOption) ([]*model.Device, error)
 	SelectDevice(userID string, platform scpb.Platform) (*model.Device, error)
 	UpdateDevice(device *model.Device) error
 	DeleteDevice(userID string, platform scpb.Platform) error

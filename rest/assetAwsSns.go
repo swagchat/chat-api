@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -57,8 +57,9 @@ type Object struct {
 }
 
 func postAssetAwsSns(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postAssetAwsSns")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postAssetAwsSns", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	decoder := json.NewDecoder(r.Body)
 	var input AwsSNSSubscribeInput

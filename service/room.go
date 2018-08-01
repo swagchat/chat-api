@@ -6,18 +6,18 @@ import (
 	"sync"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateRoom creates a room
 func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("CreateRoom", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {
@@ -96,8 +96,8 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 
 // GetRooms gets rooms
 func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRooms")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetRooms", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	rooms, err := datastore.Provider(ctx).SelectRooms(
 		req.Limit,
@@ -124,8 +124,8 @@ func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResp
 
 // GetRoom gets a room
 func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetRoom", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	room, err := datastore.Provider(ctx).SelectRoom(req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if err != nil {
@@ -157,8 +157,8 @@ func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *mode
 
 // UpdateRoom updates room
 func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.UpdateRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("UpdateRoom", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {
@@ -196,8 +196,8 @@ func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room,
 
 // DeleteRoom deletes room
 func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("DeleteRoom", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID)
 	if errRes != nil {
@@ -232,8 +232,8 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorR
 
 // GetRoomMessages gets room messages
 func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.Messages, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoomMessages")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetRoomMessages", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	userID := ctx.Value(utils.CtxUserID).(string)
 	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))

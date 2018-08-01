@@ -11,6 +11,7 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"google.golang.org/grpc"
@@ -18,6 +19,9 @@ import (
 )
 
 func webhookRoom(ctx context.Context, room *model.Room) {
+	span := tracer.Provider(ctx).StartSpan("webhookRoom", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	webhooks, err := datastore.Provider(ctx).SelectWebhooks(
 		model.WebhookEventTypeRoom,
 		datastore.SelectWebhooksOptionWithRoomID(datastore.RoomIDAll),
@@ -87,6 +91,9 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 }
 
 func webhookMessage(ctx context.Context, message *model.Message, user *model.User) {
+	span := tracer.Provider(ctx).StartSpan("webhookMessage", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID)
 	if err != nil {
 		logger.Error(err.Error())

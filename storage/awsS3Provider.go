@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 type awss3Provider struct {
@@ -52,8 +52,8 @@ func (ap *awss3Provider) Init() error {
 }
 
 func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "storage.awss3Provider.Post")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("Post", "storage")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	awsS3Client, err := ap.getSession()
 	if err != nil {
@@ -82,8 +82,8 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (ap *awss3Provider) Get(assetInfo *AssetInfo) ([]byte, error) {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "storage.awss3Provider.Get")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("Get", "storage")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	return nil, nil
 }

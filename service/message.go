@@ -13,12 +13,16 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateMessages creates messages
 func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseMessages {
+	span := tracer.Provider(ctx).StartSpan("CreateMessages", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	messageIds := make([]string, 0)
 	pds := make([]*model.ErrorResponse, 0)
 	for _, post := range posts.Messages {
@@ -97,8 +101,11 @@ func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseM
 	return responseMessages
 }
 
-// GetMessage is get message
+// GetMessage gets message
 func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("GetMessage", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	if messageID == "" {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{

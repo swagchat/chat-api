@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -18,8 +18,8 @@ type directProvider struct {
 }
 
 func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
-	span, _ := opentracing.StartSpanFromContext(dp.ctx, "pbroker.directProvider.PublishMessage")
-	defer span.Finish()
+	span := tracer.Provider(dp.ctx).StartSpan("PublishMessage", "pbroker")
+	defer tracer.Provider(dp.ctx).Finish(span)
 
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)

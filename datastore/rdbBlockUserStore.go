@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func rdbCreateBlockUserStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateBlockUserStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateBlockUserStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -26,8 +26,8 @@ func rdbCreateBlockUserStore(ctx context.Context, db string) {
 }
 
 func rdbInsertBlockUsers(ctx context.Context, db string, bus []*model.BlockUser, opts ...InsertBlockUsersOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertBlockUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -85,8 +85,8 @@ func rdbInsertBlockUsers(ctx context.Context, db string, bus []*model.BlockUser,
 }
 
 func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]*model.MiniUser, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -117,8 +117,8 @@ func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]*model.MiniU
 }
 
 func rdbSelectBlockUserIDs(ctx context.Context, db, userID string) ([]string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUserIDs")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUserIDs", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -137,8 +137,8 @@ func rdbSelectBlockUserIDs(ctx context.Context, db, userID string) ([]string, er
 }
 
 func rdbSelectBlockedUsers(ctx context.Context, db, userID string) ([]*model.MiniUser, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockedUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockedUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -169,8 +169,8 @@ func rdbSelectBlockedUsers(ctx context.Context, db, userID string) ([]*model.Min
 }
 
 func rdbSelectBlockedUserIDs(ctx context.Context, db, userID string) ([]string, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockedUserIDs")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockedUserIDs", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -189,8 +189,8 @@ func rdbSelectBlockedUserIDs(ctx context.Context, db, userID string) ([]string, 
 }
 
 func rdbSelectBlockUser(ctx context.Context, db, userID, blockUserID string) (*model.BlockUser, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectBlockUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUser", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -214,8 +214,8 @@ func rdbSelectBlockUser(ctx context.Context, db, userID, blockUserID string) (*m
 }
 
 func rdbDeleteBlockUsers(ctx context.Context, db string, opts ...DeleteBlockUsersOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbDeleteBlockUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 

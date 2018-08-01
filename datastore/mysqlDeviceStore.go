@@ -9,7 +9,7 @@ func (p *mysqlProvider) createDeviceStore() {
 	rdbCreateDeviceStore(p.ctx, p.database)
 }
 
-func (p *mysqlProvider) InsertDevice(device *model.Device) (*model.Device, error) {
+func (p *mysqlProvider) InsertDevice(device *model.Device) error {
 	return rdbInsertDevice(p.ctx, p.database, device)
 }
 

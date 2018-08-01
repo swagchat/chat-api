@@ -7,16 +7,16 @@ import (
 
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateAppClientStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateAppClientStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateAppClientStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -62,8 +62,8 @@ func rdbCreateAppClientStore(ctx context.Context, db string) {
 }
 
 func rdbInsertAppClient(ctx context.Context, db string, appClient *model.AppClient) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertAppClient")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertAppClient", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -77,8 +77,8 @@ func rdbInsertAppClient(ctx context.Context, db string, appClient *model.AppClie
 }
 
 func rdbSelectLatestAppClient(ctx context.Context, db string, opts ...SelectAppClientOption) (*model.AppClient, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectLatestAppClient")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectLatestAppClient", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 

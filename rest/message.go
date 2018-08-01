@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func setMessageMux() {
@@ -15,8 +15,9 @@ func setMessageMux() {
 }
 
 func postMessages(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postMessages")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postMessages", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var post model.Messages
 	if err := decodeBody(r, &post); err != nil {
@@ -24,7 +25,7 @@ func postMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	mRes := service.CreateMessages(r.Context(), &post)
+	mRes := service.CreateMessages(ctx, &post)
 	// if len(mRes.MessageIds) == 0 {
 	// 	respond(w, r, mRes.Errors[0].Status, "application/json", mRes)
 	// 	return
@@ -39,12 +40,13 @@ func postMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMessage(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getMessage")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getMessage", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	messageID := bone.GetValue(r, "messageId")
 
-	message, errRes := service.GetMessage(r.Context(), messageID)
+	message, errRes := service.GetMessage(ctx, messageID)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

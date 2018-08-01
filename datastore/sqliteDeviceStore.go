@@ -9,7 +9,7 @@ func (p *sqliteProvider) createDeviceStore() {
 	rdbCreateDeviceStore(p.ctx, p.database)
 }
 
-func (p *sqliteProvider) InsertDevice(device *model.Device) (*model.Device, error) {
+func (p *sqliteProvider) InsertDevice(device *model.Device) error {
 	return rdbInsertDevice(p.ctx, p.database, device)
 }
 

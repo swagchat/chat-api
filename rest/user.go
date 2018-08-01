@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -23,13 +23,13 @@ func setUserMux() {
 	mux.GetFunc("/users/#userId^[a-z0-9-]$/rooms", commonHandler(selfResourceAuthzHandler(getUserRooms)))
 	mux.GetFunc("/users/#userId^[a-z0-9-]$/contacts", commonHandler(selfResourceAuthzHandler(getContacts)))
 	mux.GetFunc("/profiles/#userId^[a-z0-9-]$", commonHandler(contactsAuthzHandler(getProfile)))
-	mux.GetFunc("/devices/#platform^[1-9]$/users", commonHandler(adminAuthzHandler(getDeviceUsers)))
 	mux.GetFunc("/roles/#roleId^[0-9]$/users", commonHandler(adminAuthzHandler(getRoleUsers)))
 }
 
 func postUser(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postUser")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postUser", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.CreateUserRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -37,7 +37,7 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, errRes := service.CreateUser(r.Context(), &req)
+	user, errRes := service.CreateUser(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -47,8 +47,9 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetUsersRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
@@ -68,7 +69,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	users, errRes := service.GetUsers(r.Context(), req)
+	users, errRes := service.GetUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -78,15 +79,16 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUser")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getUser", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetUserRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	user, errRes := service.GetUser(r.Context(), req)
+	user, errRes := service.GetUser(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -96,8 +98,9 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func putUser(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putUser")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("putUser", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.UpdateUserRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -107,7 +110,7 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 	req.UserID = bone.GetValue(r, "userId")
 
-	user, errRes := service.UpdateUser(r.Context(), &req)
+	user, errRes := service.UpdateUser(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -117,15 +120,16 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteUser")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("deleteUser", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.DeleteUserRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	errRes := service.DeleteUser(r.Context(), req)
+	errRes := service.DeleteUser(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -135,8 +139,9 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUserRooms(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getUserRooms")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getUserRooms", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetUserRoomsRequest{}
 
@@ -170,7 +175,7 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	roomUsers, errRes := service.GetUserRooms(r.Context(), req)
+	roomUsers, errRes := service.GetUserRooms(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -180,8 +185,9 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 }
 
 func getContacts(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getContacts")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getContacts", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetContactsRequest{}
 
@@ -205,7 +211,7 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	contacts, errRes := service.GetContacts(r.Context(), req)
+	contacts, errRes := service.GetContacts(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -215,15 +221,16 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProfile(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getProfile")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getProfile", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetProfileRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	user, errRes := service.GetProfile(r.Context(), req)
+	user, errRes := service.GetProfile(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -232,38 +239,10 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "application/json", user)
 }
 
-func getDeviceUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getDevices")
-	defer span.Finish()
-
-	req := &model.GetDeviceUsersRequest{}
-	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
-	if err != nil {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "platform",
-				Reason: "Platform must be numeric.",
-			},
-		}
-		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
-		respondError(w, r, errRes)
-		return
-	}
-
-	req.Platform = int32(i)
-
-	deviceUsers, errRes := service.GetDeviceUsers(r.Context(), req)
-	if errRes != nil {
-		respondError(w, r, errRes)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "application/json", deviceUsers)
-}
-
 func getRoleUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoleUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getRoleUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetRoleUsersRequest{}
 
@@ -283,7 +262,7 @@ func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.RoleID = int32(roleIDInt)
 
-	roleUsers, errRes := service.GetRoleUsers(r.Context(), req)
+	roleUsers, errRes := service.GetRoleUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

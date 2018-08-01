@@ -11,8 +11,8 @@ import (
 	"unsafe"
 
 	nsq "github.com/nsqio/go-nsq"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -29,8 +29,8 @@ func b2s(b []byte) string {
 }
 
 func (np nsqProvider) PublishMessage(rtmEvent *RTMEvent) error {
-	span, _ := opentracing.StartSpanFromContext(np.ctx, "pbroker.nsqProvider.PublishMessage")
-	defer span.Finish()
+	span := tracer.Provider(np.ctx).StartSpan("PublishMessage", "pbroker")
+	defer tracer.Provider(np.ctx).Finish(span)
 
 	cfg := utils.Config()
 	buffer := new(bytes.Buffer)

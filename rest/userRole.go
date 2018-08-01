@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func setUserRoleMux() {
@@ -16,8 +16,9 @@ func setUserRoleMux() {
 }
 
 func postUserRole(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postUserRole")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postUserRole", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.CreateUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -28,7 +29,7 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	errRes := service.CreateUserRoles(r.Context(), &req)
+	errRes := service.CreateUserRoles(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -38,8 +39,9 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func putUserRole(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putUserRole")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("putUserRole", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.AddUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -50,7 +52,7 @@ func putUserRole(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	errRes := service.AddUserRoles(r.Context(), &req)
+	errRes := service.AddUserRoles(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -60,8 +62,9 @@ func putUserRole(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUserRole(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteUserRole")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("deleteUserRole", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.DeleteUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -72,7 +75,7 @@ func deleteUserRole(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	errRes := service.DeleteUserRoles(r.Context(), &req)
+	errRes := service.DeleteUserRoles(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

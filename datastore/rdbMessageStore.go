@@ -7,17 +7,17 @@ import (
 	"strings"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateMessageStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateMessageStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateMessageStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -50,8 +50,8 @@ func rdbCreateMessageStore(ctx context.Context, db string) {
 }
 
 func rdbInsertMessage(ctx context.Context, db string, message *model.Message) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertMessage")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertMessage", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
@@ -147,8 +147,8 @@ func rdbInsertMessage(ctx context.Context, db string, message *model.Message) er
 }
 
 func rdbSelectMessages(ctx context.Context, db string, limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectMessages")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectMessages", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -200,8 +200,8 @@ func rdbSelectMessages(ctx context.Context, db string, limit, offset int32, opts
 }
 
 func rdbSelectMessage(ctx context.Context, db, messageID string) (*model.Message, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectMessage")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectMessage", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -222,8 +222,8 @@ func rdbSelectMessage(ctx context.Context, db, messageID string) (*model.Message
 }
 
 func rdbSelectCountMessages(ctx context.Context, db string, opts ...SelectMessagesOption) (int64, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectCountMessages")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectCountMessages", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -256,8 +256,8 @@ func rdbSelectCountMessages(ctx context.Context, db string, opts ...SelectMessag
 }
 
 func rdbUpdateMessage(ctx context.Context, db string, message *model.Message) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateMessage")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbUpdateMessage", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 

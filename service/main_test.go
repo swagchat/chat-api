@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
 		newDevice.Platform = 1
 		newDevice.Token = token
 		newDevice.NotificationDeviceID = token
-		_, err = datastore.Provider(ctx).InsertDevice(newDevice)
+		err = datastore.Provider(ctx).InsertDevice(newDevice)
 		if err != nil {
 			fmt.Errorf("Failed to insert device on main test")
 		}
@@ -70,7 +70,7 @@ func TestMain(m *testing.M) {
 		newDevice.Platform = 2
 		newDevice.Token = token
 		newDevice.NotificationDeviceID = token
-		_, err = datastore.Provider(ctx).InsertDevice(newDevice)
+		err = datastore.Provider(ctx).InsertDevice(newDevice)
 		if err != nil {
 			fmt.Errorf("Failed to insert device on main test")
 		}

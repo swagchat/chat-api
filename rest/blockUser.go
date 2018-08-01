@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -19,8 +19,9 @@ func setBlockUserMux() {
 }
 
 func postBlockUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postBlockUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postBlockUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.CreateBlockUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -30,7 +31,7 @@ func postBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.UserID = bone.GetValue(r, "userId")
 
-	errRes := service.CreateBlockUsers(r.Context(), &req)
+	errRes := service.CreateBlockUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -40,8 +41,9 @@ func postBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBlockUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getBlockUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getBlockUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetBlockUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
@@ -53,7 +55,7 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 		req.ResponseType = scpb.ResponseType_UserList
 	}
 
-	blockUsers, errRes := service.GetBlockUsers(r.Context(), req)
+	blockUsers, errRes := service.GetBlockUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -63,8 +65,9 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getBlockedUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getBlockedUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetBlockedUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
@@ -76,7 +79,7 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 		req.ResponseType = scpb.ResponseType_UserList
 	}
 
-	blockedUsers, errRes := service.GetBlockedUsers(r.Context(), req)
+	blockedUsers, errRes := service.GetBlockedUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -86,8 +89,9 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func putBlockUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putBlockUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("putBlockUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.AddBlockUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -97,7 +101,7 @@ func putBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.UserID = bone.GetValue(r, "userId")
 
-	errRes := service.AddBlockUsers(r.Context(), &req)
+	errRes := service.AddBlockUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -107,8 +111,9 @@ func putBlockUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteBlockUsers")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("deleteBlockUsers", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.DeleteBlockUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -118,7 +123,7 @@ func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.UserID = bone.GetValue(r, "userId")
 
-	errRes := service.DeleteBlockUsers(r.Context(), &req)
+	errRes := service.DeleteBlockUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func rdbCreateWebhookStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateWebhookStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateWebhookStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -29,8 +29,8 @@ func rdbCreateWebhookStore(ctx context.Context, db string) {
 }
 
 func rdbSelectWebhooks(ctx context.Context, db string, event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectWebhooks")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectWebhooks", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 

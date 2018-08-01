@@ -4,17 +4,17 @@ import (
 	"context"
 	"net/http"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateRoomUsers creates room users
 func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateRoomUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("CreateRoomUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {
@@ -68,8 +68,8 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 }
 
 func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.RoomUsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetRoomUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetRoomUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	res := &model.RoomUsersResponse{}
 
@@ -92,8 +92,8 @@ func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.R
 
 // UpdateRoomUser updates room user
 func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.UpdateRoomUser")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("UpdateRoomUser", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	ru, errRes := confirmRoomUserExist(ctx, req.RoomID, req.UserID)
 	if errRes != nil {
@@ -124,8 +124,8 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 
 // DeleteRoomUsers deletes room users
 func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteRoomUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("DeleteRoomUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {

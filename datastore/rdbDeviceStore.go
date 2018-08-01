@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateDeviceStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateDeviceStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateDeviceStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -32,23 +32,23 @@ func rdbCreateDeviceStore(ctx context.Context, db string) {
 	}
 }
 
-func rdbInsertDevice(ctx context.Context, db string, device *model.Device) (*model.Device, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertDevice")
-	defer span.Finish()
+func rdbInsertDevice(ctx context.Context, db string, device *model.Device) error {
+	span := tracer.Provider(ctx).StartSpan("rdbInsertDevice", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
 	if err := master.Insert(device); err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting device. %v.", err))
-		return nil, err
+		return err
 	}
 
-	return device, nil
+	return nil
 }
 
 func rdbSelectDevices(ctx context.Context, db string, opts ...SelectDevicesOption) ([]*model.Device, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevices")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectDevices", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -92,8 +92,8 @@ func rdbSelectDevices(ctx context.Context, db string, opts ...SelectDevicesOptio
 }
 
 func rdbSelectDevice(ctx context.Context, db, userID string, platform scpb.Platform) (*model.Device, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevice")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectDevice", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -117,8 +117,8 @@ func rdbSelectDevice(ctx context.Context, db, userID string, platform scpb.Platf
 }
 
 func rdbSelectDevicesByUserID(ctx context.Context, db, userID string) ([]*model.Device, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevicesByUserID")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectDevicesByUserID", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -137,8 +137,8 @@ func rdbSelectDevicesByUserID(ctx context.Context, db, userID string) ([]*model.
 }
 
 func rdbSelectDevicesByToken(ctx context.Context, db, token string) ([]*model.Device, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectDevicesByToken")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectDevicesByToken", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -157,8 +157,8 @@ func rdbSelectDevicesByToken(ctx context.Context, db, token string) ([]*model.De
 }
 
 func rdbUpdateDevice(ctx context.Context, db string, device *model.Device) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateDevice")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbUpdateDevice", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 	trans, err := master.Begin()
@@ -167,27 +167,16 @@ func rdbUpdateDevice(ctx context.Context, db string, device *model.Device) error
 		return err
 	}
 
-	query := fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;", tableNameSubscription)
-	params := map[string]interface{}{
-		"userId":   device.UserID,
-		"platform": device.Platform,
-		"deleted":  time.Now().Unix(),
-	}
-	_, err = trans.Exec(query, params)
+	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=? AND platform=?;", tableNameSubscription)
+	_, err = trans.Exec(query, time.Now().Unix(), device.UserID, device.Platform)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while updating device. %v.", err))
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET token=:token, notification_device_id=:notificationDeviceId WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
-	params = map[string]interface{}{
-		"token":                device.Token,
-		"notificationDeviceId": device.NotificationDeviceID,
-		"userId":               device.UserID,
-		"platform":             device.Platform,
-	}
-	_, err = trans.Exec(query, params)
+	query = fmt.Sprintf("UPDATE %s SET token=?, notification_device_id=? WHERE user_id=? AND platform=?;", tableNameDevice)
+	_, err = trans.Exec(query, device.Token, device.NotificationDeviceID, device.UserID, device.Platform)
 	if err != nil {
 		trans.Rollback()
 		logger.Error(fmt.Sprintf("An error occurred while updating device. %v.", err))
@@ -205,8 +194,8 @@ func rdbUpdateDevice(ctx context.Context, db string, device *model.Device) error
 }
 
 func rdbDeleteDevice(ctx context.Context, db, userID string, platform scpb.Platform) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbDeleteDevice")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbDeleteDevice", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 	trans, err := master.Begin()

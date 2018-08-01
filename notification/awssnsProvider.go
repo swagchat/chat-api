@@ -11,9 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -72,8 +71,8 @@ func (ap *awssnsProvider) newSnsClient() *sns.SNS {
 }
 
 func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.CreateTopic")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("CreateTopic", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -98,8 +97,8 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 }
 
 func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.DeleteTopic")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("DeleteTopic", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -122,8 +121,8 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 }
 
 func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.CreateEndpoint")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("CreateEndpoint", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	cfg := utils.Config()
 
@@ -134,9 +133,9 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 
 		var platformApplicationArn string
 		switch platform {
-		case model.PlatformIOS:
+		case scpb.Platform_PlatformIos:
 			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnIos
-		case model.PlatformAndroid:
+		case scpb.Platform_PlatformAndroid:
 			platformApplicationArn = cfg.Notification.AmazonSNS.ApplicationArnAndroid
 		default:
 			// TODO new error
@@ -163,8 +162,8 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 }
 
 func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.DeleteEndpoint")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("DeleteEndpoint", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -187,8 +186,8 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 }
 
 func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.Subscribe")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("Subscribe", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -215,8 +214,8 @@ func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDevi
 }
 
 func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.Unsubscribe")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("Unsubscribe", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -239,8 +238,8 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) Notificati
 }
 
 func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
-	span, _ := opentracing.StartSpanFromContext(ap.ctx, "notification.awssnsProvider.Publish")
-	defer span.Finish()
+	span := tracer.Provider(ap.ctx).StartSpan("Publish", "notification")
+	defer tracer.Provider(ap.ctx).Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	defer close(nc)

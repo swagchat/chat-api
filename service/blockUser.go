@@ -4,16 +4,16 @@ import (
 	"context"
 	"net/http"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateBlockUsers creates block users
 func CreateBlockUsers(ctx context.Context, req *model.CreateBlockUsersRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.CreateBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("CreateBlockUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -37,8 +37,8 @@ func CreateBlockUsers(ctx context.Context, req *model.CreateBlockUsersRequest) *
 
 // GetBlockUsers gets block users
 func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model.BlockUsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetBlockUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	res := &model.BlockUsersResponse{}
 
@@ -63,8 +63,8 @@ func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model
 
 // GetBlockedUsers gets blocked users
 func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*model.BlockedUsersResponse, *model.ErrorResponse) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.GetBlockedUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("GetBlockedUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	res := &model.BlockedUsersResponse{}
 
@@ -89,8 +89,8 @@ func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*m
 
 // AddBlockUsers adds block users
 func AddBlockUsers(ctx context.Context, req *model.AddBlockUsersRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.AddBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("AddBlockUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -114,8 +114,8 @@ func AddBlockUsers(ctx context.Context, req *model.AddBlockUsersRequest) *model.
 
 // DeleteBlockUsers deletes block users
 func DeleteBlockUsers(ctx context.Context, req *model.DeleteBlockUsersRequest) *model.ErrorResponse {
-	span, _ := opentracing.StartSpanFromContext(ctx, "service.DeleteBlockUsers")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("DeleteBlockUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {

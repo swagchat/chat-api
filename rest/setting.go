@@ -3,8 +3,8 @@ package rest
 import (
 	"net/http"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func setSettingMux() {
@@ -12,10 +12,11 @@ func setSettingMux() {
 }
 
 func getSetting(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getSetting")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getSetting", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
-	setting, errRes := service.GetSetting(r.Context())
+	setting, errRes := service.GetSetting(ctx)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

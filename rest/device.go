@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -19,8 +19,9 @@ func setDeviceMux() {
 }
 
 func postDevice(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postDevice")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postDevice", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.CreateDeviceRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -28,7 +29,7 @@ func postDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errRes := service.CreateDevice(r.Context(), &req)
+	errRes := service.CreateDevice(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -38,13 +39,14 @@ func postDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDevices(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getDevices")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getDevices", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetDevicesRequest{}
 	req.UserID = bone.GetValue(r, "userId")
 
-	devices, errRes := service.GetDevices(r.Context(), req)
+	devices, errRes := service.GetDevices(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -54,8 +56,9 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func putDevice(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putDevice")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("putDevice", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.UpdateDeviceRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -80,7 +83,7 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 
 	req.Platform = scpb.Platform(i)
 
-	errRes := service.UpdateDevice(r.Context(), &req)
+	errRes := service.UpdateDevice(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -95,8 +98,9 @@ func putDevice(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteDevice(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteDevices")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("deleteDevice", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.DeleteDeviceRequest{}
 	req.UserID = bone.GetValue(r, "userId")
@@ -116,7 +120,7 @@ func deleteDevice(w http.ResponseWriter, r *http.Request) {
 
 	req.Platform = scpb.Platform(i)
 
-	errRes := service.DeleteDevice(r.Context(), req)
+	errRes := service.DeleteDevice(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

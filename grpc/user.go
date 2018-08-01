@@ -113,17 +113,6 @@ func (us *userServiceServer) GetProfile(ctx context.Context, in *scpb.GetProfile
 	return pbUser, nil
 }
 
-func (us *userServiceServer) GetDeviceUsers(ctx context.Context, in *scpb.GetDeviceUsersRequest) (*scpb.DeviceUsersResponse, error) {
-	req := &model.GetDeviceUsersRequest{*in}
-	res, errRes := service.GetDeviceUsers(ctx, req)
-	if errRes != nil {
-		return &scpb.DeviceUsersResponse{}, errRes.Error
-	}
-
-	deviceUsers := res.ConvertToPbDeviceUsers()
-	return deviceUsers, nil
-}
-
 func (us *userServiceServer) GetRoleUsers(ctx context.Context, in *scpb.GetRoleUsersRequest) (*scpb.RoleUsersResponse, error) {
 	req := &model.GetRoleUsersRequest{*in}
 	res, errRes := service.GetRoleUsers(ctx, req)

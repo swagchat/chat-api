@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"time"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
+	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateRoomStore(ctx context.Context, db string) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbCreateRoomStore")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbCreateRoomStore", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	master := RdbStore(db).master()
 
@@ -33,8 +33,8 @@ func rdbCreateRoomStore(ctx context.Context, db string) {
 }
 
 func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...InsertRoomOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbInsertRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbInsertRoom", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := insertRoomOptions{}
 	for _, o := range opts {
@@ -88,8 +88,8 @@ func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...Ins
 }
 
 func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRooms")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectRooms", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := selectRoomsOptions{}
 	for _, o := range opts {
@@ -143,8 +143,8 @@ func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ..
 }
 
 func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectRoom", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := selectRoomOptions{}
 	for _, o := range opts {
@@ -184,8 +184,8 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 }
 
 func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*scpb.MiniUser, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectUsersForRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectUsersForRoom", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -217,8 +217,8 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 }
 
 func rdbSelectCountRooms(ctx context.Context, db string, opts ...SelectRoomsOption) (int64, error) {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbSelectCountRooms")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbSelectCountRooms", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	replica := RdbStore(db).replica()
 
@@ -234,8 +234,8 @@ func rdbSelectCountRooms(ctx context.Context, db string, opts ...SelectRoomsOpti
 }
 
 func rdbUpdateRoom(ctx context.Context, db string, room *model.Room, opts ...UpdateRoomOption) error {
-	span, _ := opentracing.StartSpanFromContext(ctx, "datastore.rdbUpdateRoom")
-	defer span.Finish()
+	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoom", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
 
 	opt := updateRoomOptions{}
 	for _, o := range opts {

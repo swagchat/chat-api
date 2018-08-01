@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -20,8 +20,8 @@ type kafkaProvider struct {
 }
 
 func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
-	span, _ := opentracing.StartSpanFromContext(kp.ctx, "pbroker.kafkaProvider.PublishMessage")
-	defer span.Finish()
+	span := tracer.Provider(kp.ctx).StartSpan("PublishMessage", "pbroker")
+	defer tracer.Provider(kp.ctx).Finish(span)
 
 	cfg := utils.Config()
 	buffer := new(bytes.Buffer)

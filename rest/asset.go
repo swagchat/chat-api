@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -19,8 +19,9 @@ func setAssetMux() {
 }
 
 func postAsset(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postAsset")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postAsset", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -51,7 +52,7 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 	width, _ := strconv.Atoi(r.FormValue("width"))
 	height, _ := strconv.Atoi(r.FormValue("height"))
 
-	asset, errRes := service.PostAsset(r.Context(), contentType, file, size, width, height)
+	asset, errRes := service.PostAsset(ctx, contentType, file, size, width, height)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -61,14 +62,15 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAsset(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getAsset")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getAsset", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	filename := bone.GetValue(r, "filename")
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
 
-	bytes, asset, errRes := service.GetAsset(r.Context(), assetID, ifModifiedSince)
+	bytes, asset, errRes := service.GetAsset(ctx, assetID, ifModifiedSince)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -83,14 +85,15 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAssetInfo(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getAssetInfo")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getAssetInfo", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	filename := bone.GetValue(r, "filename")
 	assetID := utils.GetFileNameWithoutExt(filename)
 	ifModifiedSince := r.Header.Get("If-Modified-Since")
 
-	asset, errRes := service.GetAssetInfo(r.Context(), assetID, ifModifiedSince)
+	asset, errRes := service.GetAssetInfo(ctx, assetID, ifModifiedSince)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

@@ -9,7 +9,7 @@ func (p *gcpSQLProvider) createDeviceStore() {
 	rdbCreateDeviceStore(p.ctx, p.database)
 }
 
-func (p *gcpSQLProvider) InsertDevice(device *model.Device) (*model.Device, error) {
+func (p *gcpSQLProvider) InsertDevice(device *model.Device) error {
 	return rdbInsertDevice(p.ctx, p.database, device)
 }
 

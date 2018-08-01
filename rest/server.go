@@ -16,7 +16,6 @@ import (
 
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/shogo82148/go-gracedown"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
@@ -173,26 +172,16 @@ func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tracer, closer := tracer.Provider(r.Context()).NewTracer(fmt.Sprintf("%s-rest", utils.AppName))
-		if tracer == nil || closer == nil {
-			fn(w, r)
-			return
-		}
-
-		defer closer.Close()
-		opentracing.SetGlobalTracer(tracer)
-
-		span := tracer.StartSpan(fmt.Sprintf("%s:%s", r.Method, r.RequestURI))
-		defer span.Finish()
+		ctx := tracer.Provider(r.Context()).StartTransaction(r.RequestURI, r.Method)
+		defer tracer.Provider(ctx).Close()
 
 		sw := &customResponseWriter{ResponseWriter: w}
-		ctx := opentracing.ContextWithSpan(r.Context(), span)
 		fn(sw, r.WithContext(ctx))
 
-		span.SetTag("http.method", r.Method)
-		span.SetTag("http.status_code", sw.status)
-		span.SetTag("http.content_length", sw.length)
-		span.SetTag("http.referer", r.Referer())
+		tracer.Provider(ctx).SetTag("http.method", r.Method)
+		tracer.Provider(ctx).SetTag("http.status_code", sw.status)
+		tracer.Provider(ctx).SetTag("http.content_length", sw.length)
+		tracer.Provider(ctx).SetTag("http.referer", r.Referer())
 	}
 }
 

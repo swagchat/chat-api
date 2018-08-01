@@ -6,8 +6,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -22,8 +22,8 @@ func (lp *localStorageProvider) Init() error {
 }
 
 func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
-	span, _ := opentracing.StartSpanFromContext(lp.ctx, "storage.localStorageProvider.Post")
-	defer span.Finish()
+	span := tracer.Provider(lp.ctx).StartSpan("Post", "storage")
+	defer tracer.Provider(lp.ctx).Finish(span)
 
 	err := os.MkdirAll(lp.localPath, 0775)
 	if err != nil {
@@ -45,8 +45,8 @@ func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (lp *localStorageProvider) Get(assetInfo *AssetInfo) ([]byte, error) {
-	span, _ := opentracing.StartSpanFromContext(lp.ctx, "storage.localStorageProvider.Get")
-	defer span.Finish()
+	span := tracer.Provider(lp.ctx).StartSpan("Get", "storage")
+	defer tracer.Provider(lp.ctx).Finish(span)
 
 	file, err := os.Open(fmt.Sprintf("%s/%s", lp.localPath, assetInfo.Filename))
 	defer file.Close()

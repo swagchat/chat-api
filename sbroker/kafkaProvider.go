@@ -9,11 +9,11 @@ import (
 	"syscall"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -25,8 +25,8 @@ type kafkaProvider struct {
 }
 
 func (kp *kafkaProvider) SubscribeMessage() error {
-	span, _ := opentracing.StartSpanFromContext(kp.ctx, "sbroker.kafkaProvider.SubscribeMessage")
-	defer span.Finish()
+	span := tracer.Provider(kp.ctx).StartSpan("SubscribeMessage", "sbroker")
+	defer tracer.Provider(kp.ctx).Finish(span)
 
 	cfg := utils.Config()
 
@@ -142,8 +142,8 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 }
 
 func (kp *kafkaProvider) UnsubscribeMessage() error {
-	span, _ := opentracing.StartSpanFromContext(kp.ctx, "sbroker.kafkaProvider.UnsubscribeMessage")
-	defer span.Finish()
+	span := tracer.Provider(kp.ctx).StartSpan("UnsubscribeMessage", "sbroker")
+	defer tracer.Provider(kp.ctx).Finish(span)
 
 	if client == nil {
 		return nil

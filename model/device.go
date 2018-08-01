@@ -6,16 +6,6 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-const (
-	PlatformIOS = iota + 1
-	PlatformAndroid
-	PlatformEnd
-)
-
-type Devices struct {
-	Devices []*Device `json:"devices"`
-}
-
 type Device struct {
 	scpb.Device
 }

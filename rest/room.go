@@ -5,9 +5,9 @@ import (
 	"net/url"
 
 	"github.com/go-zoo/bone"
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
+	"github.com/swagchat/chat-api/tracer"
 )
 
 func setRoomMux() {
@@ -20,8 +20,9 @@ func setRoomMux() {
 }
 
 func postRoom(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.postRoom")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("postRoom", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.CreateRoomRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -29,7 +30,7 @@ func postRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	room, errRes := service.CreateRoom(r.Context(), &req)
+	room, errRes := service.CreateRoom(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -39,8 +40,9 @@ func postRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRooms(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRooms")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getRooms", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetRoomsRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
@@ -60,7 +62,7 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	rooms, errRes := service.GetRooms(r.Context(), req)
+	rooms, errRes := service.GetRooms(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -70,15 +72,16 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoom(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoom")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getRoom", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetRoomRequest{}
 
 	roomID := bone.GetValue(r, "roomId")
 	req.RoomID = roomID
 
-	room, errRes := service.GetRoom(r.Context(), req)
+	room, errRes := service.GetRoom(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -88,8 +91,9 @@ func getRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func putRoom(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.putRoom")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("putRoom", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	var req model.UpdateRoomRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -99,7 +103,7 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 
 	req.RoomID = bone.GetValue(r, "roomId")
 
-	room, errRes := service.UpdateRoom(r.Context(), &req)
+	room, errRes := service.UpdateRoom(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -109,15 +113,16 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteRoom(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.deleteRoom")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("deleteRoom", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.DeleteRoomRequest{}
 
 	roomID := bone.GetValue(r, "roomId")
 	req.RoomID = roomID
 
-	errRes := service.DeleteRoom(r.Context(), req)
+	errRes := service.DeleteRoom(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -127,8 +132,9 @@ func deleteRoom(w http.ResponseWriter, r *http.Request) {
 }
 
 func getRoomMessages(w http.ResponseWriter, r *http.Request) {
-	span, _ := opentracing.StartSpanFromContext(r.Context(), "rest.getRoomMessages")
-	defer span.Finish()
+	ctx := r.Context()
+	span := tracer.Provider(ctx).StartSpan("getRoomMessages", "rest")
+	defer tracer.Provider(ctx).Finish(span)
 
 	req := &model.GetRoomMessagesRequest{}
 
@@ -152,7 +158,7 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	messages, errRes := service.GetRoomMessages(r.Context(), req)
+	messages, errRes := service.GetRoomMessages(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

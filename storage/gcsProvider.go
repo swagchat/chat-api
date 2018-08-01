@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/tracer"
 
 	"golang.org/x/oauth2/google"
 
@@ -52,8 +52,8 @@ func (gp *gcsProvider) Init() error {
 }
 
 func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
-	span, _ := opentracing.StartSpanFromContext(gp.ctx, "storage.gcsProvider.Post")
-	defer span.Finish()
+	span := tracer.Provider(gp.ctx).StartSpan("Post", "storage")
+	defer tracer.Provider(gp.ctx).Finish(span)
 
 	filePath := fmt.Sprintf("%s/%s", gp.uploadDirectory, assetInfo.Filename)
 	object := &storage.Object{
@@ -76,8 +76,8 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (gp *gcsProvider) Get(assetInfo *AssetInfo) ([]byte, error) {
-	span, _ := opentracing.StartSpanFromContext(gp.ctx, "storage.gcsProvider.Get")
-	defer span.Finish()
+	span := tracer.Provider(gp.ctx).StartSpan("Get", "storage")
+	defer tracer.Provider(gp.ctx).Finish(span)
 
 	return nil, nil
 }
