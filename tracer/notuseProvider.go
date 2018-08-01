@@ -23,6 +23,12 @@ func (np *notuseProvider) StartSpan(name, spanType string) interface{} {
 func (np *notuseProvider) SetTag(key string, value interface{}) {
 }
 
+func (np *notuseProvider) SetHTTPStatusCode(statusCode int) {
+}
+
+func (np *notuseProvider) SetUserID(id string) {
+}
+
 func (np *notuseProvider) Finish(span interface{}) {
 }
 

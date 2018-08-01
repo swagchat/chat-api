@@ -2,7 +2,6 @@ package tracer
 
 import (
 	"context"
-	"fmt"
 
 	elasticapm "github.com/elastic/apm-agent-go"
 	"github.com/swagchat/chat-api/logger"
@@ -22,6 +21,7 @@ func (ep *elasticapmProvider) NewTracer() error {
 		return nil
 	}
 	tracer.SetLogger(logger.Logger())
+	tracer.SetCaptureBody(elasticapm.CaptureBodyAll)
 	elasticapmTracer = tracer
 	return nil
 }
@@ -46,7 +46,24 @@ func (ep *elasticapmProvider) SetTag(key string, value interface{}) {
 	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
 	if transaction != nil {
 		txCtx := transaction.(*elasticapm.Transaction).Context
-		txCtx.SetTag(key, fmt.Sprintf("%v", value))
+		// txCtx.SetTag(key, fmt.Sprintf("%v", value))
+		txCtx.SetCustom(key, value)
+	}
+}
+
+func (ep *elasticapmProvider) SetHTTPStatusCode(statusCode int) {
+	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
+	if transaction != nil {
+		txCtx := transaction.(*elasticapm.Transaction).Context
+		txCtx.SetHTTPStatusCode(statusCode)
+	}
+}
+
+func (ep *elasticapmProvider) SetUserID(id string) {
+	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
+	if transaction != nil {
+		txCtx := transaction.(*elasticapm.Transaction).Context
+		txCtx.SetUserID(id)
 	}
 }
 

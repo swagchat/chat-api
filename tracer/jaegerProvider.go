@@ -71,6 +71,20 @@ func (jp *jaegerProvider) SetTag(key string, value interface{}) {
 	}
 }
 
+func (jp *jaegerProvider) SetHTTPStatusCode(statusCode int) {
+	span := jp.ctx.Value(utils.CtxTracerSpan)
+	if span != nil {
+		span.(opentracing.Span).SetTag("http.status_code", statusCode)
+	}
+}
+
+func (jp *jaegerProvider) SetUserID(id string) {
+	span := jp.ctx.Value(utils.CtxTracerSpan)
+	if span != nil {
+		span.(opentracing.Span).SetTag("app.user_id", id)
+	}
+}
+
 func (jp *jaegerProvider) Finish(span interface{}) {
 	if span != nil {
 		span.(opentracing.Span).Finish()

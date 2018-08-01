@@ -178,8 +178,13 @@ func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 		sw := &customResponseWriter{ResponseWriter: w}
 		fn(sw, r.WithContext(ctx))
 
+		userID := ctx.Value(utils.CtxUserID)
+		if userID != nil {
+			tracer.Provider(ctx).SetUserID(userID.(string))
+		}
+
+		tracer.Provider(ctx).SetHTTPStatusCode(sw.status)
 		tracer.Provider(ctx).SetTag("http.method", r.Method)
-		tracer.Provider(ctx).SetTag("http.status_code", sw.status)
 		tracer.Provider(ctx).SetTag("http.content_length", sw.length)
 		tracer.Provider(ctx).SetTag("http.referer", r.Referer())
 	}

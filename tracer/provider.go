@@ -11,6 +11,8 @@ type provider interface {
 	StartTransaction(name, transactionType string) context.Context
 	StartSpan(name, spanType string) interface{}
 	SetTag(key string, value interface{})
+	SetHTTPStatusCode(statusCode int)
+	SetUserID(id string)
 	Finish(span interface{})
 	Close()
 }
@@ -20,16 +22,16 @@ func Provider(ctx context.Context) provider {
 	var p provider
 
 	switch cfg.Tracer.Provider {
-	case "":
-		p = &notuseProvider{
-			ctx: ctx,
-		}
 	case "jaeger":
 		p = &jaegerProvider{
 			ctx: ctx,
 		}
 	case "elasticapm":
 		p = &elasticapmProvider{
+			ctx: ctx,
+		}
+	default:
+		p = &notuseProvider{
 			ctx: ctx,
 		}
 	}
