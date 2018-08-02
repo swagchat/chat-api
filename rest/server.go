@@ -173,7 +173,7 @@ func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := tracer.Provider(r.Context()).StartTransaction(r.RequestURI, r.Method)
-		defer tracer.Provider(ctx).Close()
+		defer tracer.Provider(ctx).CloseTransaction()
 
 		sw := &customResponseWriter{ResponseWriter: w}
 		fn(sw, r.WithContext(ctx))

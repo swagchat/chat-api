@@ -73,11 +73,14 @@ func (ep *elasticapmProvider) Finish(span interface{}) {
 	}
 }
 
-func (ep *elasticapmProvider) Close() {
+func (ep *elasticapmProvider) CloseTransaction() {
 	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
 	if transaction != nil {
 		transaction.(*elasticapm.Transaction).End()
 	}
 
 	elasticapmTracer.Flush(nil)
+}
+
+func (ep *elasticapmProvider) Close() {
 }

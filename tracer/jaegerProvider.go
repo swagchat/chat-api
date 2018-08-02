@@ -91,12 +91,14 @@ func (jp *jaegerProvider) Finish(span interface{}) {
 	}
 }
 
-func (jp *jaegerProvider) Close() {
+func (jp *jaegerProvider) CloseTransaction() {
 	span := jp.ctx.Value(utils.CtxTracerSpan)
 	if span != nil {
 		span.(opentracing.Span).Finish()
 	}
+}
 
+func (jp *jaegerProvider) Close() {
 	if jaegerCloser != nil {
 		jaegerCloser.Close()
 	}

@@ -14,6 +14,7 @@ type provider interface {
 	SetHTTPStatusCode(statusCode int)
 	SetUserID(id string)
 	Finish(span interface{})
+	CloseTransaction()
 	Close()
 }
 

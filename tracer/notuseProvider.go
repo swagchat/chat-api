@@ -32,5 +32,8 @@ func (np *notuseProvider) SetUserID(id string) {
 func (np *notuseProvider) Finish(span interface{}) {
 }
 
+func (np *notuseProvider) CloseTransaction() {
+}
+
 func (np *notuseProvider) Close() {
 }
