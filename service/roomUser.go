@@ -24,12 +24,11 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 
 	req.Room = room
 
-	userIDs, errRes := getExistUserIDs(ctx, req.UserIDs)
+	errRes = confirmUserIDsExist(ctx, req.UserIDs, "userIds")
 	if errRes != nil {
 		errRes.Message = "Failed to create room users."
 		return errRes
 	}
-	req.UserIDs = userIDs
 
 	errRes = req.Validate()
 	if errRes != nil {

@@ -33,6 +33,17 @@ func (bus *blockUserServiceServer) GetBlockUsers(ctx context.Context, in *scpb.G
 	return blockUsers, nil
 }
 
+func (bus *blockUserServiceServer) GetBlockUserIds(ctx context.Context, in *scpb.GetBlockUsersRequest) (*scpb.BlockUserIdsResponse, error) {
+	req := &model.GetBlockUsersRequest{*in}
+	res, errRes := service.GetBlockUserIDs(ctx, req)
+	if errRes != nil {
+		return &scpb.BlockUserIdsResponse{}, errRes.Error
+	}
+
+	blockUserIds := res.ConvertToPbBlockUserIds()
+	return blockUserIds, nil
+}
+
 func (bus *blockUserServiceServer) GetBlockedUsers(ctx context.Context, in *scpb.GetBlockedUsersRequest) (*scpb.BlockedUsersResponse, error) {
 	req := &model.GetBlockedUsersRequest{*in}
 	res, errRes := service.GetBlockedUsers(ctx, req)
@@ -42,6 +53,17 @@ func (bus *blockUserServiceServer) GetBlockedUsers(ctx context.Context, in *scpb
 
 	blockedUsers := res.ConvertToPbBlockedUsers()
 	return blockedUsers, nil
+}
+
+func (bus *blockUserServiceServer) GetBlockedUserIds(ctx context.Context, in *scpb.GetBlockedUsersRequest) (*scpb.BlockedUserIdsResponse, error) {
+	req := &model.GetBlockedUsersRequest{*in}
+	res, errRes := service.GetBlockedUserIDs(ctx, req)
+	if errRes != nil {
+		return &scpb.BlockedUserIdsResponse{}, errRes.Error
+	}
+
+	blockedUserIds := res.ConvertToPbBlockedUserIds()
+	return blockedUserIds, nil
 }
 
 func (bus *blockUserServiceServer) DeleteBlockUsers(ctx context.Context, in *scpb.DeleteBlockUsersRequest) (*empty.Empty, error) {

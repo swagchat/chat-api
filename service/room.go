@@ -50,12 +50,11 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 	req.RoomID = &r.RoomID
 
 	if len(req.UserIDs) > 0 {
-		userIDs, errRes := getExistUserIDs(ctx, req.UserIDs)
+		errRes := confirmUserIDsExist(ctx, req.UserIDs, "userIds")
 		if errRes != nil {
 			errRes.Message = "Failed to create room."
 			return nil, errRes
 		}
-		req.UserIDs = userIDs
 	}
 	rus := req.GenerateRoomUsers()
 
@@ -174,12 +173,11 @@ func UpdateRoom(ctx context.Context, req *model.UpdateRoomRequest) (*model.Room,
 	room.UpdateRoom(req)
 
 	if len(req.UserIDs) > 0 {
-		userIDs, errRes := getExistUserIDs(ctx, req.UserIDs)
+		errRes := confirmUserIDsExist(ctx, req.UserIDs, "userIds")
 		if errRes != nil {
 			errRes.Message = "Failed to create room."
 			return nil, errRes
 		}
-		req.UserIDs = userIDs
 	}
 	rus := req.GenerateRoomUsers(room)
 

@@ -39,11 +39,8 @@ func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 	}
 
 	if opt.beforeClean {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameBlockUser)
-		_, err := tx.Exec(query, bus[0].UserID)
+		err := rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByUserID(bus[0].UserID))
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while inserting block users")
-			logger.Error(err.Error())
 			return err
 		}
 	}
@@ -52,7 +49,6 @@ func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if !opt.beforeClean {
 			existBlockUser, err := rdbSelectBlockUser(ctx, dbMap, bu.UserID, bu.BlockUserID)
 			if err != nil {
-				logger.Error(fmt.Sprintf("An error occurred while inserting block users. %v.", err))
 				return err
 			}
 			if existBlockUser != nil {
@@ -62,7 +58,8 @@ func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 
 		err := tx.Insert(bu)
 		if err != nil {
-			logger.Error(fmt.Sprintf("An error occurred while inserting block users. %v.", err))
+			err = errors.Wrap(err, "An error occurred while inserting block users")
+			logger.Error(err.Error())
 			return err
 		}
 	}
@@ -86,14 +83,15 @@ func rdbSelectBlockUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) 
 	u.created,
 	u.modified
 	FROM %s AS bu 
-	LEFT JOIN %s AS u ON bu.user_id = u.user_id
+	LEFT JOIN %s AS u ON bu.block_user_id = u.user_id
 	WHERE bu.user_id=:userId;`, tableNameBlockUser, tableNameUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
 	_, err := dbMap.Select(&blockUsers, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting block users by userId. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting block users")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -111,7 +109,8 @@ func rdbSelectBlockUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string
 	}
 	_, err := dbMap.Select(&blockUserIDs, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting block userIds by userId. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting block userIds")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -141,7 +140,8 @@ func rdbSelectBlockedUsers(ctx context.Context, dbMap *gorp.DbMap, userID string
 	}
 	_, err := dbMap.Select(&blockedUsers, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting blocked users by userId. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting blocked users")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -153,13 +153,14 @@ func rdbSelectBlockedUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID stri
 	defer tracer.Provider(ctx).Finish(span)
 
 	var blockUserIDs []string
-	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE block_user_id=:userId;", tableNameBlockUser)
+	query := fmt.Sprintf("SELECT user_id FROM %s WHERE block_user_id=:userId;", tableNameBlockUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
 	_, err := dbMap.Select(&blockUserIDs, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting blocked userIds by userId. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting blocked userIds")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -178,7 +179,8 @@ func rdbSelectBlockUser(ctx context.Context, dbMap *gorp.DbMap, userID, blockUse
 	}
 	_, err := dbMap.Select(&blockUsers, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting blockUser. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting block user")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -198,29 +200,20 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		o(&opt)
 	}
 
-	if opt.userID != "" && opt.blockUserIDs != nil {
-		for _, blockUserID := range opt.blockUserIDs {
-			query := fmt.Sprintf("DELETE FROM %s WHERE user_id=? AND block_user_id=?", tableNameBlockUser)
-			_, err := tx.Exec(query, opt.userID, blockUserID)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while deleting block users")
-				logger.Error(err.Error())
-				return err
-			}
-		}
-	} else if opt.userID == "" && opt.blockUserIDs != nil {
-		for _, blockUserID := range opt.blockUserIDs {
-			query := fmt.Sprintf("DELETE FROM %s WHERE block_user_id=?", tableNameBlockUser)
-			_, err := tx.Exec(query, blockUserID)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while deleting block users")
-				logger.Error(err.Error())
-				return err
-			}
-		}
-	} else if opt.userID != "" && opt.blockUserIDs == nil {
+	if opt.userID != "" {
 		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameBlockUser)
 		_, err := tx.Exec(query, opt.userID)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while deleting block users")
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	if opt.blockUserIDs != nil && len(opt.blockUserIDs) > 0 {
+		blockUserIdsQuery, blockUserIDsParams := makePrepareExpressionForInOperand(opt.blockUserIDs)
+		query := fmt.Sprintf("DELETE FROM %s WHERE block_user_id IN (%s)", tableNameBlockUser, blockUserIdsQuery)
+		_, err := tx.Exec(query, blockUserIDsParams...)
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting block users")
 			logger.Error(err.Error())

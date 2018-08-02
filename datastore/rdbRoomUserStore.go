@@ -71,8 +71,8 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 	}
 
 	if opt.roomID == "" && opt.userIDs == nil {
-		err := errors.New("Be sure to specify roomID or userIDs")
-		logger.Error(err.Error())
+		err := errors.New("An error occurred while getting room users. Be sure to specify roomID or userIDs")
+		// logger.Error(err.Error())
 		return nil, err
 	}
 

@@ -7,7 +7,6 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/tracer"
-	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func setBlockUserMux() {
@@ -49,18 +48,20 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 	responseType := bone.GetValue(r, "responseType")
 	if responseType == "UserIdList" {
-		req.ResponseType = scpb.ResponseType_UserIdList
+		blockUserIDs, errRes := service.GetBlockUserIDs(ctx, req)
+		if errRes != nil {
+			respondError(w, r, errRes)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", blockUserIDs)
 	} else {
-		req.ResponseType = scpb.ResponseType_UserList
+		blockUsers, errRes := service.GetBlockUsers(ctx, req)
+		if errRes != nil {
+			respondError(w, r, errRes)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", blockUsers)
 	}
-
-	blockUsers, errRes := service.GetBlockUsers(ctx, req)
-	if errRes != nil {
-		respondError(w, r, errRes)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "application/json", blockUsers)
 }
 
 func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
@@ -73,18 +74,20 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 
 	responseType := bone.GetValue(r, "responseType")
 	if responseType == "UserIdList" {
-		req.ResponseType = scpb.ResponseType_UserIdList
+		blockedUserIDs, errRes := service.GetBlockedUserIDs(ctx, req)
+		if errRes != nil {
+			respondError(w, r, errRes)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", blockedUserIDs)
 	} else {
-		req.ResponseType = scpb.ResponseType_UserList
+		blockedUsers, errRes := service.GetBlockedUsers(ctx, req)
+		if errRes != nil {
+			respondError(w, r, errRes)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", blockedUsers)
 	}
-
-	blockedUsers, errRes := service.GetBlockedUsers(ctx, req)
-	if errRes != nil {
-		respondError(w, r, errRes)
-		return
-	}
-
-	respond(w, r, http.StatusOK, "application/json", blockedUsers)
 }
 
 func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {

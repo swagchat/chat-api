@@ -16,6 +16,26 @@ type CreateBlockUsersRequest struct {
 }
 
 func (cbur *CreateBlockUsersRequest) Validate() *ErrorResponse {
+	if cbur.UserID == "" {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if len(cbur.BlockUserIDs) == 0 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "blockUserIds",
+				Reason: "blockUserIds is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
 	for _, blockUserID := range cbur.BlockUserIDs {
 		if blockUserID == cbur.UserID {
 			invalidParams := []*scpb.InvalidParam{
@@ -24,9 +44,10 @@ func (cbur *CreateBlockUsersRequest) Validate() *ErrorResponse {
 					Reason: "blockUserIds can not include own UserId.",
 				},
 			}
-			return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+			return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
+
 	return nil
 }
 
@@ -49,7 +70,7 @@ type GetBlockUsersRequest struct {
 
 type BlockUsersResponse struct {
 	scpb.BlockUsersResponse
-	BlockUsers []*MiniUser `json:"blockUsers,omitempty"`
+	BlockUsers []*MiniUser `json:"blockUsers"`
 }
 
 func (bur *BlockUsersResponse) ConvertToPbBlockUsers() *scpb.BlockUsersResponse {
@@ -60,7 +81,6 @@ func (bur *BlockUsersResponse) ConvertToPbBlockUsers() *scpb.BlockUsersResponse 
 		for i := 0; i < len(bur.BlockUsers); i++ {
 			bu := bur.BlockUsers[i]
 			blockUser := &scpb.MiniUser{
-				RoomID:         bu.RoomID,
 				UserID:         bu.UserID,
 				Name:           bu.Name,
 				PictureURL:     bu.PictureURL,
@@ -68,17 +88,26 @@ func (bur *BlockUsersResponse) ConvertToPbBlockUsers() *scpb.BlockUsersResponse 
 				MetaData:       bu.MetaData,
 				CanBlock:       bu.CanBlock,
 				LastAccessed:   bu.LastAccessed,
-				// RuDisplay:      bu.RuDisplay,
-				Created:  bu.Created,
-				Modified: bu.Modified,
+				Created:        bu.Created,
+				Modified:       bu.Modified,
 			}
 			blockUsers[i] = blockUser
 		}
 		res.BlockUsers = blockUsers
 	}
 
-	if bur.BlockUserIDs != nil {
-		res.BlockUserIDs = bur.BlockUserIDs
+	return res
+}
+
+type BlockUserIdsResponse struct {
+	scpb.BlockUserIdsResponse
+}
+
+func (buidsr *BlockUserIdsResponse) ConvertToPbBlockUserIds() *scpb.BlockUserIdsResponse {
+	res := &scpb.BlockUserIdsResponse{}
+
+	if buidsr.BlockUserIDs != nil {
+		res.BlockUserIDs = buidsr.BlockUserIDs
 	}
 
 	return res
@@ -90,7 +119,7 @@ type GetBlockedUsersRequest struct {
 
 type BlockedUsersResponse struct {
 	scpb.BlockedUsersResponse
-	BlockedUsers []*MiniUser `json:"blockedUsers,omitempty"`
+	BlockedUsers []*MiniUser `json:"blockedUsers"`
 }
 
 func (bur *BlockedUsersResponse) ConvertToPbBlockedUsers() *scpb.BlockedUsersResponse {
@@ -101,7 +130,6 @@ func (bur *BlockedUsersResponse) ConvertToPbBlockedUsers() *scpb.BlockedUsersRes
 		for i := 0; i < len(bur.BlockedUsers); i++ {
 			bu := bur.BlockedUsers[i]
 			blockedUser := &scpb.MiniUser{
-				RoomID:         bu.RoomID,
 				UserID:         bu.UserID,
 				Name:           bu.Name,
 				PictureURL:     bu.PictureURL,
@@ -109,54 +137,66 @@ func (bur *BlockedUsersResponse) ConvertToPbBlockedUsers() *scpb.BlockedUsersRes
 				MetaData:       bu.MetaData,
 				CanBlock:       bu.CanBlock,
 				LastAccessed:   bu.LastAccessed,
-				// RuDisplay:      bu.RuDisplay,
-				Created:  bu.Created,
-				Modified: bu.Modified,
+				Created:        bu.Created,
+				Modified:       bu.Modified,
 			}
 			blockedUsers[i] = blockedUser
 		}
 		res.BlockedUsers = blockedUsers
 	}
 
-	if bur.BlockedUserIDs != nil {
-		res.BlockedUserIDs = bur.BlockedUserIDs
+	return res
+}
+
+type BlockedUserIdsResponse struct {
+	scpb.BlockedUserIdsResponse
+}
+
+func (buidsr *BlockedUserIdsResponse) ConvertToPbBlockedUserIds() *scpb.BlockedUserIdsResponse {
+	res := &scpb.BlockedUserIdsResponse{}
+
+	if buidsr.BlockedUserIDs != nil {
+		res.BlockedUserIDs = buidsr.BlockedUserIDs
 	}
 
 	return res
 }
 
-// type AddBlockUsersRequest struct {
-// 	scpb.AddBlockUsersRequest
-// }
-
-// func (abur *AddBlockUsersRequest) Validate() *ErrorResponse {
-// 	for _, blockUserID := range abur.BlockUserIDs {
-// 		if blockUserID == abur.UserID {
-// 			invalidParams := []*scpb.InvalidParam{
-// 				&scpb.InvalidParam{
-// 					Name:   "blockUserIds",
-// 					Reason: "blockUserIds can not include own UserId.",
-// 				},
-// 			}
-// 			return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-// 		}
-// 	}
-// 	return nil
-// }
-
-// func (abur *AddBlockUsersRequest) GenerateBlockUsers() []*BlockUser {
-// 	blockUserIDs := utils.RemoveDuplicateString(abur.BlockUserIDs)
-
-// 	blockUsers := make([]*BlockUser, len(blockUserIDs))
-// 	for i, blockUserID := range blockUserIDs {
-// 		bu := &BlockUser{}
-// 		bu.UserID = abur.UserID
-// 		bu.BlockUserID = blockUserID
-// 		blockUsers[i] = bu
-// 	}
-// 	return blockUsers
-// }
-
 type DeleteBlockUsersRequest struct {
 	scpb.DeleteBlockUsersRequest
+}
+
+func (dbur *DeleteBlockUsersRequest) Validate() *ErrorResponse {
+	if dbur.UserID == "" {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if len(dbur.BlockUserIDs) == 0 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "blockUserIds",
+				Reason: "blockUserIds is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	for _, blockUserID := range dbur.BlockUserIDs {
+		if blockUserID == dbur.UserID {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "blockUserIds",
+					Reason: "blockUserIds can not include own UserId.",
+				},
+			}
+			return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+		}
+	}
+	return nil
 }

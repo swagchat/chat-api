@@ -7,7 +7,6 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
-	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateBlockUsers creates block users
@@ -15,14 +14,20 @@ func CreateBlockUsers(ctx context.Context, req *model.CreateBlockUsersRequest) *
 	span := tracer.Provider(ctx).StartSpan("CreateBlockUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	_, errRes := confirmUserExist(ctx, req.UserID)
+	errRes := req.Validate()
+	if errRes != nil {
+		return errRes
+	}
+
+	_, errRes = confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
 		errRes.Message = "Failed to create block users."
 		return errRes
 	}
 
-	errRes = req.Validate()
+	errRes = confirmUserIDsExist(ctx, req.BlockUserIDs, "blockUserIds")
 	if errRes != nil {
+		errRes.Message = "Failed to create block users."
 		return errRes
 	}
 
@@ -40,17 +45,13 @@ func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model
 	span := tracer.Provider(ctx).StartSpan("GetBlockUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	res := &model.BlockUsersResponse{}
-
-	if req.ResponseType == scpb.ResponseType_UserIdList {
-		blockUserIDs, err := datastore.Provider(ctx).SelectBlockUserIDs(req.UserID)
-		if err != nil {
-			return nil, model.NewErrorResponse("Failed to get block users.", http.StatusInternalServerError, model.WithError(err))
-		}
-
-		res.BlockUserIDs = blockUserIDs
-		return res, nil
+	_, errRes := confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to create block users."
+		return nil, errRes
 	}
+
+	res := &model.BlockUsersResponse{}
 
 	blockUsers, err := datastore.Provider(ctx).SelectBlockUsers(req.UserID)
 	if err != nil {
@@ -61,22 +62,40 @@ func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model
 	return res, nil
 }
 
+// GetBlockUserIDs gets block userIds
+func GetBlockUserIDs(ctx context.Context, req *model.GetBlockUsersRequest) (*model.BlockUserIdsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("GetBlockUserIDs", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
+	_, errRes := confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to create block users."
+		return nil, errRes
+	}
+
+	res := &model.BlockUserIdsResponse{}
+
+	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUserIDs(req.UserID)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get block userIds.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	res.BlockUserIDs = blockUserIDs
+	return res, nil
+}
+
 // GetBlockedUsers gets blocked users
 func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*model.BlockedUsersResponse, *model.ErrorResponse) {
 	span := tracer.Provider(ctx).StartSpan("GetBlockedUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	res := &model.BlockedUsersResponse{}
-
-	if req.ResponseType == scpb.ResponseType_UserIdList {
-		blockedUserIDs, err := datastore.Provider(ctx).SelectBlockedUserIDs(req.UserID)
-		if err != nil {
-			return nil, model.NewErrorResponse("Failed to get blocked users.", http.StatusInternalServerError, model.WithError(err))
-		}
-
-		res.BlockedUserIDs = blockedUserIDs
-		return res, nil
+	_, errRes := confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to create block users."
+		return nil, errRes
 	}
+
+	res := &model.BlockedUsersResponse{}
 
 	blockedUsers, err := datastore.Provider(ctx).SelectBlockedUsers(req.UserID)
 	if err != nil {
@@ -87,12 +106,39 @@ func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*m
 	return res, nil
 }
 
+// GetBlockedUserIDs gets blocked userIds
+func GetBlockedUserIDs(ctx context.Context, req *model.GetBlockedUsersRequest) (*model.BlockedUserIdsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("GetBlockedUserIDs", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
+	_, errRes := confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to create block users."
+		return nil, errRes
+	}
+
+	res := &model.BlockedUserIdsResponse{}
+
+	blockedUserIDs, err := datastore.Provider(ctx).SelectBlockedUserIDs(req.UserID)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get blocked userIds.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	res.BlockedUserIDs = blockedUserIDs
+	return res, nil
+}
+
 // DeleteBlockUsers deletes block users
 func DeleteBlockUsers(ctx context.Context, req *model.DeleteBlockUsersRequest) *model.ErrorResponse {
 	span := tracer.Provider(ctx).StartSpan("DeleteBlockUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	_, errRes := confirmUserExist(ctx, req.UserID)
+	errRes := req.Validate()
+	if errRes != nil {
+		return errRes
+	}
+
+	_, errRes = confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
 		errRes.Message = "Failed to delete block users."
 		return errRes

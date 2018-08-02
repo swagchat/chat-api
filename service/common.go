@@ -345,56 +345,23 @@ func createTopic(ctx context.Context, roomID string) (string, *model.ErrorRespon
 	return *nRes.Data.(*string), nil
 }
 
-// func getExistUserIDsOld(ctx context.Context, requestUserIDs []string) ([]string, *model.ProblemDetail) {
-// 	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
-// 	if err != nil {
-// 		pd := &model.ProblemDetail{
-// 			Message: "Getting userIds failed",
-// 			Status:  http.StatusInternalServerError,
-// 			Error:   err,
-// 		}
-// 		return nil, pd
-// 	}
-
-// 	if len(existUserIDs) != len(requestUserIDs) {
-// 		pd := &model.ProblemDetail{
-// 			Message: "Invalid params",
-// 			InvalidParams: []*model.InvalidParam{
-// 				&model.InvalidParam{
-// 					Name:   "userIds",
-// 					Reason: "It contains a userId that does not exist.",
-// 				},
-// 			},
-// 			Status: http.StatusBadRequest,
-// 		}
-// 		return nil, pd
-// 	}
-
-// 	return existUserIDs, nil
-// }
-
-func getExistUserIDs(ctx context.Context, requestUserIDs []string) ([]string, *model.ErrorResponse) {
+func confirmUserIDsExist(ctx context.Context, requestUserIDs []string, keyName string) *model.ErrorResponse {
 	existUserIDs, err := datastore.Provider(ctx).SelectUserIDsOfUser(requestUserIDs)
 	if err != nil {
-		errRes := &model.ErrorResponse{}
-		errRes.Status = http.StatusBadRequest
-		errRes.Error = err
-		return nil, errRes
+		return model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
 	}
 
 	if len(existUserIDs) != len(requestUserIDs) {
-		errRes := &model.ErrorResponse{}
-		errRes.InvalidParams = []*scpb.InvalidParam{
+		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
-				Name:   "userIds",
+				Name:   keyName,
 				Reason: "It contains a userId that does not exist.",
 			},
 		}
-		errRes.Status = http.StatusBadRequest
-		return nil, errRes
+		return model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 	}
 
-	return existUserIDs, nil
+	return nil
 }
 
 func confirmRoomUserExist(ctx context.Context, roomID, userID string) (*model.RoomUser, *model.ErrorResponse) {

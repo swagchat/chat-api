@@ -93,8 +93,9 @@ func TestRoomUserStore(t *testing.T) {
 			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
 		}
 
-		roomUsers, err = Provider(ctx).SelectRoomUsers()
-		if err.Error() != "Be sure to specify roomID or userIDs" {
+		_, err = Provider(ctx).SelectRoomUsers()
+		if err.Error() != "An error occurred while getting room users. Be sure to specify roomID or userIDs" {
+			// if err == nil {
 			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
 		}
 	})
