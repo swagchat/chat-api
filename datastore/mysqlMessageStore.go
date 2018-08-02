@@ -1,27 +1,58 @@
 package datastore
 
-import "github.com/swagchat/chat-api/model"
+import (
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logger"
+	"github.com/swagchat/chat-api/model"
+)
 
 func (p *mysqlProvider) createMessageStore() {
-	rdbCreateMessageStore(p.ctx, p.database)
+	master := RdbStore(p.database).master()
+	rdbCreateMessageStore(p.ctx, master)
 }
 
 func (p *mysqlProvider) InsertMessage(message *model.Message) error {
-	return rdbInsertMessage(p.ctx, p.database, message)
+	master := RdbStore(p.database).master()
+	tx, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		logger.Error(err.Error())
+		return err
+	}
+
+	err = rdbInsertMessage(p.ctx, master, tx, message)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (p *mysqlProvider) SelectMessages(limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
-	return rdbSelectMessages(p.ctx, p.database, limit, offset, opts...)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectMessages(p.ctx, replica, limit, offset, opts...)
 }
 
 func (p *mysqlProvider) SelectMessage(messageID string) (*model.Message, error) {
-	return rdbSelectMessage(p.ctx, p.database, messageID)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectMessage(p.ctx, replica, messageID)
 }
 
 func (p *mysqlProvider) SelectCountMessages(opts ...SelectMessagesOption) (int64, error) {
-	return rdbSelectCountMessages(p.ctx, p.database, opts...)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectCountMessages(p.ctx, replica, opts...)
 }
 
 func (p *mysqlProvider) UpdateMessage(message *model.Message) error {
-	return rdbUpdateMessage(p.ctx, p.database, message)
+	master := RdbStore(p.database).master()
+	return rdbUpdateMessage(p.ctx, master, message)
 }

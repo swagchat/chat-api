@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"gopkg.in/gorp.v2"
+
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
@@ -14,32 +16,23 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-func rdbCreateRoomUserStore(ctx context.Context, db string) {
+func rdbCreateRoomUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateRoomUserStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	tableMap := master.AddTableWithName(model.RoomUser{}, tableNameRoomUser)
+	tableMap := dbMap.AddTableWithName(model.RoomUser{}, tableNameRoomUser)
 	tableMap.SetUniqueTogether("room_id", "user_id")
-	err := master.CreateTablesIfNotExists()
+	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating roomUser. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating room user table")
+		logger.Error(err.Error())
 		return
 	}
 }
 
-func rdbInsertRoomUsers(ctx context.Context, db string, roomUsers []*model.RoomUser, opts ...InsertRoomUsersOption) error {
+func rdbInsertRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, roomUsers []*model.RoomUser, opts ...InsertRoomUsersOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbInsertRoomUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	master := RdbStore(db).master()
-	trans, err := master.Begin()
-	if err != nil {
-		err := errors.Wrap(err, "An error occurred while recreating roomUser")
-		logger.Error(err.Error())
-		return err
-	}
 
 	opt := insertRoomUsersOptions{}
 	for _, o := range opts {
@@ -48,9 +41,8 @@ func rdbInsertRoomUsers(ctx context.Context, db string, roomUsers []*model.RoomU
 
 	if opt.beforeCleanRoomID != "" {
 		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId;", tableNameRoomUser)
-		_, err = trans.Exec(query, opt.beforeCleanRoomID)
+		_, err := tx.Exec(query, opt.beforeCleanRoomID)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while recreating roomUser")
 			logger.Error(err.Error())
 			return err
@@ -58,31 +50,20 @@ func rdbInsertRoomUsers(ctx context.Context, db string, roomUsers []*model.RoomU
 	}
 
 	for _, roomUser := range roomUsers {
-		err = trans.Insert(roomUser)
+		err := tx.Insert(roomUser)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while recreating roomUser")
 			logger.Error(err.Error())
 			return err
 		}
 	}
 
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		err := errors.Wrap(err, "An error occurred while recreating roomUser")
-		logger.Error(err.Error())
-		return err
-	}
-
 	return nil
 }
 
-func rdbSelectRoomUsers(ctx context.Context, db string, opts ...SelectRoomUsersOption) ([]*model.RoomUser, error) {
+func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRoomUsersOption) ([]*model.RoomUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectRoomUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	opt := selectRoomUsersOptions{}
 	for _, o := range opts {
@@ -122,9 +103,9 @@ func rdbSelectRoomUsers(ctx context.Context, db string, opts ...SelectRoomUsersO
 
 	var err error
 	if params == nil {
-		_, err = replica.Select(&roomUsers, query)
+		_, err = dbMap.Select(&roomUsers, query)
 	} else {
-		_, err = replica.Select(&roomUsers, query, params)
+		_, err = dbMap.Select(&roomUsers, query, params)
 	}
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting room users")
@@ -135,11 +116,9 @@ func rdbSelectRoomUsers(ctx context.Context, db string, opts ...SelectRoomUsersO
 	return roomUsers, nil
 }
 
-func rdbSelectRoomUser(ctx context.Context, db, roomID, userID string) (*model.RoomUser, error) {
+func rdbSelectRoomUser(ctx context.Context, dbMap *gorp.DbMap, roomID, userID string) (*model.RoomUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectRoomUser", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var roomUsers []*model.RoomUser
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND user_id=:userId;", tableNameRoomUser)
@@ -147,7 +126,7 @@ func rdbSelectRoomUser(ctx context.Context, db, roomID, userID string) (*model.R
 		"roomId": roomID,
 		"userId": userID,
 	}
-	_, err := replica.Select(&roomUsers, query, params)
+	_, err := dbMap.Select(&roomUsers, query, params)
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting roomUser")
 		logger.Error(err.Error())
@@ -161,11 +140,9 @@ func rdbSelectRoomUser(ctx context.Context, db, roomID, userID string) (*model.R
 	return nil, nil
 }
 
-func rdbSelectRoomUserOfOneOnOne(ctx context.Context, db, myUserID, opponentUserID string) (*model.RoomUser, error) {
+func rdbSelectRoomUserOfOneOnOne(ctx context.Context, dbMap *gorp.DbMap, myUserID, opponentUserID string) (*model.RoomUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectRoomUserOfOneOnOne", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var roomUsers []*model.RoomUser
 	query := fmt.Sprintf(`SELECT * FROM %s
@@ -177,7 +154,7 @@ WHERE room_id IN (
 		"myUserId":       myUserID,
 		"opponentUserId": opponentUserID,
 	}
-	_, err := replica.Select(&roomUsers, query, params)
+	_, err := dbMap.Select(&roomUsers, query, params)
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting roomUser for OneOnOne")
 		logger.Error(err.Error())
@@ -191,11 +168,9 @@ WHERE room_id IN (
 	return nil, nil
 }
 
-func rdbSelectUserIDsOfRoomUser(ctx context.Context, db string, roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
+func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectUserIDsOfRoomUser", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	opt := selectUserIDsOfRoomUserOptions{}
 	for _, o := range opts {
@@ -218,7 +193,7 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, db string, roomID string, o
 		params["roomId"] = roomID
 	}
 
-	_, err := replica.Select(&userIDs, query, params)
+	_, err := dbMap.Select(&userIDs, query, params)
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting userIds")
 		logger.Error(err.Error())
@@ -228,11 +203,9 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, db string, roomID string, o
 	return userIDs, nil
 }
 
-func rdbUpdateRoomUser(ctx context.Context, db string, ru *model.RoomUser) error {
+func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, ru *model.RoomUser) error {
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoomUser", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	master := RdbStore(db).master()
 
 	query := fmt.Sprintf("UPDATE %s SET unread_count=:unreadCount WHERE room_id=:roomId AND user_id=:userId;", tableNameRoomUser)
 	params := map[string]interface{}{
@@ -240,7 +213,7 @@ func rdbUpdateRoomUser(ctx context.Context, db string, ru *model.RoomUser) error
 		"userId":      ru.UserID,
 		"unreadCount": ru.UnreadCount,
 	}
-	_, err := master.Exec(query, params)
+	_, err := dbMap.Exec(query, params)
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while updating room user")
 		logger.Error(err.Error())
@@ -250,34 +223,24 @@ func rdbUpdateRoomUser(ctx context.Context, db string, ru *model.RoomUser) error
 	return nil
 }
 
-func rdbDeleteRoomUsers(ctx context.Context, db, roomID string, userIDs []string) error {
+func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, roomID string, userIDs []string) error {
 	span := tracer.Provider(ctx).StartSpan("rdbDeleteRoomUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	master := RdbStore(db).master()
-	trans, err := master.Begin()
-	if err != nil {
-		err := errors.Wrap(err, "An error occurred while deleting room users")
-		logger.Error(err.Error())
-		return err
-	}
 
 	var query string
 	nowTimestamp := time.Now().Unix()
 	if userIDs == nil {
 		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-		_, err = trans.Exec(query, roomID)
+		_, err := tx.Exec(query, roomID)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
 			return err
 		}
 
 		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
-		_, err = trans.Exec(query, nowTimestamp, roomID)
+		_, err = tx.Exec(query, nowTimestamp, roomID)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
 			return err
@@ -291,9 +254,8 @@ func rdbDeleteRoomUsers(ctx context.Context, db, roomID string, userIDs []string
 			params[i+1] = userIDsParams[i]
 		}
 		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=? AND user_id IN (%s);", tableNameRoomUser, userIdsQuery)
-		_, err = trans.Exec(query, params...)
+		_, err := tx.Exec(query, params...)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
 			return err
@@ -306,21 +268,12 @@ func rdbDeleteRoomUsers(ctx context.Context, db, roomID string, userIDs []string
 			params[i+2] = userIDsParams[i]
 		}
 		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=? AND user_id IN (%s);", tableNameSubscription, userIdsQuery)
-		_, err = trans.Exec(query, params...)
+		_, err = tx.Exec(query, params...)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
 			return err
 		}
-	}
-
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		err := errors.Wrap(err, "An error occurred while deleting room users")
-		logger.Error(err.Error())
-		return err
 	}
 
 	return nil

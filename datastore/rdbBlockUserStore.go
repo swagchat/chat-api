@@ -8,45 +8,40 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
+	gorp "gopkg.in/gorp.v2"
 )
 
-func rdbCreateBlockUserStore(ctx context.Context, db string) {
+func rdbCreateBlockUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateBlockUserStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	tableMap := master.AddTableWithName(model.BlockUser{}, tableNameBlockUser)
+	tableMap := dbMap.AddTableWithName(model.BlockUser{}, tableNameBlockUser)
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
-	err := master.CreateTablesIfNotExists()
+	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating blockUser table. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating block user table")
+		logger.Error(err.Error())
 		return
 	}
 }
 
-func rdbInsertBlockUsers(ctx context.Context, db string, bus []*model.BlockUser, opts ...InsertBlockUsersOption) error {
+func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, bus []*model.BlockUser, opts ...InsertBlockUsersOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbInsertBlockUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
+	if len(bus) == 0 {
+		return nil
+	}
 
 	opt := insertBlockUsersOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
 
-	trans, err := master.Begin()
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting block users. %v.", err))
-		return err
-	}
-
 	if opt.beforeClean {
 		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameBlockUser)
-		_, err = trans.Exec(query, bus[0].UserID)
+		_, err := tx.Exec(query, bus[0].UserID)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while inserting block users")
 			logger.Error(err.Error())
 			return err
@@ -55,9 +50,8 @@ func rdbInsertBlockUsers(ctx context.Context, db string, bus []*model.BlockUser,
 
 	for _, bu := range bus {
 		if !opt.beforeClean {
-			existBlockUser, err := rdbSelectBlockUser(ctx, db, bu.UserID, bu.BlockUserID)
+			existBlockUser, err := rdbSelectBlockUser(ctx, dbMap, bu.UserID, bu.BlockUserID)
 			if err != nil {
-				trans.Rollback()
 				logger.Error(fmt.Sprintf("An error occurred while inserting block users. %v.", err))
 				return err
 			}
@@ -66,29 +60,19 @@ func rdbInsertBlockUsers(ctx context.Context, db string, bus []*model.BlockUser,
 			}
 		}
 
-		err = trans.Insert(bu)
+		err := tx.Insert(bu)
 		if err != nil {
-			trans.Rollback()
 			logger.Error(fmt.Sprintf("An error occurred while inserting block users. %v.", err))
 			return err
 		}
 	}
 
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting block users. %v.", err))
-		return err
-	}
-
 	return nil
 }
 
-func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]*model.MiniUser, error) {
+func rdbSelectBlockUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]*model.MiniUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var blockUsers []*model.MiniUser
 	query := fmt.Sprintf(`SELECT
@@ -107,7 +91,7 @@ func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]*model.MiniU
 	params := map[string]interface{}{
 		"userId": userID,
 	}
-	_, err := replica.Select(&blockUsers, query, params)
+	_, err := dbMap.Select(&blockUsers, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting block users by userId. %v.", err))
 		return nil, err
@@ -116,18 +100,16 @@ func rdbSelectBlockUsers(ctx context.Context, db, userID string) ([]*model.MiniU
 	return blockUsers, nil
 }
 
-func rdbSelectBlockUserIDs(ctx context.Context, db, userID string) ([]string, error) {
+func rdbSelectBlockUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]string, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUserIDs", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var blockUserIDs []string
 	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE user_id=:userId;", tableNameBlockUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
-	_, err := replica.Select(&blockUserIDs, query, params)
+	_, err := dbMap.Select(&blockUserIDs, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting block userIds by userId. %v.", err))
 		return nil, err
@@ -136,11 +118,9 @@ func rdbSelectBlockUserIDs(ctx context.Context, db, userID string) ([]string, er
 	return blockUserIDs, nil
 }
 
-func rdbSelectBlockedUsers(ctx context.Context, db, userID string) ([]*model.MiniUser, error) {
+func rdbSelectBlockedUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]*model.MiniUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockedUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var blockedUsers []*model.MiniUser
 	query := fmt.Sprintf(`SELECT
@@ -159,7 +139,7 @@ func rdbSelectBlockedUsers(ctx context.Context, db, userID string) ([]*model.Min
 	params := map[string]interface{}{
 		"userId": userID,
 	}
-	_, err := replica.Select(&blockedUsers, query, params)
+	_, err := dbMap.Select(&blockedUsers, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting blocked users by userId. %v.", err))
 		return nil, err
@@ -168,18 +148,16 @@ func rdbSelectBlockedUsers(ctx context.Context, db, userID string) ([]*model.Min
 	return blockedUsers, nil
 }
 
-func rdbSelectBlockedUserIDs(ctx context.Context, db, userID string) ([]string, error) {
+func rdbSelectBlockedUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]string, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockedUserIDs", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var blockUserIDs []string
 	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE block_user_id=:userId;", tableNameBlockUser)
 	params := map[string]interface{}{
 		"userId": userID,
 	}
-	_, err := replica.Select(&blockUserIDs, query, params)
+	_, err := dbMap.Select(&blockUserIDs, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting blocked userIds by userId. %v.", err))
 		return nil, err
@@ -188,11 +166,9 @@ func rdbSelectBlockedUserIDs(ctx context.Context, db, userID string) ([]string, 
 	return blockUserIDs, nil
 }
 
-func rdbSelectBlockUser(ctx context.Context, db, userID, blockUserID string) (*model.BlockUser, error) {
+func rdbSelectBlockUser(ctx context.Context, dbMap *gorp.DbMap, userID, blockUserID string) (*model.BlockUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUser", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var blockUsers []*model.BlockUser
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND block_user_id=:blockUserId;", tableNameBlockUser)
@@ -200,7 +176,7 @@ func rdbSelectBlockUser(ctx context.Context, db, userID, blockUserID string) (*m
 		"userId":      userID,
 		"blockUserId": blockUserID,
 	}
-	_, err := replica.Select(&blockUsers, query, params)
+	_, err := dbMap.Select(&blockUsers, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting blockUser. %v.", err))
 		return nil, err
@@ -213,30 +189,20 @@ func rdbSelectBlockUser(ctx context.Context, db, userID, blockUserID string) (*m
 	return nil, nil
 }
 
-func rdbDeleteBlockUsers(ctx context.Context, db string, opts ...DeleteBlockUsersOption) error {
+func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteBlockUsersOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbDeleteBlockUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	master := RdbStore(db).master()
 
 	opt := deleteBlockUsersOptions{}
 	for _, o := range opts {
 		o(&opt)
 	}
 
-	trans, err := master.Begin()
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while deleting block users")
-		logger.Error(err.Error())
-		return err
-	}
-
 	if opt.userID != "" && opt.blockUserIDs != nil {
 		for _, blockUserID := range opt.blockUserIDs {
 			query := fmt.Sprintf("DELETE FROM %s WHERE user_id=? AND block_user_id=?", tableNameBlockUser)
-			_, err := trans.Exec(query, opt.userID, blockUserID)
+			_, err := tx.Exec(query, opt.userID, blockUserID)
 			if err != nil {
-				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while deleting block users")
 				logger.Error(err.Error())
 				return err
@@ -245,9 +211,8 @@ func rdbDeleteBlockUsers(ctx context.Context, db string, opts ...DeleteBlockUser
 	} else if opt.userID == "" && opt.blockUserIDs != nil {
 		for _, blockUserID := range opt.blockUserIDs {
 			query := fmt.Sprintf("DELETE FROM %s WHERE block_user_id=?", tableNameBlockUser)
-			_, err := trans.Exec(query, blockUserID)
+			_, err := tx.Exec(query, blockUserID)
 			if err != nil {
-				trans.Rollback()
 				err = errors.Wrap(err, "An error occurred while deleting block users")
 				logger.Error(err.Error())
 				return err
@@ -255,21 +220,12 @@ func rdbDeleteBlockUsers(ctx context.Context, db string, opts ...DeleteBlockUser
 		}
 	} else if opt.userID != "" && opt.blockUserIDs == nil {
 		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameBlockUser)
-		_, err := trans.Exec(query, opt.userID)
+		_, err := tx.Exec(query, opt.userID)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while deleting block users")
 			logger.Error(err.Error())
 			return err
 		}
-	}
-
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while deleting user roles")
-		logger.Error(err.Error())
-		return err
 	}
 
 	return nil

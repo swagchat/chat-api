@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/gorp.v2"
+
 	"github.com/pkg/errors"
 
 	"github.com/swagchat/chat-api/logger"
@@ -15,21 +17,20 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func rdbCreateMessageStore(ctx context.Context, db string) {
+func rdbCreateMessageStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateMessageStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	tableMap := master.AddTableWithName(model.Message{}, tableNameMessage)
+	tableMap := dbMap.AddTableWithName(model.Message{}, tableNameMessage)
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "message_id" {
 			columnMap.SetUnique(true)
 		}
 	}
-	err := master.CreateTablesIfNotExists()
+	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating message table. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating message table")
+		logger.Error(err.Error())
 		return
 	}
 
@@ -38,7 +39,7 @@ func rdbCreateMessageStore(ctx context.Context, db string) {
 		addIndexQuery = fmt.Sprintf("CREATE INDEX room_id_deleted_created ON %s(room_id, deleted, created)", tableNameMessage)
 	} else {
 		addIndexQuery = fmt.Sprintf("ALTER TABLE %s ADD INDEX room_id_deleted_created (room_id, deleted, created)", tableNameMessage)
-		_, err = master.Exec(addIndexQuery)
+		_, err = dbMap.Exec(addIndexQuery)
 		if err != nil {
 			errMessage := err.Error()
 			if strings.Index(errMessage, "Duplicate key name") < 0 {
@@ -49,34 +50,27 @@ func rdbCreateMessageStore(ctx context.Context, db string) {
 	}
 }
 
-func rdbInsertMessage(ctx context.Context, db string, message *model.Message) error {
+func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, message *model.Message) error {
 	span := tracer.Provider(ctx).StartSpan("rdbInsertMessage", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-	trans, err := master.Begin()
+	err := tx.Insert(message)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return err
-	}
-
-	err = trans.Insert(message)
-	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting message")
+		logger.Error(err.Error())
 		return err
 	}
 
 	var rooms []*model.Room
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": message.RoomID}
-	if _, err = trans.Select(&rooms, query, params); err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+	if _, err = tx.Select(&rooms, query, params); err != nil {
+		err = errors.Wrap(err, "An error occurred while inserting message")
+		logger.Error(err.Error())
 		return err
 	}
 	if len(rooms) != 1 {
-		err := errors.New("An error occurred while getting room. Room count is not 1")
+		err := errors.New("An error occurred while inserting message. Room count is not 1")
 		logger.Error(err.Error())
 		return err
 	}
@@ -99,28 +93,28 @@ func rdbInsertMessage(ctx context.Context, db string, message *model.Message) er
 	}
 	room.LastMessage = lastMessage
 	room.LastMessageUpdated = time.Now().Unix()
-	_, err = trans.Update(room)
+	_, err = tx.Update(room)
 	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting message")
+		logger.Error(err.Error())
 		return err
 	}
 
 	query = fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE room_id=? AND user_id!=?;", tableNameRoomUser)
-	_, err = trans.Exec(query, message.RoomID, message.UserID)
+	_, err = tx.Exec(query, message.RoomID, message.UserID)
 	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting message")
+		logger.Error(err.Error())
 		return err
 	}
 
 	var users []*model.User
 	query = fmt.Sprintf("SELECT u.* FROM %s AS ru LEFT JOIN %s AS u ON ru.user_id = u.user_id WHERE room_id = :roomId;", tableNameRoomUser, tableNameUser)
 	params = map[string]interface{}{"roomId": message.RoomID}
-	_, err = trans.Select(&users, query, params)
+	_, err = tx.Select(&users, query, params)
 	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting message")
+		logger.Error(err.Error())
 		return err
 	}
 	for _, user := range users {
@@ -128,29 +122,20 @@ func rdbInsertMessage(ctx context.Context, db string, message *model.Message) er
 			continue
 		}
 		query := fmt.Sprintf("UPDATE %s SET unread_count=unread_count+1 WHERE user_id=?;", tableNameUser)
-		_, err = trans.Exec(query, user.UserID)
+		_, err = tx.Exec(query, user.UserID)
 		if err != nil {
-			trans.Rollback()
-			logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
+			err = errors.Wrap(err, "An error occurred while inserting message")
+			logger.Error(err.Error())
 			return err
 		}
-	}
-
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		logger.Error(fmt.Sprintf("An error occurred while inserting message. %v.", err))
-		return err
 	}
 
 	return nil
 }
 
-func rdbSelectMessages(ctx context.Context, db string, limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
+func rdbSelectMessages(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectMessages", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	opt := selectMessagesOptions{}
 	for _, o := range opts {
@@ -190,27 +175,27 @@ func rdbSelectMessages(ctx context.Context, db string, limit, offset int32, opts
 	params["limit"] = limit
 	params["offset"] = offset
 
-	_, err := replica.Select(&messages, query, params)
+	_, err := dbMap.Select(&messages, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting messages. %s %v.", query, err))
+		err = errors.Wrap(err, "An error occurred while getting messages")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
 	return messages, nil
 }
 
-func rdbSelectMessage(ctx context.Context, db, messageID string) (*model.Message, error) {
+func rdbSelectMessage(ctx context.Context, dbMap *gorp.DbMap, messageID string) (*model.Message, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectMessage", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var messages []*model.Message
 	query := fmt.Sprintf("SELECT * FROM %s WHERE message_id=:messageId;", tableNameMessage)
 	params := map[string]interface{}{"messageId": messageID}
-	_, err := replica.Select(&messages, query, params)
+	_, err := dbMap.Select(&messages, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting message. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting message")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -221,11 +206,9 @@ func rdbSelectMessage(ctx context.Context, db, messageID string) (*model.Message
 	return nil, nil
 }
 
-func rdbSelectCountMessages(ctx context.Context, db string, opts ...SelectMessagesOption) (int64, error) {
+func rdbSelectCountMessages(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectMessagesOption) (int64, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectCountMessages", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	opt := selectMessagesOptions{}
 	for _, o := range opts {
@@ -246,24 +229,24 @@ func rdbSelectCountMessages(ctx context.Context, db string, opts ...SelectMessag
 		query = fmt.Sprintf("%s AND role IN (%s)", query, roleIDsQuery)
 	}
 
-	count, err := replica.SelectInt(query, params)
+	count, err := dbMap.SelectInt(query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting message count. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting message count")
+		logger.Error(err.Error())
 		return 0, err
 	}
 
 	return count, nil
 }
 
-func rdbUpdateMessage(ctx context.Context, db string, message *model.Message) error {
+func rdbUpdateMessage(ctx context.Context, dbMap *gorp.DbMap, message *model.Message) error {
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateMessage", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	_, err := master.Update(message)
+	_, err := dbMap.Update(message)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while updating message. %v.", err))
+		err = errors.Wrap(err, "An error occurred while updating message")
+		logger.Error(err.Error())
 		return err
 	}
 

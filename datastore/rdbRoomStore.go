@@ -10,21 +10,20 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
+	"gopkg.in/gorp.v2"
 )
 
-func rdbCreateRoomStore(ctx context.Context, db string) {
+func rdbCreateRoomStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateRoomStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	tableMap := master.AddTableWithName(model.Room{}, tableNameRoom)
+	tableMap := dbMap.AddTableWithName(model.Room{}, tableNameRoom)
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "room_id" {
 			columnMap.SetUnique(true)
 		}
 	}
-	err := master.CreateTablesIfNotExists()
+	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating room table")
 		logger.Error(err.Error())
@@ -32,7 +31,7 @@ func rdbCreateRoomStore(ctx context.Context, db string) {
 	}
 }
 
-func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...InsertRoomOption) error {
+func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, room *model.Room, opts ...InsertRoomOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbInsertRoom", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
@@ -41,17 +40,8 @@ func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...Ins
 		o(&opt)
 	}
 
-	master := RdbStore(db).master()
-	trans, err := master.Begin()
+	err := tx.Insert(room)
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while inserting room")
-		logger.Error(err.Error())
-		return err
-	}
-
-	err = trans.Insert(room)
-	if err != nil {
-		trans.Rollback()
 		err = errors.Wrap(err, "An error occurred while inserting room")
 		logger.Error(err.Error())
 		return err
@@ -59,35 +49,25 @@ func rdbInsertRoom(ctx context.Context, db string, room *model.Room, opts ...Ins
 
 	for _, ru := range opt.users {
 		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-		_, err = trans.Exec(query, room.RoomID)
+		_, err = tx.Exec(query, room.RoomID)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
 			return err
 		}
 
-		err = trans.Insert(ru)
+		err = tx.Insert(ru)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
 			return err
 		}
 	}
 
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while inserting room")
-		logger.Error(err.Error())
-		return err
-	}
-
 	return nil
 }
 
-func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
+func rdbSelectRooms(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectRooms", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
@@ -95,8 +75,6 @@ func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ..
 	for _, o := range opts {
 		o(&opt)
 	}
-
-	replica := RdbStore(db).replica()
 
 	var rooms []*model.Room
 	query := fmt.Sprintf(`SELECT
@@ -132,7 +110,7 @@ func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ..
 	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
 	params["limit"] = limit
 	params["offset"] = offset
-	_, err := replica.Select(&rooms, query, params)
+	_, err := dbMap.Select(&rooms, query, params)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting rooms")
 		logger.Error(err.Error())
@@ -142,7 +120,7 @@ func rdbSelectRooms(ctx context.Context, db string, limit, offset int32, opts ..
 	return rooms, nil
 }
 
-func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
+func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectRoom", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
@@ -151,12 +129,10 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 		o(&opt)
 	}
 
-	replica := RdbStore(db).replica()
-
 	var rooms []*model.Room
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted=0;", tableNameRoom)
 	params := map[string]interface{}{"roomId": roomID}
-	_, err := replica.Select(&rooms, query, params)
+	_, err := dbMap.Select(&rooms, query, params)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting room")
 		logger.Error(err.Error())
@@ -171,7 +147,7 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 	room = rooms[0]
 
 	if opt.withUsers {
-		users, err := rdbSelectUsersForRoom(ctx, db, roomID)
+		users, err := rdbSelectUsersForRoom(ctx, dbMap, roomID)
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting room")
 			logger.Error(err.Error())
@@ -183,11 +159,9 @@ func rdbSelectRoom(ctx context.Context, db, roomID string, opts ...SelectRoomOpt
 	return room, nil
 }
 
-func rdbSelectUsersForRoom(ctx context.Context, db, roomID string) ([]*scpb.MiniUser, error) {
+func rdbSelectUsersForRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string) ([]*scpb.MiniUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectUsersForRoom", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	var users []*scpb.MiniUser
 	query := fmt.Sprintf(`SELECT
@@ -206,7 +180,7 @@ LEFT JOIN %s AS u ON ru.user_id = u.user_id
 WHERE ru.room_id = :roomId AND u.deleted = 0 
 ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	params := map[string]interface{}{"roomId": roomID}
-	_, err := replica.Select(&users, query, params)
+	_, err := dbMap.Select(&users, query, params)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting users for room")
 		logger.Error(err.Error())
@@ -216,14 +190,12 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	return users, nil
 }
 
-func rdbSelectCountRooms(ctx context.Context, db string, opts ...SelectRoomsOption) (int64, error) {
+func rdbSelectCountRooms(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRoomsOption) (int64, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectCountRooms", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	replica := RdbStore(db).replica()
-
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
-	count, err := replica.SelectInt(query)
+	count, err := dbMap.SelectInt(query)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting room count")
 		logger.Error(err.Error())
@@ -233,7 +205,7 @@ func rdbSelectCountRooms(ctx context.Context, db string, opts ...SelectRoomsOpti
 	return count, nil
 }
 
-func rdbUpdateRoom(ctx context.Context, db string, room *model.Room, opts ...UpdateRoomOption) error {
+func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, room *model.Room, opts ...UpdateRoomOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoom", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
@@ -242,44 +214,33 @@ func rdbUpdateRoom(ctx context.Context, db string, room *model.Room, opts ...Upd
 		o(&opt)
 	}
 
-	master := RdbStore(db).master()
-	trans, err := master.Begin()
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while updating room")
-		logger.Error(err.Error())
-		return err
-	}
-
 	if room.Deleted != 0 {
 		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-		_, err = trans.Exec(query, room.RoomID)
+		_, err := tx.Exec(query, room.RoomID)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while deleting room")
 			logger.Error(err.Error())
 			return err
 		}
 
 		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
-		_, err = trans.Exec(query, time.Now().Unix(), room.RoomID)
+		_, err = tx.Exec(query, time.Now().Unix(), room.RoomID)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while deleting room")
 			logger.Error(err.Error())
 			return err
 		}
 
 		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
-		_, err = trans.Exec(query, time.Now().Unix(), room.RoomID)
+		_, err = tx.Exec(query, time.Now().Unix(), room.RoomID)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while deleting room")
 			logger.Error(err.Error())
 			return err
 		}
 	}
 
-	_, err = trans.Update(room)
+	_, err := tx.Update(room)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating room")
 		logger.Error(err.Error())
@@ -288,29 +249,19 @@ func rdbUpdateRoom(ctx context.Context, db string, room *model.Room, opts ...Upd
 
 	for _, ru := range opt.users {
 		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-		_, err = trans.Exec(query, room.RoomID)
+		_, err := tx.Exec(query, room.RoomID)
 		if err != nil {
-			trans.Rollback()
 			err := errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
 			return err
 		}
 
-		err = trans.Insert(ru)
+		err = tx.Insert(ru)
 		if err != nil {
-			trans.Rollback()
 			err = errors.Wrap(err, "An error occurred while updating room")
 			logger.Error(err.Error())
 			return err
 		}
-	}
-
-	err = trans.Commit()
-	if err != nil {
-		trans.Rollback()
-		err = errors.Wrap(err, "An error occurred while updating room")
-		logger.Error(err.Error())
-		return err
 	}
 
 	return nil

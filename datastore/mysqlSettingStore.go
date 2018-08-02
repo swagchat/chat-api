@@ -3,9 +3,11 @@ package datastore
 import "github.com/swagchat/chat-api/model"
 
 func (p *mysqlProvider) createSettingStore() {
-	rdbCreateSettingStore(p.ctx, p.database)
+	master := RdbStore(p.database).master()
+	rdbCreateSettingStore(p.ctx, master)
 }
 
 func (p *mysqlProvider) SelectLatestSetting() (*model.Setting, error) {
-	return rdbSelectLatestSetting(p.ctx, p.database)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectLatestSetting(p.ctx, replica)
 }

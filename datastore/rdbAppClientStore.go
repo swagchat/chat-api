@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"gopkg.in/gorp.v2"
+
 	"time"
 
 	"github.com/pkg/errors"
@@ -14,22 +16,21 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func rdbCreateAppClientStore(ctx context.Context, db string) {
+func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateAppClientStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	tableMap := master.AddTableWithName(model.AppClient{}, tableNameAppClient)
+	tableMap := dbMap.AddTableWithName(model.AppClient{}, tableNameAppClient)
 	tableMap.SetKeys(true, "id")
 	for _, columnMap := range tableMap.Columns {
 		if columnMap.ColumnName == "client_id" {
 			columnMap.SetUnique(true)
 		}
 	}
-	err := master.CreateTablesIfNotExists()
+	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating appClient table. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating app client table")
+		logger.Error(err.Error())
 		return
 	}
 
@@ -37,7 +38,7 @@ func rdbCreateAppClientStore(ctx context.Context, db string) {
 
 	ac, err := rdbSelectLatestAppClient(
 		ctx,
-		cfg.Datastore.Database,
+		dbMap,
 		SelectAppClientOptionFilterByClientID(cfg.FirstClientID),
 	)
 	if err != nil {
@@ -54,20 +55,18 @@ func rdbCreateAppClientStore(ctx context.Context, db string) {
 		Created:  time.Now().Unix(),
 		Expired:  0,
 	}
-	err = rdbInsertAppClient(ctx, cfg.Datastore.Database, appClient)
+	err = rdbInsertAppClient(ctx, dbMap, appClient)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
 		return
 	}
 }
 
-func rdbInsertAppClient(ctx context.Context, db string, appClient *model.AppClient) error {
+func rdbInsertAppClient(ctx context.Context, dbMap *gorp.DbMap, appClient *model.AppClient) error {
 	span := tracer.Provider(ctx).StartSpan("rdbInsertAppClient", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	master := RdbStore(db).master()
-
-	err := master.Insert(appClient)
+	err := dbMap.Insert(appClient)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
 		return err
@@ -76,11 +75,9 @@ func rdbInsertAppClient(ctx context.Context, db string, appClient *model.AppClie
 	return nil
 }
 
-func rdbSelectLatestAppClient(ctx context.Context, db string, opts ...SelectAppClientOption) (*model.AppClient, error) {
+func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectAppClientOption) (*model.AppClient, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectLatestAppClient", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	replica := RdbStore(db).replica()
 
 	opt := selectAppClientOptions{}
 	for _, o := range opts {
@@ -88,7 +85,7 @@ func rdbSelectLatestAppClient(ctx context.Context, db string, opts ...SelectAppC
 	}
 
 	if (opt.name == "" && opt.clientID == "") || (opt.name != "" && opt.clientID != "") {
-		return nil, errors.New("Be sure to specify either name or clientID.")
+		return nil, errors.New("Be sure to specify either name or clientID")
 	}
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE", tableNameAppClient)
@@ -110,7 +107,7 @@ func rdbSelectLatestAppClient(ctx context.Context, db string, opts ...SelectAppC
 
 	query = fmt.Sprintf("%s AND (expired=0 OR expired>%s) ORDER BY created DESC LIMIT 1;", query, nowTimestampString)
 
-	_, err := replica.Select(&appClients, query, params)
+	_, err := dbMap.Select(&appClients, query, params)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while getting appClient by name. %v.", err))
 		return nil, err

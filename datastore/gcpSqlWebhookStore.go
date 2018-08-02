@@ -3,9 +3,11 @@ package datastore
 import "github.com/swagchat/chat-api/model"
 
 func (p *gcpSQLProvider) createWebhookStore() {
-	rdbCreateWebhookStore(p.ctx, p.database)
+	master := RdbStore(p.database).master()
+	rdbCreateWebhookStore(p.ctx, master)
 }
 
 func (p *gcpSQLProvider) SelectWebhooks(event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
-	return rdbSelectWebhooks(p.ctx, p.database, event, opts...)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectWebhooks(p.ctx, replica, event, opts...)
 }

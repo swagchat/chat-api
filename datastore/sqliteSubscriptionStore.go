@@ -6,29 +6,36 @@ import (
 )
 
 func (p *sqliteProvider) createSubscriptionStore() {
-	rdbCreateSubscriptionStore(p.ctx, p.database)
+	master := RdbStore(p.database).master()
+	rdbCreateSubscriptionStore(p.ctx, master)
 }
 
 func (p *sqliteProvider) InsertSubscription(room *model.Subscription) (*model.Subscription, error) {
-	return rdbInsertSubscription(p.ctx, p.database, room)
+	master := RdbStore(p.database).master()
+	return rdbInsertSubscription(p.ctx, master, room)
 }
 
 func (p *sqliteProvider) SelectSubscription(roomID, userID string, platform scpb.Platform) (*model.Subscription, error) {
-	return rdbSelectSubscription(p.ctx, p.database, roomID, userID, platform)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectSubscription(p.ctx, replica, roomID, userID, platform)
 }
 
 func (p *sqliteProvider) SelectDeletedSubscriptionsByRoomID(roomID string) ([]*model.Subscription, error) {
-	return rdbSelectDeletedSubscriptionsByRoomID(p.ctx, p.database, roomID)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectDeletedSubscriptionsByRoomID(p.ctx, replica, roomID)
 }
 
 func (p *sqliteProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*model.Subscription, error) {
-	return rdbSelectDeletedSubscriptionsByUserID(p.ctx, p.database, userID)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectDeletedSubscriptionsByUserID(p.ctx, replica, userID)
 }
 
 func (p *sqliteProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform scpb.Platform) ([]*model.Subscription, error) {
-	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.ctx, p.database, userID, platform)
+	replica := RdbStore(p.database).replica()
+	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.ctx, replica, userID, platform)
 }
 
 func (p *sqliteProvider) DeleteSubscription(subscription *model.Subscription) error {
-	return rdbDeleteSubscription(p.ctx, p.database, subscription)
+	master := RdbStore(p.database).master()
+	return rdbDeleteSubscription(p.ctx, master, subscription)
 }
