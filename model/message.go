@@ -16,17 +16,13 @@ const (
 	MessageTypeIndicatorStart = "indicator-start"
 	MessageTypeIndicatorEnd   = "indicator-end"
 	MessageTypeUpdateRoomUser = "updateRoomUser"
-)
 
-type Messages struct {
-	Messages []*Message `json:"messages" db:"-"`
-	AllCount int64      `json:"allCount" db:"all_count"`
-}
+	EventNameMessage = "message"
+)
 
 type Message struct {
 	scpb.Message
 	Payload utils.JSONText `json:"payload" db:"payload"`
-	// UserIDs []string       `json:"userIds" db:"-"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {
@@ -54,9 +50,32 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type ResponseMessages struct {
-	MessageIds []string         `json:"messageIds,omitempty"`
-	Errors     []*ErrorResponse `json:"errors,omitempty"`
+func (m *Message) ConvertToPbMessage() *scpb.Message {
+	pbMessage := &scpb.Message{}
+	pbMessage.MessageID = m.MessageID
+	pbMessage.RoomID = m.RoomID
+	pbMessage.UserID = m.UserID
+	pbMessage.Type = m.Type
+	pbMessage.Payload = m.Payload
+	pbMessage.Role = m.Role
+	pbMessage.Created = m.Created
+	pbMessage.Modified = m.Modified
+	pbMessage.Deleted = m.Deleted
+	pbMessage.EventName = m.EventName
+	pbMessage.UserIDs = m.UserIDs
+	return pbMessage
+}
+
+func (m *Message) ConvertToCreateMessageRequest() *CreateMessageRequest {
+	req := &CreateMessageRequest{}
+	req.MessageID = &m.MessageID
+	req.RoomID = &m.RoomID
+	req.UserID = &m.UserID
+	req.Type = &m.Type
+	req.Payload = m.Payload
+	req.Role = &m.Role
+	req.EventName = &m.EventName
+	return req
 }
 
 type PayloadText struct {
@@ -74,8 +93,13 @@ type PayloadUsers struct {
 	Users []string `json:"users"`
 }
 
-func (m *Message) Validate() *ErrorResponse {
-	if m.MessageID != "" && !IsValidID(m.MessageID) {
+type CreateMessageRequest struct {
+	scpb.CreateMessageRequest
+	Payload utils.JSONText `json:"payload" db:"payload"`
+}
+
+func (m *CreateMessageRequest) Validate() *ErrorResponse {
+	if m.MessageID != nil && *m.MessageID != "" && !IsValidID(*m.MessageID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "messageId",
@@ -85,17 +109,37 @@ func (m *Message) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if m.Payload == nil {
+	if m.RoomID == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
-				Name:   "payload",
-				Reason: "payload is empty.",
+				Name:   "roomId",
+				Reason: "roomId is empty.",
 			},
 		}
 		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if m.Type == MessageTypeText {
+	if m.UserID == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userId",
+				Reason: "userId is empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if m.Type == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "type",
+				Reason: "type is empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if *m.Type == MessageTypeText {
 		var pt PayloadText
 		json.Unmarshal(m.Payload, &pt)
 		if pt.Text == "" {
@@ -109,7 +153,7 @@ func (m *Message) Validate() *ErrorResponse {
 		}
 	}
 
-	if m.Type == MessageTypeImage {
+	if *m.Type == MessageTypeImage {
 		var pi PayloadImage
 		json.Unmarshal(m.Payload, &pi)
 		if pi.Mime == "" {
@@ -133,23 +177,45 @@ func (m *Message) Validate() *ErrorResponse {
 		}
 	}
 
+	if m.Payload == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "payload",
+				Reason: "payload is empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
 	return nil
 }
 
-func (m *Message) BeforeSave() {
-	if m.MessageID == "" {
+func (cmr *CreateMessageRequest) GenerateMessage() *Message {
+	m := &Message{}
+
+	if cmr.MessageID == nil || *cmr.MessageID == "" {
 		m.MessageID = utils.GenerateUUID()
+	} else {
+		m.MessageID = *cmr.MessageID
 	}
 
-	if m.Role == 0 {
+	m.RoomID = *cmr.RoomID
+	m.UserID = *cmr.UserID
+	m.Type = *cmr.Type
+	m.Payload = cmr.Payload
+
+	if cmr.Role == nil {
 		m.Role = utils.RoleGeneral
+	} else {
+		m.Role = *cmr.Role
 	}
+
+	m.EventName = EventNameMessage
 
 	nowTimestamp := time.Now().Unix()
-	if m.Created == 0 {
-		m.Created = nowTimestamp
-	}
-	if m.Modified == 0 {
-		m.Modified = nowTimestamp
-	}
+	m.Created = nowTimestamp
+	m.Modified = nowTimestamp
+	m.Deleted = 0
+
+	return m
 }

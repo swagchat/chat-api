@@ -231,7 +231,7 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorR
 }
 
 // GetRoomMessages gets room messages
-func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.Messages, *model.ErrorResponse) {
+func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.RoomMessagesResponse, *model.ErrorResponse) {
 	span := tracer.Provider(ctx).StartSpan("GetRoomMessages", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
@@ -259,9 +259,8 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get messages.", http.StatusInternalServerError, model.WithError(err))
 	}
-	returnMessages := &model.Messages{
-		Messages: messages,
-	}
+	roomMessages := &model.RoomMessagesResponse{}
+	roomMessages.Messages = messages
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(
 		datastore.SelectMessagesOptionFilterByRoomID(req.RoomID),
@@ -270,9 +269,9 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get messages.", http.StatusInternalServerError, model.WithError(err))
 	}
-	returnMessages.AllCount = count
+	roomMessages.AllCount = count
 
 	updateLastAccessRoomID(ctx, req.RoomID)
 
-	return returnMessages, nil
+	return roomMessages, nil
 }

@@ -148,7 +148,7 @@ func (ufr *MiniUser) MarshalJSON() ([]byte, error) {
 		LastAccessed   string         `json:"lastAccessed"`
 		Created        string         `json:"created"`
 		Modified       string         `json:"modified"`
-		RuDisplay      *bool          `json:"ruDisplay"`
+		RuDisplay      *bool          `json:"ruDisplay,omitempty"`
 	}{
 		UserID:         ufr.UserID,
 		Name:           ufr.Name,
@@ -421,4 +421,39 @@ type DeleteRoomRequest struct {
 
 type GetRoomMessagesRequest struct {
 	scpb.GetRoomMessagesRequest
+}
+
+type RoomMessagesResponse struct {
+	scpb.RoomMessagesResponse
+	Messages []*Message `json:"messages"`
+}
+
+func (rmr *RoomMessagesResponse) ConvertToPbRoomMessages() *scpb.RoomMessagesResponse {
+	pbRoomMessages := &scpb.RoomMessagesResponse{}
+
+	messages := make([]*scpb.Message, len(rmr.Messages))
+	for i, v := range rmr.Messages {
+		payload, _ := v.Payload.MarshalJSON()
+		messages[i] = &scpb.Message{
+			MessageID: v.MessageID,
+			RoomID:    v.RoomID,
+			UserID:    v.UserID,
+			Type:      v.Type,
+			Payload:   payload,
+			Role:      v.Role,
+			Created:   v.Created,
+			Modified:  v.Modified,
+			Deleted:   v.Deleted,
+			EventName: v.EventName,
+			UserIDs:   v.UserIDs,
+		}
+	}
+	pbRoomMessages.Messages = messages
+	pbRoomMessages.AllCount = rmr.AllCount
+	pbRoomMessages.Limit = rmr.Limit
+	pbRoomMessages.Offset = rmr.Offset
+	pbRoomMessages.Orders = rmr.Orders
+	pbRoomMessages.RoomID = rmr.RoomID
+	pbRoomMessages.RoleIDs = rmr.RoleIDs
+	return pbRoomMessages
 }

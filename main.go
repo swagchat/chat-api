@@ -56,6 +56,7 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+	defer tracer.Provider(ctx).Close()
 
 	if cfg.GRPCPort == "" {
 		rest.Run(ctx)

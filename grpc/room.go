@@ -79,3 +79,14 @@ func (us *roomServiceServer) DeleteRoom(ctx context.Context, in *scpb.DeleteRoom
 
 	return &empty.Empty{}, nil
 }
+
+func (us *roomServiceServer) GetRoomMessages(ctx context.Context, in *scpb.GetRoomMessagesRequest) (*scpb.RoomMessagesResponse, error) {
+	req := &model.GetRoomMessagesRequest{*in}
+	roomMessages, errRes := service.GetRoomMessages(ctx, req)
+	if errRes != nil {
+		return &scpb.RoomMessagesResponse{}, errRes.Error
+	}
+
+	pbRoomMessages := roomMessages.ConvertToPbRoomMessages()
+	return pbRoomMessages, nil
+}

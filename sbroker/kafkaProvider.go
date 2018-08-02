@@ -107,7 +107,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				}
 
 				msg := &model.Message{pbMsg, payload}
-				msgs := []*model.Message{msg}
+				req := msg.ConvertToCreateMessageRequest()
 
 				ctx := context.Background()
 				ctx = context.WithValue(ctx, utils.CtxUserID, msg.UserID)
@@ -121,9 +121,8 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				}
 				ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
 
-				service.CreateMessages(ctx, &model.Messages{
-					Messages: msgs,
-				})
+				service.CreateMessage(ctx, req)
+
 			case kafka.PartitionEOF:
 				logger.Info(e.String())
 			case kafka.Error:

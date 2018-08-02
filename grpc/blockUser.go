@@ -44,16 +44,6 @@ func (bus *blockUserServiceServer) GetBlockedUsers(ctx context.Context, in *scpb
 	return blockedUsers, nil
 }
 
-func (bus *blockUserServiceServer) AddBlockUsers(ctx context.Context, in *scpb.AddBlockUsersRequest) (*empty.Empty, error) {
-	req := &model.AddBlockUsersRequest{*in}
-	errRes := service.AddBlockUsers(ctx, req)
-	if errRes != nil {
-		return &empty.Empty{}, errRes.Error
-	}
-
-	return &empty.Empty{}, nil
-}
-
 func (bus *blockUserServiceServer) DeleteBlockUsers(ctx context.Context, in *scpb.DeleteBlockUsersRequest) (*empty.Empty, error) {
 	req := &model.DeleteBlockUsersRequest{*in}
 	errRes := service.DeleteBlockUsers(ctx, req)

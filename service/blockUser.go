@@ -87,31 +87,6 @@ func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*m
 	return res, nil
 }
 
-// AddBlockUsers adds block users
-func AddBlockUsers(ctx context.Context, req *model.AddBlockUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("AddBlockUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
-
-	_, errRes := confirmUserExist(ctx, req.UserID)
-	if errRes != nil {
-		errRes.Message = "Failed to add block users."
-		return errRes
-	}
-
-	errRes = req.Validate()
-	if errRes != nil {
-		return errRes
-	}
-
-	blockUsers := req.GenerateBlockUsers()
-	err := datastore.Provider(ctx).InsertBlockUsers(blockUsers)
-	if err != nil {
-		return model.NewErrorResponse("Failed to add block users.", http.StatusInternalServerError, model.WithError(err))
-	}
-
-	return nil
-}
-
 // DeleteBlockUsers deletes block users
 func DeleteBlockUsers(ctx context.Context, req *model.DeleteBlockUsersRequest) *model.ErrorResponse {
 	span := tracer.Provider(ctx).StartSpan("DeleteBlockUsers", "service")

@@ -18,87 +18,71 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-// CreateMessages creates messages
-func CreateMessages(ctx context.Context, posts *model.Messages) *model.ResponseMessages {
-	span := tracer.Provider(ctx).StartSpan("CreateMessages", "service")
+// CreateMessage creates message
+func CreateMessage(ctx context.Context, req *model.CreateMessageRequest) (*model.Message, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("CreateMessage", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	messageIds := make([]string, 0)
-	pds := make([]*model.ErrorResponse, 0)
-	for _, post := range posts.Messages {
-		logger.Info(fmt.Sprintf("Start CreateMessage. Message=[%#v]", post))
-		room, errRes := confirmRoomExist(ctx, post.RoomID)
-		if errRes != nil {
-			errRes.Message = "Failed to create message."
-			pds = append(pds, errRes)
-			continue
-		}
-
-		user, errRes := confirmUserExist(ctx, post.UserID, datastore.SelectUserOptionWithRoles(true))
-		if errRes != nil {
-			errRes.Message = "Failed to create message."
-			pds = append(pds, errRes)
-			continue
-		}
-
-		errRes = post.Validate()
-		if errRes != nil {
-			pds = append(pds, errRes)
-			continue
-		}
-
-		// save message
-		post.BeforeSave()
-
-		if post.Type == model.MessageTypeIndicatorStart || post.Type == model.MessageTypeIndicatorEnd {
-			messageIds = append(messageIds, post.MessageID)
-			go publishMessage(ctx, post)
-			continue
-		}
-
-		_, errRes = confirmMessageNotExist(ctx, post.MessageID)
-		if errRes != nil {
-			errRes.Message = "Failed to create message."
-			pds = append(pds, errRes)
-			continue
-		}
-
-		err := datastore.Provider(ctx).InsertMessage(post)
-		if err != nil {
-			errRes := model.NewErrorResponse("Failed to create message.", http.StatusInternalServerError, model.WithError(err))
-			pds = append(pds, errRes)
-			continue
-		}
-
-		messageIds = append(messageIds, post.MessageID)
-
-		// notification
-		lastMessage := "" // TODO
-		mi := &notification.MessageInfo{
-			Text: fmt.Sprintf("[%s]%s", room.Name, lastMessage),
-		}
-		cfg := utils.Config()
-		if cfg.Notification.DefaultBadgeCount != "" {
-			dBadgeCount, err := strconv.Atoi(cfg.Notification.DefaultBadgeCount)
-			if err == nil {
-				mi.Badge = dBadgeCount
-			}
-		}
-		go notification.Provider(ctx).Publish(room.NotificationTopicID, room.RoomID, mi)
-
-		publishMessage(ctx, post)
-		webhookMessage(ctx, post, user)
-		logger.Info(fmt.Sprintf("Finish CreateMessage. Message=[%v]", post))
+	errRes := req.Validate()
+	if errRes != nil {
+		return nil, errRes
 	}
 
-	responseMessages := &model.ResponseMessages{
-		MessageIds: messageIds,
-		Errors:     pds,
+	room, errRes := confirmRoomExist(ctx, *req.RoomID)
+	if errRes != nil {
+		errRes.Message = "Failed to create message."
+		return nil, errRes
 	}
-	// for _, pd := range pds {
-	// 	logger.Error(pd.Error.Error())
-	// }
-	return responseMessages
+
+	user, errRes := confirmUserExist(ctx, *req.UserID, datastore.SelectUserOptionWithRoles(true))
+	if errRes != nil {
+		errRes.Message = "Failed to create message."
+		return nil, errRes
+	}
+
+	errRes = req.Validate()
+	if errRes != nil {
+		errRes.Message = "Failed to create message."
+		return nil, errRes
+	}
+
+	message := req.GenerateMessage()
+
+	if message.Type == model.MessageTypeIndicatorStart || message.Type == model.MessageTypeIndicatorEnd {
+		publishMessage(ctx, message)
+		return nil, nil
+	}
+
+	_, errRes = confirmMessageNotExist(ctx, message.MessageID)
+	if errRes != nil {
+		errRes.Message = "Failed to create message."
+		return nil, errRes
+	}
+
+	err := datastore.Provider(ctx).InsertMessage(message)
+	if err != nil {
+		errRes := model.NewErrorResponse("Failed to create message.", http.StatusInternalServerError, model.WithError(err))
+		return nil, errRes
+	}
+
+	// notification
+	lastMessage := "" // TODO
+	mi := &notification.MessageInfo{
+		Text: fmt.Sprintf("[%s]%s", room.Name, lastMessage),
+	}
+	cfg := utils.Config()
+	if cfg.Notification.DefaultBadgeCount != "" {
+		dBadgeCount, err := strconv.Atoi(cfg.Notification.DefaultBadgeCount)
+		if err == nil {
+			mi.Badge = dBadgeCount
+		}
+	}
+	go notification.Provider(ctx).Publish(room.NotificationTopicID, room.RoomID, mi)
+
+	publishMessage(ctx, message)
+	webhookMessage(ctx, message, user)
+
+	return message, nil
 }
 
 // GetMessage gets message

@@ -12,7 +12,6 @@ const (
 	TestNameCreateBlockUsers = "create block users test"
 	TestNameGetBlockUsers    = "get block users test"
 	TestNameGetBlockedUsers  = "get blocked users test"
-	TestNameAddBlockUsers    = "add block users test"
 	TestNameDeleteBlockUsers = "delete block users test"
 )
 
@@ -67,16 +66,6 @@ func TestBlockUser(t *testing.T) {
 		}
 		if len(blockedUsers.BlockedUsers) != 1 {
 			t.Fatalf("Failed to %s", TestNameGetBlockedUsers)
-		}
-	})
-
-	t.Run(TestNameAddBlockUsers, func(t *testing.T) {
-		req := &model.AddBlockUsersRequest{}
-		req.UserID = "service-user-id-0001"
-		req.BlockUserIDs = []string{"service-user-id-0004", "service-user-id-0005", "service-user-id-0006"}
-		errRes := AddBlockUsers(ctx, req)
-		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameAddBlockUsers)
 		}
 	})
 

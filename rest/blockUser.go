@@ -14,7 +14,6 @@ func setBlockUserMux() {
 	mux.PostFunc("/users/#userId^[a-z0-9-]$/blockUsers", commonHandler(selfResourceAuthzHandler(postBlockUsers)))
 	mux.GetFunc("/users/#userId^[a-z0-9-]$/blockUsers", commonHandler(selfResourceAuthzHandler(getBlockUsers)))
 	mux.GetFunc("/users/#userId^[a-z0-9-]$/blockedUsers", commonHandler(selfResourceAuthzHandler(getBlockedUsers)))
-	mux.PutFunc("/users/#userId^[a-z0-9-]$/blockUsers", commonHandler(selfResourceAuthzHandler(putBlockUsers)))
 	mux.DeleteFunc("/users/#userId^[a-z0-9-]$/blockUsers", commonHandler(selfResourceAuthzHandler(deleteBlockUsers)))
 }
 
@@ -86,28 +85,6 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, r, http.StatusOK, "application/json", blockedUsers)
-}
-
-func putBlockUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("putBlockUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
-
-	var req model.AddBlockUsersRequest
-	if err := decodeBody(r, &req); err != nil {
-		respondJSONDecodeError(w, r, "")
-		return
-	}
-
-	req.UserID = bone.GetValue(r, "userId")
-
-	errRes := service.AddBlockUsers(ctx, &req)
-	if errRes != nil {
-		respondError(w, r, errRes)
-		return
-	}
-
-	respond(w, r, http.StatusNoContent, "application/json", nil)
 }
 
 func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
