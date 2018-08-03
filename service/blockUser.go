@@ -145,7 +145,7 @@ func DeleteBlockUsers(ctx context.Context, req *model.DeleteBlockUsersRequest) *
 	}
 
 	err := datastore.Provider(ctx).DeleteBlockUsers(
-		datastore.DeleteBlockUsersOptionFilterByUserID(req.UserID),
+		datastore.DeleteBlockUsersOptionFilterByUserIDs([]string{req.UserID}),
 		datastore.DeleteBlockUsersOptionFilterByBlockUserIDs(req.BlockUserIDs),
 	)
 	if err != nil {

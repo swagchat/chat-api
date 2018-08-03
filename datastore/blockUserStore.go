@@ -15,15 +15,15 @@ func InsertBlockUsersOptionBeforeClean(beforeClean bool) InsertBlockUsersOption 
 }
 
 type deleteBlockUsersOptions struct {
-	userID       string
+	userIDs      []string
 	blockUserIDs []string
 }
 
 type DeleteBlockUsersOption func(*deleteBlockUsersOptions)
 
-func DeleteBlockUsersOptionFilterByUserID(userID string) DeleteBlockUsersOption {
+func DeleteBlockUsersOptionFilterByUserIDs(userIDs []string) DeleteBlockUsersOption {
 	return func(ops *deleteBlockUsersOptions) {
-		ops.userID = userID
+		ops.userIDs = userIDs
 	}
 }
 

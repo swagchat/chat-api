@@ -8,7 +8,6 @@ import (
 
 const (
 	TestNameCreateUserRoles = "create user roles test"
-	TestNameAddUserRoles    = "add user roles test"
 	TestNameDeleteUserRoles = "delete user roles test"
 )
 
@@ -21,22 +20,28 @@ func TestUserRole(t *testing.T) {
 		if errRes != nil {
 			t.Fatalf("Failed to %s", TestNameCreateUserRoles)
 		}
-	})
-	t.Run(TestNameAddUserRoles, func(t *testing.T) {
-		req := &model.AddUserRolesRequest{}
-		req.UserID = "service-user-id-0001"
-		req.Roles = []int32{3, 4, 5}
-		errRes := AddUserRoles(ctx, req)
-		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameAddUserRoles)
+
+		req = &model.CreateUserRolesRequest{}
+		req.UserID = "not-exist-user"
+		errRes = CreateUserRoles(ctx, req)
+		if errRes == nil {
+			t.Fatalf("Failed to %s", TestNameCreateUserRoles)
 		}
 	})
+
 	t.Run(TestNameDeleteUserRoles, func(t *testing.T) {
 		req := &model.DeleteUserRolesRequest{}
 		req.UserID = "service-user-id-0001"
 		req.Roles = []int32{1, 2, 3}
 		errRes := DeleteUserRoles(ctx, req)
 		if errRes != nil {
+			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
+		}
+
+		req = &model.DeleteUserRolesRequest{}
+		req.UserID = "not-exist-user"
+		errRes = DeleteUserRoles(ctx, req)
+		if errRes == nil {
 			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
 		}
 	})

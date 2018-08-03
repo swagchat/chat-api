@@ -39,11 +39,8 @@ func rdbInsertUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 	}
 
 	if opt.beforeClean {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
-		_, err := tx.Exec(query, urs[0].UserID)
+		err := rdbDeleteUserRoles(ctx, dbMap, tx, DeleteUserRolesOptionFilterByUserIDs([]string{urs[0].UserID}))
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while inserting user roles")
-			logger.Error(err.Error())
 			return err
 		}
 	}
@@ -52,8 +49,6 @@ func rdbInsertUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if !opt.beforeClean {
 			existUserRole, err := rdbSelectUserRole(ctx, dbMap, ur.UserID, ur.Role)
 			if err != nil {
-				err = errors.Wrap(err, "An error occurred while inserting user roles")
-				logger.Error(err.Error())
 				return err
 			}
 			if existUserRole != nil {
@@ -144,29 +139,21 @@ func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		o(&opt)
 	}
 
-	if opt.userID != "" && opt.roles != nil {
-		for _, role := range opt.roles {
-			query := fmt.Sprintf("DELETE FROM %s WHERE user_id=? AND role=?", tableNameUserRole)
-			_, err := tx.Exec(query, opt.userID, role)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while deleting user roles")
-				logger.Error(err.Error())
-				return err
-			}
+	if opt.userIDs != nil && len(opt.userIDs) > 0 {
+		userIDsQuery, userIDsParams := makePrepareExpressionForInOperand(opt.userIDs)
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id IN (%s)", tableNameUserRole, userIDsQuery)
+		_, err := tx.Exec(query, userIDsParams...)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while deleting user roles")
+			logger.Error(err.Error())
+			return err
 		}
-	} else if opt.userID == "" && opt.roles != nil {
-		for _, role := range opt.roles {
-			query := fmt.Sprintf("DELETE FROM %s WHERE role=?", tableNameUserRole)
-			_, err := tx.Exec(query, role)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while deleting user roles")
-				logger.Error(err.Error())
-				return err
-			}
-		}
-	} else if opt.userID != "" && opt.roles == nil {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
-		_, err := tx.Exec(query, opt.userID)
+	}
+
+	if opt.roles != nil && len(opt.roles) > 0 {
+		rolesQuery, rolesParams := makePrepareExpressionForInOperand(opt.roles)
+		query := fmt.Sprintf("DELETE FROM %s WHERE role IN (%s)", tableNameUserRole, rolesQuery)
+		_, err := tx.Exec(query, rolesParams...)
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting user roles")
 			logger.Error(err.Error())

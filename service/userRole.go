@@ -21,34 +21,9 @@ func CreateUserRoles(ctx context.Context, req *model.CreateUserRolesRequest) *mo
 	}
 
 	urs := req.GenerateUserRoles()
-
-	err := datastore.Provider(ctx).InsertUserRoles(
-		urs,
-		datastore.InsertUserRolesOptionBeforeClean(true),
-	)
-	if err != nil {
-		return model.NewErrorResponse("Failed to create user roles.", http.StatusInternalServerError, model.WithError(err))
-	}
-
-	return nil
-}
-
-// AddUserRoles adds user roles
-func AddUserRoles(ctx context.Context, req *model.AddUserRolesRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("AddUserRoles", "service")
-	defer tracer.Provider(ctx).Finish(span)
-
-	_, errRes := confirmUserExist(ctx, req.UserID)
-	if errRes != nil {
-		errRes.Message = "Failed to add user roles."
-		return errRes
-	}
-
-	urs := req.GenerateUserRoles()
-
 	err := datastore.Provider(ctx).InsertUserRoles(urs)
 	if err != nil {
-		return model.NewErrorResponse("Failed to add user roles.", http.StatusInternalServerError, model.WithError(err))
+		return model.NewErrorResponse("Failed to create user roles.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	return nil
@@ -59,9 +34,16 @@ func DeleteUserRoles(ctx context.Context, req *model.DeleteUserRolesRequest) *mo
 	span := tracer.Provider(ctx).StartSpan("DeleteUserRoles", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
+	_, errRes := confirmUserExist(ctx, req.UserID)
+	if errRes != nil {
+		errRes.Message = "Failed to delete user roles."
+		return errRes
+	}
+
+	roles := req.GenerateRoles()
 	err := datastore.Provider(ctx).DeleteUserRoles(
-		datastore.DeleteUserRolesOptionFilterByUserID(req.UserID),
-		datastore.DeleteUserRolesOptionFilterByRoles(req.Roles),
+		datastore.DeleteUserRolesOptionFilterByUserIDs([]string{req.UserID}),
+		datastore.DeleteUserRolesOptionFilterByRoles(roles),
 	)
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete user roles.", http.StatusInternalServerError, model.WithError(err))

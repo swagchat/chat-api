@@ -8,33 +8,34 @@ import (
 
 const (
 	TestNameInsertUserRoles         = "insert user roles test"
-	TestNameSelectUserRole          = "select user role test"
 	TestNameSelectRolesOfUserRole   = "select roleIds of user role test"
 	TestNameSelectUserIDsOfUserRole = "select userIds of user role test"
 	TestNameDeleteUserRoles         = "delete user role test"
 )
 
 func TestUserRoleStore(t *testing.T) {
-	var userRole *model.UserRole
 	var err error
 
 	t.Run(TestNameInsertUserRoles, func(t *testing.T) {
-		newUserRole1 := &model.UserRole{}
-		newUserRole1.UserID = "datastore-user-id-0001"
-		newUserRole1.Role = 3
-		urs := []*model.UserRole{newUserRole1}
+		newUserRole1_3 := &model.UserRole{}
+		newUserRole1_3.UserID = "datastore-user-id-0001"
+		newUserRole1_3.Role = 3
+		urs := []*model.UserRole{newUserRole1_3}
 		err := Provider(ctx).InsertUserRoles(urs)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameInsertUserRoles)
 		}
 
-		newUserRole2 := &model.UserRole{}
-		newUserRole2.UserID = "datastore-user-id-0001"
-		newUserRole2.Role = 1
-		newUserRole3 := &model.UserRole{}
-		newUserRole3.UserID = "datastore-user-id-0001"
-		newUserRole3.Role = 4
-		urs = []*model.UserRole{newUserRole2, newUserRole3}
+		newUserRole1_1 := &model.UserRole{}
+		newUserRole1_1.UserID = "datastore-user-id-0001"
+		newUserRole1_1.Role = 1
+		newUserRole1_2 := &model.UserRole{}
+		newUserRole1_2.UserID = "datastore-user-id-0001"
+		newUserRole1_2.Role = 2
+		newUserRole1_4 := &model.UserRole{}
+		newUserRole1_4.UserID = "datastore-user-id-0001"
+		newUserRole1_4.Role = 4
+		urs = []*model.UserRole{newUserRole1_1, newUserRole1_2, newUserRole1_4}
 		err = Provider(ctx).InsertUserRoles(
 			urs,
 			InsertUserRolesOptionBeforeClean(true),
@@ -44,30 +45,23 @@ func TestUserRoleStore(t *testing.T) {
 		}
 	})
 
-	t.Run(TestNameSelectUserRole, func(t *testing.T) {
-		userRole, err = Provider(ctx).SelectUserRole("datastore-user-id-0001", 3)
-		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserRole)
-		}
-		if userRole != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserRole)
-		}
-		userRole, err = Provider(ctx).SelectUserRole("datastore-user-id-0001", 4)
-		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserRole)
-		}
-		if userRole == nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserRole)
-		}
-	})
-
 	t.Run(TestNameSelectRolesOfUserRole, func(t *testing.T) {
-		roleIDs, err := Provider(ctx).SelectRolesOfUserRole("datastore-user-id-0001")
+		roles, err := Provider(ctx).SelectRolesOfUserRole("datastore-user-id-0001")
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameSelectRolesOfUserRole)
 		}
-		if len(roleIDs) != 2 {
+		if len(roles) != 3 {
 			t.Fatalf("Failed to %s", TestNameSelectRolesOfUserRole)
+		}
+		expectRoles := map[int32]interface{}{
+			1: nil,
+			2: nil,
+			4: nil,
+		}
+		for _, role := range roles {
+			if _, ok := expectRoles[role]; !ok {
+				t.Fatalf("Failed to %s", TestNameSelectRolesOfUserRole)
+			}
 		}
 	})
 
@@ -79,11 +73,14 @@ func TestUserRoleStore(t *testing.T) {
 		if len(userIDs) != 1 {
 			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
 		}
+		if userIDs[0] != "datastore-user-id-0001" {
+			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+		}
 	})
 
 	t.Run(TestNameDeleteUserRoles, func(t *testing.T) {
 		err = Provider(ctx).DeleteUserRoles(
-			DeleteUserRolesOptionFilterByUserID("datastore-user-id-0001"),
+			DeleteUserRolesOptionFilterByUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
@@ -97,7 +94,7 @@ func TestUserRoleStore(t *testing.T) {
 		}
 
 		err = Provider(ctx).DeleteUserRoles(
-			DeleteUserRolesOptionFilterByUserID("datastore-user-id-0001"),
+			DeleteUserRolesOptionFilterByUserIDs([]string{"datastore-user-id-0001"}),
 			DeleteUserRolesOptionFilterByRoles([]int32{4}),
 		)
 		if err != nil {

@@ -17,15 +17,15 @@ func InsertUserRolesOptionBeforeClean(beforeClean bool) InsertUserRolesOption {
 }
 
 type deleteUserRolesOptions struct {
-	userID string
-	roles  []int32
+	userIDs []string
+	roles   []int32
 }
 
 type DeleteUserRolesOption func(*deleteUserRolesOptions)
 
-func DeleteUserRolesOptionFilterByUserID(userID string) DeleteUserRolesOption {
+func DeleteUserRolesOptionFilterByUserIDs(userIDs []string) DeleteUserRolesOption {
 	return func(ops *deleteUserRolesOptions) {
-		ops.userID = userID
+		ops.userIDs = userIDs
 	}
 }
 
@@ -39,7 +39,6 @@ type userRoleStore interface {
 	createUserRoleStore()
 
 	InsertUserRoles(urs []*model.UserRole, opts ...InsertUserRolesOption) error
-	SelectUserRole(userID string, roleID int32) (*model.UserRole, error)
 	SelectRolesOfUserRole(userID string) ([]int32, error)
 	SelectUserIDsOfUserRole(roleID int32) ([]string, error)
 	DeleteUserRoles(opts ...DeleteUserRolesOption) error

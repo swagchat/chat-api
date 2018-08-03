@@ -26,25 +26,10 @@ func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
 	return userRoles
 }
 
-type AddUserRolesRequest struct {
-	scpb.AddUserRolesRequest
-}
-
-func (aurr *AddUserRolesRequest) GenerateUserRoles() []*UserRole {
-	roles := utils.RemoveDuplicateInt32(aurr.Roles)
-
-	userRoles := make([]*UserRole, len(roles))
-	for i, role := range roles {
-		ur := &UserRole{}
-		ur.UserID = aurr.UserID
-		ur.Role = role
-		userRoles[i] = ur
-	}
-	b := &UserRole{}
-	b.UserID = ""
-	return userRoles
-}
-
 type DeleteUserRolesRequest struct {
 	scpb.DeleteUserRolesRequest
+}
+
+func (durr *DeleteUserRolesRequest) GenerateRoles() []int32 {
+	return utils.RemoveDuplicateInt32(durr.Roles)
 }

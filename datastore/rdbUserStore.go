@@ -44,7 +44,6 @@ func rdbInsertUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 
 	err := tx.Insert(user)
 	if err != nil {
-		tx.Rollback()
 		err = errors.Wrap(err, "An error occurred while inserting user")
 		logger.Error(err.Error())
 		return err

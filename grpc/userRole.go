@@ -22,16 +22,6 @@ func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.
 	return &empty.Empty{}, nil
 }
 
-func (urs *userRoleServiceServer) AddUserRoles(ctx context.Context, in *scpb.AddUserRolesRequest) (*empty.Empty, error) {
-	req := &model.AddUserRolesRequest{*in}
-	errRes := service.AddUserRoles(ctx, req)
-	if errRes != nil {
-		return &empty.Empty{}, errRes.Error
-	}
-
-	return &empty.Empty{}, nil
-}
-
 func (urs *userRoleServiceServer) DeleteUserRoles(ctx context.Context, in *scpb.DeleteUserRolesRequest) (*empty.Empty, error) {
 	req := &model.DeleteUserRolesRequest{*in}
 	errRes := service.DeleteUserRoles(ctx, req)

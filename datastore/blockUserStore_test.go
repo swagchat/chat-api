@@ -81,7 +81,6 @@ func TestBlockUserStore(t *testing.T) {
 		if len(blockUsers) != 4 {
 			t.Fatalf("Failed to %s", TestNameSelectBlockUsers)
 		}
-
 		expectBlockUserIDs := map[string]interface{}{
 			"datastore-user-id-0004": nil,
 			"datastore-user-id-0005": nil,
@@ -210,7 +209,7 @@ func TestBlockUserStore(t *testing.T) {
 
 	t.Run(TestNameDeleteBlockUsers, func(t *testing.T) {
 		err = Provider(ctx).DeleteBlockUsers(
-			DeleteBlockUsersOptionFilterByUserID("datastore-user-id-0004"),
+			DeleteBlockUsersOptionFilterByUserIDs([]string{"datastore-user-id-0004"}),
 			DeleteBlockUsersOptionFilterByBlockUserIDs([]string{"datastore-user-id-0004"}),
 		)
 		if err != nil {
@@ -246,7 +245,7 @@ func TestBlockUserStore(t *testing.T) {
 		}
 
 		err = Provider(ctx).DeleteBlockUsers(
-			DeleteBlockUsersOptionFilterByUserID("datastore-user-id-0001"),
+			DeleteBlockUsersOptionFilterByUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameDeleteBlockUsers)

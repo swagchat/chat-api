@@ -37,11 +37,6 @@ func (p *mysqlProvider) InsertUserRoles(urs []*model.UserRole, opts ...InsertUse
 	return nil
 }
 
-func (p *mysqlProvider) SelectUserRole(userID string, roleID int32) (*model.UserRole, error) {
-	replica := RdbStore(p.database).replica()
-	return rdbSelectUserRole(p.ctx, replica, userID, roleID)
-}
-
 func (p *mysqlProvider) SelectRolesOfUserRole(userID string) ([]int32, error) {
 	replica := RdbStore(p.database).replica()
 	return rdbSelectRolesOfUserRole(p.ctx, replica, userID)

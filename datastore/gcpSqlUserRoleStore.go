@@ -37,11 +37,6 @@ func (p *gcpSQLProvider) InsertUserRoles(urs []*model.UserRole, opts ...InsertUs
 	return nil
 }
 
-func (p *gcpSQLProvider) SelectUserRole(userID string, roleID int32) (*model.UserRole, error) {
-	replica := RdbStore(p.database).replica()
-	return rdbSelectUserRole(p.ctx, replica, userID, roleID)
-}
-
 func (p *gcpSQLProvider) SelectRolesOfUserRole(userID string) ([]int32, error) {
 	replica := RdbStore(p.database).replica()
 	return rdbSelectRolesOfUserRole(p.ctx, replica, userID)
