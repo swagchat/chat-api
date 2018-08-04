@@ -6,6 +6,27 @@ jobs:
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - vendor-{{ checksum "Gopkg.lock" }}
+            - dep
+      - run:
+          name: ensure
+          command: |
+            if [ ! -d vendor ]; then
+              if ! type dep >/dev/null 2>&1; then
+                go get github.com/golang/dep/cmd/dep
+              fi
+              dep ensure
+            fi
+      - save_cache:
+          key: vendor-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - save_cache:
+          key: dep
+          paths:
+            - /go/bin/dep
       - run:
           name: "run go test"
           command: |
