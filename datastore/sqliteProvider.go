@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 	gorp "gopkg.in/gorp.v2"
 )
 
@@ -20,7 +20,7 @@ type sqliteProvider struct {
 	enableLogging bool
 }
 
-func (p *sqliteProvider) Connect(dsCfg *utils.Datastore) error {
+func (p *sqliteProvider) Connect(dsCfg *config.Datastore) error {
 	if _, ok := rdbStores[dsCfg.Database]; ok {
 		return nil
 	}

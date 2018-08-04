@@ -3,12 +3,12 @@ package datastore
 import (
 	"context"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 )
 
 type provider interface {
-	Connect(dsCfg *utils.Datastore) error
+	Connect(dsCfg *config.Datastore) error
 	CreateTables()
 	DropDatabase() error
 	Close()
@@ -30,11 +30,11 @@ type provider interface {
 func Provider(ctx context.Context) provider {
 	var p provider
 
-	cfg := utils.Config()
+	cfg := config.Config()
 	dsCfg := cfg.Datastore
 
 	if cfg.Datastore.Dynamic {
-		dsCfg.Database = ctx.Value(utils.CtxWorkspace).(string)
+		dsCfg.Database = ctx.Value(config.CtxWorkspace).(string)
 	}
 
 	switch dsCfg.Provider {

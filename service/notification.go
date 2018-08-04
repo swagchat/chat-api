@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
@@ -56,9 +57,9 @@ func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.D
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
-		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
+		ctx = context.WithValue(ctx, config.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+			ru := ctx.Value(config.CtxRoomUser).(*model.RoomUser)
 			room, errRes := confirmRoomExist(ctx, ru.RoomID)
 			if errRes != nil {
 				errCh <- errRes.Error
@@ -123,9 +124,9 @@ func unsubscribe(ctx context.Context, subscriptions []*model.Subscription) chan 
 
 	d := utils.NewDispatcher(10)
 	for _, subscription := range subscriptions {
-		ctx = context.WithValue(ctx, utils.CtxSubscription, subscription)
+		ctx = context.WithValue(ctx, config.CtxSubscription, subscription)
 		d.Work(ctx, func(ctx context.Context) {
-			targetSubscription := ctx.Value(utils.CtxSubscription).(*model.Subscription)
+			targetSubscription := ctx.Value(config.CtxSubscription).(*model.Subscription)
 			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionID)
 			if nRes.Error != nil {
 				errCh <- nRes.Error
@@ -215,9 +216,9 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
-		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
+		ctx = context.WithValue(ctx, config.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+			ru := ctx.Value(config.CtxRoomUser).(*model.RoomUser)
 
 			devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(ru.UserID))
 			if err != nil {
@@ -265,9 +266,9 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 
 	d := utils.NewDispatcher(10)
 	for _, roomUser := range roomUsers {
-		ctx = context.WithValue(ctx, utils.CtxRoomUser, roomUser)
+		ctx = context.WithValue(ctx, config.CtxRoomUser, roomUser)
 		d.Work(ctx, func(ctx context.Context) {
-			ru := ctx.Value(utils.CtxRoomUser).(*model.RoomUser)
+			ru := ctx.Value(config.CtxRoomUser).(*model.RoomUser)
 			err := datastore.Provider(ctx).DeleteRoomUsers(
 				datastore.DeleteRoomUsersOptionFilterByRoomIDs([]string{ru.RoomID}),
 				datastore.DeleteRoomUsersOptionFilterByUserIDs([]string{ru.UserID}),

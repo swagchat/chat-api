@@ -8,9 +8,9 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 var KafkaConsumer *kafka.Consumer
@@ -23,7 +23,7 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	span := tracer.Provider(kp.ctx).StartSpan("PublishMessage", "pbroker")
 	defer tracer.Provider(kp.ctx).Finish(span)
 
-	cfg := utils.Config()
+	cfg := config.Config()
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 

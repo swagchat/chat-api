@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -205,7 +206,7 @@ func (cmr *CreateMessageRequest) GenerateMessage() *Message {
 	m.Payload = cmr.Payload
 
 	if cmr.Role == nil {
-		m.Role = utils.RoleGeneral
+		m.Role = config.RoleGeneral
 	} else {
 		m.Role = *cmr.Role
 	}

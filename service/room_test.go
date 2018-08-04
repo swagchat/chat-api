@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -66,7 +66,7 @@ func TestRoom(t *testing.T) {
 	})
 
 	t.Run(TestNameGetRoom, func(t *testing.T) {
-		ctx := context.WithValue(ctx, utils.CtxUserID, "service-user-id-0001")
+		ctx := context.WithValue(ctx, config.CtxUserID, "service-user-id-0001")
 
 		req := &model.GetRoomRequest{}
 		req.RoomID = "service-room-id-0001"
@@ -103,7 +103,7 @@ func TestRoom(t *testing.T) {
 	})
 
 	t.Run(TestNameGetRoomMessages, func(t *testing.T) {
-		ctx := context.WithValue(ctx, utils.CtxUserID, "service-user-id-0001")
+		ctx := context.WithValue(ctx, config.CtxUserID, "service-user-id-0001")
 		req := &model.GetRoomMessagesRequest{}
 		req.RoomID = "service-room-id-0001"
 		res, errRes := GetRoomMessages(ctx, req)

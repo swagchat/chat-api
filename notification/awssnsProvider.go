@@ -11,9 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -81,7 +81,7 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 
 		client := ap.newSnsClient()
 		params := &sns.CreateTopicInput{
-			Name: aws.String(fmt.Sprintf("%s%s", utils.Config().Notification.RoomTopicNamePrefix, roomId)),
+			Name: aws.String(fmt.Sprintf("%s%s", config.Config().Notification.RoomTopicNamePrefix, roomId)),
 		}
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
@@ -124,7 +124,7 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 	span := tracer.Provider(ap.ctx).StartSpan("CreateEndpoint", "notification")
 	defer tracer.Provider(ap.ctx).Finish(span)
 
-	cfg := utils.Config()
+	cfg := config.Config()
 
 	nc := make(NotificationChannel, 1)
 	go func() {

@@ -8,9 +8,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func setAssetAwsSnsMux() {
@@ -70,7 +70,7 @@ func postAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Type == "SubscriptionConfirmation" {
-		cfg := utils.Config()
+		cfg := config.Config()
 		sess, err := session.NewSession(&aws.Config{
 			Region:      aws.String(cfg.Storage.AWSS3.Region),
 			Credentials: credentials.NewStaticCredentials(cfg.Storage.AWSS3.AccessKeyID, cfg.Storage.AWSS3.SecretAccessKey, ""),

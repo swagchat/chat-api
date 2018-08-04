@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
@@ -34,7 +34,7 @@ func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 		return
 	}
 
-	cfg := utils.Config()
+	cfg := config.Config()
 
 	ac, err := rdbSelectLatestAppClient(
 		ctx,

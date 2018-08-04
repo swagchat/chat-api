@@ -10,6 +10,7 @@ import (
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
@@ -28,7 +29,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	span := tracer.Provider(kp.ctx).StartSpan("SubscribeMessage", "sbroker")
 	defer tracer.Provider(kp.ctx).Finish(span)
 
-	cfg := utils.Config()
+	cfg := config.Config()
 
 	host := cfg.SBroker.Kafka.Host
 	if host == "" {
@@ -110,16 +111,16 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				req := msg.ConvertToCreateMessageRequest()
 
 				ctx := context.Background()
-				ctx = context.WithValue(ctx, utils.CtxUserID, msg.UserID)
+				ctx = context.WithValue(ctx, config.CtxUserID, msg.UserID)
 
 				workspace := cfg.Datastore.Database
 				for _, v := range kafkaMsg.Headers {
 					logger.Debug(fmt.Sprintf("kafka header %s=%s", v.Key, string(v.Value)))
-					if v.Key == utils.HeaderWorkspace {
+					if v.Key == config.HeaderWorkspace {
 						workspace = string(v.Value)
 					}
 				}
-				ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
+				ctx = context.WithValue(ctx, config.CtxWorkspace, workspace)
 
 				service.CreateMessage(ctx, req)
 

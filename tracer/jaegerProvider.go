@@ -6,10 +6,10 @@ import (
 	"io"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 	jaeger "github.com/uber/jaeger-client-go"
-	config "github.com/uber/jaeger-client-go/config"
+	jaegerConfig "github.com/uber/jaeger-client-go/config"
 )
 
 var (
@@ -22,16 +22,16 @@ type jaegerProvider struct {
 }
 
 func (jp *jaegerProvider) NewTracer() error {
-	cfg := &config.Configuration{
-		Sampler: &config.SamplerConfig{
+	cfg := &jaegerConfig.Configuration{
+		Sampler: &jaegerConfig.SamplerConfig{
 			Type:  "const",
 			Param: 1,
 		},
-		Reporter: &config.ReporterConfig{
+		Reporter: &jaegerConfig.ReporterConfig{
 			LogSpans: true,
 		},
 	}
-	tracer, closer, err := cfg.New(fmt.Sprintf("%s:%s", utils.AppName, utils.BuildVersion), config.Logger(jaeger.StdLogger))
+	tracer, closer, err := cfg.New(fmt.Sprintf("%s:%s", config.AppName, config.BuildVersion), jaegerConfig.Logger(jaeger.StdLogger))
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -51,7 +51,7 @@ func (jp *jaegerProvider) StartTransaction(name, spanType string) context.Contex
 
 	span := jaegerTracer.StartSpan(fmt.Sprintf("%s:%s", spanType, name))
 	ctx := opentracing.ContextWithSpan(jp.ctx, span)
-	ctx = context.WithValue(ctx, utils.CtxTracerSpan, span)
+	ctx = context.WithValue(ctx, config.CtxTracerSpan, span)
 	return ctx
 }
 
@@ -65,21 +65,21 @@ func (jp *jaegerProvider) StartSpan(name, spanType string) interface{} {
 }
 
 func (jp *jaegerProvider) SetTag(key string, value interface{}) {
-	span := jp.ctx.Value(utils.CtxTracerSpan)
+	span := jp.ctx.Value(config.CtxTracerSpan)
 	if span != nil {
 		span.(opentracing.Span).SetTag(key, value)
 	}
 }
 
 func (jp *jaegerProvider) SetHTTPStatusCode(statusCode int) {
-	span := jp.ctx.Value(utils.CtxTracerSpan)
+	span := jp.ctx.Value(config.CtxTracerSpan)
 	if span != nil {
 		span.(opentracing.Span).SetTag("http.status_code", statusCode)
 	}
 }
 
 func (jp *jaegerProvider) SetUserID(id string) {
-	span := jp.ctx.Value(utils.CtxTracerSpan)
+	span := jp.ctx.Value(config.CtxTracerSpan)
 	if span != nil {
 		span.(opentracing.Span).SetTag("app.user_id", id)
 	}
@@ -92,7 +92,7 @@ func (jp *jaegerProvider) Finish(span interface{}) {
 }
 
 func (jp *jaegerProvider) CloseTransaction() {
-	span := jp.ctx.Value(utils.CtxTracerSpan)
+	span := jp.ctx.Value(config.CtxTracerSpan)
 	if span != nil {
 		span.(opentracing.Span).Finish()
 	}

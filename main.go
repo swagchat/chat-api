@@ -10,6 +10,7 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
 	"github.com/swagchat/chat-api/logger"
@@ -17,15 +18,14 @@ import (
 	"github.com/swagchat/chat-api/sbroker"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func main() {
-	if utils.StopRun {
+	if config.StopRun {
 		os.Exit(0)
 	}
 
-	cfg := utils.Config()
+	cfg := config.Config()
 	compact := &pretty.Config{
 		Compact: true,
 	}

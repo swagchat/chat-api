@@ -12,8 +12,8 @@ import (
 
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 var NSQConsumer *nsq.Consumer
@@ -32,7 +32,7 @@ func (np nsqProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	span := tracer.Provider(np.ctx).StartSpan("PublishMessage", "pbroker")
 	defer tracer.Provider(np.ctx).Finish(span)
 
-	cfg := utils.Config()
+	cfg := config.Config()
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 

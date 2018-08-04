@@ -4,8 +4,8 @@ import (
 	"context"
 
 	elasticapm "github.com/elastic/apm-agent-go"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 )
 
 var elasticapmTracer *elasticapm.Tracer
@@ -15,7 +15,7 @@ type elasticapmProvider struct {
 }
 
 func (ep *elasticapmProvider) NewTracer() error {
-	tracer, err := elasticapm.NewTracer(utils.AppName, utils.BuildVersion)
+	tracer, err := elasticapm.NewTracer(config.AppName, config.BuildVersion)
 	if err != nil {
 		logger.Error(err.Error())
 		return nil
@@ -33,7 +33,7 @@ func (ep *elasticapmProvider) StartTransaction(name, transactionType string) con
 
 	transaction := elasticapmTracer.StartTransaction(name, transactionType)
 	ctx := elasticapm.ContextWithTransaction(ep.ctx, transaction)
-	ctx = context.WithValue(ctx, utils.CtxTracerTransaction, transaction)
+	ctx = context.WithValue(ctx, config.CtxTracerTransaction, transaction)
 	return ctx
 }
 
@@ -43,7 +43,7 @@ func (ep *elasticapmProvider) StartSpan(name, spanType string) interface{} {
 }
 
 func (ep *elasticapmProvider) SetTag(key string, value interface{}) {
-	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
+	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
 		txCtx := transaction.(*elasticapm.Transaction).Context
 		// txCtx.SetTag(key, fmt.Sprintf("%v", value))
@@ -52,7 +52,7 @@ func (ep *elasticapmProvider) SetTag(key string, value interface{}) {
 }
 
 func (ep *elasticapmProvider) SetHTTPStatusCode(statusCode int) {
-	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
+	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
 		txCtx := transaction.(*elasticapm.Transaction).Context
 		txCtx.SetHTTPStatusCode(statusCode)
@@ -60,7 +60,7 @@ func (ep *elasticapmProvider) SetHTTPStatusCode(statusCode int) {
 }
 
 func (ep *elasticapmProvider) SetUserID(id string) {
-	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
+	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
 		txCtx := transaction.(*elasticapm.Transaction).Context
 		txCtx.SetUserID(id)
@@ -74,7 +74,7 @@ func (ep *elasticapmProvider) Finish(span interface{}) {
 }
 
 func (ep *elasticapmProvider) CloseTransaction() {
-	transaction := ep.ctx.Value(utils.CtxTracerTransaction)
+	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
 		transaction.(*elasticapm.Transaction).End()
 	}

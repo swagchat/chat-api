@@ -3,7 +3,7 @@ package notification
 import (
 	"context"
 
-	"github.com/swagchat/chat-api/utils"
+	"github.com/swagchat/chat-api/config"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -33,7 +33,7 @@ type provider interface {
 }
 
 func Provider(ctx context.Context) provider {
-	cfg := utils.Config()
+	cfg := config.Config()
 	var p provider
 
 	switch cfg.Notification.Provider {

@@ -3,7 +3,7 @@ package pbroker
 import (
 	"context"
 
-	"github.com/swagchat/chat-api/utils"
+	"github.com/swagchat/chat-api/config"
 )
 
 const (
@@ -26,7 +26,7 @@ type provider interface {
 }
 
 func Provider(ctx context.Context) provider {
-	cfg := utils.Config()
+	cfg := config.Config()
 
 	var p provider
 	switch cfg.PBroker.Provider {

@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -78,7 +78,7 @@ func webhookRoom(ctx context.Context, room *model.Room) {
 
 			grpcCtx := metadata.NewOutgoingContext(
 				context.Background(),
-				metadata.Pairs(utils.HeaderWorkspace, ctx.Value(utils.CtxWorkspace).(string)),
+				metadata.Pairs(config.HeaderWorkspace, ctx.Value(config.CtxWorkspace).(string)),
 			)
 			_, err = c.RoomCreationEvent(grpcCtx, pbRoom)
 			if err != nil {
@@ -179,7 +179,7 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 			c := scpb.NewWebhookClient(conn)
 			grpcCtx := metadata.NewOutgoingContext(
 				context.Background(),
-				metadata.Pairs(utils.HeaderWorkspace, ctx.Value(utils.CtxWorkspace).(string)),
+				metadata.Pairs(config.HeaderWorkspace, ctx.Value(config.CtxWorkspace).(string)),
 			)
 			_, err = c.MessageSendEvent(grpcCtx, pbMessage)
 			if err != nil {

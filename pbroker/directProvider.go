@@ -9,8 +9,8 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 type directProvider struct {
@@ -24,7 +24,7 @@ func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
-	endpoint := fmt.Sprintf("%s/message", utils.Config().PBroker.Direct.Endpoint)
+	endpoint := fmt.Sprintf("%s/message", config.Config().PBroker.Direct.Endpoint)
 	resp, err := http.Post(
 		endpoint,
 		"application/json",

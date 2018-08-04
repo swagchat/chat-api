@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 type localStorageProvider struct {
@@ -35,7 +35,7 @@ func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
 		return "", errors.Wrap(err, "io read data failure")
 	}
 
-	filepath := fmt.Sprintf("%s/%s", utils.Config().Storage.Local.Path, assetInfo.Filename)
+	filepath := fmt.Sprintf("%s/%s", config.Config().Storage.Local.Path, assetInfo.Filename)
 	err = ioutil.WriteFile(filepath, data, 0644)
 	if err != nil {
 		return "", errors.Wrap(err, "io write file failure")

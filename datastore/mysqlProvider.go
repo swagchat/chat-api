@@ -13,8 +13,8 @@ import (
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 )
 
 type mysqlProvider struct {
@@ -22,14 +22,14 @@ type mysqlProvider struct {
 	user              string
 	password          string
 	database          string
-	masterSi          *utils.ServerInfo
-	replicaSis        []*utils.ServerInfo
+	masterSi          *config.ServerInfo
+	replicaSis        []*config.ServerInfo
 	maxIdleConnection string
 	maxOpenConnection string
 	enableLogging     bool
 }
 
-func (p *mysqlProvider) Connect(dsCfg *utils.Datastore) error {
+func (p *mysqlProvider) Connect(dsCfg *config.Datastore) error {
 	if _, ok := rdbStores[dsCfg.Database]; ok {
 		return nil
 	}
@@ -146,7 +146,7 @@ func (p *mysqlProvider) DropDatabase() error {
 	return nil
 }
 
-func (p *mysqlProvider) openDb(dataSource string, si *utils.ServerInfo) (*sql.DB, error) {
+func (p *mysqlProvider) openDb(dataSource string, si *config.ServerInfo) (*sql.DB, error) {
 	var err error
 	if si.ServerName != "" && si.ServerCaPath != "" && si.ClientCertPath != "" && si.ClientKeyPath != "" {
 		rootCertPool := x509.NewCertPool()

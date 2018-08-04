@@ -12,8 +12,8 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/tracer"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -26,7 +26,7 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		headers, ok := metadata.FromIncomingContext(ctx)
 		if ok {
-			if v, ok := headers[strings.ToLower(utils.HeaderWorkspace)]; ok {
+			if v, ok := headers[strings.ToLower(config.HeaderWorkspace)]; ok {
 				if len(v) > 0 {
 					workspace = v[0]
 				}
@@ -34,10 +34,10 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		if workspace == "" {
-			workspace = utils.Config().Datastore.Database
+			workspace = config.Config().Datastore.Database
 		}
 
-		ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
+		ctx = context.WithValue(ctx, config.CtxWorkspace, workspace)
 
 		ctx = tracer.Provider(ctx).StartTransaction(info.FullMethod, fmt.Sprintf("%v", info.Server))
 		defer tracer.Provider(ctx).CloseTransaction()
@@ -53,16 +53,16 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 // Run runs GRPC API server
 func Run(ctx context.Context) {
-	cfg := utils.Config()
+	cfg := config.Config()
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", cfg.GRPCPort))
 	if err != nil {
-		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", utils.AppName, err))
+		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", config.AppName, err))
 	}
 
 	ops := []grpc.ServerOption{grpc.UnaryInterceptor(unaryServerInterceptor())}
 	s := grpc.NewServer(ops...)
-	logger.Info(fmt.Sprintf("Starting %s server[GRPC] on listen tcp :%s", utils.AppName, cfg.GRPCPort))
+	logger.Info(fmt.Sprintf("Starting %s server[GRPC] on listen tcp :%s", config.AppName, cfg.GRPCPort))
 
 	scpb.RegisterBlockUserServiceServer(s, &blockUserServiceServer{})
 	scpb.RegisterDeviceServiceServer(s, &deviceServiceServer{})
@@ -82,14 +82,14 @@ func Run(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
-		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
+		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", config.AppName))
 		datastore.Provider(ctx).Close()
 		s.GracefulStop()
 	case <-signalChan:
-		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", utils.AppName))
+		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", config.AppName))
 		datastore.Provider(ctx).Close()
 		s.GracefulStop()
 	case err = <-errCh:
-		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", utils.AppName, err))
+		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", config.AppName, err))
 	}
 }

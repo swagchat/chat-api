@@ -11,6 +11,7 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
@@ -35,7 +36,7 @@ func rdbCreateMessageStore(ctx context.Context, dbMap *gorp.DbMap) {
 	}
 
 	var addIndexQuery string
-	if utils.Config().Datastore.Provider == "sqlite" {
+	if config.Config().Datastore.Provider == "sqlite" {
 		addIndexQuery = fmt.Sprintf("CREATE INDEX room_id_deleted_created ON %s(room_id, deleted, created)", tableNameMessage)
 	} else {
 		addIndexQuery = fmt.Sprintf("ALTER TABLE %s ADD INDEX room_id_deleted_created (room_id, deleted, created)", tableNameMessage)

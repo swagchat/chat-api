@@ -8,9 +8,9 @@ import (
 
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 )
 
 var NSQConsumer *nsq.Consumer
@@ -23,7 +23,7 @@ func (np *nsqProvider) SubscribeMessage() error {
 	span := tracer.Provider(np.ctx).StartSpan("SubscribeMessage", "sbroker")
 	defer tracer.Provider(np.ctx).Finish(span)
 
-	c := utils.Config()
+	c := config.Config()
 	if c.SBroker.NSQ.NsqlookupdHost != "" {
 		config := nsq.NewConfig()
 		channel := c.SBroker.NSQ.Channel
@@ -61,7 +61,7 @@ func (np *nsqProvider) UnsubscribeMessage() error {
 		return nil
 	}
 
-	c := utils.Config()
+	c := config.Config()
 	hostname, err := os.Hostname()
 	_, err = http.Post("http://"+c.SBroker.NSQ.NsqdHost+":"+c.SBroker.NSQ.NsqdPort+"/channel/delete?topic="+c.SBroker.NSQ.Topic+"&channel="+hostname, "text/plain", nil)
 	if err != nil {

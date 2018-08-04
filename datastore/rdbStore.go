@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/swagchat/chat-api/utils"
+	"github.com/swagchat/chat-api/config"
 	gorp "gopkg.in/gorp.v2"
 )
 
 var (
 	rdbStores             = make(map[string]*rdbStore)
-	tableNameAppClient    = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "app_client")
-	tableNameAsset        = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "asset")
-	tableNameBlockUser    = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "block_user")
-	tableNameBot          = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "bot")
-	tableNameDevice       = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "device")
-	tableNameMessage      = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "message")
-	tableNameRoom         = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "room")
-	tableNameRoomUser     = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "room_user")
-	tableNameSetting      = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "setting")
-	tableNameSubscription = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "subscription")
-	tableNameUser         = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "user")
-	tableNameUserRole     = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "user_role")
-	tableNameWebhook      = fmt.Sprintf("%s%s", utils.Config().Datastore.TableNamePrefix, "webhook")
+	tableNameAppClient    = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "app_client")
+	tableNameAsset        = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "asset")
+	tableNameBlockUser    = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "block_user")
+	tableNameBot          = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "bot")
+	tableNameDevice       = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "device")
+	tableNameMessage      = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "message")
+	tableNameRoom         = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "room")
+	tableNameRoomUser     = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "room_user")
+	tableNameSetting      = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "setting")
+	tableNameSubscription = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "subscription")
+	tableNameUser         = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "user")
+	tableNameUserRole     = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "user_role")
+	tableNameWebhook      = fmt.Sprintf("%s%s", config.Config().Datastore.TableNamePrefix, "webhook")
 )
 
 type rdbStore struct {

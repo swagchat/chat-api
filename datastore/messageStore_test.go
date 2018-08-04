@@ -3,8 +3,8 @@ package datastore
 import (
 	"testing"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 )
 
 func TestMessageStore(t *testing.T) {
@@ -14,7 +14,7 @@ func TestMessageStore(t *testing.T) {
 	newMessage.UserID = "datastore-user-id-0001"
 	newMessage.Type = "text"
 	newMessage.Payload = []byte(`{"text":"test"}`)
-	newMessage.Role = utils.RoleGeneral
+	newMessage.Role = config.RoleGeneral
 	newMessage.Created = 123456789
 	newMessage.Modified = 123456789
 	err := Provider(ctx).InsertMessage(newMessage)

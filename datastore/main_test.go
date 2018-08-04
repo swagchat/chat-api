@@ -8,8 +8,8 @@ import (
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 )
 
 var (
@@ -19,7 +19,7 @@ var (
 func TestMain(m *testing.M) {
 	ctx, _ = context.WithTimeout(context.Background(), 5*time.Second)
 
-	cfg := utils.Config()
+	cfg := config.Config()
 	cfg.Logger.EnableConsole = false
 	cfg.Datastore.SQLite.OnMemory = true
 	Provider(ctx).Connect(cfg.Datastore)

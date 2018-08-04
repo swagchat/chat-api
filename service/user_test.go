@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 )
 
 const (
@@ -59,7 +59,7 @@ func TestUser(t *testing.T) {
 		}
 	})
 	t.Run(TestNameGetUser, func(t *testing.T) {
-		ctx := context.WithValue(ctx, utils.CtxUserID, "service-user-id-0001")
+		ctx := context.WithValue(ctx, config.CtxUserID, "service-user-id-0001")
 
 		req := &model.GetUserRequest{}
 		req.UserID = "service-user-id-0001"

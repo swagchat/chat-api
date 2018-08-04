@@ -3,7 +3,7 @@ package tracer
 import (
 	"context"
 
-	"github.com/swagchat/chat-api/utils"
+	"github.com/swagchat/chat-api/config"
 )
 
 type provider interface {
@@ -19,7 +19,7 @@ type provider interface {
 }
 
 func Provider(ctx context.Context) provider {
-	cfg := utils.Config()
+	cfg := config.Config()
 	var p provider
 
 	switch cfg.Tracer.Provider {

@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -134,7 +134,7 @@ func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *mode
 		return nil, model.NewErrorResponse("", http.StatusNotFound)
 	}
 
-	userID := ctx.Value(utils.CtxUserID).(string)
+	userID := ctx.Value(config.CtxUserID).(string)
 	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
 	if errRes != nil {
 		errRes.Message = "Failed to get room."
@@ -233,7 +233,7 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 	span := tracer.Provider(ctx).StartSpan("GetRoomMessages", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	userID := ctx.Value(utils.CtxUserID).(string)
+	userID := ctx.Value(config.CtxUserID).(string)
 	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
 	if errRes != nil {
 		errRes.Message = "Failed to get messages."
@@ -275,7 +275,7 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 }
 
 func updateLastAccessRoomID(ctx context.Context, roomID string) {
-	userID := ctx.Value(utils.CtxUserID).(string)
+	userID := ctx.Value(config.CtxUserID).(string)
 	user, _ := confirmUserExist(ctx, userID)
 	user.LastAccessRoomID = roomID
 	datastore.Provider(ctx).UpdateUser(user)

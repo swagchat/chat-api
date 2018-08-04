@@ -8,13 +8,13 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -70,7 +70,7 @@ func CreateMessage(ctx context.Context, req *model.CreateMessageRequest) (*model
 	mi := &notification.MessageInfo{
 		Text: fmt.Sprintf("[%s]%s", room.Name, lastMessage),
 	}
-	cfg := utils.Config()
+	cfg := config.Config()
 	if cfg.Notification.DefaultBadgeCount != "" {
 		dBadgeCount, err := strconv.Atoi(cfg.Notification.DefaultBadgeCount)
 		if err == nil {

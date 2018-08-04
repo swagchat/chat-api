@@ -17,12 +17,12 @@ import (
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -44,7 +44,7 @@ var (
 
 // Run runs start REST API server
 func Run(ctx context.Context) {
-	cfg := utils.Config()
+	cfg := config.Config()
 	mux = bone.New()
 
 	if cfg.DemoPage {
@@ -75,7 +75,7 @@ func Run(ctx context.Context) {
 
 	mux.NotFoundFunc(notFoundHandler)
 
-	logger.Info(fmt.Sprintf("Starting %s server[REST] on listen tcp :%s", utils.AppName, cfg.HTTPPort))
+	logger.Info(fmt.Sprintf("Starting %s server[REST] on listen tcp :%s", config.AppName, cfg.HTTPPort))
 	signalChan := make(chan os.Signal)
 	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)
 	errCh := make(chan error)
@@ -85,14 +85,14 @@ func Run(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
-		logger.Info(fmt.Sprintf("Stopping %s server[REST]", utils.AppName))
+		logger.Info(fmt.Sprintf("Stopping %s server[REST]", config.AppName))
 		datastore.Provider(ctx).Close()
 		gracedown.Close()
 	case <-signalChan:
 		datastore.Provider(ctx).Close()
 		gracedown.Close()
 	case err := <-errCh:
-		logger.Error(fmt.Sprintf("Failed to serve %s server[REST]. %v", utils.AppName, err))
+		logger.Error(fmt.Sprintf("Failed to serve %s server[REST]. %v", config.AppName, err))
 	}
 }
 
@@ -117,7 +117,7 @@ func (w *customResponseWriter) Write(b []byte) (int, error) {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", utils.AppName, utils.APIVersion, utils.BuildVersion))
+	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", config.AppName, config.APIVersion, config.BuildVersion))
 }
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -178,7 +178,7 @@ func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 		sw := &customResponseWriter{ResponseWriter: w}
 		fn(sw, r.WithContext(ctx))
 
-		userID := ctx.Value(utils.CtxUserID)
+		userID := ctx.Value(config.CtxUserID)
 		if userID != nil {
 			tracer.Provider(ctx).SetUserID(userID.(string))
 		}
@@ -192,11 +192,11 @@ func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func jwtHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Header.Get(utils.HeaderUserID)
-		ctx := context.WithValue(r.Context(), utils.CtxUserID, userID)
+		userID := r.Header.Get(config.HeaderUserID)
+		ctx := context.WithValue(r.Context(), config.CtxUserID, userID)
 
-		workspace := r.Header.Get(utils.HeaderWorkspace)
-		ctx = context.WithValue(ctx, utils.CtxWorkspace, workspace)
+		workspace := r.Header.Get(config.HeaderWorkspace)
+		ctx = context.WithValue(ctx, config.CtxWorkspace, workspace)
 
 		fn(w, r.WithContext(ctx))
 	}
@@ -207,7 +207,7 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 		fn(w, r)
 
 		ctx := r.Context()
-		userID := ctx.Value(utils.CtxUserID).(string)
+		userID := ctx.Value(config.CtxUserID).(string)
 		if userID == "" {
 			return
 		}
@@ -235,7 +235,7 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		isAppClient := false
-		clientID := r.Header.Get(utils.HeaderClientID)
+		clientID := r.Header.Get(config.HeaderClientID)
 		if clientID != "" {
 			appCli, err := datastore.Provider(r.Context()).SelectLatestAppClient(
 				datastore.SelectAppClientOptionFilterByClientID(clientID),
@@ -249,14 +249,14 @@ func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 				isAppClient = true
 			}
 		}
-		ctx := context.WithValue(r.Context(), utils.CtxIsAppClient, isAppClient)
+		ctx := context.WithValue(r.Context(), config.CtxIsAppClient, isAppClient)
 		fn(w, r.WithContext(ctx))
 	}
 }
 
 func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
 		if !isAppClient {
 			errRes := model.NewErrorResponse("Unauthorized", http.StatusUnauthorized)
 			respondError(w, r, errRes)
@@ -268,13 +268,13 @@ func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
 		if isAppClient {
 			fn(w, r)
 			return
 		}
 
-		requestUserID := r.Header.Get(utils.HeaderUserID)
+		requestUserID := r.Header.Get(config.HeaderUserID)
 		resourceUserID := bone.GetValue(r, "userId")
 
 		if (requestUserID == "" && resourceUserID == "") || (requestUserID != resourceUserID) {
@@ -289,13 +289,13 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func contactsAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
 		if isAppClient {
 			fn(w, r)
 			return
 		}
 
-		requestUserID := r.Header.Get(utils.HeaderUserID)
+		requestUserID := r.Header.Get(config.HeaderUserID)
 		resourceUserID := bone.GetValue(r, "userId")
 		errRes := service.ContactsAuthz(r.Context(), requestUserID, resourceUserID)
 		if errRes != nil {
@@ -308,14 +308,14 @@ func contactsAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func roomMemberAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(utils.CtxIsAppClient).(bool)
+		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
 		if isAppClient {
 			fn(w, r)
 			return
 		}
 
 		roomID := bone.GetValue(r, "roomId")
-		userID := r.Header.Get(utils.HeaderUserID)
+		userID := r.Header.Get(config.HeaderUserID)
 
 		errRes := service.RoomAuthz(r.Context(), roomID, userID)
 		if errRes != nil {
@@ -358,7 +358,7 @@ func respond(w http.ResponseWriter, r *http.Request, status int, contentType str
 
 func respondError(w http.ResponseWriter, r *http.Request, errRes *model.ErrorResponse) {
 	if errRes.Error != nil {
-		if utils.Config().EnableDeveloperMessage {
+		if config.Config().EnableDeveloperMessage {
 			errRes.DeveloperMessage = errRes.Error.Error()
 		}
 	}
