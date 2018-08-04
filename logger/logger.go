@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	logger = newLogger()
+	logger *zapper.Logger
 
 	// Debug logs a message at DebugLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
 	Debug = logger.Debug
@@ -18,17 +18,20 @@ var (
 	Error = logger.Error
 )
 
-func newLogger() *zapper.Logger {
-	cfg := config.Config()
-	return zapper.NewLogger(&zapper.Config{
-		EnableConsole: cfg.Logger.EnableConsole,
-		ConsoleFormat: cfg.Logger.ConsoleFormat,
-		ConsoleLevel:  cfg.Logger.ConsoleLevel,
-		EnableFile:    cfg.Logger.EnableFile,
-		FileFormat:    cfg.Logger.FileFormat,
-		FileLevel:     cfg.Logger.FileLevel,
-		Filepath:      cfg.Logger.FilePath,
+func InitLogger(config *config.Logger) {
+	logger = zapper.NewLogger(&zapper.Config{
+		EnableConsole: config.EnableConsole,
+		ConsoleFormat: config.ConsoleFormat,
+		ConsoleLevel:  config.ConsoleLevel,
+		EnableFile:    config.EnableFile,
+		FileFormat:    config.FileFormat,
+		FileLevel:     config.FileLevel,
+		Filepath:      config.FilePath,
 	})
+	Debug = logger.Debug
+	Info = logger.Info
+	Warn = logger.Warn
+	Error = logger.Error
 }
 
 func Logger() *zapper.Logger {

@@ -26,6 +26,9 @@ func main() {
 	}
 
 	cfg := config.Config()
+
+	logger.InitLogger(cfg.Logger)
+
 	compact := &pretty.Config{
 		Compact: true,
 	}

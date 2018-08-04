@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/swagchat/chat-api/logger"
+
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
@@ -21,6 +23,7 @@ func TestMain(m *testing.M) {
 
 	cfg := config.Config()
 	cfg.Logger.EnableConsole = false
+	logger.InitLogger(cfg.Logger)
 	cfg.Datastore.SQLite.OnMemory = true
 	Provider(ctx).Connect(cfg.Datastore)
 	Provider(ctx).CreateTables()
