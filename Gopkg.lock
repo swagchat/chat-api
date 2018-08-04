@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/betchi/zapper"
   packages = ["."]
-  revision = "fcb923376a3e4c86d981a5d054cabfb45806547d"
+  revision = "882ad99315ee9b7dd242eb9e45916c597e8270e7"
 
 [[projects]]
   branch = "master"

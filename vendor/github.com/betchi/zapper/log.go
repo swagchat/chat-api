@@ -147,45 +147,72 @@ func jsonEncoder() zapcore.Encoder {
 
 // Debug logs a message at DebugLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
 func (l *Logger) Debug(message string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	l.zap.Debug(message, fields...)
 }
 
 // Info logs a message at InfoLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
 func (l *Logger) Info(message string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	l.zap.Info(message, fields...)
 }
 
 // Warn logs a message at WarnLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
 func (l *Logger) Warn(message string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	l.zap.Warn(message, fields...)
 }
 
 // Error logs a message at ErrorLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
 func (l *Logger) Error(message string, fields ...Field) {
+	if l == nil {
+		return
+	}
 	l.zap.Error(message, fields...)
 }
 
 // Debugf logs a message at DebugLevel.
 func (l *Logger) Debugf(format string, args ...interface{}) {
+	if l == nil {
+		return
+	}
 	l.zap.Debug(fmt.Sprintf(format, args))
 }
 
 // Infof logs a message at InfoLevel.
 func (l *Logger) Infof(format string, args ...interface{}) {
+	if l == nil {
+		return
+	}
 	l.zap.Info(fmt.Sprintf(format, args))
 }
 
 // Warnf logs a message at WarnLevel.
 func (l *Logger) Warnf(format string, args ...interface{}) {
+	if l == nil {
+		return
+	}
 	l.zap.Warn(fmt.Sprintf(format, args))
 }
 
 // Errorf logs a message at ErrorLevel.
 func (l *Logger) Errorf(format string, args ...interface{}) {
+	if l == nil {
+		return
+	}
 	l.zap.Error(fmt.Sprintf(format, args))
 }
 
 // Printf logs a message at DebugLevel. For gorp trace message
 func (l *Logger) Printf(format string, args ...interface{}) {
+	if l == nil {
+		return
+	}
 	l.zap.Debug(fmt.Sprintf(format, args))
 }
