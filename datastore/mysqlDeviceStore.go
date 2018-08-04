@@ -12,9 +12,30 @@ func (p *mysqlProvider) createDeviceStore() {
 	rdbCreateDeviceStore(p.ctx, master)
 }
 
-func (p *mysqlProvider) InsertDevice(device *model.Device) error {
+func (p *mysqlProvider) InsertDevice(device *model.Device, opts ...InsertDeviceOption) error {
 	master := RdbStore(p.database).master()
-	return rdbInsertDevice(p.ctx, master, device)
+	tx, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while inserting device")
+		logger.Error(err.Error())
+		return err
+	}
+
+	err = rdbInsertDevice(p.ctx, master, tx, device, opts...)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		err = errors.Wrap(err, "An error occurred while inserting device")
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (p *mysqlProvider) SelectDevices(opts ...SelectDevicesOption) ([]*model.Device, error) {
@@ -25,16 +46,6 @@ func (p *mysqlProvider) SelectDevices(opts ...SelectDevicesOption) ([]*model.Dev
 func (p *mysqlProvider) SelectDevice(userID string, platform scpb.Platform) (*model.Device, error) {
 	replica := RdbStore(p.database).replica()
 	return rdbSelectDevice(p.ctx, replica, userID, platform)
-}
-
-func (p *mysqlProvider) SelectDevicesByUserID(userID string) ([]*model.Device, error) {
-	replica := RdbStore(p.database).replica()
-	return rdbSelectDevicesByUserID(p.ctx, replica, userID)
-}
-
-func (p *mysqlProvider) SelectDevicesByToken(token string) ([]*model.Device, error) {
-	replica := RdbStore(p.database).replica()
-	return rdbSelectDevicesByToken(p.ctx, replica, token)
 }
 
 func (p *mysqlProvider) UpdateDevice(device *model.Device) error {

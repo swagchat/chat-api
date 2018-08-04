@@ -42,7 +42,6 @@
 		CreateDeviceRequest
 		GetDevicesRequest
 		DevicesResponse
-		UpdateDeviceRequest
 		DeleteDeviceRequest
 		Messages
 		Message

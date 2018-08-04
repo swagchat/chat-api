@@ -110,34 +110,6 @@ export namespace DevicesResponse {
   }
 }
 
-export class UpdateDeviceRequest extends jspb.Message {
-  getUserId(): string;
-  setUserId(value: string): void;
-
-  getPlatform(): Platform;
-  setPlatform(value: Platform): void;
-
-  getToken(): string;
-  setToken(value: string): void;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): UpdateDeviceRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: UpdateDeviceRequest): UpdateDeviceRequest.AsObject;
-  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
-  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: UpdateDeviceRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): UpdateDeviceRequest;
-  static deserializeBinaryFromReader(message: UpdateDeviceRequest, reader: jspb.BinaryReader): UpdateDeviceRequest;
-}
-
-export namespace UpdateDeviceRequest {
-  export type AsObject = {
-    userId: string,
-    platform: Platform,
-    token: string,
-  }
-}
-
 export class DeleteDeviceRequest extends jspb.Message {
   getUserId(): string;
   setUserId(value: string): void;

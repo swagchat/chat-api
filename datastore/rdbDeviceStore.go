@@ -18,13 +18,7 @@ func rdbCreateDeviceStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateDeviceStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	tableMap := dbMap.AddTableWithName(model.Device{}, tableNameDevice)
-	tableMap.SetUniqueTogether("user_id", "platform")
-	for _, columnMap := range tableMap.Columns {
-		if columnMap.ColumnName == "token" || columnMap.ColumnName == "notification_device_id" {
-			columnMap.SetUnique(true)
-		}
-	}
+	_ = dbMap.AddTableWithName(model.Device{}, tableNameDevice)
 	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating device table")
@@ -33,11 +27,30 @@ func rdbCreateDeviceStore(ctx context.Context, dbMap *gorp.DbMap) {
 	}
 }
 
-func rdbInsertDevice(ctx context.Context, dbMap *gorp.DbMap, device *model.Device) error {
+func rdbInsertDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, device *model.Device, opts ...InsertDeviceOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbInsertDevice", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	if err := dbMap.Insert(device); err != nil {
+	opt := insertDeviceOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	if opt.beforeClean {
+		err := rdbDeleteDevices(
+			ctx,
+			dbMap,
+			tx,
+			DeleteDevicesOptionWithLogicalDeleted(time.Now().Unix()),
+			DeleteDevicesOptionFilterByUserID(device.UserID),
+			DeleteDevicesOptionFilterByPlatform(device.Platform),
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := tx.Insert(device); err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while inserting device. %v.", err))
 		return err
 	}
@@ -61,8 +74,14 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 	}
 
 	var devices []*model.Device
-	query := fmt.Sprintf("SELECT * FROM %s WHERE ", tableNameDevice)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE", tableNameDevice)
 	params := map[string]interface{}{}
+
+	if opt.deleted {
+		query = fmt.Sprintf("%s deleted!=0 AND", query)
+	} else {
+		query = fmt.Sprintf("%s deleted=0 AND", query)
+	}
 
 	if opt.userID != "" {
 		query = fmt.Sprintf("%s user_id=:userId AND", query)
@@ -95,7 +114,7 @@ func rdbSelectDevice(ctx context.Context, dbMap *gorp.DbMap, userID string, plat
 	defer tracer.Provider(ctx).Finish(span)
 
 	var devices []*model.Device
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE deleted=0 AND user_id=:userId AND platform=:platform;", tableNameDevice)
 	params := map[string]interface{}{
 		"userId":   userID,
 		"platform": platform,
@@ -111,42 +130,6 @@ func rdbSelectDevice(ctx context.Context, dbMap *gorp.DbMap, userID string, plat
 	}
 
 	return nil, nil
-}
-
-func rdbSelectDevicesByUserID(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]*model.Device, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDevicesByUserID", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
-
-	var devices []*model.Device
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId;", tableNameDevice)
-	params := map[string]interface{}{
-		"userId": userID,
-	}
-	_, err := dbMap.Select(&devices, query, params)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting devices by userId. %v.", err))
-		return nil, err
-	}
-
-	return devices, nil
-}
-
-func rdbSelectDevicesByToken(ctx context.Context, dbMap *gorp.DbMap, token string) ([]*model.Device, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDevicesByToken", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
-
-	var devices []*model.Device
-	query := fmt.Sprintf("SELECT * FROM %s WHERE token=:token;", tableNameDevice)
-	params := map[string]interface{}{
-		"token": token,
-	}
-	_, err := dbMap.Select(&devices, query, params)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting device by token. %v.", err))
-		return nil, err
-	}
-
-	return devices, nil
 }
 
 func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, device *model.Device) error {

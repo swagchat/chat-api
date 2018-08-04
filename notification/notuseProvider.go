@@ -13,7 +13,10 @@ type notuseProvider struct {
 func (np *notuseProvider) CreateTopic(roomId string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
-	result := NotificationResult{}
+	notificationTopicID := ""
+	result := NotificationResult{
+		Data: &notificationTopicID,
+	}
 	notificationChannel <- result
 	return notificationChannel
 }
@@ -29,7 +32,10 @@ func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationCh
 func (np *notuseProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
-	result := NotificationResult{}
+	notificationDeviceID := ""
+	result := NotificationResult{
+		Data: &notificationDeviceID,
+	}
 	notificationChannel <- result
 	return notificationChannel
 }

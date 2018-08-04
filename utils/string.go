@@ -35,7 +35,7 @@ func GenerateClientID() string {
 	return strings.Replace(uuid, "-", "", -1)
 }
 
-// GetFileNameWithoutExt get a filename without extention
+// GetFileNameWithoutExt get a filename without extension
 func GetFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/utils"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/swagchat/chat-api/config"
@@ -44,17 +43,6 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			fmt.Errorf("Failed to insert user on main test")
 		}
-
-		token := utils.GenerateUUID()
-		newDevice := &model.Device{}
-		newDevice.UserID = newUser.UserID
-		newDevice.Platform = 1
-		newDevice.Token = token
-		newDevice.NotificationDeviceID = token
-		err = datastore.Provider(ctx).InsertDevice(newDevice)
-		if err != nil {
-			fmt.Errorf("Failed to insert device on main test")
-		}
 	}
 	for i := 11; i <= 20; i++ {
 		newUser = &model.User{}
@@ -66,17 +54,6 @@ func TestMain(m *testing.M) {
 		err := datastore.Provider(ctx).InsertUser(newUser)
 		if err != nil {
 			fmt.Errorf("Failed to insert user on main test")
-		}
-
-		token := utils.GenerateUUID()
-		newDevice := &model.Device{}
-		newDevice.UserID = newUser.UserID
-		newDevice.Platform = 2
-		newDevice.Token = token
-		newDevice.NotificationDeviceID = token
-		err = datastore.Provider(ctx).InsertDevice(newDevice)
-		if err != nil {
-			fmt.Errorf("Failed to insert device on main test")
 		}
 	}
 

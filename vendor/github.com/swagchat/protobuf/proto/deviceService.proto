@@ -8,8 +8,7 @@ import "google/protobuf/empty.proto";
 import "deviceMessage.proto";
 
 service DeviceService {
-  rpc CreateDevice (CreateDeviceRequest) returns (google.protobuf.Empty) {}
+  rpc CreateDevice (CreateDeviceRequest) returns (Device) {}
   rpc GetDevices (GetDevicesRequest) returns (DevicesResponse) {}
-  rpc UpdateDevice (UpdateDeviceRequest) returns (google.protobuf.Empty) {}
   rpc DeleteDevice (DeleteDeviceRequest) returns (google.protobuf.Empty) {}
 }

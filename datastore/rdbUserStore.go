@@ -141,7 +141,7 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 
 	user.Devices = make([]*model.Device, 0)
 	if opt.withDevices {
-		devices, err := rdbSelectDevicesByUserID(ctx, dbMap, userID)
+		devices, err := rdbSelectDevices(ctx, dbMap, SelectDevicesOptionFilterByUserID(userID))
 		if err != nil {
 			return nil, err
 		}

@@ -17,37 +17,6 @@ import (
 	"github.com/swagchat/chat-api/utils"
 )
 
-func subscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitGroup) {
-	roomUser, err := datastore.Provider(ctx).SelectRoomUsers(
-		datastore.SelectRoomUsersOptionWithUserIDs([]string{device.UserID}),
-	)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	if roomUser != nil {
-		<-subscribe(ctx, roomUser, device)
-	}
-	if wg != nil {
-		wg.Done()
-	}
-}
-
-func unsubscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitGroup) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(
-		datastore.SelectDeletedSubscriptionsOptionFilterByUserID(device.UserID),
-		datastore.SelectDeletedSubscriptionsOptionFilterByPlatform(device.Platform),
-	)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	<-unsubscribe(ctx, subscriptions)
-	if wg != nil {
-		wg.Done()
-	}
-}
-
 func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.Device) chan bool {
 	np := notification.Provider(ctx)
 	dp := datastore.Provider(ctx)
@@ -115,99 +84,20 @@ func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.D
 	return finishCh
 }
 
-func unsubscribe(ctx context.Context, subscriptions []*model.Subscription) chan bool {
-	np := notification.Provider(ctx)
-	dp := datastore.Provider(ctx)
-	doneCh := make(chan bool, 1)
-	errCh := make(chan error, 1)
-	finishCh := make(chan bool, 1)
-
-	d := utils.NewDispatcher(10)
-	for _, subscription := range subscriptions {
-		ctx = context.WithValue(ctx, config.CtxSubscription, subscription)
-		d.Work(ctx, func(ctx context.Context) {
-			targetSubscription := ctx.Value(config.CtxSubscription).(*model.Subscription)
-			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionID)
-			if nRes.Error != nil {
-				errCh <- nRes.Error
-			}
-			err := dp.DeleteSubscriptions(
-				datastore.DeleteSubscriptionsOptionFilterByRoomID(targetSubscription.RoomID),
-				datastore.DeleteSubscriptionsOptionFilterByUserID(targetSubscription.UserID),
-				datastore.DeleteSubscriptionsOptionFilterByPlatform(targetSubscription.Platform),
-			)
-			if err != nil {
-				errCh <- err
-			} else {
-				doneCh <- true
-			}
-
-			select {
-			case <-ctx.Done():
-				return
-			case <-doneCh:
-				return
-			case err := <-errCh:
-				logger.Error(err.Error())
-				return
-			}
-		})
-	}
-	d.Wait()
-	finishCh <- true
-	return finishCh
-}
-
-func unsubscribeByUserID(ctx context.Context, userID string) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(datastore.SelectDeletedSubscriptionsOptionFilterByUserID(userID))
+func subscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitGroup) {
+	roomUser, err := datastore.Provider(ctx).SelectRoomUsers(
+		datastore.SelectRoomUsersOptionWithUserIDs([]string{device.UserID}),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
-	unsubscribe(ctx, subscriptions)
-}
-
-func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(datastore.SelectDeletedSubscriptionsOptionFilterByRoomID(roomID))
-	if err != nil {
-		logger.Error(err.Error())
-		return
+	if roomUser != nil {
+		<-subscribe(ctx, roomUser, device)
 	}
-	<-unsubscribe(ctx, subscriptions)
 	if wg != nil {
 		wg.Done()
 	}
-}
-
-func publishUserJoin(ctx context.Context, roomID string) {
-	room, err := datastore.Provider(ctx).SelectRoom(roomID, datastore.SelectRoomOptionWithUsers(true))
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	go func() {
-		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
-			datastore.SelectUserIDsOfRoomUserOptionWithRoomID(roomID),
-		)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-
-		buffer := new(bytes.Buffer)
-		json.NewEncoder(buffer).Encode(room.Users)
-		rtmEvent := &pbroker.RTMEvent{
-			Type:    pbroker.UserJoin,
-			Payload: buffer.Bytes(),
-			UserIDs: userIDs,
-		}
-		err = pbroker.Provider(ctx).PublishMessage(rtmEvent)
-		if err != nil {
-			logger.Error(err.Error())
-			return
-		}
-	}()
 }
 
 func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
@@ -260,6 +150,85 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	return
 }
 
+func unsubscribe(ctx context.Context, subscriptions []*model.Subscription) chan bool {
+	np := notification.Provider(ctx)
+	dp := datastore.Provider(ctx)
+	doneCh := make(chan bool, 1)
+	errCh := make(chan error, 1)
+	finishCh := make(chan bool, 1)
+
+	d := utils.NewDispatcher(10)
+	for _, subscription := range subscriptions {
+		ctx = context.WithValue(ctx, config.CtxSubscription, subscription)
+		d.Work(ctx, func(ctx context.Context) {
+			targetSubscription := ctx.Value(config.CtxSubscription).(*model.Subscription)
+			nRes := <-np.Unsubscribe(targetSubscription.NotificationSubscriptionID)
+			if nRes.Error != nil {
+				errCh <- nRes.Error
+			}
+			err := dp.DeleteSubscriptions(
+				datastore.DeleteSubscriptionsOptionFilterByRoomID(targetSubscription.RoomID),
+				datastore.DeleteSubscriptionsOptionFilterByUserID(targetSubscription.UserID),
+				datastore.DeleteSubscriptionsOptionFilterByPlatform(targetSubscription.Platform),
+			)
+			if err != nil {
+				errCh <- err
+			} else {
+				doneCh <- true
+			}
+
+			select {
+			case <-ctx.Done():
+				return
+			case <-doneCh:
+				return
+			case err := <-errCh:
+				logger.Error(err.Error())
+				return
+			}
+		})
+	}
+	d.Wait()
+	finishCh <- true
+	return finishCh
+}
+
+func unsubscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitGroup) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(
+		datastore.SelectDeletedSubscriptionsOptionFilterByUserID(device.UserID),
+		datastore.SelectDeletedSubscriptionsOptionFilterByPlatform(device.Platform),
+	)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	<-unsubscribe(ctx, subscriptions)
+	if wg != nil {
+		wg.Done()
+	}
+}
+
+func unsubscribeByUserID(ctx context.Context, userID string) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(datastore.SelectDeletedSubscriptionsOptionFilterByUserID(userID))
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	unsubscribe(ctx, subscriptions)
+}
+
+func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(datastore.SelectDeletedSubscriptionsOptionFilterByRoomID(roomID))
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	<-unsubscribe(ctx, subscriptions)
+	if wg != nil {
+		wg.Done()
+	}
+}
+
 func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	doneChan := make(chan bool, 1)
 	errResChan := make(chan *model.ErrorResponse, 1)
@@ -307,6 +276,37 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 	}
 	d.Wait()
 	return
+}
+
+func publishUserJoin(ctx context.Context, roomID string) {
+	room, err := datastore.Provider(ctx).SelectRoom(roomID, datastore.SelectRoomOptionWithUsers(true))
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+
+	go func() {
+		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
+			datastore.SelectUserIDsOfRoomUserOptionWithRoomID(roomID),
+		)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+
+		buffer := new(bytes.Buffer)
+		json.NewEncoder(buffer).Encode(room.Users)
+		rtmEvent := &pbroker.RTMEvent{
+			Type:    pbroker.UserJoin,
+			Payload: buffer.Bytes(),
+			UserIDs: userIDs,
+		}
+		err = pbroker.Provider(ctx).PublishMessage(rtmEvent)
+		if err != nil {
+			logger.Error(err.Error())
+			return
+		}
+	}()
 }
 
 func createTopic(ctx context.Context, roomID string) (string, *model.ErrorResponse) {

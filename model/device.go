@@ -10,9 +10,12 @@ type Device struct {
 	scpb.Device
 }
 
-func (d *Device) UpdateDevice(req *UpdateDeviceRequest) {
-	if req.Token != "" {
-		d.Token = req.Token
+func (d *Device) ConvertToPbDevice() *scpb.Device {
+	return &scpb.Device{
+		UserID:               d.UserID,
+		Platform:             d.Platform,
+		Token:                d.Token,
+		NotificationDeviceID: d.NotificationDeviceID,
 	}
 }
 
@@ -20,7 +23,27 @@ type CreateDeviceRequest struct {
 	scpb.CreateDeviceRequest
 }
 
-func (crur *CreateDeviceRequest) Validate() *ErrorResponse {
+func (cdr *CreateDeviceRequest) Validate() *ErrorResponse {
+	if !(cdr.Platform == scpb.Platform_PlatformIos || cdr.Platform == scpb.Platform_PlatformAndroid) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "platform",
+				Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
+			},
+		}
+		return NewErrorResponse("Failed to update device.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if cdr.Token == "" {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "token",
+				Reason: "token is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to update device.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
 	return nil
 }
 
@@ -57,39 +80,7 @@ func (dr *DevicesResponse) ConvertToPbDevices() *scpb.DevicesResponse {
 	}
 }
 
-type UpdateDeviceRequest struct {
-	scpb.UpdateDeviceRequest
-}
-
-func (udr *UpdateDeviceRequest) Validate() *ErrorResponse {
-	if udr.Platform != scpb.Platform_PlatformIos && udr.Platform != scpb.Platform_PlatformAndroid {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "platform",
-				Reason: "platform is invalid. Currently only 1(iOS) and 2(Android) are supported.",
-			},
-		}
-		return NewErrorResponse("Failed to update device.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-	}
-
-	if udr.Token == "" {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "token",
-				Reason: "token is required, but it's empty.",
-			},
-		}
-		return NewErrorResponse("Failed to update device.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-	}
-
-	return nil
-}
-
 type DeleteDeviceRequest struct {
 	scpb.DeleteDeviceRequest
 	Room *Room
-}
-
-func (ddr *DeleteDeviceRequest) Validate() *ErrorResponse {
-	return nil
 }

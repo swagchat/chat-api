@@ -166,7 +166,7 @@
   branch = "master"
   name = "github.com/swagchat/protobuf"
   packages = ["protoc-gen-go"]
-  revision = "607372526fb14a50ec35caba92171cab15f96de9"
+  revision = "066902766d7f165c71ee29bcf0bdd45e27eb9f06"
 
 [[projects]]
   name = "github.com/uber/jaeger-client-go"

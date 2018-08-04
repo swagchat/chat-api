@@ -37,13 +37,6 @@ message DevicesResponse {
   repeated Device devices = 11;
 }
 
-message UpdateDeviceRequest {
-  option (gogoproto.goproto_unrecognized) = false;
-  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
-  Platform platform = 12;
-  string token = 13;
-}
-
 message DeleteDeviceRequest {
   option (gogoproto.goproto_unrecognized) = false;
   string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];

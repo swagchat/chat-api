@@ -14,7 +14,6 @@ import (
 func setDeviceMux() {
 	mux.PostFunc("/users/#userId^[a-z0-9-]$/devices", commonHandler(selfResourceAuthzHandler(postDevice)))
 	mux.GetFunc("/users/#userId^[a-z0-9-]$/devices", commonHandler(selfResourceAuthzHandler(getDevices)))
-	mux.PutFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", commonHandler(selfResourceAuthzHandler(putDevice)))
 	mux.DeleteFunc("/users/#userId^[a-z0-9-]$/devices/#platform^[1-9]$", commonHandler(selfResourceAuthzHandler(deleteDevice)))
 }
 
@@ -29,13 +28,17 @@ func postDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errRes := service.CreateDevice(ctx, &req)
+	device, errRes := service.CreateDevice(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
 	}
 
-	respond(w, r, http.StatusNoContent, "application/json", nil)
+	if device == nil {
+		respond(w, r, http.StatusNotModified, "", nil)
+	} else {
+		respond(w, r, http.StatusOK, "application/json", device)
+	}
 }
 
 func getDevices(w http.ResponseWriter, r *http.Request) {
@@ -53,48 +56,6 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond(w, r, http.StatusOK, "application/json", devices)
-}
-
-func putDevice(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("putDevice", "rest")
-	defer tracer.Provider(ctx).Finish(span)
-
-	var req model.UpdateDeviceRequest
-	if err := decodeBody(r, &req); err != nil {
-		respondJSONDecodeError(w, r, "")
-		return
-	}
-
-	req.UserID = bone.GetValue(r, "userId")
-
-	i, err := strconv.ParseInt(bone.GetValue(r, "platform"), 10, 32)
-	if err != nil {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "platform",
-				Reason: "Platform must be numeric.",
-			},
-		}
-		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
-		respondError(w, r, errRes)
-		return
-	}
-
-	req.Platform = scpb.Platform(i)
-
-	errRes := service.UpdateDevice(ctx, &req)
-	if errRes != nil {
-		respondError(w, r, errRes)
-		return
-	}
-
-	respond(w, r, http.StatusNoContent, "application/json", nil)
-	// if device == nil {
-	// 	respond(w, r, http.StatusNotModified, "", nil)
-	// } else {
-	// 	respond(w, r, http.StatusOK, "application/json", device)
-	// }
 }
 
 func deleteDevice(w http.ResponseWriter, r *http.Request) {
