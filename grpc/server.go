@@ -39,7 +39,7 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		ctx = context.WithValue(ctx, config.CtxWorkspace, workspace)
 
-		ctx = tracer.Provider(ctx).StartTransaction(info.FullMethod, fmt.Sprintf("%v", info.Server))
+		ctx = tracer.Provider(ctx).StartTransaction(fmt.Sprintf("%s:%v", info.FullMethod, info.Server), "GRPC")
 		defer tracer.Provider(ctx).CloseTransaction()
 
 		reply, err := handler(ctx, req)

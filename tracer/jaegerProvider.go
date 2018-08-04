@@ -44,12 +44,12 @@ func (jp *jaegerProvider) NewTracer() error {
 	return nil
 }
 
-func (jp *jaegerProvider) StartTransaction(name, spanType string) context.Context {
+func (jp *jaegerProvider) StartTransaction(name, transactionType string) context.Context {
 	if jaegerTracer == nil {
 		return jp.ctx
 	}
 
-	span := jaegerTracer.StartSpan(fmt.Sprintf("%s:%s", spanType, name))
+	span := jaegerTracer.StartSpan(name)
 	ctx := opentracing.ContextWithSpan(jp.ctx, span)
 	ctx = context.WithValue(ctx, config.CtxTracerSpan, span)
 	return ctx
