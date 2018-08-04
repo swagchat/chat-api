@@ -30,4 +30,4 @@ jobs:
       - run:
           name: "run go test"
           command: |
-            go test ./...
+            go test $(go list ./... | grep -v vendor)
