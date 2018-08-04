@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "blockUserMessage.proto";
+
+service BlockUserService {
+  rpc CreateBlockUsers (CreateBlockUsersRequest) returns (google.protobuf.Empty) {}
+  rpc GetBlockUsers (GetBlockUsersRequest) returns (BlockUsersResponse) {}
+  rpc GetBlockUserIds (GetBlockUsersRequest) returns (BlockUserIdsResponse) {}
+  rpc GetBlockedUsers (GetBlockedUsersRequest) returns (BlockedUsersResponse) {}
+  rpc GetBlockedUserIds (GetBlockedUsersRequest) returns (BlockedUserIdsResponse) {}
+  rpc DeleteBlockUsers (DeleteBlockUsersRequest) returns (google.protobuf.Empty) {}
+}

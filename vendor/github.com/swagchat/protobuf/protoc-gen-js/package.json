@@ -1,0 +1,7 @@
+{
+  "name": "swagchat-protobuf",
+  "version": "0.1.0",
+  "dependencies": {
+    "google-protobuf": "^3.6.0"
+  }
+}

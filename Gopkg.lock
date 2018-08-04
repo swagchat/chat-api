@@ -3,7 +3,7 @@
 
 [[projects]]
   name = "cloud.google.com/go"
-  packages = ["compute/metadata","dialogflow/apiv2","internal/version","longrunning","longrunning/autogen"]
+  packages = ["compute/metadata"]
   revision = "0fd7230b2a7505833d5f69b75cbd6c9582401479"
   version = "v0.23.0"
 
@@ -15,15 +15,15 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/betchi/go-gimei"
+  name = "github.com/betchi/zapper"
   packages = ["."]
-  revision = "85fcd040ce98665bcb87643f3e273ce26e4274c8"
+  revision = "fcb923376a3e4c86d981a5d054cabfb45806547d"
 
 [[projects]]
   branch = "master"
-  name = "github.com/betchi/zapper"
+  name = "github.com/codahale/hdrhistogram"
   packages = ["."]
-  revision = "aa614dc70c41e4d0b55d15913adaf9f0a8b83022"
+  revision = "3a0bb77429bd3a61596f5e8a3172445844342120"
 
 [[projects]]
   name = "github.com/confluentinc/confluent-kafka-go"
@@ -33,15 +33,21 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/fairway-corp/chatpb"
-  packages = ["."]
-  revision = "8d7140c24033f5f35aec4ab9fe52cc2522162856"
+  name = "github.com/elastic/apm-agent-go"
+  packages = [".","internal/apmconfig","internal/apmdebug","internal/apmhttputil","internal/apmschema","internal/apmstrings","internal/fastjson","internal/krtext","internal/pretty","internal/radix","internal/uuid","model","stacktrace","transport"]
+  revision = "2717dc2664902081ffad80aeda97f929bdd99137"
 
 [[projects]]
   branch = "master"
-  name = "github.com/fairway-corp/operator-api"
-  packages = ["bot","datastore","idp","logger","model","pbroker","service","utils"]
-  revision = "bfa8821c3a912b99f54741ba56148f61cb4b95e9"
+  name = "github.com/elastic/go-sysinfo"
+  packages = [".","internal/registry","providers/darwin","providers/linux","providers/shared","providers/windows","types"]
+  revision = "b603f0b7f2050dbc69b053eb5c796be0f3ac9fd2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/elastic/go-windows"
+  packages = ["."]
+  revision = "f11b8c9a625322edbca44926f9c0e4dc4916c9ac"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -86,12 +92,6 @@
   revision = "2e65f85255dbc3072edf28d6b5b8efc472979f5a"
 
 [[projects]]
-  name = "github.com/googleapis/gax-go"
-  packages = ["."]
-  revision = "317e0006254c44a0ac427cc52a0e083ff0b9622f"
-  version = "v2.0.0"
-
-[[projects]]
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = ["runtime","runtime/internal","utilities"]
   revision = "92583770e3f01b09a0d3e9bdf64321d8bebd48f2"
@@ -101,6 +101,12 @@
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   revision = "0b12d6b5"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/joeshaw/multierror"
+  packages = ["."]
+  revision = "69b34d4ec901851247ae7e77d33909caf9df99ed"
 
 [[projects]]
   branch = "master"
@@ -121,10 +127,28 @@
   version = "v1.0.7"
 
 [[projects]]
+  name = "github.com/opentracing/opentracing-go"
+  packages = [".","ext","log"]
+  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
+  version = "v1.0.2"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/prometheus/procfs"
+  packages = [".","internal/util","nfs","xfs"]
+  revision = "05ee40e3a273f7245e8777337fc7b46e533a9a92"
+
+[[projects]]
+  name = "github.com/santhosh-tekuri/jsonschema"
+  packages = [".","decoders","formats","loader","mediatypes"]
+  revision = "1471bfd74cff003b1e329d46a4de4487e88cc47b"
+  version = "v1.2.2"
 
 [[projects]]
   name = "github.com/satori/go.uuid"
@@ -141,14 +165,20 @@
 [[projects]]
   branch = "master"
   name = "github.com/swagchat/protobuf"
-  packages = ["."]
-  revision = "59fb640afe9be4c5c0411af602ebda716fa20e10"
+  packages = ["protoc-gen-go"]
+  revision = "607372526fb14a50ec35caba92171cab15f96de9"
 
 [[projects]]
-  name = "go.opencensus.io"
-  packages = [".","exporter/stackdriver/propagation","internal","internal/tagencoding","plugin/ocgrpc","plugin/ochttp","plugin/ochttp/propagation/b3","stats","stats/internal","stats/view","tag","trace","trace/internal","trace/propagation"]
-  revision = "e262766cd0d230a1bb7c37281e345e465f19b41b"
-  version = "v0.14.0"
+  name = "github.com/uber/jaeger-client-go"
+  packages = [".","config","internal/baggage","internal/baggage/remote","internal/spanlog","internal/throttler","internal/throttler/remote","log","rpcmetrics","thrift","thrift-gen/agent","thrift-gen/baggage","thrift-gen/jaeger","thrift-gen/sampling","thrift-gen/zipkincore","utils"]
+  revision = "b043381d944715b469fd6b37addfd30145ca1758"
+  version = "v2.14.0"
+
+[[projects]]
+  name = "github.com/uber/jaeger-lib"
+  packages = ["metrics"]
+  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
+  version = "v1.5.0"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -181,6 +211,12 @@
   revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
 
 [[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = ["windows","windows/registry"]
+  revision = "0ffbfd41fbef8ffcf9b62b0b0aa3a5873ed7a4fe"
+
+[[projects]]
   name = "golang.org/x/text"
   packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
   revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
@@ -189,24 +225,24 @@
 [[projects]]
   branch = "master"
   name = "google.golang.org/api"
-  packages = ["gensupport","googleapi","googleapi/internal/uritemplates","googleapi/transport","internal","iterator","option","storage/v1","transport","transport/grpc","transport/http"]
+  packages = ["gensupport","googleapi","googleapi/internal/uritemplates","storage/v1"]
   revision = "efcb5f25ac56eae06c8b5672456c0b7767522685"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","cloudsql","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/socket","internal/urlfetch","socket","urlfetch"]
+  packages = [".","cloudsql","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
   revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
   version = "v1.1.0"
 
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/api/annotations","googleapis/cloud/dialogflow/v2","googleapis/longrunning","googleapis/rpc/errdetails","googleapis/rpc/status","googleapis/type/latlng","protobuf/field_mask"]
+  packages = ["googleapis/api/annotations","googleapis/rpc/status"]
   revision = "fedd2861243fd1a8152376292b921b394c7bef7e"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","credentials/oauth","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/grpcrand","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
+  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/grpcrand","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
   revision = "168a6198bcb0ef175f7dacec0b8691fc141dc9b8"
   version = "v1.13.0"
 
@@ -228,9 +264,15 @@
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
+[[projects]]
+  branch = "master"
+  name = "howett.net/plist"
+  packages = ["."]
+  revision = "500bd5b9081b5957ac10389f86e069869f00c348"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "98b7fb86bff32d56cf65ff6783ea20e61d7601ce5c3cc990e3469f766847d4b0"
+  inputs-digest = "b36914f5effcaa5dce79d32d663a2fb40f1bcb0b83ab032ac16c3bfd2153bfcb"
   solver-name = "gps-cdcl"
   solver-version = 1

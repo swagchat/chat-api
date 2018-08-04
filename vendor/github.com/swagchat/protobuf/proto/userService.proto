@@ -1,12 +1,11 @@
 syntax = "proto3";
 
 package swagchat.protobuf;
-option go_package = "github.com/swagchat/protobuf";
+option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "userMessage.proto";
-
 
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (User) {}
@@ -15,6 +14,9 @@ service UserService {
   rpc UpdateUser (UpdateUserRequest) returns (User) {}
   rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {}
 
+  rpc GetUserRooms (GetUserRoomsRequest) returns (UserRoomsResponse) {}
   rpc GetContacts (GetContactsRequest) returns (UsersResponse) {}
   rpc GetProfile (GetProfileRequest) returns (User) {}
+  // rpc GetDeviceUsers (GetDeviceUsersRequest) returns (DeviceUsersResponse) {}
+  rpc GetRoleUsers (GetRoleUsersRequest) returns (RoleUsersResponse) {}
 }

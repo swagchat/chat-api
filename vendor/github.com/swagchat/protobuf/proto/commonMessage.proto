@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package swagchat.protobuf;
-option go_package = "github.com/swagchat/protobuf";
+option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
 
 import "gogoproto/gogo.proto";
 
@@ -22,14 +22,24 @@ message RoleIds {
 
 message ErrorResponse {
   option (gogoproto.goproto_unrecognized) = false;
-	string message = 1;
+	string message = 1 [(gogoproto.jsontag) = "message,omitempty"];
 	string developer_message = 2 [(gogoproto.jsontag) = "developerMessage,omitempty"];
-	string info = 3;
-	repeated InvalidParam invalid_params = 4 [(gogoproto.jsontag) = "invalidParams,omitempty"];
+  string info = 3 [(gogoproto.jsontag) = "info,omitempty"];
+	repeated InvalidParam invalid_params = 5 [(gogoproto.jsontag) = "invalidParams,omitempty"];
 }
 
 message InvalidParam {
   option (gogoproto.goproto_unrecognized) = false;
 	string name = 1;
 	string reason = 2;
+}
+
+enum Order {
+  Asc = 0;
+  Desc = 1;
+}
+
+message OrderInfo {
+  string field = 1;
+  Order order = 2;
 }

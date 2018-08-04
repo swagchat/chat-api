@@ -1,8 +1,0 @@
-operator-api
-data
-debug
-config/app.yaml
-debug.test
-.vscode
-coverage.out
-example

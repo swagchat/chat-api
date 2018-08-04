@@ -1,0 +1,32 @@
+language: go
+
+go:
+  - stable
+  - "1.x"
+  - "1.8.x"
+  - "1.9.x"
+  - "1.10.x"
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - os: osx
+    - go: "1.x"
+  include:
+    - go: stable
+      os: osx
+
+before_install:
+  - go get -v golang.org/x/tools/cmd/goimports
+  - go get -v golang.org/x/lint/golint
+
+script:
+  - make install check
+
+jobs:
+  include:
+    - stage: coverage
+      go: stable
+      script:
+       - make install coverage.txt
+       - bash <(curl -s https://codecov.io/bash)

@@ -1,16 +1,16 @@
 syntax = "proto2";
 
 package swagchat.protobuf;
-option go_package = "github.com/swagchat/protobuf";
+option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
 
 import "gogoproto/gogo.proto";
 
 message RoomUser {
   option (gogoproto.goproto_unrecognized) = false;
-  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId", (gogoproto.moretags) = "db:\"room_id\""];
-  optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
-  optional int32 unread_count = 13 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "unreadCount,omitempty", (gogoproto.moretags) = "db:\"unread_count\""];
-  optional bool display = 14 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "display,omitempty", (gogoproto.moretags) = "db:\"display\""];
+  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId", (gogoproto.moretags) = "db:\"room_id,notnull\""];
+  optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id,notnull\""];
+  optional int32 unread_count = 13 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "unreadCount,omitempty", (gogoproto.moretags) = "db:\"unread_count,notnull\""];
+  optional bool display = 14 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "display,omitempty", (gogoproto.moretags) = "db:\"display,notnull\""];
 }
 
 message CreateRoomUsersRequest {
@@ -20,18 +20,29 @@ message CreateRoomUsersRequest {
   optional bool display = 13 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "display,omitempty"];
 }
 
+message GetRoomUsersRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false];
+  repeated string user_ids = 12 [(gogoproto.customname) = "UserIDs"];
+  repeated int32 role_ids = 13 [(gogoproto.customname) = "RoleIDs"];
+}
+
+message RoomUsersResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated RoomUser users = 11 [(gogoproto.jsontag) = "users,omitempty"];
+}
+
+message RoomUserIdsResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated string user_ids = 11 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds,omitempty"];
+}
+
 message UpdateRoomUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
   optional string user_id = 12 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
   optional int32 unread_count = 13 [(gogoproto.jsontag) = "unreadCount,omitempty"];
   optional bool display = 14 [(gogoproto.jsontag) = "display,omitempty"];
-}
-
-message GetUserIdsOfRoomUserRequest {
-  option (gogoproto.goproto_unrecognized) = false;
-  optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId"];
-  repeated int32 role_ids = 12 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds,omitempty"];
 }
 
 message DeleteRoomUsersRequest {

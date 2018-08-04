@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package swagchat.protobuf;
+option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
+
+import "gogoproto/gogo.proto";
+import "roomMessage.proto";
+
+message BlockUser {
+  option (gogoproto.goproto_unrecognized) = false;
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id,notnull\""];
+  string block_user_id = 12 [(gogoproto.customname) = "BlockUserID", (gogoproto.jsontag) = "blockUserId", (gogoproto.moretags) = "db:\"block_user_id,notnull\""];
+}
+
+message CreateBlockUsersRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
+  repeated string block_user_ids = 12 [(gogoproto.customname) = "BlockUserIDs", (gogoproto.jsontag) = "blockUserIds"];
+}
+
+message GetBlockUsersRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string user_id = 11 [(gogoproto.customname) = "UserID"];
+}
+
+message BlockUsersResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated MiniUser block_users = 11 [(gogoproto.jsontag) = "blockUsers"];
+}
+
+message BlockUserIdsResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated string block_user_ids = 12 [(gogoproto.customname) = "BlockUserIDs", (gogoproto.jsontag) = "blockUserIds"];
+}
+
+message GetBlockedUsersRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string user_id = 11 [(gogoproto.customname) = "UserID"];
+}
+
+message BlockedUsersResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated MiniUser blocked_users = 11 [(gogoproto.jsontag) = "blockedUsers,omitempty"];
+}
+
+message BlockedUserIdsResponse {
+  option (gogoproto.goproto_unrecognized) = false;
+  repeated string blocked_user_ids = 12 [(gogoproto.customname) = "BlockedUserIDs", (gogoproto.jsontag) = "blockedUserIds,omitempty"];
+}
+
+message DeleteBlockUsersRequest {
+  option (gogoproto.goproto_unrecognized) = false;
+  string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
+  repeated string block_user_ids = 12 [(gogoproto.customname) = "BlockUserIDs", (gogoproto.jsontag) = "blockUserIds"];
+}

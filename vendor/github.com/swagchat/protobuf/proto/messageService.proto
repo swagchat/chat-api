@@ -1,12 +1,10 @@
 syntax = "proto3";
 
 package swagchat.protobuf;
-option go_package = "github.com/swagchat/protobuf";
+option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
 
-import "google/api/annotations.proto";
-import "google/protobuf/empty.proto";
 import "messageMessage.proto";
 
-service ChatIncoming {
-  rpc PostMessage (Message) returns (google.protobuf.Empty) {}
+service MessageService {
+  rpc CreateMessage (CreateMessageRequest) returns (Message) {}
 }

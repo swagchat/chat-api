@@ -165,7 +165,27 @@ func (l *Logger) Error(message string, fields ...Field) {
 	l.zap.Error(message, fields...)
 }
 
+// Debugf logs a message at DebugLevel.
+func (l *Logger) Debugf(format string, args ...interface{}) {
+	l.zap.Debug(fmt.Sprintf(format, args))
+}
+
+// Infof logs a message at InfoLevel.
+func (l *Logger) Infof(format string, args ...interface{}) {
+	l.zap.Info(fmt.Sprintf(format, args))
+}
+
+// Warnf logs a message at WarnLevel.
+func (l *Logger) Warnf(format string, args ...interface{}) {
+	l.zap.Warn(fmt.Sprintf(format, args))
+}
+
+// Errorf logs a message at ErrorLevel.
+func (l *Logger) Errorf(format string, args ...interface{}) {
+	l.zap.Error(fmt.Sprintf(format, args))
+}
+
 // Printf logs a message at DebugLevel. For gorp trace message
-func (l *Logger) Printf(format string, v ...interface{}) {
-	l.zap.Debug(fmt.Sprintf(format, v))
+func (l *Logger) Printf(format string, args ...interface{}) {
+	l.zap.Debug(fmt.Sprintf(format, args))
 }
