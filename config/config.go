@@ -243,6 +243,11 @@ func NewConfig() *config {
 
 // Config is get config
 func Config() *config {
+	if cfg != nil {
+		return cfg
+	}
+
+	cfg = NewConfig()
 	return cfg
 }
 
@@ -842,11 +847,13 @@ func (c *config) parseFlag(args []string) error {
 	configPath := ""
 	flags.StringVar(&configPath, "config", "", "config file(yaml format)")
 
+	if flag.Lookup("test.run") != nil { // for testing
+		return nil
+	}
+
 	err := flags.Parse(args)
 	if err != nil {
-		if flag.Lookup("test.") != nil { // for testing
-			return errors.Wrap(err, "")
-		}
+		return nil
 	}
 
 	if showHelp {
