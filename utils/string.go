@@ -13,7 +13,7 @@ import (
 
 var token68Letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~+/")
 
-// GenerateClientSecret is generate clientSecret
+// GenerateClientSecret generate a clientSecret
 func GenerateClientSecret(n int) string {
 	rand.Seed(time.Now().UnixNano())
 	b := make([]rune, n)
@@ -23,24 +23,24 @@ func GenerateClientSecret(n int) string {
 	return string(b)
 }
 
-// GenerateUUID is generate UUID
+// GenerateUUID generate a UUID
 func GenerateUUID() string {
 	uuid := uuid.NewV4().String()
 	return uuid
 }
 
-// GenerateClientID is generate clientID
+// GenerateClientID generate a clientID
 func GenerateClientID() string {
 	uuid := uuid.NewV4().String()
 	return strings.Replace(uuid, "-", "", -1)
 }
 
-// GetFileNameWithoutExt is get filename without extention
+// GetFileNameWithoutExt get a filename without extention
 func GetFileNameWithoutExt(path string) string {
 	return filepath.Base(path[:len(path)-len(filepath.Ext(path))])
 }
 
-// BasicAuth is generate basic authorization
+// BasicAuth generate a basic authorization
 func BasicAuth(username, password string) string {
 	auth := fmt.Sprintf("%s:%s", username, password)
 	return base64.StdEncoding.EncodeToString([]byte(auth))
