@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Join is join strings
+// Join joins strings
 func Join(stringSlice []string, delimiter string, enclosure string) string {
 	resultString := ""
 	for i, v := range stringSlice {
@@ -59,7 +59,7 @@ func MergeMap(baseMap map[string]interface{}, mergeMaps ...map[string]interface{
 	return baseMap
 }
 
-// SearchStringValueInSlice is search string value in slice
+// SearchStringValueInSlice search string value in slice
 func SearchStringValueInSlice(slice []string, value string) bool {
 	for _, v := range slice {
 		if v == value {
@@ -69,7 +69,8 @@ func SearchStringValueInSlice(slice []string, value string) bool {
 	return false
 }
 
-func CommaSeparatedStringsToInt32(v string) []int32 {
+// CommaSeparatedStringToInt32 convert comma separated string to int32 slice
+func CommaSeparatedStringToInt32(v string) []int32 {
 	vv := strings.Split(v, ",")
 	int32Sli := make([]int32, len(vv))
 	if len(vv) == 0 {

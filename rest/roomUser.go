@@ -57,7 +57,7 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	var roleIDs []int32
 	if commaSeparatedRoleIDs != "" {
-		roleIDs = utils.CommaSeparatedStringsToInt32(commaSeparatedRoleIDs)
+		roleIDs = utils.CommaSeparatedStringToInt32(commaSeparatedRoleIDs)
 		if len(roleIDs) > 0 {
 			req.RoleIDs = roleIDs
 		}
