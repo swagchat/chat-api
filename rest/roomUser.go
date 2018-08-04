@@ -9,7 +9,6 @@ import (
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
-	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func setRoomUserMux() {
@@ -51,13 +50,6 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 	req := &model.GetRoomUsersRequest{}
 	req.RoomID = bone.GetValue(r, "roomId")
 
-	responseType := bone.GetValue(r, "responseType")
-	if responseType == "UserIdList" {
-		req.ResponseType = scpb.ResponseType_UserIdList
-	} else {
-		req.ResponseType = scpb.ResponseType_UserList
-	}
-
 	commaSeparatedRoleIDs := ""
 	if commaSeparatedRoleIDsSli, ok := params["roleIds"]; ok {
 		commaSeparatedRoleIDs = commaSeparatedRoleIDsSli[0]
@@ -71,13 +63,22 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	roomUsers, errRes := service.GetRoomUsers(ctx, req)
-	if errRes != nil {
-		respondError(w, r, errRes)
-		return
+	responseType := bone.GetValue(r, "responseType")
+	if responseType == "UserIdList" {
+		roomUserIDs, errRes := service.GetRoomUserIDs(ctx, req)
+		if errRes != nil {
+			respondError(w, r, errRes)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", roomUserIDs)
+	} else {
+		roomUsers, errRes := service.GetRoomUsers(ctx, req)
+		if errRes != nil {
+			respondError(w, r, errRes)
+			return
+		}
+		respond(w, r, http.StatusOK, "application/json", roomUsers)
 	}
-	respond(w, r, http.StatusOK, "application/json", roomUsers)
-	return
 }
 
 func putRoomUser(w http.ResponseWriter, r *http.Request) {

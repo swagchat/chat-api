@@ -17,6 +17,7 @@ func InsertRoomUsersOptionBeforeCleanRoomID(beforeCleanRoomID string) InsertRoom
 type selectRoomUsersOptions struct {
 	roomID  string
 	userIDs []string
+	roles   []int32
 }
 
 type SelectRoomUsersOption func(*selectRoomUsersOptions)
@@ -33,15 +34,54 @@ func SelectRoomUsersOptionWithUserIDs(userIDs []string) SelectRoomUsersOption {
 	}
 }
 
+func SelectRoomUsersOptionWithRoles(roles []int32) SelectRoomUsersOption {
+	return func(ops *selectRoomUsersOptions) {
+		ops.roles = roles
+	}
+}
+
 type selectUserIDsOfRoomUserOptions struct {
-	roles []int32
+	roomID  string
+	userIDs []string
+	roles   []int32
 }
 
 type SelectUserIDsOfRoomUserOption func(*selectUserIDsOfRoomUserOptions)
 
+func SelectUserIDsOfRoomUserOptionWithRoomID(roomID string) SelectUserIDsOfRoomUserOption {
+	return func(ops *selectUserIDsOfRoomUserOptions) {
+		ops.roomID = roomID
+	}
+}
+
+func SelectUserIDsOfRoomUserOptionWithUserIDs(userIDs []string) SelectUserIDsOfRoomUserOption {
+	return func(ops *selectUserIDsOfRoomUserOptions) {
+		ops.userIDs = userIDs
+	}
+}
+
 func SelectUserIDsOfRoomUserOptionWithRoles(roles []int32) SelectUserIDsOfRoomUserOption {
 	return func(ops *selectUserIDsOfRoomUserOptions) {
 		ops.roles = roles
+	}
+}
+
+type deleteRoomUsersOptions struct {
+	roomIDs []string
+	userIDs []string
+}
+
+type DeleteRoomUsersOption func(*deleteRoomUsersOptions)
+
+func DeleteRoomUsersOptionFilterByRoomIDs(roomIDs []string) DeleteRoomUsersOption {
+	return func(ops *deleteRoomUsersOptions) {
+		ops.roomIDs = roomIDs
+	}
+}
+
+func DeleteRoomUsersOptionFilterByUserIDs(userIDs []string) DeleteRoomUsersOption {
+	return func(ops *deleteRoomUsersOptions) {
+		ops.userIDs = userIDs
 	}
 }
 
@@ -52,7 +92,7 @@ type roomUserStore interface {
 	SelectRoomUsers(opts ...SelectRoomUsersOption) ([]*model.RoomUser, error)
 	SelectRoomUser(roomID, userID string) (*model.RoomUser, error)
 	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*model.RoomUser, error)
-	SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error)
+	SelectUserIDsOfRoomUser(opts ...SelectUserIDsOfRoomUserOption) ([]string, error)
 	UpdateRoomUser(roomUser *model.RoomUser) error
-	DeleteRoomUsers(roomID string, userIDs []string) error
+	DeleteRoomUsers(opts ...DeleteRoomUsersOption) error
 }

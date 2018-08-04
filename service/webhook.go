@@ -94,7 +94,9 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 	span := tracer.Provider(ctx).StartSpan("webhookMessage", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(message.RoomID)
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
+		datastore.SelectUserIDsOfRoomUserOptionWithRoomID(message.RoomID),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return

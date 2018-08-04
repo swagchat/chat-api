@@ -12,7 +12,6 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -49,8 +48,18 @@ func rdbInsertRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		}
 	}
 
-	for _, roomUser := range roomUsers {
-		err := tx.Insert(roomUser)
+	for _, ru := range roomUsers {
+		if opt.beforeCleanRoomID != "" {
+			existroomUser, err := rdbSelectRoomUser(ctx, dbMap, ru.RoomID, ru.UserID)
+			if err != nil {
+				return err
+			}
+			if existroomUser != nil {
+				continue
+			}
+		}
+
+		err := tx.Insert(ru)
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while recreating roomUser")
 			logger.Error(err.Error())
@@ -70,49 +79,73 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 		o(&opt)
 	}
 
-	if opt.roomID == "" && opt.userIDs == nil {
-		err := errors.New("An error occurred while getting room users. Be sure to specify roomID or userIDs")
-		// logger.Error(err.Error())
+	if opt.roomID == "" && opt.userIDs == nil && opt.roles == nil {
+		err := errors.New("An error occurred while getting room users. Be sure to specify either roomID or userIDs or roles")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	if opt.roomID != "" && opt.userIDs != nil && opt.roles != nil {
+		err := errors.New("An error occurred while getting room users. At the same time, roomID, userIDs, roles can not be specified")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	if opt.roomID == "" && opt.roles != nil {
+		err := errors.New("An error occurred while getting room users. When roles is specified, roomID must be specified")
+		logger.Error(err.Error())
 		return nil, err
 	}
 
 	var roomUsers []*model.RoomUser
-	var userIDsQuery string
-	var userIDsParams map[string]interface{}
-	var roomIDParams map[string]interface{}
 
-	if opt.roomID != "" {
-		roomIDParams = map[string]interface{}{"roomId": opt.roomID}
-	}
-	if opt.userIDs != nil {
-		userIDsQuery, userIDsParams = makePrepareExpressionParamsForInOperand(opt.userIDs)
-	}
-	params := make(map[string]interface{}, len(userIDsParams)+len(roomIDParams))
-	params = utils.MergeMap(params, userIDsParams, roomIDParams)
-
-	query := fmt.Sprintf("SELECT * FROM %s WHERE", tableNameRoomUser)
-	if opt.roomID != "" {
-		query = fmt.Sprintf("%s room_id=:roomId", query)
-	}
-	if opt.roomID != "" && opt.userIDs != nil {
-		query = fmt.Sprintf("%s AND ", query)
-	}
-	if opt.userIDs != nil {
-		query = fmt.Sprintf("%s user_id IN (%s)", query, userIDsQuery)
+	query := fmt.Sprintf("SELECT ru.room_id, ru.user_id, ru.unread_count, ru.display FROM %s as ru", tableNameRoomUser)
+	if opt.roles != nil {
+		rolesQuery, params := makePrepareExpressionParamsForInOperand(opt.roles)
+		query = fmt.Sprintf("%s LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role IN (%s)", query, tableNameUserRole, rolesQuery)
+		params["roomId"] = opt.roomID
+		_, err := dbMap.Select(&roomUsers, query, params)
+		if err != nil {
+			err := errors.Wrap(err, "An error occurred while getting room users")
+			logger.Error(err.Error())
+			return nil, err
+		}
+		return roomUsers, nil
 	}
 
-	var err error
-	if params == nil {
-		_, err = dbMap.Select(&roomUsers, query)
-	} else {
-		_, err = dbMap.Select(&roomUsers, query, params)
+	if opt.userIDs != nil && opt.roomID != "" {
+		userIDsQuery, params := makePrepareExpressionParamsForInOperand(opt.userIDs)
+		query = fmt.Sprintf("%s WHERE ru.user_id IN (%s) AND ru.room_id=:roomId", query, userIDsQuery)
+		params["roomId"] = opt.roomID
+		_, err := dbMap.Select(&roomUsers, query, params)
+		if err != nil {
+			err := errors.Wrap(err, "An error occurred while getting room users")
+			logger.Error(err.Error())
+			return nil, err
+		}
+		return roomUsers, nil
 	}
+
+	if opt.userIDs != nil && opt.roomID == "" {
+		userIDsQuery, params := makePrepareExpressionParamsForInOperand(opt.userIDs)
+		query = fmt.Sprintf("%s WHERE ru.user_id IN (%s)", query, userIDsQuery)
+		_, err := dbMap.Select(&roomUsers, query, params)
+		if err != nil {
+			err := errors.Wrap(err, "An error occurred while getting room users")
+			logger.Error(err.Error())
+			return nil, err
+		}
+		return roomUsers, nil
+	}
+
+	query = fmt.Sprintf("%s WHERE ru.room_id=:roomId", query)
+	params := map[string]interface{}{"roomId": opt.roomID}
+	_, err := dbMap.Select(&roomUsers, query, params)
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting room users")
 		logger.Error(err.Error())
 		return nil, err
 	}
-
 	return roomUsers, nil
 }
 
@@ -168,8 +201,8 @@ WHERE room_id IN (
 	return nil, nil
 }
 
-func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUserIDsOfRoomUser", "datastore")
+func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
+	span := tracer.Provider(ctx).StartSpan("rdbSelectRoomUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
 	opt := selectUserIDsOfRoomUserOptions{}
@@ -177,43 +210,93 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, roomID s
 		o(&opt)
 	}
 
-	var userIDs []string
-
-	var query string
-	var params map[string]interface{}
-	if opt.roles == nil {
-		query = fmt.Sprintf("SELECT ru.user_id FROM %s AS ru LEFT JOIN %s AS u ON ru.user_id = u.user_id WHERE ru.room_id=:roomId;", tableNameRoomUser, tableNameUser)
-		params = map[string]interface{}{
-			"roomId": roomID,
-		}
-	} else {
-		rolesQuery, pms := makePrepareExpressionParamsForInOperand(opt.roles)
-		params = pms
-		query = fmt.Sprintf("SELECT ru.user_id FROM %s AS ru LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role IN (%s) GROUP BY ru.user_id;", tableNameRoomUser, tableNameUserRole, rolesQuery)
-		params["roomId"] = roomID
-	}
-
-	_, err := dbMap.Select(&userIDs, query, params)
-	if err != nil {
-		err := errors.Wrap(err, "An error occurred while getting userIds")
+	if opt.roomID == "" && opt.userIDs == nil && opt.roles == nil {
+		err := errors.New("An error occurred while getting room userIDs. Be sure to specify either roomID or userIDs or roles")
 		logger.Error(err.Error())
 		return nil, err
 	}
 
+	if opt.roomID != "" && opt.userIDs != nil && opt.roles != nil {
+		err := errors.New("An error occurred while getting room userIDs. At the same time, roomID, userIDs, roles can not be specified")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	if opt.roomID == "" && opt.roles != nil {
+		err := errors.New("An error occurred while getting room userIDs. When roles is specified, roomID must be specified")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	var userIDs []string
+
+	query := fmt.Sprintf("SELECT ru.user_id FROM %s as ru", tableNameRoomUser)
+	if opt.roles != nil {
+		rolesQuery, params := makePrepareExpressionParamsForInOperand(opt.roles)
+		query = fmt.Sprintf("%s LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role IN (%s)", query, tableNameUserRole, rolesQuery)
+		params["roomId"] = opt.roomID
+		_, err := dbMap.Select(&userIDs, query, params)
+		if err != nil {
+			err := errors.Wrap(err, "An error occurred while getting room users")
+			logger.Error(err.Error())
+			return nil, err
+		}
+		return userIDs, nil
+	}
+
+	if opt.userIDs != nil && opt.roomID != "" {
+		userIDsQuery, params := makePrepareExpressionParamsForInOperand(opt.userIDs)
+		query = fmt.Sprintf("%s WHERE ru.user_id IN (%s) AND ru.room_id=:roomId", query, userIDsQuery)
+		params["roomId"] = opt.roomID
+		_, err := dbMap.Select(&userIDs, query, params)
+		if err != nil {
+			err := errors.Wrap(err, "An error occurred while getting room users")
+			logger.Error(err.Error())
+			return nil, err
+		}
+		return userIDs, nil
+	}
+
+	if opt.userIDs != nil && opt.roomID == "" {
+		userIDsQuery, params := makePrepareExpressionParamsForInOperand(opt.userIDs)
+		query = fmt.Sprintf("%s WHERE ru.user_id IN (%s)", query, userIDsQuery)
+		_, err := dbMap.Select(&userIDs, query, params)
+		if err != nil {
+			err := errors.Wrap(err, "An error occurred while getting room users")
+			logger.Error(err.Error())
+			return nil, err
+		}
+		return userIDs, nil
+	}
+
+	query = fmt.Sprintf("%s WHERE ru.room_id=:roomId", query)
+	params := map[string]interface{}{"roomId": opt.roomID}
+	_, err := dbMap.Select(&userIDs, query, params)
+	if err != nil {
+		err := errors.Wrap(err, "An error occurred while getting room users")
+		logger.Error(err.Error())
+		return nil, err
+	}
 	return userIDs, nil
 }
 
-func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, ru *model.RoomUser) error {
+func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, ru *model.RoomUser) error {
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoomUser", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	query := fmt.Sprintf("UPDATE %s SET unread_count=:unreadCount WHERE room_id=:roomId AND user_id=:userId;", tableNameRoomUser)
-	params := map[string]interface{}{
-		"roomId":      ru.RoomID,
-		"userId":      ru.UserID,
-		"unreadCount": ru.UnreadCount,
+	query := fmt.Sprintf("UPDATE %s SET unread_count=?, display=? WHERE room_id=? AND user_id=?;", tableNameRoomUser)
+	_, err := tx.Exec(query, ru.UnreadCount, ru.Display, ru.RoomID, ru.UserID)
+	if err != nil {
+		err := errors.Wrap(err, "An error occurred while updating room user")
+		logger.Error(err.Error())
+		return err
 	}
-	_, err := dbMap.Exec(query, params)
+
+	query = fmt.Sprintf(`
+	UPDATE %s SET unread_count=(
+		SELECT SUM(unread_count) FROM %s WHERE user_id=?
+	) WHERE user_id=?`, tableNameUser, tableNameRoomUser)
+	_, err = tx.Exec(query, ru.UserID, ru.UserID)
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while updating room user")
 		logger.Error(err.Error())
@@ -223,115 +306,101 @@ func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, ru *model.RoomUse
 	return nil
 }
 
-func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, roomID string, userIDs []string) error {
+func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteRoomUsersOption) error {
 	span := tracer.Provider(ctx).StartSpan("rdbDeleteRoomUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var query string
-	nowTimestamp := time.Now().Unix()
-	if userIDs == nil {
-		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-		_, err := tx.Exec(query, roomID)
-		if err != nil {
-			err := errors.Wrap(err, "An error occurred while deleting room users")
-			logger.Error(err.Error())
-			return err
-		}
+	opt := deleteRoomUsersOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
 
-		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
-		_, err = tx.Exec(query, nowTimestamp, roomID)
-		if err != nil {
-			err := errors.Wrap(err, "An error occurred while deleting room users")
-			logger.Error(err.Error())
-			return err
+	deleted := time.Now().Unix()
+
+	if len(opt.roomIDs) > 0 && len(opt.userIDs) > 0 {
+		roomIDsQuery, roomIDsParams := makePrepareExpressionForInOperand(opt.roomIDs)
+		userIDsQuery, userIDsParams := makePrepareExpressionForInOperand(opt.userIDs)
+
+		params := make([]interface{}, len(roomIDsParams)+len(userIDsParams))
+		var i int
+		for i = 0; i < len(roomIDsParams); i++ {
+			params[i] = roomIDsParams[i]
 		}
-	} else {
-		var userIdsQuery string
-		userIdsQuery, userIDsParams := makePrepareExpressionForInOperand(userIDs)
-		params := make([]interface{}, len(userIDsParams)+1)
-		params[0] = interface{}(roomID)
-		for i := 0; i < len(userIDsParams); i++ {
-			params[i+1] = userIDsParams[i]
+		for j := 0; j < len(userIDsParams); j++ {
+			params[i+j] = userIDsParams[j]
 		}
-		query = fmt.Sprintf("DELETE FROM %s WHERE room_id=? AND user_id IN (%s);", tableNameRoomUser, userIdsQuery)
+		query := fmt.Sprintf("DELETE FROM %s WHERE room_id IN (%s) AND user_id IN (%s)", tableNameRoomUser, roomIDsQuery, userIDsQuery)
 		_, err := tx.Exec(query, params...)
 		if err != nil {
-			err := errors.Wrap(err, "An error occurred while deleting room users")
+			err = errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
 			return err
 		}
 
-		params = make([]interface{}, len(userIDsParams)+2)
-		params[0] = interface{}(nowTimestamp)
-		params[1] = interface{}(roomID)
-		for i := 0; i < len(userIDsParams); i++ {
-			params[i+2] = userIDsParams[i]
+		for _, roomID := range opt.roomIDs {
+			for _, userID := range opt.userIDs {
+				err := rdbDeleteSubscriptions(
+					ctx,
+					dbMap,
+					tx,
+					DeleteSubscriptionsOptionWithLogicalDeleted(deleted),
+					DeleteSubscriptionsOptionFilterByRoomID(roomID),
+					DeleteSubscriptionsOptionFilterByUserID(userID),
+				)
+				if err != nil {
+					return err
+				}
+			}
 		}
-		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=? AND user_id IN (%s);", tableNameSubscription, userIdsQuery)
-		_, err = tx.Exec(query, params...)
+	}
+
+	if len(opt.roomIDs) > 0 {
+		roomIDsQuery, roomIDsParams := makePrepareExpressionForInOperand(opt.roomIDs)
+		query := fmt.Sprintf("DELETE FROM %s WHERE room_id IN (%s)", tableNameRoomUser, roomIDsQuery)
+		_, err := tx.Exec(query, roomIDsParams...)
 		if err != nil {
-			err := errors.Wrap(err, "An error occurred while deleting room users")
+			err = errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
 			return err
+		}
+
+		for _, roomID := range opt.roomIDs {
+			err := rdbDeleteSubscriptions(
+				ctx,
+				dbMap,
+				tx,
+				DeleteSubscriptionsOptionWithLogicalDeleted(deleted),
+				DeleteSubscriptionsOptionFilterByRoomID(roomID),
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(opt.userIDs) > 0 {
+		userIDsQuery, userIDsParams := makePrepareExpressionForInOperand(opt.userIDs)
+		query := fmt.Sprintf("DELETE FROM %s WHERE user_id IN (%s)", tableNameRoomUser, userIDsQuery)
+		_, err := tx.Exec(query, userIDsParams...)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while deleting room users")
+			logger.Error(err.Error())
+			return err
+		}
+
+		for _, userID := range opt.userIDs {
+			err := rdbDeleteSubscriptions(
+				ctx,
+				dbMap,
+				tx,
+				DeleteSubscriptionsOptionWithLogicalDeleted(deleted),
+				DeleteSubscriptionsOptionFilterByUserID(userID),
+			)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	return nil
 }
-
-// func rdbUpdateRoomUser(ctx context.Context, db string, roomUser *model.RoomUser) (*model.RoomUser, error) {
-// 	master := RdbStore(db).master()
-// 	trans, err := master.Begin()
-// 	if err != nil {
-// 		return nil, errors.Wrap(err, "An error occurred while transaction beginning")
-// 	}
-
-// 	updateQuery := ""
-// 	params := map[string]interface{}{
-// 		"roomId": roomUser.RoomID,
-// 		"userId": roomUser.UserID,
-// 	}
-// 	if roomUser.UnreadCount != nil {
-// 		params["unreadCount"] = roomUser.UnreadCount
-// 		updateQuery = "unread_count=:unreadCount"
-// 	}
-// 	// if roomUser.MetaData != nil {
-// 	// 	params["metaData"] = roomUser.MetaData
-// 	// 	if updateQuery == "" {
-// 	// 		updateQuery = "meta_data=:metaData"
-// 	// 	} else {
-// 	// 		updateQuery = utils.AppendStrings(updateQuery, ",", "meta_data=:metaData")
-// 	// 	}
-// 	// }
-// 	if updateQuery != "" {
-// 		query := utils.AppendStrings("UPDATE ", tableNameRoomUser, " SET "+updateQuery+" WHERE room_id=:roomId AND user_id=:userId;")
-// 		_, err = trans.Exec(query, params)
-// 		if err != nil {
-// 			trans.Rollback()
-// 			return nil, errors.Wrap(err, "An error occurred while updating room's users")
-// 		}
-
-// 		if roomUser.UnreadCount != nil {
-// 			query = utils.AppendStrings("UPDATE ", tableNameUser,
-// 				" SET unread_count=(SELECT SUM(unread_count) FROM ", tableNameRoomUser,
-// 				" WHERE user_id=:userId1) WHERE user_id=:userId2;")
-// 			params = map[string]interface{}{
-// 				"userId1": roomUser.UserID,
-// 				"userId2": roomUser.UserID,
-// 			}
-// 			_, err = trans.Exec(query, params)
-// 			if err != nil {
-// 				trans.Rollback()
-// 				return nil, errors.Wrap(err, "An error occurred while updating user unread count")
-// 			}
-// 		}
-// 	}
-
-// 	err = trans.Commit()
-// 	if err != nil {
-// 		trans.Rollback()
-// 		return nil, errors.New("An error occurred while commit updating room's user")
-// 	}
-
-// 	return roomUser, nil
-// }

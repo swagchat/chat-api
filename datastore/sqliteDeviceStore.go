@@ -63,7 +63,7 @@ func (p *sqliteProvider) UpdateDevice(device *model.Device) error {
 	return nil
 }
 
-func (p *sqliteProvider) DeleteDevice(userID string, platform scpb.Platform) error {
+func (p *sqliteProvider) DeleteDevices(opts ...DeleteDevicesOption) error {
 	master := RdbStore(p.database).master()
 	tx, err := master.Begin()
 	if err != nil {
@@ -72,7 +72,7 @@ func (p *sqliteProvider) DeleteDevice(userID string, platform scpb.Platform) err
 		return err
 	}
 
-	err = rdbDeleteDevice(p.ctx, master, tx, userID, platform)
+	err = rdbDeleteDevices(p.ctx, master, tx, opts...)
 	if err != nil {
 		tx.Rollback()
 		return err

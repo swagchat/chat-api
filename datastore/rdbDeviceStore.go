@@ -55,7 +55,9 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 	}
 
 	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone && opt.token == "" {
-		return nil, errors.New("Be sure to specify either userId or platform or token")
+		err := errors.New("An error occurred while getting devices. Be sure to specify either userId or platform or token")
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	var devices []*model.Device
@@ -151,14 +153,20 @@ func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateDevice", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=? AND platform=?;", tableNameSubscription)
-	_, err := tx.Exec(query, time.Now().Unix(), device.UserID, device.Platform)
+	deleted := time.Now().Unix()
+	err := rdbDeleteSubscriptions(
+		ctx,
+		dbMap,
+		tx,
+		DeleteSubscriptionsOptionWithLogicalDeleted(deleted),
+		DeleteSubscriptionsOptionFilterByUserID(device.UserID),
+		DeleteSubscriptionsOptionFilterByPlatform(device.Platform),
+	)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while updating device. %v.", err))
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET token=?, notification_device_id=? WHERE user_id=? AND platform=?;", tableNameDevice)
+	query := fmt.Sprintf("UPDATE %s SET token=?, notification_device_id=? WHERE user_id=? AND platform=?;", tableNameDevice)
 	_, err = tx.Exec(query, device.Token, device.NotificationDeviceID, device.UserID, device.Platform)
 	if err != nil {
 		logger.Error(fmt.Sprintf("An error occurred while updating device. %v.", err))
@@ -168,31 +176,58 @@ func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 	return nil
 }
 
-func rdbDeleteDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, userID string, platform scpb.Platform) error {
-	span := tracer.Provider(ctx).StartSpan("rdbDeleteDevice", "datastore")
+func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteDevicesOption) error {
+	span := tracer.Provider(ctx).StartSpan("rdbDeleteDevices", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	query := fmt.Sprintf("UPDATE %s SET deleted=:deleted WHERE user_id=:userId AND platform=:platform;", tableNameSubscription)
-	params := map[string]interface{}{
-		"userId":   userID,
-		"platform": platform,
-		"deleted":  time.Now().Unix(),
+	opt := deleteDevicesOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
-	_, err := tx.Exec(query, params)
-	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while deleting device. %v.", err))
+
+	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone {
+		err := errors.New("An error occurred while deleting devices. Be sure to specify either userID or platform")
+		logger.Error(err.Error())
 		return err
 	}
 
-	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=:userId AND platform=:platform;", tableNameDevice)
-	params = map[string]interface{}{
-		"userId":   userID,
-		"platform": platform,
-	}
-	_, err = tx.Exec(query, params)
+	err := rdbDeleteSubscriptions(
+		ctx,
+		dbMap,
+		tx,
+		DeleteSubscriptionsOptionWithLogicalDeleted(opt.logicalDeleted),
+		DeleteSubscriptionsOptionFilterByUserID(opt.userID),
+		DeleteSubscriptionsOptionFilterByPlatform(opt.platform),
+	)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while deleting device. %v.", err))
 		return err
+	}
+
+	var query string
+	if opt.logicalDeleted != 0 {
+		query = fmt.Sprintf("UPDATE %s SET deleted=%d WHERE", tableNameDevice, opt.logicalDeleted)
+	} else {
+		query = fmt.Sprintf("DELETE FROM %s WHERE", tableNameDevice)
+	}
+
+	if opt.userID != "" && opt.platform == scpb.Platform_PlatformNone {
+		query = fmt.Sprintf("%s user_id=?", query)
+		_, err := tx.Exec(query, opt.userID)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while deleting devices")
+			logger.Error(err.Error())
+			return err
+		}
+	}
+
+	if opt.userID != "" && opt.platform != scpb.Platform_PlatformNone {
+		query = fmt.Sprintf("%s user_id=? AND platform=?", query)
+		_, err := tx.Exec(query, opt.userID, opt.platform)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while deleting devices")
+			logger.Error(err.Error())
+			return err
+		}
 	}
 
 	return nil

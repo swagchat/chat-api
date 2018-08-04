@@ -15,7 +15,7 @@ func (p *gcpSQLProvider) InsertRoomUsers(roomUsers []*model.RoomUser, opts ...In
 	master := RdbStore(p.database).master()
 	tx, err := master.Begin()
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		err = errors.Wrap(err, "An error occurred while inserting room users")
 		logger.Error(err.Error())
 		return err
 	}
@@ -29,7 +29,7 @@ func (p *gcpSQLProvider) InsertRoomUsers(roomUsers []*model.RoomUser, opts ...In
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
-		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		err = errors.Wrap(err, "An error occurred while inserting room users")
 		logger.Error(err.Error())
 		return err
 	}
@@ -52,26 +52,21 @@ func (p *gcpSQLProvider) SelectRoomUserOfOneOnOne(myUserID, opponentUserID strin
 	return rdbSelectRoomUserOfOneOnOne(p.ctx, replica, myUserID, opponentUserID)
 }
 
-func (p *gcpSQLProvider) SelectUserIDsOfRoomUser(roomID string, opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
+func (p *gcpSQLProvider) SelectUserIDsOfRoomUser(opts ...SelectUserIDsOfRoomUserOption) ([]string, error) {
 	replica := RdbStore(p.database).replica()
-	return rdbSelectUserIDsOfRoomUser(p.ctx, replica, roomID, opts...)
+	return rdbSelectUserIDsOfRoomUser(p.ctx, replica, opts...)
 }
 
 func (p *gcpSQLProvider) UpdateRoomUser(roomUser *model.RoomUser) error {
 	master := RdbStore(p.database).master()
-	return rdbUpdateRoomUser(p.ctx, master, roomUser)
-}
-
-func (p *gcpSQLProvider) DeleteRoomUsers(roomID string, userIDs []string) error {
-	master := RdbStore(p.database).master()
 	tx, err := master.Begin()
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		err = errors.Wrap(err, "An error occurred while updating room user")
 		logger.Error(err.Error())
 		return err
 	}
 
-	err = rdbDeleteRoomUsers(p.ctx, master, tx, roomID, userIDs)
+	err = rdbUpdateRoomUser(p.ctx, master, tx, roomUser)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -80,7 +75,33 @@ func (p *gcpSQLProvider) DeleteRoomUsers(roomID string, userIDs []string) error 
 	err = tx.Commit()
 	if err != nil {
 		tx.Rollback()
-		err = errors.Wrap(err, "An error occurred while inserting user roles")
+		err = errors.Wrap(err, "An error occurred while updating room user")
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (p *gcpSQLProvider) DeleteRoomUsers(opts ...DeleteRoomUsersOption) error {
+	master := RdbStore(p.database).master()
+	tx, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while deleting room users")
+		logger.Error(err.Error())
+		return err
+	}
+
+	err = rdbDeleteRoomUsers(p.ctx, master, tx, opts...)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		err = errors.Wrap(err, "An error occurred while deleting room users")
 		logger.Error(err.Error())
 		return err
 	}

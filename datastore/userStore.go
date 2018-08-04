@@ -9,7 +9,7 @@ type InsertUserOption func(*insertUserOptions)
 
 type insertUserOptions struct {
 	blockUsers []*model.BlockUser
-	roles      []*model.UserRole
+	userRoles  []*model.UserRole
 }
 
 func InsertUserOptionWithBlockUsers(blockUsers []*model.BlockUser) InsertUserOption {
@@ -18,9 +18,9 @@ func InsertUserOptionWithBlockUsers(blockUsers []*model.BlockUser) InsertUserOpt
 	}
 }
 
-func InsertUserOptionWithRoles(roles []*model.UserRole) InsertUserOption {
+func InsertUserOptionWithUserRoles(userRoles []*model.UserRole) InsertUserOption {
 	return func(ops *insertUserOptions) {
-		ops.roles = roles
+		ops.userRoles = userRoles
 	}
 }
 
@@ -85,7 +85,7 @@ type UpdateUserOption func(*updateUserOptions)
 
 type updateUserOptions struct {
 	blockUsers []*model.BlockUser
-	roles      []*model.UserRole
+	userRoles  []*model.UserRole
 }
 
 func UpdateUserOptionWithBlockUsers(blockUsers []*model.BlockUser) UpdateUserOption {
@@ -94,9 +94,9 @@ func UpdateUserOptionWithBlockUsers(blockUsers []*model.BlockUser) UpdateUserOpt
 	}
 }
 
-func UpdateUserOptionWithRoles(roles []*model.UserRole) UpdateUserOption {
+func UpdateUserOptionWithUserRoles(userRoles []*model.UserRole) UpdateUserOption {
 	return func(ops *updateUserOptions) {
-		ops.roles = roles
+		ops.userRoles = userRoles
 	}
 }
 

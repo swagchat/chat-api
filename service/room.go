@@ -273,3 +273,10 @@ func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*m
 
 	return roomMessages, nil
 }
+
+func updateLastAccessRoomID(ctx context.Context, roomID string) {
+	userID := ctx.Value(utils.CtxUserID).(string)
+	user, _ := confirmUserExist(ctx, userID)
+	user.LastAccessRoomID = roomID
+	datastore.Provider(ctx).UpdateUser(user)
+}

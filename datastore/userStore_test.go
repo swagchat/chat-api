@@ -40,7 +40,7 @@ func TestUserStore(t *testing.T) {
 		err = Provider(ctx).InsertUser(
 			newUser,
 			InsertUserOptionWithBlockUsers([]*model.BlockUser{newBlockUser}),
-			InsertUserOptionWithRoles([]*model.UserRole{newUserRole}),
+			InsertUserOptionWithUserRoles([]*model.UserRole{newUserRole}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameInsertUser)
@@ -92,7 +92,7 @@ func TestUserStore(t *testing.T) {
 
 		err = Provider(ctx).UpdateUser(
 			user,
-			UpdateUserOptionWithRoles([]*model.UserRole{newUserRole}),
+			UpdateUserOptionWithUserRoles([]*model.UserRole{newUserRole}),
 		)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameUpdateUser)

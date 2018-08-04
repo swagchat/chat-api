@@ -113,7 +113,7 @@ func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.E
 
 func publishMessage(ctx context.Context, message *model.Message) {
 	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
-		message.RoomID,
+		datastore.SelectUserIDsOfRoomUserOptionWithRoomID(message.RoomID),
 		datastore.SelectUserIDsOfRoomUserOptionWithRoles([]int32{message.Role}),
 	)
 	if err != nil {

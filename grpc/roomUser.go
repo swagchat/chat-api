@@ -32,6 +32,17 @@ func (urs *roomUserServiceServer) GetRoomUsers(ctx context.Context, in *scpb.Get
 	return roomUsers, nil
 }
 
+func (urs *roomUserServiceServer) GetRoomUserIds(ctx context.Context, in *scpb.GetRoomUsersRequest) (*scpb.RoomUserIdsResponse, error) {
+	req := &model.GetRoomUsersRequest{*in}
+	res, errRes := service.GetRoomUserIDs(ctx, req)
+	if errRes != nil {
+		return &scpb.RoomUserIdsResponse{}, errRes.Error
+	}
+
+	roomUserIDs := res.ConvertToPbRoomUserIDs()
+	return roomUserIDs, nil
+}
+
 func (urs *roomUserServiceServer) UpdateRoomUser(ctx context.Context, in *scpb.UpdateRoomUserRequest) (*empty.Empty, error) {
 	req := &model.UpdateRoomUserRequest{*in}
 	errRes := service.UpdateRoomUser(ctx, req)

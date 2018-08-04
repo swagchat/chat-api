@@ -85,7 +85,9 @@ func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...Se
 	}
 
 	if (opt.name == "" && opt.clientID == "") || (opt.name != "" && opt.clientID != "") {
-		return nil, errors.New("Be sure to specify either name or clientID")
+		err := errors.New("An error occurred while getting appClient. Be sure to specify either name or clientID")
+		logger.Error(err.Error())
+		return nil, err
 	}
 
 	query := fmt.Sprintf("SELECT * FROM %s WHERE", tableNameAppClient)
@@ -109,7 +111,7 @@ func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...Se
 
 	_, err := dbMap.Select(&appClients, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting appClient by name. %v.", err))
+		logger.Error(fmt.Sprintf("An error occurred while getting appClient. %v.", err))
 		return nil, err
 	}
 

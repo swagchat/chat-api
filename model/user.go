@@ -11,7 +11,8 @@ import (
 
 type User struct {
 	scpb.User
-	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
+	MetaData utils.JSONText `db:"meta_data"`
+	Devices  []*Device      `db:"-"`
 }
 
 func (u *User) MarshalJSON() ([]byte, error) {
@@ -33,7 +34,7 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Created          string         `json:"created"`
 		Modified         string         `json:"modified"`
 		BlockUsers       []string       `json:"blockUsers,omitempty"`
-		Devices          []*scpb.Device `json:"devices,omitempty"`
+		Devices          []*Device      `json:"devices,omitempty"`
 		Roles            []int32        `json:"roles,omitempty"`
 	}{
 		UserID:           u.UserID,
@@ -314,7 +315,7 @@ func (u *User) DoPostProcessing() {
 	}
 
 	if u.Devices == nil {
-		u.Devices = make([]*scpb.Device, 0)
+		u.Devices = make([]*Device, 0)
 	}
 
 	if u.Roles == nil {

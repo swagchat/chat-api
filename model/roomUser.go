@@ -26,17 +26,48 @@ type CreateRoomUsersRequest struct {
 }
 
 func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
+	if crur.Room == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roomId",
+				Reason: "roomId is not exist",
+			},
+		}
+		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
 	if crur.Room.Type == scpb.RoomType_RoomTypeOneOnOne {
-		if len(crur.UserIDs) != 1 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "room.type",
+				Reason: "In case of 1-on-1 room type, Can not add room user.",
+			},
+		}
+		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if len(crur.UserIDs) == 0 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userIds",
+				Reason: "userIds is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	for _, userID := range crur.UserIDs {
+		if userID == crur.Room.UserID {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "userIds",
-					Reason: "In case of 1-on-1 room type, only one user can be specified for userIDs.",
+					Reason: "userIds can not include room's userId.",
 				},
 			}
-			return NewErrorResponse("Failed to create a user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+			return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
+
 	return nil
 }
 
@@ -59,11 +90,34 @@ type GetRoomUsersRequest struct {
 
 type RoomUsersResponse struct {
 	scpb.RoomUsersResponse
+	Users []*RoomUser
 }
 
 func (rur *RoomUsersResponse) ConvertToPbRoomUsers() *scpb.RoomUsersResponse {
-	return &scpb.RoomUsersResponse{
-		Users:   rur.Users,
+	res := &scpb.RoomUsersResponse{}
+
+	rus := make([]*scpb.RoomUser, len(rur.Users))
+	for i := 0; i < len(rur.Users); i++ {
+		ru := rur.Users[i]
+		pbRu := &scpb.RoomUser{
+			RoomID:      ru.RoomID,
+			UserID:      ru.UserID,
+			UnreadCount: ru.UnreadCount,
+			Display:     ru.Display,
+		}
+		rus[i] = pbRu
+	}
+	res.Users = rus
+
+	return res
+}
+
+type RoomUserIdsResponse struct {
+	scpb.RoomUserIdsResponse
+}
+
+func (rur *RoomUserIdsResponse) ConvertToPbRoomUserIDs() *scpb.RoomUserIdsResponse {
+	return &scpb.RoomUserIdsResponse{
 		UserIDs: rur.UserIDs,
 	}
 }
@@ -78,16 +132,47 @@ type DeleteRoomUsersRequest struct {
 }
 
 func (drur *DeleteRoomUsersRequest) Validate() *ErrorResponse {
+	if drur.Room == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roomId",
+				Reason: "roomId is not exist",
+			},
+		}
+		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
 	if drur.Room.Type == scpb.RoomType_RoomTypeOneOnOne {
-		if len(drur.Room.Users)-len(drur.UserIDs) != 1 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "room.type",
+				Reason: "In case of 1-on-1 room type, Can not delete room user.",
+			},
+		}
+		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if len(drur.UserIDs) == 0 {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "userIds",
+				Reason: "userIds is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	for _, userID := range drur.UserIDs {
+		if userID == drur.Room.UserID {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "userIds",
-					Reason: "In case of 1-on-1 room type, only one user must be specified.",
+					Reason: "userIds can not include room's userId.",
 				},
 			}
-			return NewErrorResponse("Failed to delete room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+			return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
+
 	return nil
 }

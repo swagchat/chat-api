@@ -200,7 +200,13 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		o(&opt)
 	}
 
-	if opt.userIDs != nil && len(opt.userIDs) > 0 {
+	if len(opt.userIDs) == 0 && len(opt.blockUserIDs) == 0 {
+		err := errors.New("An error occurred while deleting block users. Be sure to specify either userIDs or blockUserIDs")
+		logger.Error(err.Error())
+		return err
+	}
+
+	if len(opt.userIDs) > 0 {
 		userIDsQuery, userIDsParams := makePrepareExpressionForInOperand(opt.userIDs)
 		query := fmt.Sprintf("DELETE FROM %s WHERE user_id IN (%s)", tableNameBlockUser, userIDsQuery)
 		_, err := tx.Exec(query, userIDsParams...)
@@ -211,7 +217,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		}
 	}
 
-	if opt.blockUserIDs != nil && len(opt.blockUserIDs) > 0 {
+	if len(opt.blockUserIDs) > 0 {
 		blockUserIDsQuery, blockUserIDsParams := makePrepareExpressionForInOperand(opt.blockUserIDs)
 		query := fmt.Sprintf("DELETE FROM %s WHERE block_user_id IN (%s)", tableNameBlockUser, blockUserIDsQuery)
 		_, err := tx.Exec(query, blockUserIDsParams...)

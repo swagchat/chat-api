@@ -38,7 +38,7 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 	err := datastore.Provider(ctx).InsertUser(
 		user,
 		datastore.InsertUserOptionWithBlockUsers(brs),
-		datastore.InsertUserOptionWithRoles(urs),
+		datastore.InsertUserOptionWithUserRoles(urs),
 	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to create user.", http.StatusInternalServerError, model.WithError(err))
@@ -130,7 +130,7 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 	user.UpdateUser(req)
 	urs := req.GenerateUserRoles()
 
-	err := datastore.Provider(ctx).UpdateUser(user, datastore.UpdateUserOptionWithRoles(urs))
+	err := datastore.Provider(ctx).UpdateUser(user, datastore.UpdateUserOptionWithUserRoles(urs))
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to update user.", http.StatusInternalServerError, model.WithError(err))
 	}

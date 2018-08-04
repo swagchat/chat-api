@@ -31,6 +31,32 @@ func SelectDevicesOptionFilterByToken(token string) SelectDevicesOption {
 	}
 }
 
+type deleteDevicesOptions struct {
+	logicalDeleted int64
+	userID         string
+	platform       scpb.Platform
+}
+
+type DeleteDevicesOption func(*deleteDevicesOptions)
+
+func DeleteDevicesOptionWithLogicalDeleted(logicalDeleted int64) DeleteDevicesOption {
+	return func(ops *deleteDevicesOptions) {
+		ops.logicalDeleted = logicalDeleted
+	}
+}
+
+func DeleteDevicesOptionFilterByUserID(userID string) DeleteDevicesOption {
+	return func(ops *deleteDevicesOptions) {
+		ops.userID = userID
+	}
+}
+
+func DeleteDevicesOptionFilterByPlatform(platform scpb.Platform) DeleteDevicesOption {
+	return func(ops *deleteDevicesOptions) {
+		ops.platform = platform
+	}
+}
+
 type deviceStore interface {
 	createDeviceStore()
 
@@ -38,5 +64,5 @@ type deviceStore interface {
 	SelectDevices(opts ...SelectDevicesOption) ([]*model.Device, error)
 	SelectDevice(userID string, platform scpb.Platform) (*model.Device, error)
 	UpdateDevice(device *model.Device) error
-	DeleteDevice(userID string, platform scpb.Platform) error
+	DeleteDevices(opts ...DeleteDevicesOption) error
 }

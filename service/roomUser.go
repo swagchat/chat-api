@@ -3,12 +3,12 @@ package service
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
-	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 // CreateRoomUsers creates room users
@@ -35,24 +35,20 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 		return errRes
 	}
 
-	// if room.NotificationTopicID == "" {
-	// 	notificationTopicID, pd := createTopicOld(room.RoomID)
-	// 	if pd != nil {
-	// 		return pd
-	// 	}
+	if room.NotificationTopicID == "" {
+		notificationTopicID, errRes := createTopic(ctx, room.RoomID)
+		if errRes != nil {
+			errRes.Message = "Failed to create room users."
+			return errRes
+		}
 
-	// 	room.NotificationTopicID = notificationTopicID
-	// 	room.Modified = time.Now().Unix()
-	// 	_, err := datastore.Provider(ctx).UpdateRoom(room)
-	// 	if err != nil {
-	// 		pd := &model.ProblemDetail{
-	// 			Message: "Failed to create room users.",
-	// 			Status:  http.StatusInternalServerError,
-	// 			Error:   err,
-	// 		}
-	// 		return pd
-	// 	}
-	// }
+		room.NotificationTopicID = notificationTopicID
+		room.Modified = time.Now().Unix()
+		err := datastore.Provider(ctx).UpdateRoom(room)
+		if err != nil {
+			return model.NewErrorResponse("Failed to create room users.", http.StatusInternalServerError, model.WithError(err))
+		}
+	}
 
 	roomUsers := req.GenerateRoomUsers()
 	err := datastore.Provider(ctx).InsertRoomUsers(roomUsers)
@@ -70,22 +66,47 @@ func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.R
 	span := tracer.Provider(ctx).StartSpan("GetRoomUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	res := &model.RoomUsersResponse{}
-
-	if req.ResponseType == scpb.ResponseType_UserIdList {
-		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
-			req.RoomID,
-			datastore.SelectUserIDsOfRoomUserOptionWithRoles(req.RoleIDs),
-		)
-		if err != nil {
-			return nil, model.NewErrorResponse("Failed to get userIds.", http.StatusInternalServerError, model.WithError(err))
-		}
-
-		res.UserIDs = userIDs
-		return res, nil
+	_, errRes := confirmRoomExist(ctx, req.RoomID)
+	if errRes != nil {
+		errRes.Message = "Failed to get roomUsers."
+		return nil, errRes
 	}
 
-	// TODO
+	res := &model.RoomUsersResponse{}
+
+	roomUsers, err := datastore.Provider(ctx).SelectRoomUsers(
+		datastore.SelectRoomUsersOptionWithRoomID(req.RoomID),
+		datastore.SelectRoomUsersOptionWithUserIDs(req.UserIDs),
+	)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get roomUsers.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	res.Users = roomUsers
+	return res, nil
+}
+
+func GetRoomUserIDs(ctx context.Context, req *model.GetRoomUsersRequest) (*model.RoomUserIdsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("GetRoomUserIDs", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
+	_, errRes := confirmRoomExist(ctx, req.RoomID)
+	if errRes != nil {
+		errRes.Message = "Failed to get userIds."
+		return nil, errRes
+	}
+
+	res := &model.RoomUserIdsResponse{}
+
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
+		datastore.SelectUserIDsOfRoomUserOptionWithRoomID(req.RoomID),
+		datastore.SelectUserIDsOfRoomUserOptionWithRoles(req.RoleIDs),
+	)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to get userIds.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	res.UserIDs = userIDs
 	return res, nil
 }
 
@@ -134,7 +155,10 @@ func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *mo
 
 	req.Room = room
 
-	err := datastore.Provider(ctx).DeleteRoomUsers(req.RoomID, req.UserIDs)
+	err := datastore.Provider(ctx).DeleteRoomUsers(
+		datastore.DeleteRoomUsersOptionFilterByRoomIDs([]string{req.RoomID}),
+		datastore.DeleteRoomUsersOptionFilterByUserIDs(req.UserIDs),
+	)
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete room users.", http.StatusInternalServerError, model.WithError(err))
 	}

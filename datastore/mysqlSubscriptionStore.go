@@ -1,6 +1,8 @@
 package datastore
 
 import (
+	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -20,22 +22,33 @@ func (p *mysqlProvider) SelectSubscription(roomID, userID string, platform scpb.
 	return rdbSelectSubscription(p.ctx, replica, roomID, userID, platform)
 }
 
-func (p *mysqlProvider) SelectDeletedSubscriptionsByRoomID(roomID string) ([]*model.Subscription, error) {
+func (p *mysqlProvider) SelectDeletedSubscriptions(opts ...SelectDeletedSubscriptionsOption) ([]*model.Subscription, error) {
 	replica := RdbStore(p.database).replica()
-	return rdbSelectDeletedSubscriptionsByRoomID(p.ctx, replica, roomID)
+	return rdbSelectDeletedSubscriptions(p.ctx, replica, opts...)
 }
 
-func (p *mysqlProvider) SelectDeletedSubscriptionsByUserID(userID string) ([]*model.Subscription, error) {
-	replica := RdbStore(p.database).replica()
-	return rdbSelectDeletedSubscriptionsByUserID(p.ctx, replica, userID)
-}
-
-func (p *mysqlProvider) SelectDeletedSubscriptionsByUserIDAndPlatform(userID string, platform scpb.Platform) ([]*model.Subscription, error) {
-	replica := RdbStore(p.database).replica()
-	return rdbSelectDeletedSubscriptionsByUserIDAndPlatform(p.ctx, replica, userID, platform)
-}
-
-func (p *mysqlProvider) DeleteSubscription(subscription *model.Subscription) error {
+func (p *mysqlProvider) DeleteSubscriptions(opts ...DeleteSubscriptionsOption) error {
 	master := RdbStore(p.database).master()
-	return rdbDeleteSubscription(p.ctx, master, subscription)
+	tx, err := master.Begin()
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while inserting user")
+		logger.Error(err.Error())
+		return err
+	}
+
+	err = rdbDeleteSubscriptions(p.ctx, master, tx, opts...)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		err = errors.Wrap(err, "An error occurred while inserting user")
+		logger.Error(err.Error())
+		return err
+	}
+
+	return nil
 }

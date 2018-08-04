@@ -65,79 +65,121 @@ func rdbSelectSubscription(ctx context.Context, dbMap *gorp.DbMap, roomID, userI
 	return nil, nil
 }
 
-func rdbSelectDeletedSubscriptionsByRoomID(ctx context.Context, dbMap *gorp.DbMap, roomID string) ([]*model.Subscription, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDeletedSubscriptionsByRoomID", "datastore")
+func rdbSelectDeletedSubscriptions(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDeletedSubscriptionsOption) ([]*model.Subscription, error) {
+	span := tracer.Provider(ctx).StartSpan("rdbSelectDeletedSubscriptions", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var subscriptions []*model.Subscription
-	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND deleted!=0;", tableNameSubscription)
-	params := map[string]interface{}{
-		"roomId": roomID,
+	opt := selectDeletedSubscriptionsOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
-	_, err := dbMap.Select(&subscriptions, query, params)
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
+
+	if opt.userID != "" && opt.roomID != "" {
+		err := errors.New("An error occurred while getting deleted subscriptions. Be sure to specify either roomID or userID")
 		logger.Error(err.Error())
 		return nil, err
 	}
 
-	return subscriptions, nil
-}
-
-func rdbSelectDeletedSubscriptionsByUserID(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]*model.Subscription, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDeletedSubscriptionsByUserID", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
-
-	var subscriptions []*model.Subscription
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND deleted!=0;", tableNameSubscription)
-	params := map[string]interface{}{
-		"userId": userID,
-	}
-	_, err := dbMap.Select(&subscriptions, query, params)
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
+	if opt.roomID != "" && opt.platform != scpb.Platform_PlatformNone {
+		err := errors.New("If roomID is specified, platform can not be specified")
 		logger.Error(err.Error())
 		return nil, err
 	}
 
-	return subscriptions, nil
-}
-
-func rdbSelectDeletedSubscriptionsByUserIDAndPlatform(ctx context.Context, dbMap *gorp.DbMap, userID string, platform scpb.Platform) ([]*model.Subscription, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDeletedSubscriptionsByUserIDAndPlatform", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
-
 	var subscriptions []*model.Subscription
-	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND platform=:platform AND deleted!=0;", tableNameSubscription)
-	params := map[string]interface{}{
-		"userId":   userID,
-		"platform": platform,
-	}
-	_, err := dbMap.Select(&subscriptions, query, params)
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while getting subscriptions")
-		logger.Error(err.Error())
-		return nil, err
+
+	if opt.roomID != "" {
+		query := fmt.Sprintf("SELECT * FROM %s WHERE deleted!=0 AND room_id=:roomId", tableNameSubscription)
+		params := map[string]interface{}{
+			"roomId": opt.roomID,
+		}
+		_, err := dbMap.Select(&subscriptions, query, params)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
+			logger.Error(err.Error())
+			return nil, err
+		}
 	}
 
-	return subscriptions, nil
+	if opt.userID != "" {
+		query := fmt.Sprintf("SELECT * FROM %s WHERE deleted!=0 AND user_id=:userId", tableNameSubscription)
+		params := map[string]interface{}{
+			"userId": opt.userID,
+		}
+		if opt.platform != scpb.Platform_PlatformNone {
+			query = fmt.Sprintf("%s AND platform=:platform", query)
+			params["platform"] = opt.platform
+		}
+		_, err := dbMap.Select(&subscriptions, query, params)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
+			logger.Error(err.Error())
+			return nil, err
+		}
+	}
+
+	return nil, nil
 }
 
-func rdbDeleteSubscription(ctx context.Context, dbMap *gorp.DbMap, subscription *model.Subscription) error {
-	span := tracer.Provider(ctx).StartSpan("rdbDeleteSubscription", "datastore")
+func rdbDeleteSubscriptions(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteSubscriptionsOption) error {
+	span := tracer.Provider(ctx).StartSpan("rdbDeleteSubscriptions", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform;", tableNameSubscription)
-	params := map[string]interface{}{
-		"roomId":   subscription.RoomID,
-		"userId":   subscription.UserID,
-		"platform": subscription.Platform,
+	opt := deleteSubscriptionsOptions{}
+	for _, o := range opts {
+		o(&opt)
 	}
-	_, err := dbMap.Exec(query, params)
-	if err != nil {
-		err = errors.Wrap(err, "An error occurred while deleting subscription")
+
+	if opt.userID == "" && opt.roomID == "" {
+		err := errors.New("An error occurred while deleting subscriptions. Be sure to specify either roomID or userID")
 		logger.Error(err.Error())
 		return err
+	}
+
+	if opt.roomID != "" && opt.platform != scpb.Platform_PlatformNone {
+		err := errors.New("An error occurred while deleting subscriptions. If roomID is specified, platform can not be specified")
+		logger.Error(err.Error())
+		return err
+	}
+
+	var query string
+	if opt.logicalDeleted != 0 {
+		query = fmt.Sprintf("UPDATE %s SET deleted=%d WHERE", tableNameSubscription, opt.logicalDeleted)
+	} else {
+		query = fmt.Sprintf("DELETE FROM %s WHERE", tableNameSubscription)
+	}
+
+	if opt.roomID != "" {
+		query = fmt.Sprintf("%s room_id=?", query)
+		_, err := tx.Exec(query, opt.roomID)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while deleting subscriptions")
+			logger.Error(err.Error())
+			return err
+		}
+		return nil
+	}
+
+	if opt.userID != "" && opt.platform == scpb.Platform_PlatformNone {
+		query = fmt.Sprintf("%s user_id=?", query)
+		_, err := tx.Exec(query, opt.userID)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
+			logger.Error(err.Error())
+			return err
+		}
+		return nil
+	}
+
+	if opt.userID != "" && opt.platform != scpb.Platform_PlatformNone {
+		query = fmt.Sprintf("%s user_id=? AND platform=?", query)
+		_, err := tx.Exec(query, opt.userID, opt.platform)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
+			logger.Error(err.Error())
+			return err
+		}
+		return nil
 	}
 
 	return nil

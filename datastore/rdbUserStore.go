@@ -52,27 +52,14 @@ func rdbInsertUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if opt.blockUsers != nil {
 		err = rdbInsertBlockUsers(ctx, dbMap, tx, opt.blockUsers, InsertBlockUsersOptionBeforeClean(true))
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while inserting user")
-			logger.Error(err.Error())
 			return err
 		}
 	}
 
-	if opt.roles != nil {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
-		_, err := tx.Exec(query, user.UserID)
+	if opt.userRoles != nil {
+		err = rdbInsertUserRoles(ctx, dbMap, tx, opt.userRoles, InsertUserRolesOptionBeforeClean(true))
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while inserting user")
-			logger.Error(err.Error())
 			return err
-		}
-		for _, ur := range opt.roles {
-			err = tx.Insert(ur)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while inserting user")
-				logger.Error(err.Error())
-				return err
-			}
 		}
 	}
 
@@ -89,10 +76,10 @@ func rdbSelectUsers(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 	}
 
 	var users []*model.User
-	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0", tableNameUser)
+	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0 ORDER BY", tableNameUser)
 	params := make(map[string]interface{})
 
-	query = fmt.Sprintf("%s ORDER BY", query)
+	// query = fmt.Sprintf("%s ORDER BY", query)
 	if opt.orders == nil {
 		query = fmt.Sprintf("%s unread_count DESC", query)
 	} else {
@@ -147,27 +134,28 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 	if opt.withBlocks {
 		userIDs, err := rdbSelectBlockUserIDs(ctx, dbMap, userID)
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while getting user")
-			logger.Error(err.Error())
 			return nil, err
 		}
 		user.BlockUsers = userIDs
 	}
 
-	user.Devices = make([]*scpb.Device, 0)
+	user.Devices = make([]*model.Device, 0)
 	if opt.withDevices {
-		var devices []*scpb.Device
-		query = fmt.Sprintf("SELECT user_id, platform, token, notification_device_id from %s WHERE user_id=:userId", tableNameDevice)
-		params = map[string]interface{}{"userId": userID}
-		_, err := dbMap.Select(&devices, query, params)
+		devices, err := rdbSelectDevicesByUserID(ctx, dbMap, userID)
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while getting user")
-			logger.Error(err.Error())
 			return nil, err
 		}
 		user.Devices = devices
 	}
 
+	user.Roles = make([]int32, 0)
+	if opt.withRoles {
+		roleIDs, err := rdbSelectRolesOfUserRole(ctx, dbMap, userID)
+		if err != nil {
+			return nil, err
+		}
+		user.Roles = roleIDs
+	}
 	// user.Rooms = make([]*model.RoomForUser, 0)
 	// if opt.withRooms {
 	// 	var rooms []*model.RoomForUser
@@ -236,17 +224,6 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 	// 	user.Rooms = rooms
 	// }
 
-	user.Roles = make([]int32, 0)
-	if opt.withRoles {
-		roleIDs, err := rdbSelectRolesOfUserRole(ctx, dbMap, userID)
-		if err != nil {
-			err = errors.Wrap(err, "An error occurred while getting user")
-			logger.Error(err.Error())
-			return nil, err
-		}
-		user.Roles = roleIDs
-	}
-
 	return user, nil
 }
 
@@ -314,38 +291,16 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	}
 
 	if opt.blockUsers != nil {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameBlockUser)
-		_, err := tx.Exec(query, user.UserID)
+		err = rdbInsertBlockUsers(ctx, dbMap, tx, opt.blockUsers, InsertBlockUsersOptionBeforeClean(true))
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while updating user")
-			logger.Error(err.Error())
 			return err
-		}
-		for _, bu := range opt.blockUsers {
-			err = tx.Insert(bu)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while updating user")
-				logger.Error(err.Error())
-				return err
-			}
 		}
 	}
 
-	if opt.roles != nil {
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?", tableNameUserRole)
-		_, err := tx.Exec(query, user.UserID)
+	if opt.userRoles != nil {
+		err = rdbInsertUserRoles(ctx, dbMap, tx, opt.userRoles, InsertUserRolesOptionBeforeClean(true))
 		if err != nil {
-			err = errors.Wrap(err, "An error occurred while updating user")
-			logger.Error(err.Error())
 			return err
-		}
-		for _, ur := range opt.roles {
-			err = tx.Insert(ur)
-			if err != nil {
-				err = errors.Wrap(err, "An error occurred while updating user")
-				logger.Error(err.Error())
-				return err
-			}
 		}
 	}
 
@@ -356,41 +311,57 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateUserDeleted", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameRoomUser)
-	_, err := tx.Exec(query, userID)
+	deleted := time.Now().Unix()
+
+	err := rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByUserIDs([]string{userID}))
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while deleting user")
-		logger.Error(err.Error())
 		return err
 	}
 
-	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameDevice)
-	_, err = tx.Exec(query, userID)
+	err = rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByBlockUserIDs([]string{userID}))
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while deleting user")
-		logger.Error(err.Error())
 		return err
 	}
 
-	query = fmt.Sprintf("DELETE FROM %s WHERE user_id=?;", tableNameBlockUser)
-	_, err = tx.Exec(query, userID)
+	err = rdbDeleteDevices(
+		ctx,
+		dbMap,
+		tx,
+		DeleteDevicesOptionWithLogicalDeleted(deleted),
+		DeleteDevicesOptionFilterByUserID(userID),
+	)
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while deleting user")
-		logger.Error(err.Error())
 		return err
 	}
 
-	nowDatetime := time.Now().Unix()
-	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameSubscription)
-	_, err = tx.Exec(query, nowDatetime, userID)
+	err = rdbDeleteRoomUsers(
+		ctx,
+		dbMap,
+		tx,
+		DeleteRoomUsersOptionFilterByUserIDs([]string{userID}),
+	)
 	if err != nil {
-		err = errors.Wrap(err, "An error occurred while deleting user")
-		logger.Error(err.Error())
 		return err
 	}
 
-	query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameUser)
-	_, err = tx.Exec(query, nowDatetime, userID)
+	err = rdbDeleteSubscriptions(
+		ctx,
+		dbMap,
+		tx,
+		DeleteSubscriptionsOptionWithLogicalDeleted(deleted),
+		DeleteSubscriptionsOptionFilterByUserID(userID),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = rdbDeleteUserRoles(ctx, dbMap, tx, DeleteUserRolesOptionFilterByUserIDs([]string{userID}))
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameUser)
+	_, err = tx.Exec(query, deleted, userID)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting user")
 		logger.Error(err.Error())
