@@ -2,11 +2,11 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.7.5
-    working_directory: /go/src/github.com/fairway-corpo/swagchat-api
+      - image: circleci/golang:1.10.2
+    working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
       - run:
           name: "run go test"
           command: |
-            go test $(go list ./... | grep -v vendor)
+            go test ./...

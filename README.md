@@ -1,5 +1,6 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/swagchat/chat-api)](https://goreportcard.com/report/github.com/swagchat/chat-api)
+[![CircleCI](https://circleci.com/gh/swagchat/chat-api/tree/master.svg?style=svg)](https://circleci.com/gh/swagchat/chat-api/tree/master)
 
 # swaghat Chat API
 
