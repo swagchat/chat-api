@@ -6,14 +6,13 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type userServiceServer struct{}
 
 func (us *userServiceServer) CreateUser(ctx context.Context, in *scpb.CreateUserRequest) (*scpb.User, error) {
-	metaData := utils.JSONText{}
+	metaData := model.JSONText{}
 	if in.MetaData != nil {
 		err := metaData.UnmarshalJSON(in.MetaData)
 		if err != nil {
@@ -53,7 +52,7 @@ func (us *userServiceServer) GetUser(ctx context.Context, in *scpb.GetUserReques
 }
 
 func (us *userServiceServer) UpdateUser(ctx context.Context, in *scpb.UpdateUserRequest) (*scpb.User, error) {
-	metaData := utils.JSONText{}
+	metaData := model.JSONText{}
 	if in.MetaData != nil {
 		err := metaData.UnmarshalJSON(in.MetaData)
 		if err != nil {

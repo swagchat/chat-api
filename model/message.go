@@ -22,21 +22,21 @@ const (
 
 type Message struct {
 	scpb.Message
-	Payload utils.JSONText `json:"payload" db:"payload"`
+	Payload JSONText `json:"payload" db:"payload"`
 }
 
 func (m *Message) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		MessageID string         `json:"messageId"`
-		RoomID    string         `json:"roomId"`
-		UserID    string         `json:"userId"`
-		Type      string         `json:"type"`
-		EventName string         `json:"eventName,omitempty"`
-		Payload   utils.JSONText `json:"payload"`
-		Role      int32          `json:"role"`
-		Created   string         `json:"created"`
-		Modified  string         `json:"modified"`
+		MessageID string   `json:"messageId"`
+		RoomID    string   `json:"roomId"`
+		UserID    string   `json:"userId"`
+		Type      string   `json:"type"`
+		EventName string   `json:"eventName,omitempty"`
+		Payload   JSONText `json:"payload"`
+		Role      int32    `json:"role"`
+		Created   string   `json:"created"`
+		Modified  string   `json:"modified"`
 	}{
 		MessageID: m.MessageID,
 		RoomID:    m.RoomID,
@@ -95,7 +95,7 @@ type PayloadUsers struct {
 
 type CreateMessageRequest struct {
 	scpb.CreateMessageRequest
-	Payload utils.JSONText `json:"payload" db:"payload"`
+	Payload JSONText `json:"payload" db:"payload"`
 }
 
 func (m *CreateMessageRequest) Validate() *ErrorResponse {

@@ -6,14 +6,13 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type roomServiceServer struct{}
 
 func (us *roomServiceServer) CreateRoom(ctx context.Context, in *scpb.CreateRoomRequest) (*scpb.Room, error) {
-	metaData := utils.JSONText{}
+	metaData := model.JSONText{}
 	if in.MetaData != nil {
 		err := metaData.UnmarshalJSON(in.MetaData)
 		if err != nil {
@@ -53,7 +52,7 @@ func (us *roomServiceServer) GetRoom(ctx context.Context, in *scpb.GetRoomReques
 }
 
 func (us *roomServiceServer) UpdateRoom(ctx context.Context, in *scpb.UpdateRoomRequest) (*scpb.Room, error) {
-	metaData := utils.JSONText{}
+	metaData := model.JSONText{}
 	if in.MetaData != nil {
 		err := metaData.UnmarshalJSON(in.MetaData)
 		if err != nil {

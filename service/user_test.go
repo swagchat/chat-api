@@ -22,7 +22,7 @@ const (
 
 func TestUser(t *testing.T) {
 	t.Run(TestNameCreateUser, func(t *testing.T) {
-		metaData := utils.JSONText{}
+		metaData := model.JSONText{}
 		err := metaData.UnmarshalJSON([]byte(`{"key":"value"}`))
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameCreateUser)

@@ -99,7 +99,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 					logger.Error(err.Error())
 					break
 				}
-				payload := utils.JSONText{}
+				payload := model.JSONText{}
 				err := payload.UnmarshalJSON(pbMsg.Payload)
 				if err != nil {
 					logger.Error(err.Error())

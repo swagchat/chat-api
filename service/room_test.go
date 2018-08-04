@@ -22,7 +22,7 @@ const (
 
 func TestRoom(t *testing.T) {
 	t.Run(TestNameCreateRoom, func(t *testing.T) {
-		metaData := utils.JSONText{}
+		metaData := model.JSONText{}
 		err := metaData.UnmarshalJSON([]byte(`{"key":"value"}`))
 		if err != nil {
 			t.Fatalf("failed create room test")
@@ -52,6 +52,7 @@ func TestRoom(t *testing.T) {
 			}
 		}
 	})
+
 	t.Run(TestNameGetRooms, func(t *testing.T) {
 		req := &model.GetRoomsRequest{}
 		req.UserID = "service-user-id-0001"
@@ -63,6 +64,7 @@ func TestRoom(t *testing.T) {
 			t.Fatalf("failed %s", TestNameGetRooms)
 		}
 	})
+
 	t.Run(TestNameGetRoom, func(t *testing.T) {
 		ctx := context.WithValue(ctx, utils.CtxUserID, "service-user-id-0001")
 
@@ -76,6 +78,7 @@ func TestRoom(t *testing.T) {
 			t.Fatalf("failed %s", TestNameGetRoom)
 		}
 	})
+
 	t.Run(TestNameUpdateRoom, func(t *testing.T) {
 		name := "name-update"
 		req := &model.UpdateRoomRequest{}
@@ -89,6 +92,7 @@ func TestRoom(t *testing.T) {
 			t.Fatalf("failed %s", TestNameUpdateRoom)
 		}
 	})
+
 	t.Run(TestNameDeleteRoom, func(t *testing.T) {
 		req := &model.DeleteRoomRequest{}
 		req.RoomID = "service-room-id-0001"
@@ -97,6 +101,7 @@ func TestRoom(t *testing.T) {
 			t.Fatalf("%s. %s", TestNameDeleteRoom, errRes.Message)
 		}
 	})
+
 	t.Run(TestNameGetRoomMessages, func(t *testing.T) {
 		ctx := context.WithValue(ctx, utils.CtxUserID, "service-user-id-0001")
 		req := &model.GetRoomMessagesRequest{}

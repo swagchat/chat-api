@@ -11,31 +11,31 @@ import (
 
 type User struct {
 	scpb.User
-	MetaData utils.JSONText `db:"meta_data"`
-	Devices  []*Device      `db:"-"`
+	MetaData JSONText  `db:"meta_data"`
+	Devices  []*Device `db:"-"`
 }
 
 func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
 	return json.Marshal(&struct {
-		UserID           string         `json:"userId"`
-		Name             string         `json:"name"`
-		PictureURL       string         `json:"pictureUrl"`
-		InformationURL   string         `json:"informationUrl"`
-		UnreadCount      uint64         `json:"unreadCount"`
-		MetaData         utils.JSONText `json:"metaData"`
-		Public           bool           `json:"public"`
-		CanBlock         bool           `json:"canBlock"`
-		Lang             string         `json:"lang"`
-		AccessToken      string         `json:"accessToken,omitempty"`
-		LastAccessRoomID string         `json:"lastAccessRoomId"`
-		LastAccessed     string         `json:"lastAccessed"`
-		Created          string         `json:"created"`
-		Modified         string         `json:"modified"`
-		BlockUsers       []string       `json:"blockUsers,omitempty"`
-		Devices          []*Device      `json:"devices,omitempty"`
-		Roles            []int32        `json:"roles,omitempty"`
+		UserID           string    `json:"userId"`
+		Name             string    `json:"name"`
+		PictureURL       string    `json:"pictureUrl"`
+		InformationURL   string    `json:"informationUrl"`
+		UnreadCount      uint64    `json:"unreadCount"`
+		MetaData         JSONText  `json:"metaData"`
+		Public           bool      `json:"public"`
+		CanBlock         bool      `json:"canBlock"`
+		Lang             string    `json:"lang"`
+		AccessToken      string    `json:"accessToken,omitempty"`
+		LastAccessRoomID string    `json:"lastAccessRoomId"`
+		LastAccessed     string    `json:"lastAccessed"`
+		Created          string    `json:"created"`
+		Modified         string    `json:"modified"`
+		BlockUsers       []string  `json:"blockUsers,omitempty"`
+		Devices          []*Device `json:"devices,omitempty"`
+		Roles            []int32   `json:"roles,omitempty"`
 	}{
 		UserID:           u.UserID,
 		Name:             u.Name,
@@ -140,8 +140,8 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 
 type MiniRoom struct {
 	scpb.MiniRoom
-	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
-	Users    []*MiniUser    `json:"users,omitempty" db:"-"`
+	MetaData JSONText    `json:"metaData" db:"meta_data"`
+	Users    []*MiniUser `json:"users,omitempty" db:"-"`
 }
 
 func (rfu *MiniRoom) MarshalJSON() ([]byte, error) {
@@ -151,20 +151,20 @@ func (rfu *MiniRoom) MarshalJSON() ([]byte, error) {
 		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
-		RoomID             string         `json:"roomId"`
-		UserID             string         `json:"userId"`
-		Name               string         `json:"name"`
-		PictureURL         string         `json:"pictureUrl,omitempty"`
-		InformationURL     string         `json:"informationUrl,omitempty"`
-		MetaData           utils.JSONText `json:"metaData"`
-		Type               scpb.RoomType  `json:"type,omitempty"`
-		LastMessage        string         `json:"lastMessage"`
-		LastMessageUpdated string         `json:"lastMessageUpdated"`
-		CanLeft            bool           `json:"canLeft,omitempty"`
-		Created            string         `json:"created"`
-		Modified           string         `json:"modified"`
-		Users              []*MiniUser    `json:"users"`
-		RuUnreadCount      int64          `json:"ruUnreadCount"`
+		RoomID             string        `json:"roomId"`
+		UserID             string        `json:"userId"`
+		Name               string        `json:"name"`
+		PictureURL         string        `json:"pictureUrl,omitempty"`
+		InformationURL     string        `json:"informationUrl,omitempty"`
+		MetaData           JSONText      `json:"metaData"`
+		Type               scpb.RoomType `json:"type,omitempty"`
+		LastMessage        string        `json:"lastMessage"`
+		LastMessageUpdated string        `json:"lastMessageUpdated"`
+		CanLeft            bool          `json:"canLeft,omitempty"`
+		Created            string        `json:"created"`
+		Modified           string        `json:"modified"`
+		Users              []*MiniUser   `json:"users"`
+		RuUnreadCount      int64         `json:"ruUnreadCount"`
 	}{
 		RoomID:             rfu.RoomID,
 		UserID:             rfu.UserID,
@@ -185,7 +185,7 @@ func (rfu *MiniRoom) MarshalJSON() ([]byte, error) {
 
 type CreateUserRequest struct {
 	scpb.CreateUserRequest
-	MetaData utils.JSONText `json:"metaData,omitempty" db:"meta_data"`
+	MetaData JSONText `json:"metaData,omitempty" db:"meta_data"`
 }
 
 func (u *CreateUserRequest) Validate() *ErrorResponse {
@@ -364,7 +364,7 @@ type GetUserRequest struct {
 
 type UpdateUserRequest struct {
 	scpb.UpdateUserRequest
-	MetaData utils.JSONText `json:"metaData" db:"meta_data"`
+	MetaData JSONText `json:"metaData" db:"meta_data"`
 }
 
 func (uur *UpdateUserRequest) Validate() *ErrorResponse {

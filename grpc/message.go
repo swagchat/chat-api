@@ -5,14 +5,13 @@ import (
 
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type messageServer struct{}
 
 func (s *messageServer) CreateMessage(ctx context.Context, in *scpb.CreateMessageRequest) (*scpb.Message, error) {
-	payload := utils.JSONText{}
+	payload := model.JSONText{}
 	if in.Payload != nil {
 		err := payload.UnmarshalJSON(in.Payload)
 		if err != nil {
