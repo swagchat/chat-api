@@ -14,10 +14,14 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/pbroker"
+	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.Device) chan bool {
+	span := tracer.Provider(ctx).StartSpan("subscribe", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	np := notification.Provider(ctx)
 	dp := datastore.Provider(ctx)
 	doneCh := make(chan bool, 1)
@@ -101,6 +105,9 @@ func subscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitG
 }
 
 func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
+	span := tracer.Provider(ctx).StartSpan("subscribeByRoomUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	doneChan := make(chan bool, 1)
 	errChan := make(chan error, 1)
 
@@ -151,6 +158,9 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 }
 
 func unsubscribe(ctx context.Context, subscriptions []*model.Subscription) chan bool {
+	span := tracer.Provider(ctx).StartSpan("unsubscribe", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	np := notification.Provider(ctx)
 	dp := datastore.Provider(ctx)
 	doneCh := make(chan bool, 1)
@@ -209,7 +219,9 @@ func unsubscribeByDevice(ctx context.Context, device *model.Device, wg *sync.Wai
 }
 
 func unsubscribeByUserID(ctx context.Context, userID string) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(datastore.SelectDeletedSubscriptionsOptionFilterByUserID(userID))
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(
+		datastore.SelectDeletedSubscriptionsOptionFilterByUserID(userID),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -218,7 +230,9 @@ func unsubscribeByUserID(ctx context.Context, userID string) {
 }
 
 func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup) {
-	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(datastore.SelectDeletedSubscriptionsOptionFilterByRoomID(roomID))
+	subscriptions, err := datastore.Provider(ctx).SelectDeletedSubscriptions(
+		datastore.SelectDeletedSubscriptionsOptionFilterByRoomID(roomID),
+	)
 	if err != nil {
 		logger.Error(err.Error())
 		return
@@ -230,6 +244,9 @@ func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup)
 }
 
 func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
+	span := tracer.Provider(ctx).StartSpan("unsubscribeByRoomUsers", "service")
+	defer tracer.Provider(ctx).Finish(span)
+
 	doneChan := make(chan bool, 1)
 	errResChan := make(chan *model.ErrorResponse, 1)
 
