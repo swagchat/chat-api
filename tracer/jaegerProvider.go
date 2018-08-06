@@ -6,6 +6,7 @@ import (
 	"io"
 
 	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	jaeger "github.com/uber/jaeger-client-go"
@@ -44,12 +45,24 @@ func (jp *jaegerProvider) NewTracer() error {
 	return nil
 }
 
-func (jp *jaegerProvider) StartTransaction(name, transactionType string) context.Context {
+func (jp *jaegerProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context {
 	if jaegerTracer == nil {
 		return jp.ctx
 	}
 
-	span := jaegerTracer.StartSpan(name)
+	opt := startTransactionOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	var span opentracing.Span
+	if opt.r == nil {
+		span = jaegerTracer.StartSpan(name)
+	} else {
+		spanCtx, _ := jaegerTracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(opt.r.Header))
+		span = jaegerTracer.StartSpan(name, ext.RPCServerOption(spanCtx))
+	}
+
 	ctx := opentracing.ContextWithSpan(jp.ctx, span)
 	ctx = context.WithValue(ctx, config.CtxTracerSpan, span)
 	return ctx

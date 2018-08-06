@@ -26,7 +26,7 @@ func (ep *elasticapmProvider) NewTracer() error {
 	return nil
 }
 
-func (ep *elasticapmProvider) StartTransaction(name, transactionType string) context.Context {
+func (ep *elasticapmProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context {
 	if elasticapmTracer == nil {
 		return ep.ctx
 	}
@@ -62,8 +62,8 @@ func (ep *elasticapmProvider) SetHTTPStatusCode(statusCode int) {
 func (ep *elasticapmProvider) SetUserID(id string) {
 	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
-		txCtx := transaction.(*elasticapm.Transaction).Context
-		txCtx.SetUserID(id)
+		// txCtx := transaction.(*elasticapm.Transaction).Context
+		// txCtx.SetUserID(id)
 	}
 }
 

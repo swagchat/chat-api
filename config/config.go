@@ -13,8 +13,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type ctxKey int
-
 const (
 	// AppName is Application name
 	AppName = "chat-api"
@@ -60,6 +58,8 @@ var (
 	// StopRun is a flag for stop run server
 	StopRun = false
 )
+
+type ctxKey int
 
 type config struct {
 	HTTPPort               string `yaml:"httpPort"`
@@ -238,6 +238,7 @@ func NewConfig() *config {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
+
 	return c
 }
 
@@ -901,7 +902,6 @@ func isExists(name string) bool {
 }
 
 func (c *config) validate() error {
-	// TODO validate config
 	// Logger
 	if c.Logger.EnableConsole {
 		f := c.Logger.ConsoleFormat

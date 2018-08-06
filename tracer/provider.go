@@ -2,13 +2,14 @@ package tracer
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/swagchat/chat-api/config"
 )
 
 type provider interface {
 	NewTracer() error
-	StartTransaction(name, transactionType string) context.Context
+	StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context
 	StartSpan(name, spanType string) interface{}
 	SetTag(key string, value interface{})
 	SetHTTPStatusCode(statusCode int)
@@ -16,6 +17,18 @@ type provider interface {
 	Finish(span interface{})
 	CloseTransaction()
 	Close()
+}
+
+type startTransactionOptions struct {
+	r *http.Request
+}
+
+type StartTransactionOption func(*startTransactionOptions)
+
+func StartTransactionOptionWithHTTPRequest(r *http.Request) StartTransactionOption {
+	return func(ops *startTransactionOptions) {
+		ops.r = r
+	}
 }
 
 func Provider(ctx context.Context) provider {

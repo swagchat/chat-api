@@ -8,8 +8,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/pkg/errors"
+	opentracing "github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/ext"
 	"github.com/swagchat/chat-api/config"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 )
 
@@ -25,20 +27,41 @@ func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
 	endpoint := fmt.Sprintf("%s/message", config.Config().PBroker.Direct.Endpoint)
-	resp, err := http.Post(
-		endpoint,
-		"application/json",
-		buffer,
-	)
+
+	req, err := http.NewRequest("POST", endpoint, buffer)
 	if err != nil {
-		return errors.Wrap(err, fmt.Sprintf("direct post failure. HTTP Endpoint=[%s]", endpoint))
+		logger.Error(err.Error())
+		return err
 	}
+
+	s := span.(opentracing.Span)
+	ext.SpanKindRPCClient.Set(s)
+	ext.HTTPUrl.Set(s, endpoint)
+	ext.HTTPMethod.Set(s, "GET")
+	s.Tracer().Inject(
+		s.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header),
+	)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
+	}
+	defer resp.Body.Close()
+
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrap(err, "direct response body read failure")
+		logger.Error(err.Error())
+		return err
 	}
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("http status code[%d]", resp.StatusCode)
+		err := fmt.Errorf("http status code[%d]", resp.StatusCode)
+		logger.Error(err.Error())
+		return err
 	}
+
 	return nil
 }

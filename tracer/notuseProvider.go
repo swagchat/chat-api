@@ -12,7 +12,7 @@ func (np *notuseProvider) NewTracer() error {
 	return nil
 }
 
-func (np *notuseProvider) StartTransaction(name, transactionType string) context.Context {
+func (np *notuseProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context {
 	return np.ctx
 }
 
