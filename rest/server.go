@@ -7,11 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
-	"os/signal"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/fukata/golang-stats-api-handler"
@@ -76,8 +73,6 @@ func Run(ctx context.Context) {
 	mux.NotFoundFunc(notFoundHandler)
 
 	logger.Info(fmt.Sprintf("Starting %s server[REST] on listen tcp :%s", config.AppName, cfg.HTTPPort))
-	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)
 	errCh := make(chan error)
 	go func() {
 		errCh <- gracedown.ListenAndServe(fmt.Sprintf(":%s", cfg.HTTPPort), mux)
@@ -88,11 +83,10 @@ func Run(ctx context.Context) {
 		logger.Info(fmt.Sprintf("Stopping %s server[REST]", config.AppName))
 		datastore.Provider(ctx).Close()
 		gracedown.Close()
-	case <-signalChan:
-		datastore.Provider(ctx).Close()
-		gracedown.Close()
 	case err := <-errCh:
 		logger.Error(fmt.Sprintf("Failed to serve %s server[REST]. %v", config.AppName, err))
+		datastore.Provider(ctx).Close()
+		gracedown.Close()
 	}
 }
 

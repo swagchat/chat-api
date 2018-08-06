@@ -6,6 +6,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
@@ -60,6 +62,13 @@ func main() {
 		os.Exit(1)
 	}
 	defer tracer.Provider(ctx).Close()
+
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)
+	go func() {
+		<-sigChan
+		cancel()
+	}()
 
 	if cfg.GRPCPort == "" {
 		rest.Run(ctx)

@@ -4,10 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/tracer"
@@ -73,8 +70,6 @@ func Run(ctx context.Context) {
 
 	reflection.Register(s)
 
-	signalChan := make(chan os.Signal)
-	signal.Notify(signalChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)
 	errCh := make(chan error)
 	go func() {
 		errCh <- s.Serve(lis)
@@ -85,11 +80,9 @@ func Run(ctx context.Context) {
 		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", config.AppName))
 		datastore.Provider(ctx).Close()
 		s.GracefulStop()
-	case <-signalChan:
-		logger.Info(fmt.Sprintf("Stopping %s server[GRPC]", config.AppName))
-		datastore.Provider(ctx).Close()
-		s.GracefulStop()
 	case err = <-errCh:
 		logger.Error(fmt.Sprintf("Failed to serve %s server[GRPC]. %v", config.AppName, err))
+		datastore.Provider(ctx).Close()
+		s.GracefulStop()
 	}
 }
