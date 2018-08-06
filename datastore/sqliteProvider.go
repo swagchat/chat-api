@@ -30,17 +30,19 @@ func (p *sqliteProvider) Connect(dsCfg *config.Datastore) error {
 		return nil
 	}
 
-	var db *sql.DB
-	var err error
+	var ds string
 	if p.onMemory {
-		db, err = sql.Open("sqlite3", fmt.Sprintf("%s/%s.db?cache=shared&mode=memory", p.dirPath, p.database))
+		ds = fmt.Sprintf("%s/%s.db?cache=shared&mode=memory", p.dirPath, p.database)
 	} else {
-		db, err = sql.Open("sqlite3", fmt.Sprintf("%s/%s.db?cache=shared", p.dirPath, p.database))
+		ds = fmt.Sprintf("%s/%s.db?cache=shared", p.dirPath, p.database)
 	}
+	db, err := sql.Open("sqlite3", ds)
 	if err != nil {
+		err = errors.Wrap(err, fmt.Sprintf("Failed to connect database. %s %s", dsCfg.Provider, ds))
 		logger.Error(err.Error())
 		return err
 	}
+	logger.Info(fmt.Sprintf("Connected database. %s %s", dsCfg.Provider, ds))
 
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
@@ -78,7 +80,13 @@ func (p *sqliteProvider) DropDatabase() error {
 }
 
 func (p *sqliteProvider) Close() {
-	if _, ok := rdbStores[p.database]; ok {
-		rdbStores[p.database].master().Db.Close()
+	for database, rdbStore := range rdbStores {
+		if rdbStore != nil {
+			master := rdbStore.masterDbMap
+			if master != nil {
+				close(database, master.Db)
+			}
+			delete(rdbStores, database)
+		}
 	}
 }

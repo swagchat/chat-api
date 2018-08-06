@@ -45,10 +45,11 @@ func (p *gcpSQLProvider) Connect(dsCfg *config.Datastore) error {
 			p.database)
 		db, err := p.openDb(ds, p.masterSi)
 		if err != nil {
-			err = errors.Wrap(err, "Database open error")
+			err = errors.Wrap(err, fmt.Sprintf("Failed to connect database. %s %s", dsCfg.Provider, ds))
 			logger.Error(err.Error())
 			return err
 		}
+		logger.Info(fmt.Sprintf("Connected database. %s %s", dsCfg.Provider, ds))
 
 		mic, err := strconv.Atoi(p.maxIdleConnection)
 		if err == nil {
@@ -80,10 +81,11 @@ func (p *gcpSQLProvider) Connect(dsCfg *config.Datastore) error {
 				p.database)
 			db, err := p.openDb(ds, replicaSi)
 			if err != nil {
-				err = errors.Wrap(err, "Database open error")
+				err = errors.Wrap(err, fmt.Sprintf("Failed to connect database. %s %s", dsCfg.Provider, ds))
 				logger.Error(err.Error())
 				return err
 			}
+			logger.Info(fmt.Sprintf("Connected database. %s %s", dsCfg.Provider, ds))
 
 			mic, err := strconv.Atoi(p.maxIdleConnection)
 			if err == nil {
@@ -157,7 +159,7 @@ func (p *gcpSQLProvider) openDb(dataSource string, si *config.ServerInfo) (*sql.
 			return nil, err
 		}
 		if ok := rootCertPool.AppendCertsFromPEM(pem); !ok {
-			err = errors.New("Failed AppendCertsFromPEM.")
+			err = errors.New("Failed to append certs from PEM")
 			logger.Error(err.Error())
 			return nil, err
 		}
@@ -191,10 +193,16 @@ func (p *gcpSQLProvider) openDb(dataSource string, si *config.ServerInfo) (*sql.
 }
 
 func (p *gcpSQLProvider) Close() {
-	if _, ok := rdbStores[p.database]; ok {
-		rdbStores[p.database].masterDbMap.Db.Close()
-		for _, replica := range rdbStores[p.database].replicaDbMaps {
-			replica.Db.Close()
+	for database, rdbStore := range rdbStores {
+		if rdbStore != nil {
+			master := rdbStore.masterDbMap
+			if master != nil {
+				close(database, master.Db)
+			}
+			for _, replica := range rdbStores[p.database].replicaDbMaps {
+				close(database, replica.Db)
+			}
+			delete(rdbStores, database)
 		}
 	}
 }

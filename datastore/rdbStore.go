@@ -1,10 +1,12 @@
 package datastore
 
 import (
+	"database/sql"
 	"fmt"
 	"sync/atomic"
 
 	"github.com/swagchat/chat-api/config"
+	"github.com/swagchat/chat-api/logger"
 	gorp "gopkg.in/gorp.v2"
 )
 
@@ -56,4 +58,17 @@ func (rs *rdbStore) replica() *gorp.DbMap {
 
 func (rs *rdbStore) setReplica(r *gorp.DbMap) {
 	rs.replicaDbMaps = append(rs.replicaDbMaps, r)
+}
+
+func close(database string, db *sql.DB) {
+	if db == nil {
+		return
+	}
+
+	err := db.Close()
+	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to close database. %s %s %s", config.Config().Datastore.Provider, database, err.Error()))
+	} else {
+		logger.Info(fmt.Sprintf("Closing database. %s %s", config.Config().Datastore.Provider, database))
+	}
 }
