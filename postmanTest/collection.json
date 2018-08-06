@@ -1,15 +1,17 @@
 {
 	"info": {
 		"_postman_id": "f65ef6ac-371a-4f5c-b813-9bd3b78cb88b",
-		"name": "Chat API E2E Test",
+		"name": "Chat API Test",
+		"description": "# Introduction\nWhat does your API do?\n\n# Overview\nThings that the developers should know about\n\n# Authentication\nWhat is the preferred way of using the API?\n\n# Error Codes\nWhat errors and status codes can a user expect?\n\n# Rate limit\nIs there a limit to the number of requests an user can send?",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
+			"_postman_id": "17a94f63-807c-4000-ab89-cc71d116e569",
 			"name": "Set environment variables",
-			"description": "",
 			"item": [
 				{
+					"_postman_id": "cd32ae54-81f8-4f4e-aa00-8fef11ab579b",
 					"name": "SET_ENVIRONMENT",
 					"event": [
 						{
@@ -51,16 +53,17 @@
 			]
 		},
 		{
+			"_postman_id": "d0322de0-7681-4d2c-be5f-daab21bff071",
 			"name": "Management users",
-			"description": "",
 			"item": [
 				{
-					"name": "/users",
+					"_postman_id": "63db3bd3-5b98-4ae2-ac89-781e75f5ad05",
+					"name": "/users - 0001",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "fd822aab-7966-4a4e-977a-e587bcffa0b2",
+								"id": "5808dc05-c796-4830-a5a5-5c38ea4b5fb3",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
@@ -75,8 +78,7 @@
 									"",
 									"const userSchemaString = pm.environment.get(\"userSchema\");",
 									"const userSchema = JSON.parse(userSchemaString);",
-									"console.log(res);",
-									"console.log(userSchema);",
+									"",
 									"pm.test('Schema is valid', function() {",
 									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
 									"});",
@@ -135,7 +137,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": true,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roleIds\": [1, 2, 3]\n}"
+							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": true,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roles\": [1, 2, 3]\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/users",
@@ -150,12 +152,13 @@
 					"response": []
 				},
 				{
-					"name": "/users",
+					"_postman_id": "7843f4f4-6a02-4247-b2c8-a9e0faa39b90",
+					"name": "/users - 0002",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "b5d237f4-133e-4b49-8bc1-4a121e550cc0",
+								"id": "55ad700d-1e6e-4aa7-9014-222add822779",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
@@ -184,8 +187,8 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(false);",
-									"    pm.expect(res.canBlock).to.eql(false);",
+									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.canBlock).to.eql(true);",
 									"    pm.expect(res.lang).to.eql(\"\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
 									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
@@ -253,6 +256,111 @@
 					"response": []
 				},
 				{
+					"_postman_id": "2d153514-1847-4440-9ab5-247bba4d636b",
+					"name": "/users - 0003",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a44b5f18-1694-4a9a-a791-25834e6d42f5",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Content-Type is present\", function () {",
+									"    pm.response.to.have.header(\"Content-Type\");",
+									"});",
+									"",
+									"var res = JSON.parse(responseBody);",
+									"",
+									"const userSchemaString = pm.environment.get(\"userSchema\");",
+									"const userSchema = JSON.parse(userSchemaString);",
+									"console.log(res);",
+									"console.log(userSchema);",
+									"pm.test('Schema is valid', function() {",
+									"    pm.expect(tv4.validate(res, userSchema)).to.be.true;",
+									"});",
+									"",
+									"const randomUserId2 = pm.environment.get(\"randomUserId2\");",
+									"const randomUserName2 = pm.environment.get(\"randomUserName2\");",
+									"pm.test('Data is valid', function() {",
+									"    pm.expect(res.userId).to.eql(randomUserId2);",
+									"    pm.expect(res.name).to.eql(randomUserName2);",
+									"    pm.expect(res.pictureUrl).to.eql(\"\");",
+									"    pm.expect(res.informationUrl).to.eql(\"\");",
+									"    pm.expect(res.unreadCount).to.eql(0);",
+									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.canBlock).to.eql(true);",
+									"    pm.expect(res.lang).to.eql(\"\");",
+									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
+									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
+									"    pm.expect(new Date(res.created)).not.eql(null);",
+									"    pm.expect(new Date(res.modified)).not.eql(null);",
+									"});",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "7534b8c1-0433-46df-aa67-03f8b7a6b69a",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName2 = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName2 += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName2\", randomUserName2);",
+									"",
+									"var randomUserId2 = \"\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserId2 += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserId2\", randomUserId2);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userId\":\"{{randomUserId2}}\",\n\t\"name\":\"{{randomUserName2}}\"\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "13bcd6b3-57b7-4e5b-b05d-bfe2d6711f11",
 					"name": "/users",
 					"event": [
 						{
@@ -321,12 +429,13 @@
 					"response": []
 				},
 				{
+					"_postman_id": "c4ba485b-ebf2-41c3-9adf-18680ac56a19",
 					"name": "/users/{userId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "53a8b3db-bcb6-412a-b0f1-633aa7a99690",
+								"id": "0706eb79-3241-4605-a23d-92a22a1d7b17",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -353,8 +462,8 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(false);",
-									"    pm.expect(res.canBlock).to.eql(false);",
+									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.canBlock).to.eql(true);",
 									"    pm.expect(res.lang).to.eql(\"\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
 									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
@@ -403,12 +512,13 @@
 					"response": []
 				},
 				{
+					"_postman_id": "7ebe96eb-a7a0-4d66-baaf-2e1d0af9ea43",
 					"name": "/users/{userId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "03916add-e182-4816-98a6-6f247beb82b8",
+								"id": "9b5d790f-9b29-4eb1-b84e-6e746d785c5e",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -435,8 +545,8 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/update.png\");",
 									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users/update\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(true);",
-									"    pm.expect(res.canBlock).to.eql(true);",
+									"    pm.expect(res.public).to.eql(false);",
+									"    pm.expect(res.canBlock).to.eql(false);",
 									"    pm.expect(res.lang).to.eql(\"en\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
 									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
@@ -466,7 +576,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\": \"http://example.com/img/update.png\",\n\t\"informationUrl\": \"http://example.com/users/update\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": true,\n\t\"canBlock\": true,\n\t\"lang\": \"en\"\n}"
+							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\": \"http://example.com/img/update.png\",\n\t\"informationUrl\": \"http://example.com/users/update\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": false,\n\t\"canBlock\": false,\n\t\"lang\": \"en\"\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
@@ -482,6 +592,7 @@
 					"response": []
 				},
 				{
+					"_postman_id": "337d0b07-2283-4b21-a967-7ad33e5bbbc4",
 					"name": "/users/{userId}/contacts",
 					"event": [
 						{
@@ -534,12 +645,13 @@
 					"response": []
 				},
 				{
+					"_postman_id": "620d0f92-a9f4-4aed-a779-f7dbc92a5e4f",
 					"name": "/profiles/{userId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "a73835e3-3ae6-4b16-a25b-20bf36ea818f",
+								"id": "b11934fd-3653-45b8-a320-ce6cf1007a81",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -566,8 +678,8 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/update.png\");",
 									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users/update\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(true);",
-									"    pm.expect(res.canBlock).to.eql(true);",
+									"    pm.expect(res.public).to.eql(false);",
+									"    pm.expect(res.canBlock).to.eql(false);",
 									"    pm.expect(res.lang).to.eql(\"en\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
 									"    pm.expect(new Date(res.lastAccessed)).not.eql(null);",
@@ -604,15 +716,308 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"_postman_id": "8effcc86-4552-4b5f-8f82-e8fb8d91c64a",
+					"name": "/users/{userId}/blockUsers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blockUserIds\": [\"{{randomUserId2}}\"]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blockUsers",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"blockUsers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "7d529d91-0750-4051-beff-fe0d8037b81e",
+					"name": "/users/{userId}/blockUsers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"73217b00-eb91-4a7f-ba51-532e4f98ed55\"]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blockUsers",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"blockUsers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "0fcf1c51-b5fb-4baf-a831-2b6636af4fd2",
+					"name": "/users/{userId}/blockedUsers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userIds\": [\"73217b00-eb91-4a7f-ba51-532e4f98ed55\"]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blockedUsers",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"blockedUsers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "902605d7-b257-43ec-855f-81174ffcb61e",
+					"name": "/users/{userId}/blockUsers",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"blockUserIds\": [\"{{randomUserId2}}\"]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/blockUsers",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"blockUsers"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
 		{
-			"name": "Management rooms",
-			"description": "",
+			"_postman_id": "baadf421-834f-4ea0-887c-f98a1c13f7c3",
+			"name": "Management user roles",
 			"item": [
 				{
-					"name": "/rooms",
+					"_postman_id": "1eb544f8-3ffd-422a-bca6-b9950ca351be",
+					"name": "/users/{userId}/roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "66bac457-86dd-4774-a74b-14b3313bb44d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8caaca86-5b25-4fbb-9364-c3391fc36211",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"roles\": [1, 2, 3]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/roles",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "4543fca1-2580-4c26-bf0a-b900cb42a37d",
+					"name": "/roles/{roleId}/users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/roles/3/users",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"roles",
+								"3",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "deba4b16-6713-46af-ac71-3e24453475fa",
+					"name": "/users/{userId}/roles",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "66bac457-86dd-4774-a74b-14b3313bb44d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8caaca86-5b25-4fbb-9364-c3391fc36211",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"roles\": [1, 2, 3]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/users/{{randomUserId}}/roles",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"users",
+								"{{randomUserId}}",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "fb8f808d-d57e-4026-8d7e-1cc362b5175b",
+			"name": "Management rooms",
+			"item": [
+				{
+					"_postman_id": "1223023d-80b4-46ed-ab87-eec70b0ce450",
+					"name": "/rooms - 0001",
 					"event": [
 						{
 							"listen": "test",
@@ -685,7 +1090,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"userId\":\"{{randomUserId}}\",\n\t\"name\":\"room-name-0001\",\n\t\"pictureUrl\":\"http://example.com/img/picture.png\",\n\t\"informationUrl\":\"http://example.com/rooms\",\n\t\"type\": 2,\n\t\"canLeft\": true,\n\t\"speechMode\": 1,\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"availableMessageTypes\": \"type1,type2\"\n}"
+							"raw": "{\n\t\"userId\":\"{{randomUserId}}\",\n\t\"name\":\"room-name-0001\",\n\t\"pictureUrl\":\"http://example.com/img/picture.png\",\n\t\"informationUrl\":\"http://example.com/rooms\",\n\t\"type\": 2,\n\t\"canLeft\": true,\n\t\"speechMode\": 1,\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"availableMessageTypes\": \"type1,type2\",\n\t\"userIds\": [\"{{randomUserId2}}\"]\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/rooms",
@@ -700,12 +1105,13 @@
 					"response": []
 				},
 				{
-					"name": "/rooms",
+					"_postman_id": "a91046bb-669e-410b-8696-fc23ac2665ba",
+					"name": "/rooms - 0002",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "07564b45-27af-4126-978a-e561bf742056",
+								"id": "32bcf732-e68b-4813-858f-8ca935e3bc0a",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
@@ -726,9 +1132,9 @@
 									"    pm.expect(tv4.validate(res, roomScheme)).to.be.true;",
 									"});",
 									"",
-									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"const randomUserId2 = pm.environment.get(\"randomUserId2\");",
 									"pm.test('Data is valid', function() {",
-									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.userId).to.eql(randomUserId2);",
 									"    pm.expect(res.name).to.eql(\"\");",
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
@@ -779,7 +1185,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId}}\",\n\t\"type\": 2\n}"
+							"raw": "{\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId2}}\",\n\t\"type\": 2\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/rooms",
@@ -794,6 +1200,7 @@
 					"response": []
 				},
 				{
+					"_postman_id": "694c844f-82a0-46a2-a7fd-6c1d520ba4d9",
 					"name": "/rooms",
 					"event": [
 						{
@@ -862,12 +1269,13 @@
 					"response": []
 				},
 				{
+					"_postman_id": "42f8b863-805f-4079-8e1f-9972f0fc384a",
 					"name": "/rooms/{roomId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "d5a4c5c0-2263-4c77-8c44-2971da28dc25",
+								"id": "d843cfa1-3afe-4536-9de9-56962596eb8e",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -889,10 +1297,10 @@
 									"});",
 									"",
 									"const randomRoomId = pm.environment.get(\"randomRoomId\");",
-									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"const randomUserId2 = pm.environment.get(\"randomUserId2\");",
 									"pm.test('Data is valid', function() {",
 									"    pm.expect(res.roomId).to.eql(randomRoomId);",
-									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.userId).to.eql(randomUserId2);",
 									"    pm.expect(res.name).to.eql(\"\");",
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
@@ -944,12 +1352,13 @@
 					"response": []
 				},
 				{
+					"_postman_id": "d3539076-87d5-4ea0-86b8-e9554115c78e",
 					"name": "/rooms{roomId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "ac35d262-1628-4ef0-acf2-871c1717fbf1",
+								"id": "17bd4da2-0c59-4fb9-b404-cd07d635f0b9",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -971,10 +1380,10 @@
 									"});",
 									"",
 									"const randomRoomId = pm.environment.get(\"randomRoomId\");",
-									"const randomUserId = pm.environment.get(\"randomUserId\");",
+									"const randomUserId2 = pm.environment.get(\"randomUserId2\");",
 									"pm.test('Data is valid', function() {",
 									"    pm.expect(res.roomId).to.eql(randomRoomId);",
-									"    pm.expect(res.userId).to.eql(randomUserId);",
+									"    pm.expect(res.userId).to.eql(randomUserId2);",
 									"    pm.expect(res.name).to.eql(\"update\");",
 									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/picture.png\");",
 									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/rooms\");",
@@ -1012,7 +1421,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\":\"http://example.com/img/picture.png\",\n\t\"informationUrl\":\"http://example.com/rooms\",\n\t\"type\": 3,\n\t\"canLeft\": false,\n\t\"speechMode\": 1,\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"availableMessageTypes\": \"type3\"\n}"
+							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\":\"http://example.com/img/picture.png\",\n\t\"informationUrl\":\"http://example.com/rooms\",\n\t\"type\": 3,\n\t\"canLeft\": false,\n\t\"speechMode\": 1,\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"availableMessageTypes\": \"type3\",\n\t\"userIds\": [\"{{randomUserId2}}\"]\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}",
@@ -1030,10 +1439,350 @@
 			]
 		},
 		{
-			"name": "Delete resources",
-			"description": "",
+			"_postman_id": "d84aa9aa-b1f4-48de-8eb8-0fdb8b0aafb4",
+			"name": "Management room users",
 			"item": [
 				{
+					"_postman_id": "df011449-d06c-4eda-9e7d-6d557ed84431",
+					"name": "/rooms/{roomId}/users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "66bac457-86dd-4774-a74b-14b3313bb44d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8caaca86-5b25-4fbb-9364-c3391fc36211",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userIds\": [\"{{randomUserId}}\"]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}/users",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "e9431570-88dc-4a54-bf85-1ff2e45238c9",
+					"name": "{{apiEndpoint}}/rooms/{{randomRoomId}}/userIds",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}/userIds",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}",
+								"userIds"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "93b98e57-899f-413c-9858-5669dfaa8413",
+					"name": "/rooms/{roomId}/users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "66bac457-86dd-4774-a74b-14b3313bb44d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8caaca86-5b25-4fbb-9364-c3391fc36211",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"display\": false\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}/users/{{randomUserId}}",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}",
+								"users",
+								"{{randomUserId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "c8d5b084-5b6c-4313-9c2a-0bfc1e9216f5",
+					"name": "/rooms/{roomId}/users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "66bac457-86dd-4774-a74b-14b3313bb44d",
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									""
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "8caaca86-5b25-4fbb-9364-c3391fc36211",
+								"type": "text/javascript",
+								"exec": [
+									"var randomUserName = \"\";",
+									"var char = \"abcdefghijklmnopqrstuvwxyz0123456789-\";",
+									"var len = 8;",
+									"for (var i = 0; i < len; i++){",
+									"  randomUserName += char[Math.floor(Math.random()*len)];",
+									"}",
+									"postman.setEnvironmentVariable(\"randomUserName\", randomUserName);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "X-ClientId",
+								"value": "{{xClientId}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/javascript"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userIds\": [\"{{randomUserId}}\"]\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}/users",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"rooms",
+								"{{randomRoomId}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "2688ad52-0529-42ec-95b4-5a003d71eeaa",
+			"name": "Management message",
+			"item": [
+				{
+					"_postman_id": "324abcac-070d-413b-8e79-3067e84fee6c",
+					"name": "/messages(text)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId}}\",\n\t\"type\":\"text\",\n\t\"payload\":{\n\t\t\"text\":\"Hello, swagchat!\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/messages",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "934ecd64-3297-4574-b132-57a599b57d54",
+					"name": "/messages(image)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId}}\",\n\t\"type\": \"image\",\n\t\"payload\": {\n\t\t\"mime\":\"image/png\",\n\t\t\"sourceUrl\":\"http://example.com/img/sample.png\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/messages",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "0eb70f75-4654-4806-9471-e21d3578d086",
+					"name": "/messages(indicator-start)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"messageId\":\"indicator-start-6f67bf9c-6af9-4206-b0cf-29e6304f9f9c\",\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId}}\",\n\t\"type\":\"indicator-start\",\n\t\"payload\":{\n\t\t\"text\":\"start indicator...\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/messages",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"messages"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"_postman_id": "05c0fa7b-31d8-424a-9889-9a1fb56fb0a0",
+					"name": "/messages(indicator-end)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"messageId\":\"indicator-start-6f67bf9c-6af9-4206-b0cf-29e6304f9f9c\",\n\t\"roomId\":\"{{randomRoomId}}\",\n\t\"userId\":\"{{randomUserId}}\",\n\t\"type\":\"indicator-end\",\n\t\"payload\":{\n\t\t\"text\":\"end indicator\"\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{apiEndpoint}}/messages",
+							"host": [
+								"{{apiEndpoint}}"
+							],
+							"path": [
+								"messages"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"_postman_id": "b0be1434-df0e-432e-b682-5dd167b9f341",
+			"name": "Delete resources",
+			"item": [
+				{
+					"_postman_id": "ed561a4c-93d3-43af-a609-30a13ee94b16",
 					"name": "/users/{userId}",
 					"event": [
 						{
@@ -1079,6 +1828,7 @@
 					"response": []
 				},
 				{
+					"_postman_id": "d8b1d84a-00ff-47e9-a9ce-c4f8048de77b",
 					"name": "/rooms{roomId}",
 					"event": [
 						{
@@ -1126,10 +1876,11 @@
 			]
 		},
 		{
+			"_postman_id": "ac0be272-40b5-4f10-a979-e2cd9ed0611d",
 			"name": "Delete environment variables",
-			"description": "",
 			"item": [
 				{
+					"_postman_id": "efedfa5a-b297-47fb-a0c0-23ff42c2c843",
 					"name": "DELETE_ENVIRONMENT",
 					"event": [
 						{

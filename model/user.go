@@ -209,7 +209,7 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if *u.Name == "" {
+	if u.Name == nil || (u.Name != nil && *u.Name == "") {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "name",
