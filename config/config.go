@@ -40,7 +40,7 @@ const (
 	HeaderAccountRoles = "X-Account-Roles"
 
 	CtxDsCfg ctxKey = iota
-	CtxIsAppClient
+	CtxClientID
 	CtxUserID
 	CtxWorkspace
 	CtxRoomUser

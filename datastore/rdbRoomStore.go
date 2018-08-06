@@ -27,6 +27,7 @@ func rdbCreateRoomStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating room table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -44,6 +45,7 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting room")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -53,6 +55,7 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 
@@ -60,6 +63,7 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -114,6 +118,7 @@ func rdbSelectRooms(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting rooms")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -136,6 +141,7 @@ func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts .
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting room")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -151,6 +157,7 @@ func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts .
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		room.Users = users
@@ -184,6 +191,7 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting users for room")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -199,6 +207,7 @@ func rdbSelectCountRooms(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectR
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting room count")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return 0, err
 	}
 
@@ -220,6 +229,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 
@@ -228,6 +238,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 
@@ -236,6 +247,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -244,6 +256,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating room")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -253,6 +266,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 
@@ -260,6 +274,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while updating room")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}

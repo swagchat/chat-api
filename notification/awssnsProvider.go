@@ -86,6 +86,7 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
 			logger.Error(err.Error())
+			tracer.Provider(ap.ctx).SetError(span, err)
 			result.Error = err
 		} else {
 			result.Data = createTopicOutput.TopicArn
@@ -112,6 +113,7 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 		_, err := client.DeleteTopic(params)
 		if err != nil {
 			logger.Error(err.Error())
+			tracer.Provider(ap.ctx).SetError(span, err)
 			result.Error = err
 		}
 
@@ -151,6 +153,7 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 		createPlatformEndpointOutput, err := client.CreatePlatformEndpoint(createPlatformEndpointInputParams)
 		if err != nil {
 			logger.Error(err.Error())
+			tracer.Provider(ap.ctx).SetError(span, err)
 			result.Error = err
 		} else {
 			result.Data = createPlatformEndpointOutput.EndpointArn
@@ -161,7 +164,7 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 	return nc
 }
 
-func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
+func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceID string) NotificationChannel {
 	span := tracer.Provider(ap.ctx).StartSpan("DeleteEndpoint", "notification")
 	defer tracer.Provider(ap.ctx).Finish(span)
 
@@ -172,11 +175,12 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 
 		client := ap.newSnsClient()
 		deleteEndpointInputParams := &sns.DeleteEndpointInput{
-			EndpointArn: aws.String(notificationDeviceId),
+			EndpointArn: aws.String(notificationDeviceID),
 		}
 		_, err := client.DeleteEndpoint(deleteEndpointInputParams)
 		if err != nil {
 			logger.Error(err.Error())
+			tracer.Provider(ap.ctx).SetError(span, err)
 			result.Error = err
 		}
 
@@ -185,7 +189,7 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 	return nc
 }
 
-func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
+func (ap *awssnsProvider) Subscribe(notificationTopicID string, notificationDeviceID string) NotificationChannel {
 	span := tracer.Provider(ap.ctx).StartSpan("Subscribe", "notification")
 	defer tracer.Provider(ap.ctx).Finish(span)
 
@@ -197,12 +201,13 @@ func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDevi
 		client := ap.newSnsClient()
 		subscribeInputParams := &sns.SubscribeInput{
 			Protocol: aws.String("Application"),
-			TopicArn: aws.String(notificationTopicId),
-			Endpoint: aws.String(notificationDeviceId),
+			TopicArn: aws.String(notificationTopicID),
+			Endpoint: aws.String(notificationDeviceID),
 		}
 		subscribeOutput, err := client.Subscribe(subscribeInputParams)
 		if err != nil {
 			logger.Error(err.Error())
+			tracer.Provider(ap.ctx).SetError(span, err)
 			result.Error = err
 		} else {
 			result.Data = subscribeOutput.SubscriptionArn
@@ -213,7 +218,7 @@ func (ap *awssnsProvider) Subscribe(notificationTopicId string, notificationDevi
 	return nc
 }
 
-func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
+func (ap *awssnsProvider) Unsubscribe(notificationSubscribeID string) NotificationChannel {
 	span := tracer.Provider(ap.ctx).StartSpan("Unsubscribe", "notification")
 	defer tracer.Provider(ap.ctx).Finish(span)
 
@@ -224,11 +229,12 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) Notificati
 
 		client := ap.newSnsClient()
 		params := &sns.UnsubscribeInput{
-			SubscriptionArn: aws.String(notificationSubscribeId),
+			SubscriptionArn: aws.String(notificationSubscribeID),
 		}
 		_, err := client.Unsubscribe(params)
 		if err != nil {
 			logger.Error(err.Error())
+			tracer.Provider(ap.ctx).SetError(span, err)
 			result.Error = err
 		}
 
@@ -237,7 +243,7 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeId string) Notificati
 	return nc
 }
 
-func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
+func (ap *awssnsProvider) Publish(notificationTopicID, roomID string, messageInfo *MessageInfo) NotificationChannel {
 	span := tracer.Provider(ap.ctx).StartSpan("Publish", "notification")
 	defer tracer.Provider(ap.ctx).Finish(span)
 
@@ -251,7 +257,7 @@ func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInf
 		Alert:            messageInfo.Text,
 		ContentAvailable: &contentAvailable,
 		Sound:            "default",
-		RoomId:           roomId,
+		RoomId:           roomID,
 	}
 	if &messageInfo.Badge != nil {
 		iosPush.Badge = &messageInfo.Badge
@@ -264,6 +270,7 @@ func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInf
 	b, err := json.Marshal(ios)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
 		result.Error = err
 		nc <- result
 	}
@@ -279,6 +286,7 @@ func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInf
 	b, err = json.Marshal(gcm)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
 		result.Error = err
 		nc <- result
 	}
@@ -286,6 +294,7 @@ func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInf
 	pushData, err := json.Marshal(wrapper)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
 		result.Error = err
 		nc <- result
 	}
@@ -295,14 +304,15 @@ func (ap *awssnsProvider) Publish(notificationTopicId, roomId string, messageInf
 		Message:          aws.String(message),
 		MessageStructure: aws.String("json"),
 		Subject:          aws.String("subject"),
-		TopicArn:         aws.String(notificationTopicId),
+		TopicArn:         aws.String(notificationTopicID),
 	}
 	res, err := client.Publish(params)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
 		return nil
 	}
-	logger.Info(fmt.Sprintf("[Amazon SNS]Publish message topicArn:%s message:%s response:%s", notificationTopicId, message, res.String()))
+	logger.Info(fmt.Sprintf("[Amazon SNS]Publish message topicArn:%s message:%s response:%s", notificationTopicID, message, res.String()))
 
 	nc <- result
 

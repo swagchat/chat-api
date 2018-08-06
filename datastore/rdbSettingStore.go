@@ -24,6 +24,7 @@ func rdbCreateSettingStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err := dbMap.CreateTablesIfNotExists(); err != nil {
 		err = errors.Wrap(err, "An error occurred while creating setting table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -39,6 +40,7 @@ func rdbSelectLatestSetting(ctx context.Context, dbMap *gorp.DbMap) (*model.Sett
 	if _, err := dbMap.Select(&settings, query); err != nil {
 		err = errors.Wrap(err, "An error occurred while getting setting")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 	if len(settings) > 0 {

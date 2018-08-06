@@ -45,9 +45,9 @@ func (jp *jaegerProvider) NewTracer() error {
 	return nil
 }
 
-func (jp *jaegerProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context {
+func (jp *jaegerProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) (context.Context, interface{}) {
 	if jaegerTracer == nil {
-		return jp.ctx
+		return jp.ctx, nil
 	}
 
 	opt := startTransactionOptions{}
@@ -65,7 +65,7 @@ func (jp *jaegerProvider) StartTransaction(name, transactionType string, opts ..
 
 	ctx := opentracing.ContextWithSpan(jp.ctx, span)
 	ctx = context.WithValue(ctx, config.CtxTracerSpan, span)
-	return ctx
+	return ctx, span
 }
 
 func (jp *jaegerProvider) StartSpan(name, spanType string) interface{} {
@@ -77,24 +77,22 @@ func (jp *jaegerProvider) StartSpan(name, spanType string) interface{} {
 	return span
 }
 
-func (jp *jaegerProvider) SetTag(key string, value interface{}) {
-	span := jp.ctx.Value(config.CtxTracerSpan)
+func (jp *jaegerProvider) SetTag(span interface{}, key string, value interface{}) {
 	if span != nil {
 		span.(opentracing.Span).SetTag(key, value)
 	}
 }
 
-func (jp *jaegerProvider) SetHTTPStatusCode(statusCode int) {
-	span := jp.ctx.Value(config.CtxTracerSpan)
+func (jp *jaegerProvider) SetHTTPStatusCode(span interface{}, statusCode int) {
 	if span != nil {
 		span.(opentracing.Span).SetTag("http.status_code", statusCode)
 	}
 }
 
-func (jp *jaegerProvider) SetUserID(id string) {
-	span := jp.ctx.Value(config.CtxTracerSpan)
+func (jp *jaegerProvider) SetError(span interface{}, err error) {
 	if span != nil {
-		span.(opentracing.Span).SetTag("app.user_id", id)
+		span.(opentracing.Span).SetTag("error", true)
+		span.(opentracing.Span).SetTag("message", err.Error())
 	}
 }
 

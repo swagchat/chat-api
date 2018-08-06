@@ -27,6 +27,7 @@ func rdbCreateAssetStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating asset table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -36,7 +37,9 @@ func rdbInsertAsset(ctx context.Context, dbMap *gorp.DbMap, asset *model.Asset) 
 	defer tracer.Provider(ctx).Finish(span)
 
 	if err := dbMap.Insert(asset); err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting assett. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting asset")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -52,7 +55,9 @@ func rdbSelectAsset(ctx context.Context, dbMap *gorp.DbMap, assetID string) (*mo
 	params := map[string]interface{}{"assetId": assetID}
 	_, err := dbMap.Select(&assets, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting asset. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting asset")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 

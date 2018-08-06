@@ -23,6 +23,7 @@ func rdbCreateDeviceStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating device table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -51,7 +52,9 @@ func rdbInsertDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 	}
 
 	if err := tx.Insert(device); err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting device. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting device")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -70,6 +73,7 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone && opt.token == "" {
 		err := errors.New("An error occurred while getting devices. Be sure to specify either userId or platform or token")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -102,7 +106,9 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 
 	_, err := dbMap.Select(&devices, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting devices. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting devices")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -121,7 +127,9 @@ func rdbSelectDevice(ctx context.Context, dbMap *gorp.DbMap, userID string, plat
 	}
 	_, err := dbMap.Select(&devices, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting device. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting device")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -152,7 +160,9 @@ func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 	query := fmt.Sprintf("UPDATE %s SET token=?, notification_device_id=? WHERE user_id=? AND platform=?;", tableNameDevice)
 	_, err = tx.Exec(query, device.Token, device.NotificationDeviceID, device.UserID, device.Platform)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while updating device. %v.", err))
+		err = errors.Wrap(err, "An error occurred while updating device")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -171,6 +181,7 @@ func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone {
 		err := errors.New("An error occurred while deleting devices. Be sure to specify either userID or platform")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -199,6 +210,7 @@ func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting devices")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -209,6 +221,7 @@ func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting devices")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}

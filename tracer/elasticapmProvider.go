@@ -26,15 +26,15 @@ func (ep *elasticapmProvider) NewTracer() error {
 	return nil
 }
 
-func (ep *elasticapmProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context {
+func (ep *elasticapmProvider) StartTransaction(name, transactionType string, opts ...StartTransactionOption) (context.Context, interface{}) {
 	if elasticapmTracer == nil {
-		return ep.ctx
+		return ep.ctx, nil
 	}
 
 	transaction := elasticapmTracer.StartTransaction(name, transactionType)
 	ctx := elasticapm.ContextWithTransaction(ep.ctx, transaction)
 	ctx = context.WithValue(ctx, config.CtxTracerTransaction, transaction)
-	return ctx
+	return ctx, transaction
 }
 
 func (ep *elasticapmProvider) StartSpan(name, spanType string) interface{} {
@@ -42,7 +42,7 @@ func (ep *elasticapmProvider) StartSpan(name, spanType string) interface{} {
 	return span
 }
 
-func (ep *elasticapmProvider) SetTag(key string, value interface{}) {
+func (ep *elasticapmProvider) SetTag(span interface{}, key string, value interface{}) {
 	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
 		txCtx := transaction.(*elasticapm.Transaction).Context
@@ -51,7 +51,7 @@ func (ep *elasticapmProvider) SetTag(key string, value interface{}) {
 	}
 }
 
-func (ep *elasticapmProvider) SetHTTPStatusCode(statusCode int) {
+func (ep *elasticapmProvider) SetHTTPStatusCode(span interface{}, statusCode int) {
 	transaction := ep.ctx.Value(config.CtxTracerTransaction)
 	if transaction != nil {
 		txCtx := transaction.(*elasticapm.Transaction).Context
@@ -59,12 +59,8 @@ func (ep *elasticapmProvider) SetHTTPStatusCode(statusCode int) {
 	}
 }
 
-func (ep *elasticapmProvider) SetUserID(id string) {
-	transaction := ep.ctx.Value(config.CtxTracerTransaction)
-	if transaction != nil {
-		// txCtx := transaction.(*elasticapm.Transaction).Context
-		// txCtx.SetUserID(id)
-	}
+func (ep *elasticapmProvider) SetError(span interface{}, err error) {
+	// TODO
 }
 
 func (ep *elasticapmProvider) Finish(span interface{}) {

@@ -35,7 +35,9 @@ func (np *nsqProvider) SubscribeMessage() error {
 
 		NSQConsumer, err = nsq.NewConsumer(c.SBroker.NSQ.Topic, channel, config)
 		if err != nil {
-			return errors.Wrap(err, "")
+			logger.Error(err.Error())
+			tracer.Provider(np.ctx).SetError(span, err)
+			return err
 		}
 
 		logger.Info(fmt.Sprintf("%p", NSQConsumer))
@@ -46,7 +48,9 @@ func (np *nsqProvider) SubscribeMessage() error {
 		}))
 		err = NSQConsumer.ConnectToNSQLookupd(c.SBroker.NSQ.NsqlookupdHost + ":" + c.SBroker.NSQ.NsqlookupdPort)
 		if err != nil {
-			return errors.Wrap(err, "")
+			logger.Error(err.Error())
+			tracer.Provider(np.ctx).SetError(span, err)
+			return err
 		}
 	}
 

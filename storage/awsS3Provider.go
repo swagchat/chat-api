@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/pkg/errors"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 )
 
@@ -27,9 +28,14 @@ type awss3Provider struct {
 }
 
 func (ap *awss3Provider) Init() error {
+	span := tracer.Provider(ap.ctx).StartSpan("Init", "storage")
+	defer tracer.Provider(ap.ctx).Finish(span)
+
 	awsS3Client, err := ap.getSession()
 	if err != nil {
-		return errors.Wrap(err, "AWS S3 get session failure")
+		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
+		return err
 	}
 
 	params := &s3.CreateBucketInput{
@@ -37,7 +43,9 @@ func (ap *awss3Provider) Init() error {
 	}
 	_, err = awsS3Client.CreateBucket(params)
 	if err != nil {
-		return errors.Wrap(err, "AWS S3 create bucket failure")
+		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
+		return err
 	}
 
 	params = &s3.CreateBucketInput{
@@ -45,7 +53,9 @@ func (ap *awss3Provider) Init() error {
 	}
 	_, err = awsS3Client.CreateBucket(params)
 	if err != nil {
-		return errors.Wrap(err, "AWS S3 create thumbnail bucket failure")
+		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
+		return err
 	}
 
 	return nil
@@ -57,12 +67,16 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 
 	awsS3Client, err := ap.getSession()
 	if err != nil {
-		return "", errors.Wrap(err, "AWS S3 get session failure")
+		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
+		return "", err
 	}
 
 	byteData, err := ioutil.ReadAll(assetInfo.Data)
 	if err != nil {
-		return "", errors.Wrap(err, "AWS S3 read data failure")
+		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
+		return "", err
 	}
 
 	data := bytes.NewReader(byteData)
@@ -74,11 +88,13 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 		ACL:    &ap.acl,
 	})
 	if err != nil {
-		return "", errors.Wrap(err, "AWS S3 put object failure")
+		logger.Error(err.Error())
+		tracer.Provider(ap.ctx).SetError(span, err)
+		return "", err
 	}
 
-	sourceUrl := fmt.Sprintf("https://s3-ap-northeast-1.amazonaws.com/%s/%s", ap.uploadBucket, filePath)
-	return sourceUrl, nil
+	sourceURL := fmt.Sprintf("https://s3-ap-northeast-1.amazonaws.com/%s/%s", ap.uploadBucket, filePath)
+	return sourceURL, nil
 }
 
 func (ap *awss3Provider) Get(assetInfo *AssetInfo) ([]byte, error) {

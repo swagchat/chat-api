@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 
@@ -28,14 +27,21 @@ type gcsProvider struct {
 var gcsService *storage.Service
 
 func (gp *gcsProvider) Init() error {
+	span := tracer.Provider(gp.ctx).StartSpan("Init", "storage")
+	defer tracer.Provider(gp.ctx).Finish(span)
+
 	if gcsService == nil {
 		data, err := ioutil.ReadFile(gp.jwtPath)
 		if err != nil {
-			return errors.Wrap(err, "AWS S3 get session failure")
+			logger.Error(err.Error())
+			tracer.Provider(gp.ctx).SetError(span, err)
+			return err
 		}
 
 		conf, err := google.JWTConfigFromJSON(data, gp.scope)
 		if err != nil {
+			logger.Error(err.Error())
+			tracer.Provider(gp.ctx).SetError(span, err)
 			return err
 		}
 
@@ -44,6 +50,8 @@ func (gp *gcsProvider) Init() error {
 
 		service, err := storage.New(client)
 		if err != nil {
+			logger.Error(err.Error())
+			tracer.Provider(gp.ctx).SetError(span, err)
 			return err
 		}
 		gcsService = service
@@ -62,12 +70,16 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 
 	res, err := gcsService.Objects.Insert(gp.uploadBucket, object).Media(assetInfo.Data).Do()
 	if err != nil {
+		logger.Error(err.Error())
+		tracer.Provider(gp.ctx).SetError(span, err)
 		return "", err
 	}
 	logger.Debug(fmt.Sprintf("name:%s\tselfLink:%s", res.Name, res.SelfLink))
 
 	res, err = gcsService.Objects.Get(gp.uploadBucket, filePath).Do()
 	if err != nil {
+		logger.Error(err.Error())
+		tracer.Provider(gp.ctx).SetError(span, err)
 		return "", err
 	}
 	logger.Debug(fmt.Sprintf("bucketName:%s\name:%s\tmediaLink:%s", gp.uploadBucket, res.Name, res.MediaLink))

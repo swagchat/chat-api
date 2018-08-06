@@ -31,6 +31,7 @@ func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating app client table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 
@@ -42,9 +43,9 @@ func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 		SelectAppClientOptionFilterByClientID(cfg.FirstClientID),
 	)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting appClient. %v.", err))
 		return
 	}
+
 	if ac != nil {
 		return
 	}
@@ -57,7 +58,6 @@ func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 	}
 	err = rdbInsertAppClient(ctx, dbMap, appClient)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
 		return
 	}
 }
@@ -68,7 +68,9 @@ func rdbInsertAppClient(ctx context.Context, dbMap *gorp.DbMap, appClient *model
 
 	err := dbMap.Insert(appClient)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while inserting appClient. %v.", err))
+		err = errors.Wrap(err, "An error occurred while inserting appClient")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -87,6 +89,7 @@ func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...Se
 	if (opt.name == "" && opt.clientID == "") || (opt.name != "" && opt.clientID != "") {
 		err := errors.New("An error occurred while getting appClient. Be sure to specify either name or clientID")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -111,7 +114,9 @@ func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...Se
 
 	_, err := dbMap.Select(&appClients, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting appClient. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting appClient")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 

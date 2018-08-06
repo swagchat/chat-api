@@ -8,12 +8,12 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 )
 
 type localStorageProvider struct {
 	ctx       context.Context
-	baseUrl   string
 	localPath string
 }
 
@@ -27,18 +27,26 @@ func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
 
 	err := os.MkdirAll(lp.localPath, 0775)
 	if err != nil {
-		return "", errors.Wrap(err, fmt.Sprintf("make directory failure path=%s", lp.localPath))
+		err = errors.Wrap(err, fmt.Sprintf("Failed to make directory. path=%s", lp.localPath))
+		logger.Error(err.Error())
+		tracer.Provider(lp.ctx).SetError(span, err)
+		return "", err
 	}
 
 	data, err := ioutil.ReadAll(assetInfo.Data)
 	if err != nil {
-		return "", errors.Wrap(err, "io read data failure")
+		logger.Error(err.Error())
+		tracer.Provider(lp.ctx).SetError(span, err)
+		return "", err
 	}
 
 	filepath := fmt.Sprintf("%s/%s", config.Config().Storage.Local.Path, assetInfo.Filename)
 	err = ioutil.WriteFile(filepath, data, 0644)
 	if err != nil {
-		return "", errors.Wrap(err, "io write file failure")
+		err = errors.Wrap(err, fmt.Sprintf("Failed to write file. path=%s/%s", lp.localPath, assetInfo.Filename))
+		logger.Error(err.Error())
+		tracer.Provider(lp.ctx).SetError(span, err)
+		return "", err
 	}
 
 	return assetInfo.Filename, nil
@@ -51,12 +59,17 @@ func (lp *localStorageProvider) Get(assetInfo *AssetInfo) ([]byte, error) {
 	file, err := os.Open(fmt.Sprintf("%s/%s", lp.localPath, assetInfo.Filename))
 	defer file.Close()
 	if err != nil {
-		return nil, errors.Wrap(err, "file open failure")
+		err = errors.Wrap(err, fmt.Sprintf("Failed to open file. path=%s/%s", lp.localPath, assetInfo.Filename))
+		logger.Error(err.Error())
+		tracer.Provider(lp.ctx).SetError(span, err)
+		return nil, err
 	}
 
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, errors.Wrap(err, "io read file failure")
+		logger.Error(err.Error())
+		tracer.Provider(lp.ctx).SetError(span, err)
+		return nil, err
 	}
 
 	return bytes, nil

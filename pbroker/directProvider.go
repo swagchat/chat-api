@@ -31,6 +31,7 @@ func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	req, err := http.NewRequest("POST", endpoint, buffer)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(dp.ctx).SetError(span, err)
 		return err
 	}
 
@@ -47,6 +48,7 @@ func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(dp.ctx).SetError(span, err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -54,12 +56,14 @@ func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(dp.ctx).SetError(span, err)
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		err := fmt.Errorf("http status code[%d]", resp.StatusCode)
 		logger.Error(err.Error())
+		tracer.Provider(dp.ctx).SetError(span, err)
 		return err
 	}
 

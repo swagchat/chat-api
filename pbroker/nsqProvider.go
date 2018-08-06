@@ -13,6 +13,7 @@ import (
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
+	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 )
 
@@ -40,14 +41,22 @@ func (np nsqProvider) PublishMessage(rtmEvent *RTMEvent) error {
 	url := fmt.Sprintf("%s/pub?topic=%s", endpoint, cfg.PBroker.NSQ.Topic)
 	resp, err := http.Post(url, "application/json", buffer)
 	if err != nil {
-		return errors.Wrap(err, "NSQ post failure")
+		err = errors.Wrap(err, "NSQ post failure")
+		logger.Error(err.Error())
+		tracer.Provider(np.ctx).SetError(span, err)
+		return err
 	}
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrap(err, "NSQ response body read failure")
+		err = errors.Wrap(err, "NSQ response body read failure")
+		logger.Error(err.Error())
+		tracer.Provider(np.ctx).SetError(span, err)
+		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return errors.Wrap(fmt.Errorf("http status code[%d]", resp.StatusCode), "")
+		err = fmt.Errorf("http status code[%d]", resp.StatusCode)
+		logger.Error(err.Error())
+		tracer.Provider(np.ctx).SetError(span, err)
 	}
 
 	return nil

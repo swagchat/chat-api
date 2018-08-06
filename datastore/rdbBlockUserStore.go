@@ -21,6 +21,7 @@ func rdbCreateBlockUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating block user table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -60,6 +61,7 @@ func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting block users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -92,6 +94,7 @@ func rdbSelectBlockUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) 
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting block users")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -111,6 +114,7 @@ func rdbSelectBlockUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting block userIds")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -142,6 +146,7 @@ func rdbSelectBlockedUsers(ctx context.Context, dbMap *gorp.DbMap, userID string
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting blocked users")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -161,6 +166,7 @@ func rdbSelectBlockedUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID stri
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting blocked userIds")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -181,6 +187,7 @@ func rdbSelectBlockUser(ctx context.Context, dbMap *gorp.DbMap, userID, blockUse
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting block user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -203,6 +210,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 	if len(opt.userIDs) == 0 && len(opt.blockUserIDs) == 0 {
 		err := errors.New("An error occurred while deleting block users. Be sure to specify either userIDs or blockUserIDs")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -213,6 +221,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting block users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -224,6 +233,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting block users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}

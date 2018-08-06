@@ -25,6 +25,7 @@ func rdbCreateRoomUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating room user table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -44,6 +45,7 @@ func rdbInsertRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while recreating roomUser")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -63,6 +65,7 @@ func rdbInsertRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while recreating roomUser")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -82,18 +85,21 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 	if opt.roomID == "" && opt.userIDs == nil && opt.roles == nil {
 		err := errors.New("An error occurred while getting room users. Be sure to specify either roomID or userIDs or roles")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
 	if opt.roomID != "" && opt.userIDs != nil && opt.roles != nil {
 		err := errors.New("An error occurred while getting room users. At the same time, roomID, userIDs, roles can not be specified")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
 	if opt.roomID == "" && opt.roles != nil {
 		err := errors.New("An error occurred while getting room users. When roles is specified, roomID must be specified")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -108,6 +114,7 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while getting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		return roomUsers, nil
@@ -121,6 +128,7 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while getting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		return roomUsers, nil
@@ -133,6 +141,7 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while getting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		return roomUsers, nil
@@ -144,6 +153,7 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting room users")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 	return roomUsers, nil
@@ -163,6 +173,7 @@ func rdbSelectRoomUser(ctx context.Context, dbMap *gorp.DbMap, roomID, userID st
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting roomUser")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -191,6 +202,7 @@ WHERE room_id IN (
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting roomUser for OneOnOne")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -213,18 +225,21 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...
 	if opt.roomID == "" && opt.userIDs == nil && opt.roles == nil {
 		err := errors.New("An error occurred while getting room userIDs. Be sure to specify either roomID or userIDs or roles")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
 	if opt.roomID != "" && opt.userIDs != nil && opt.roles != nil {
 		err := errors.New("An error occurred while getting room userIDs. At the same time, roomID, userIDs, roles can not be specified")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
 	if opt.roomID == "" && opt.roles != nil {
 		err := errors.New("An error occurred while getting room userIDs. When roles is specified, roomID must be specified")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -239,6 +254,7 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while getting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		return userIDs, nil
@@ -252,6 +268,7 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while getting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		return userIDs, nil
@@ -264,6 +281,7 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while getting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return nil, err
 		}
 		return userIDs, nil
@@ -275,6 +293,7 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while getting room users")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 	return userIDs, nil
@@ -289,6 +308,7 @@ func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transact
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while updating room user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -300,6 +320,7 @@ func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transact
 	if err != nil {
 		err := errors.Wrap(err, "An error occurred while updating room user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -334,6 +355,7 @@ func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 
@@ -361,6 +383,7 @@ func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 
@@ -385,6 +408,7 @@ func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting room users")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 

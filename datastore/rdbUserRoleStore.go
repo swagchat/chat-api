@@ -21,6 +21,7 @@ func rdbCreateUserRoleStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating user role table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -59,6 +60,7 @@ func rdbInsertUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting user roles")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -80,6 +82,7 @@ func rdbSelectUserRole(ctx context.Context, dbMap *gorp.DbMap, userID string, ro
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting user role")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -103,6 +106,7 @@ func rdbSelectRolesOfUserRole(ctx context.Context, dbMap *gorp.DbMap, userID str
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting roleIds")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -124,6 +128,7 @@ func rdbSelectUserIDsOfUserRole(ctx context.Context, dbMap *gorp.DbMap, role int
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting userIds")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -146,6 +151,7 @@ func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting user roles")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}
@@ -157,6 +163,7 @@ func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting user roles")
 			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
 	}

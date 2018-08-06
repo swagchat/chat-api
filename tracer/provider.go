@@ -9,11 +9,11 @@ import (
 
 type provider interface {
 	NewTracer() error
-	StartTransaction(name, transactionType string, opts ...StartTransactionOption) context.Context
+	StartTransaction(name, transactionType string, opts ...StartTransactionOption) (context.Context, interface{})
 	StartSpan(name, spanType string) interface{}
-	SetTag(key string, value interface{})
-	SetHTTPStatusCode(statusCode int)
-	SetUserID(id string)
+	SetTag(span interface{}, key string, value interface{})
+	SetHTTPStatusCode(span interface{}, statusCode int)
+	SetError(span interface{}, err error)
 	Finish(span interface{})
 	CloseTransaction()
 	Close()

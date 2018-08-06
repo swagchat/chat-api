@@ -166,7 +166,7 @@ func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx := tracer.Provider(r.Context()).StartTransaction(
+		ctx, span := tracer.Provider(r.Context()).StartTransaction(
 			fmt.Sprintf("%s:%s", r.Method, r.RequestURI), "REST",
 			tracer.StartTransactionOptionWithHTTPRequest(r),
 		)
@@ -177,13 +177,16 @@ func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 		userID := ctx.Value(config.CtxUserID)
 		if userID != nil {
-			tracer.Provider(ctx).SetUserID(userID.(string))
+			tracer.Provider(ctx).SetTag(span, "userId", userID)
 		}
-
-		tracer.Provider(ctx).SetHTTPStatusCode(sw.status)
-		tracer.Provider(ctx).SetTag("http.method", r.Method)
-		tracer.Provider(ctx).SetTag("http.content_length", sw.length)
-		tracer.Provider(ctx).SetTag("http.referer", r.Referer())
+		clientID := ctx.Value(config.CtxClientID)
+		if clientID != nil {
+			tracer.Provider(ctx).SetTag(span, "clientId", clientID)
+		}
+		tracer.Provider(ctx).SetHTTPStatusCode(span, sw.status)
+		tracer.Provider(ctx).SetTag(span, "http.method", r.Method)
+		tracer.Provider(ctx).SetTag(span, "http.content_length", sw.length)
+		tracer.Provider(ctx).SetTag(span, "http.referer", r.Referer())
 	}
 }
 
@@ -231,7 +234,6 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := false
 		clientID := r.Header.Get(config.HeaderClientID)
 		if clientID != "" {
 			appCli, err := datastore.Provider(r.Context()).SelectLatestAppClient(
@@ -243,18 +245,18 @@ func judgeAppClientHandler(fn http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 			if appCli != nil {
-				isAppClient = true
+				clientID = appCli.ClientID
 			}
 		}
-		ctx := context.WithValue(r.Context(), config.CtxIsAppClient, isAppClient)
+		ctx := context.WithValue(r.Context(), config.CtxClientID, clientID)
 		fn(w, r.WithContext(ctx))
 	}
 }
 
 func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
-		if !isAppClient {
+		clientID := r.Context().Value(config.CtxClientID)
+		if clientID == "" {
 			errRes := model.NewErrorResponse("Unauthorized", http.StatusUnauthorized)
 			respondError(w, r, errRes)
 			return
@@ -265,8 +267,8 @@ func adminAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
-		if isAppClient {
+		clientID := r.Context().Value(config.CtxClientID)
+		if clientID != "" {
 			fn(w, r)
 			return
 		}
@@ -286,8 +288,8 @@ func selfResourceAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func contactsAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
-		if isAppClient {
+		clientID := r.Context().Value(config.CtxClientID)
+		if clientID != "" {
 			fn(w, r)
 			return
 		}
@@ -305,8 +307,8 @@ func contactsAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 
 func roomMemberAuthzHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		isAppClient := r.Context().Value(config.CtxIsAppClient).(bool)
-		if isAppClient {
+		clientID := r.Context().Value(config.CtxClientID)
+		if clientID != "" {
 			fn(w, r)
 			return
 		}

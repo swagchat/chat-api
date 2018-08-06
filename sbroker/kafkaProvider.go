@@ -35,6 +35,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	if host == "" {
 		err := errors.New("sbroker.kafka.host is empty")
 		logger.Error(err.Error())
+		tracer.Provider(kp.ctx).SetError(span, err)
 		return err
 	}
 
@@ -42,6 +43,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	if port == "" {
 		err := errors.New("sbroker.kafka.port is empty")
 		logger.Error(err.Error())
+		tracer.Provider(kp.ctx).SetError(span, err)
 		return err
 	}
 
@@ -61,6 +63,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	})
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(kp.ctx).SetError(span, err)
 		return err
 	}
 
@@ -68,6 +71,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	err = client.SubscribeTopics([]string{topic}, nil)
 	if err != nil {
 		logger.Error(err.Error())
+		tracer.Provider(kp.ctx).SetError(span, err)
 		return err
 	}
 	logger.Info(fmt.Sprintf("%s group.id[%s] topic[%s]", client.String(), hostname, topic))
@@ -91,6 +95,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				kafkaMsg := e
 				if err != nil {
 					logger.Error(err.Error())
+					tracer.Provider(kp.ctx).SetError(span, err)
 					break
 				}
 
@@ -98,12 +103,14 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				err = json.Unmarshal(kafkaMsg.Value, &pbMsg)
 				if err != nil {
 					logger.Error(err.Error())
+					tracer.Provider(kp.ctx).SetError(span, err)
 					break
 				}
 				payload := model.JSONText{}
 				err := payload.UnmarshalJSON(pbMsg.Payload)
 				if err != nil {
 					logger.Error(err.Error())
+					tracer.Provider(kp.ctx).SetError(span, err)
 					break
 				}
 
@@ -128,7 +135,9 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				logger.Info(e.String())
 			case kafka.Error:
 				run = false
-				logger.Error(e.String())
+				err = fmt.Errorf(e.String())
+				logger.Error(err.Error())
+				tracer.Provider(kp.ctx).SetError(span, err)
 			default:
 				logger.Info(e.String())
 			}

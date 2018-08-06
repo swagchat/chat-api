@@ -29,6 +29,7 @@ func rdbCreateUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating user table")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -46,6 +47,7 @@ func rdbInsertUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -101,6 +103,7 @@ func rdbSelectUsers(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting users")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -122,6 +125,7 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 	if _, err := dbMap.Select(&users, query, params); err != nil {
 		err = errors.Wrap(err, "An error occurred while getting user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 	var user *model.User
@@ -241,7 +245,9 @@ func rdbSelectCountUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectU
 
 	count, err := dbMap.SelectInt(query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting user count. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting user count")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return 0, err
 	}
 
@@ -259,6 +265,7 @@ func rdbSelectUserIDsOfUser(ctx context.Context, dbMap *gorp.DbMap, userIDs []st
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting userIds")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
@@ -287,6 +294,7 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -365,6 +373,7 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting user")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return err
 	}
 
@@ -430,6 +439,7 @@ GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableN
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting contacts")
 		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 

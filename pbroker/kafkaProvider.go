@@ -31,7 +31,9 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
 		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.PBroker.Kafka.Host, cfg.PBroker.Kafka.Port),
 	})
 	if err != nil {
-		return errors.Wrap(err, "Kafka create producer failure")
+		err = errors.Wrap(err, "Kafka create producer failure")
+		logger.Error(err.Error())
+		tracer.Provider(kp.ctx).SetError(span, err)
 	}
 
 	// Delivery report handler for produced messages
@@ -40,7 +42,9 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
 			switch ev := e.(type) {
 			case *kafka.Message:
 				if ev.TopicPartition.Error != nil {
-					logger.Error(fmt.Sprintf("Delivery failed: %v\n", ev.TopicPartition))
+					err = fmt.Errorf("Delivery failed: %v", ev.TopicPartition)
+					logger.Error(err.Error())
+					tracer.Provider(kp.ctx).SetError(span, err)
 				} else {
 					logger.Info(fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition))
 				}

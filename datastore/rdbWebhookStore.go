@@ -6,6 +6,7 @@ import (
 
 	"gopkg.in/gorp.v2"
 
+	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
@@ -23,7 +24,9 @@ func rdbCreateWebhookStore(ctx context.Context, dbMap *gorp.DbMap) {
 	}
 	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while creating webhook table. %v.", err))
+		err = errors.Wrap(err, "An error occurred while creating webhook table")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return
 	}
 }
@@ -56,7 +59,9 @@ func rdbSelectWebhooks(ctx context.Context, dbMap *gorp.DbMap, event model.Webho
 
 	_, err := dbMap.Select(&webhooks, query, params)
 	if err != nil {
-		logger.Error(fmt.Sprintf("An error occurred while getting webhook. %v.", err))
+		err = errors.Wrap(err, "An error occurred while getting webhook")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
 		return nil, err
 	}
 
