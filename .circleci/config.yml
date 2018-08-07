@@ -2,32 +2,35 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.10.2
+      - image: docker:18.06.0-ce-git
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
+      - setup_remote_docker
       - restore_cache:
           keys:
-            - vendor-{{ checksum "Gopkg.lock" }}
-            - dep
-      - run:
-          name: ensure
-          command: |
-            if [ ! -d vendor ]; then
-              if ! type dep >/dev/null 2>&1; then
-                go get github.com/golang/dep/cmd/dep
-              fi
-              dep ensure
-            fi
-      - save_cache:
-          key: vendor-{{ checksum "Gopkg.lock" }}
+            - v1-{{ .Branch }}
           paths:
-            - vendor
-      - save_cache:
-          key: dep
-          paths:
-            - /go/bin/dep
+            - /caches/chat-api
       - run:
-          name: "run go test"
+          name: Load Docker image layer cache
           command: |
-            go test $(go list ./... | grep -v vendor)
+            set +o pipefail
+            docker load -i /caches/chat-api | true
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build --cache-from=chat-api -t chat-api .
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/chat-api chat-api
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/chat-api
+      - run:
+          name: "run docker build"
+          command: |
+            docker build -t swagchat/chat-api .
