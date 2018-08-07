@@ -27,7 +27,7 @@ func TestDeviceStore(t *testing.T) {
 		newDevice1.NotificationDeviceID = "user-id-device-id-0001"
 		err := Provider(ctx).InsertDevice(newDevice1)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertDevice, err.Error())
 		}
 
 		newDevice2 := &model.Device{}
@@ -40,7 +40,7 @@ func TestDeviceStore(t *testing.T) {
 			InsertDeviceOptionBeforeClean(true),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertDevice, err.Error())
 		}
 
 		newDevice3 := &model.Device{}
@@ -50,7 +50,7 @@ func TestDeviceStore(t *testing.T) {
 		newDevice3.NotificationDeviceID = "user-id-device-id-0003"
 		err = Provider(ctx).InsertDevice(newDevice3)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertDevice, err.Error())
 		}
 
 		newDevice4 := &model.Device{}
@@ -60,47 +60,48 @@ func TestDeviceStore(t *testing.T) {
 		newDevice4.NotificationDeviceID = "user-id-device-id-0004"
 		err = Provider(ctx).InsertDevice(newDevice4)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertDevice, err.Error())
 		}
 	})
 
 	t.Run(TestNameSelectDevices, func(t *testing.T) {
 		_, err = Provider(ctx).SelectDevices()
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectDevices)
 		}
-		if err.Error() != "An error occurred while getting devices. Be sure to specify either userId or platform or token" {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+		errMsg := "An error occurred while getting devices. Be sure to specify either userId or platform or token"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectDevices, errMsg, err.Error())
 		}
 
 		devices, err := Provider(ctx).SelectDevices(
 			SelectDevicesOptionFilterByUserID("datastore-user-id-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevices, err.Error())
 		}
 		if len(devices) != 2 {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 2, but it was %d", TestNameSelectDevices, len(devices))
 		}
 
 		devices, err = Provider(ctx).SelectDevices(
 			SelectDevicesOptionFilterByPlatform(scpb.Platform_PlatformIos),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevices, err.Error())
 		}
 		if len(devices) != 2 {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 2, but it was %d", TestNameSelectDevices, len(devices))
 		}
 
 		devices, err = Provider(ctx).SelectDevices(
 			SelectDevicesOptionFilterByToken("user-id-token-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevices, err.Error())
 		}
 		if len(devices) != 1 {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 1, but it was %d", TestNameSelectDevices, len(devices))
 		}
 
 		devices, err = Provider(ctx).SelectDevices(
@@ -108,10 +109,10 @@ func TestDeviceStore(t *testing.T) {
 			SelectDevicesOptionFilterByPlatform(scpb.Platform_PlatformAndroid),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevices, err.Error())
 		}
 		if len(devices) != 1 {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 1, but it was %d", TestNameSelectDevices, len(devices))
 		}
 
 		devices, err = Provider(ctx).SelectDevices(
@@ -119,10 +120,10 @@ func TestDeviceStore(t *testing.T) {
 			SelectDevicesOptionFilterByToken("user-id-token-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevices, err.Error())
 		}
 		if len(devices) != 1 {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 1, but it was %d", TestNameSelectDevices, len(devices))
 		}
 
 		devices, err = Provider(ctx).SelectDevices(
@@ -130,25 +131,25 @@ func TestDeviceStore(t *testing.T) {
 			SelectDevicesOptionFilterByToken("user-id-token-0002"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevices, err.Error())
 		}
 		if len(devices) != 0 {
-			t.Fatalf("Failed to %s", TestNameInsertDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 0, but it was %d", TestNameSelectDevices, len(devices))
 		}
 	})
 
 	t.Run(TestNameSelectDevice, func(t *testing.T) {
 		device, err = Provider(ctx).SelectDevice("not-exist-user", scpb.Platform_PlatformIos)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevice, err.Error())
 		}
 		if device != nil {
-			t.Fatalf("Failed to %s", TestNameSelectDevice)
+			t.Fatalf("Failed to %s. Expected device is nil, but it was not nil", TestNameSelectDevice)
 		}
 
 		device, err = Provider(ctx).SelectDevice("datastore-user-id-0001", scpb.Platform_PlatformIos)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectDevice, err.Error())
 		}
 	})
 
@@ -157,44 +158,45 @@ func TestDeviceStore(t *testing.T) {
 		device.NotificationDeviceID = "update"
 		err = Provider(ctx).UpdateDevice(device)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameUpdateDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 
 		device, err = Provider(ctx).SelectDevice("datastore-user-id-0001", scpb.Platform_PlatformIos)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameUpdateDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 		if device.Token != "update" {
-			t.Fatalf("Failed to %s", TestNameUpdateDevice)
+			t.Fatalf("Failed to %s. Expected device.Token to be \"update\", but it was %s", TestNameUpdateDevice, device.Token)
 		}
 		if device.NotificationDeviceID != "update" {
-			t.Fatalf("Failed to %s", TestNameUpdateDevice)
+			t.Fatalf("Failed to %s. Expected device.NotificationDeviceID to be \"update\", but it was %s", TestNameUpdateDevice, device.Token)
 		}
 	})
 
 	t.Run(TestNameDeleteDevice, func(t *testing.T) {
 		err = Provider(ctx).DeleteDevices()
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectDevices)
 		}
-		if err.Error() != "An error occurred while deleting devices. Be sure to specify either userID or platform" {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+		errMsg := "An error occurred while deleting devices. Be sure to specify either userID or platform"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectDevices, errMsg, err.Error())
 		}
 
 		err = Provider(ctx).DeleteDevices(
 			DeleteDevicesOptionFilterByUserID("datastore-user-id-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 		devices, err := Provider(ctx).SelectDevices(
 			SelectDevicesOptionFilterByUserID("datastore-user-id-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 		if len(devices) != 0 {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 0, but it was %d", TestNameUpdateDevice, len(devices))
 		}
 
 		err = Provider(ctx).DeleteDevices(
@@ -203,26 +205,26 @@ func TestDeviceStore(t *testing.T) {
 			DeleteDevicesOptionFilterByPlatform(scpb.Platform_PlatformIos),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 		devices, err = Provider(ctx).SelectDevices(
 			SelectDevicesOptionFilterByUserID("datastore-user-id-0002"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 		if len(devices) != 1 {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 1, but it was %d", TestNameUpdateDevice, len(devices))
 		}
 		devices, err = Provider(ctx).SelectDevices(
 			SelectDevicesOptionFilterByDeleted(true),
 			SelectDevicesOptionFilterByUserID("datastore-user-id-0002"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateDevice, err.Error())
 		}
 		if len(devices) != 1 {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected devices count to be 1, but it was %d", TestNameUpdateDevice, len(devices))
 		}
 	})
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/swagchat/chat-api/model"
@@ -21,34 +22,46 @@ func TestDevice(t *testing.T) {
 		req.Token = "service-user-id-token-0001"
 		device, errRes := CreateDevice(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameCreateDevice, errMsg)
 		}
 		if device == nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			t.Fatalf("Failed to %s. Expected device to be not nil, but it was nil", TestNameCreateDevice)
 		}
 
 		device, errRes = CreateDevice(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameCreateDevice, errMsg)
 		}
 		if device != nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			t.Fatalf("Failed to %s. Expected device to be nil, but it was not nil", TestNameCreateDevice)
 		}
 
 		req.Token = "service-user-id-token-0002"
 		device, errRes = CreateDevice(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameCreateDevice, errMsg)
 		}
 		if device == nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			t.Fatalf("Failed to %s. Expected device to be not nil, but it was nil", TestNameCreateDevice)
 		}
 
 		req.UserID = "service-user-id-0001"
 		req.Platform = scpb.Platform_PlatformNone
 		_, errRes = CreateDevice(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s", TestNameCreateDevice)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateDevice)
 		}
 	})
 
@@ -57,10 +70,14 @@ func TestDevice(t *testing.T) {
 		req.UserID = "service-user-id-0001"
 		res, errRes := GetDevices(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameGetDevices)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameGetDevices, errMsg)
 		}
 		if len(res.Devices) != 1 {
-			t.Fatalf("Failed to %s", TestNameGetDevices)
+			t.Fatalf("Failed to %s. Expected res.Devices count to be 1, but it was %d", TestNameGetDevices, len(res.Devices))
 		}
 	})
 
@@ -70,12 +87,16 @@ func TestDevice(t *testing.T) {
 		req.Platform = scpb.Platform_PlatformIos
 		errRes := DeleteDevice(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameDeleteDevice, errMsg)
 		}
 
 		errRes = DeleteDevice(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteDevice)
 		}
 
 		cReq := &model.CreateDeviceRequest{}
@@ -84,10 +105,14 @@ func TestDevice(t *testing.T) {
 		cReq.Token = "service-user-id-token-0001"
 		device, errRes := CreateDevice(ctx, cReq)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameDeleteDevice, errMsg)
 		}
 		if device == nil {
-			t.Fatalf("Failed to %s", TestNameDeleteDevice)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteDevice)
 		}
 	})
 }

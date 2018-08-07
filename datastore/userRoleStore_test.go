@@ -23,7 +23,7 @@ func TestUserRoleStore(t *testing.T) {
 		urs := []*model.UserRole{newUserRole1_3}
 		err := Provider(ctx).InsertUserRoles(urs)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertUserRoles)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertUserRoles, err.Error())
 		}
 
 		newUserRole1_1 := &model.UserRole{}
@@ -41,17 +41,17 @@ func TestUserRoleStore(t *testing.T) {
 			InsertUserRolesOptionBeforeClean(true),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertUserRoles)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertUserRoles, err.Error())
 		}
 	})
 
 	t.Run(TestNameSelectRolesOfUserRole, func(t *testing.T) {
 		roles, err := Provider(ctx).SelectRolesOfUserRole("datastore-user-id-0001")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRolesOfUserRole)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRolesOfUserRole, err.Error())
 		}
 		if len(roles) != 3 {
-			t.Fatalf("Failed to %s", TestNameSelectRolesOfUserRole)
+			t.Fatalf("Failed to %s. Expected roles count to be 0, but it was %d", TestNameSelectRolesOfUserRole, len(roles))
 		}
 		expectRoles := map[int32]interface{}{
 			1: nil,
@@ -60,7 +60,7 @@ func TestUserRoleStore(t *testing.T) {
 		}
 		for _, role := range roles {
 			if _, ok := expectRoles[role]; !ok {
-				t.Fatalf("Failed to %s", TestNameSelectRolesOfUserRole)
+				t.Fatalf("Failed to %s. Expected roles contains [1, 2, 4], but it was not", TestNameSelectRolesOfUserRole)
 			}
 		}
 	})
@@ -68,13 +68,13 @@ func TestUserRoleStore(t *testing.T) {
 	t.Run(TestNameSelectUserIDsOfUserRole, func(t *testing.T) {
 		userIDs, err := Provider(ctx).SelectUserIDsOfUserRole(4)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectUserIDsOfUserRole, err.Error())
 		}
 		if len(userIDs) != 1 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 0, but it was %d", TestNameSelectUserIDsOfUserRole, len(userIDs))
 		}
 		if userIDs[0] != "datastore-user-id-0001" {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected userIDs[0] to be \"datastore-user-id-0001\", but it was %s", TestNameSelectUserIDsOfUserRole, userIDs[0])
 		}
 	})
 
@@ -83,14 +83,14 @@ func TestUserRoleStore(t *testing.T) {
 			DeleteUserRolesOptionFilterByUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteUserRoles, err.Error())
 		}
 
 		err = Provider(ctx).DeleteUserRoles(
 			DeleteUserRolesOptionFilterByRoles([]int32{1}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteUserRoles, err.Error())
 		}
 
 		err = Provider(ctx).DeleteUserRoles(
@@ -98,31 +98,31 @@ func TestUserRoleStore(t *testing.T) {
 			DeleteUserRolesOptionFilterByRoles([]int32{4}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteUserRoles, err.Error())
 		}
 
 		userIDs, err := Provider(ctx).SelectUserIDsOfUserRole(1)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteUserRoles, err.Error())
 		}
 		if len(userIDs) != 0 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 0, but it was %d", TestNameDeleteUserRoles, len(userIDs))
 		}
 
 		userIDs, err = Provider(ctx).SelectUserIDsOfUserRole(2)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteUserRoles, err.Error())
 		}
 		if len(userIDs) != 10 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 10, but it was %d", TestNameDeleteUserRoles, len(userIDs))
 		}
 
 		userIDs, err = Provider(ctx).SelectUserIDsOfUserRole(3)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteUserRoles, err.Error())
 		}
 		if len(userIDs) != 0 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfUserRole)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 0, but it was %d", TestNameDeleteUserRoles, len(userIDs))
 		}
 	})
 }

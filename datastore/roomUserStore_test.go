@@ -54,7 +54,7 @@ func TestRoomUserStore(t *testing.T) {
 		newRoomUsers := []*model.RoomUser{newRoomUser1_1, newRoomUser1_11, newRoomUser2_1, newRoomUser2_2, newRoomUser3_1}
 		err = Provider(ctx).InsertRoomUsers(newRoomUsers)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertRoomUsers, err.Error())
 		}
 
 		newRoomUsers = []*model.RoomUser{newRoomUser1_1}
@@ -63,7 +63,7 @@ func TestRoomUserStore(t *testing.T) {
 			InsertRoomUsersOptionBeforeCleanRoomID("datastore-room-id-0003"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameInsertRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameInsertRoomUsers, err.Error())
 		}
 	})
 
@@ -72,26 +72,32 @@ func TestRoomUserStore(t *testing.T) {
 			SelectRoomUsersOptionWithRoomID("datastore-room-id-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUsers, err.Error())
 		}
 		if len(roomUsers) != 2 {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected room users count to be 2, but it was %d", TestNameSelectRoomUsers, len(roomUsers))
 		}
-		if !(roomUsers[0].RoomID == "datastore-room-id-0001" && roomUsers[0].UserID == "datastore-user-id-0001") {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+		if roomUsers[0].RoomID != "datastore-room-id-0001" {
+			t.Fatalf("Failed to %s. Expected roomUsers[0].RoomID to be datastore-room-id-0001, but it was %s", TestNameSelectRoomUsers, roomUsers[0].RoomID)
 		}
-		if !(roomUsers[1].RoomID == "datastore-room-id-0001" && roomUsers[1].UserID == "datastore-user-id-0011") {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+		if roomUsers[0].UserID != "datastore-user-id-0001" {
+			t.Fatalf("Failed to %s. Expected roomUsers[0].UserID to be datastore-user-id-0001, but it was %s", TestNameSelectRoomUsers, roomUsers[0].UserID)
+		}
+		if roomUsers[1].RoomID != "datastore-room-id-0001" {
+			t.Fatalf("Failed to %s. Expected roomUsers[1].RoomID to be datastore-room-id-0001, but it was %s", TestNameSelectRoomUsers, roomUsers[1].RoomID)
+		}
+		if roomUsers[1].UserID != "datastore-user-id-0011" {
+			t.Fatalf("Failed to %s. Expected roomUsers[1].UserID to be datastore-user-id-0011, but it was %s", TestNameSelectRoomUsers, roomUsers[1].UserID)
 		}
 
 		roomUsers, err = Provider(ctx).SelectRoomUsers(
 			SelectRoomUsersOptionWithUserIDs([]string{"datastore-user-id-0001", "datastore-user-id-0002"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUsers, err.Error())
 		}
 		if len(roomUsers) != 3 {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected room users count to be 3, but it was %d", TestNameSelectRoomUsers, len(roomUsers))
 		}
 
 		roomUsers, err = Provider(ctx).SelectRoomUsers(
@@ -99,10 +105,10 @@ func TestRoomUserStore(t *testing.T) {
 			SelectRoomUsersOptionWithUserIDs([]string{"datastore-user-id-0001", "datastore-user-id-0002"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUsers, err.Error())
 		}
 		if len(roomUsers) != 1 {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected room users count to be 1, but it was %d", TestNameSelectRoomUsers, len(roomUsers))
 		}
 
 		roomUsers, err = Provider(ctx).SelectRoomUsers(
@@ -110,18 +116,19 @@ func TestRoomUserStore(t *testing.T) {
 			SelectRoomUsersOptionWithRoles([]int32{1, 2}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUsers, err.Error())
 		}
 		if len(roomUsers) != 2 {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected room users count to be 2, but it was %d", TestNameSelectRoomUsers, len(roomUsers))
 		}
 
 		_, err = Provider(ctx).SelectRoomUsers()
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectRoomUsers)
 		}
-		if err.Error() != "An error occurred while getting room users. Be sure to specify either roomID or userIDs or roles" {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+		errMsg := "An error occurred while getting room users. Be sure to specify either roomID or userIDs or roles"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectRoomUsers, errMsg, err.Error())
 		}
 
 		_, err = Provider(ctx).SelectRoomUsers(
@@ -130,10 +137,11 @@ func TestRoomUserStore(t *testing.T) {
 			SelectRoomUsersOptionWithUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectRoomUsers)
 		}
-		if err.Error() != "An error occurred while getting room users. At the same time, roomID, userIDs, roles can not be specified" {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+		errMsg = "An error occurred while getting room users. At the same time, roomID, userIDs, roles can not be specified"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectRoomUsers, errMsg, err.Error())
 		}
 
 		_, err = Provider(ctx).SelectRoomUsers(
@@ -141,38 +149,51 @@ func TestRoomUserStore(t *testing.T) {
 			SelectRoomUsersOptionWithUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectRoomUsers)
 		}
-		if err.Error() != "An error occurred while getting room users. When roles is specified, roomID must be specified" {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+		errMsg = "An error occurred while getting room users. When roles is specified, roomID must be specified"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectRoomUsers, errMsg, err.Error())
 		}
 	})
 
 	t.Run(TestNameSelectRoomUser, func(t *testing.T) {
 		roomUser, err = Provider(ctx).SelectRoomUser("datastore-room-id-0001", "datastore-user-id-0001")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUser, err.Error())
 		}
 		if roomUser == nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUser)
+			t.Fatalf("Failed to %s. Expected roomUser to be not nil, but it was nil", TestNameSelectRoomUser)
+		}
+		if roomUser.RoomID != "datastore-room-id-0001" {
+			t.Fatalf("Failed to %s. Expected roomUser.RoomID to be datastore-room-id-0001, but it was %s", TestNameSelectRoomUser, roomUser.RoomID)
+		}
+		if roomUser.UserID != "datastore-user-id-0001" {
+			t.Fatalf("Failed to %s. Expected roomUser.UserID to be datastore-user-id-0001, but it was %s", TestNameSelectRoomUser, roomUser.UserID)
+		}
+		if roomUser.UnreadCount != 0 {
+			t.Fatalf("Failed to %s. Expected roomUser.UnreadCount to be 0, but it was %d", TestNameSelectRoomUser, roomUser.UnreadCount)
+		}
+		if roomUser.Display != true {
+			t.Fatalf("Failed to %s. Expected roomUser.Display to be true, but it was %t", TestNameSelectRoomUser, roomUser.Display)
 		}
 	})
 
 	t.Run(TestNameSelectRoomUserOfOneOnOne, func(t *testing.T) {
 		roomUserOfOneOnOne, err := Provider(ctx).SelectRoomUserOfOneOnOne("datastore-user-id-0001", "datastore-user-id-0011")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUserOfOneOnOne)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUserOfOneOnOne, err.Error())
 		}
 		if roomUserOfOneOnOne == nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUserOfOneOnOne)
+			t.Fatalf("Failed to %s. Expected roomUserOfOneOnOne to be not nil, but it was nil", TestNameSelectRoomUserOfOneOnOne)
 		}
 
 		roomUserOfOneOnOne, err = Provider(ctx).SelectRoomUserOfOneOnOne("datastore-user-id-0001", "datastore-user-id-0003")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUserOfOneOnOne)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectRoomUserOfOneOnOne, err.Error())
 		}
 		if roomUserOfOneOnOne != nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUserOfOneOnOne)
+			t.Fatalf("Failed to %s. Expected roomUserOfOneOnOne to be nil, but it was not nil", TestNameSelectRoomUserOfOneOnOne)
 		}
 	})
 
@@ -181,20 +202,20 @@ func TestRoomUserStore(t *testing.T) {
 			SelectUserIDsOfRoomUserOptionWithRoomID("datastore-room-id-0001"),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectUserIDsOfRoomUser, err.Error())
 		}
 		if len(userIDs) != 2 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 2, but it was %d", TestNameSelectUserIDsOfRoomUser, len(userIDs))
 		}
 
 		userIDs, err = Provider(ctx).SelectUserIDsOfRoomUser(
 			SelectUserIDsOfRoomUserOptionWithUserIDs([]string{"datastore-user-id-0001", "datastore-user-id-0002"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectUserIDsOfRoomUser, err.Error())
 		}
 		if len(userIDs) != 3 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 3, but it was %d", TestNameSelectUserIDsOfRoomUser, len(userIDs))
 		}
 
 		userIDs, err = Provider(ctx).SelectUserIDsOfRoomUser(
@@ -202,10 +223,10 @@ func TestRoomUserStore(t *testing.T) {
 			SelectUserIDsOfRoomUserOptionWithUserIDs([]string{"datastore-user-id-0001", "datastore-user-id-0002"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectUserIDsOfRoomUser, err.Error())
 		}
 		if len(userIDs) != 1 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected userIDs count to be 1, but it was %d", TestNameSelectUserIDsOfRoomUser, len(userIDs))
 		}
 
 		userIDs, err = Provider(ctx).SelectUserIDsOfRoomUser(
@@ -213,18 +234,19 @@ func TestRoomUserStore(t *testing.T) {
 			SelectUserIDsOfRoomUserOptionWithRoles([]int32{1}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameSelectUserIDsOfRoomUser, err.Error())
 		}
 		if len(userIDs) != 1 {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected user IDs count to be 2, but it was %d", TestNameSelectUserIDsOfRoomUser, len(userIDs))
 		}
 
 		_, err = Provider(ctx).SelectUserIDsOfRoomUser()
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectUserIDsOfRoomUser)
 		}
-		if err.Error() != "An error occurred while getting room userIDs. Be sure to specify either roomID or userIDs or roles" {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+		errMsg := "An error occurred while getting room userIDs. Be sure to specify either roomID or userIDs or roles"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectUserIDsOfRoomUser, errMsg, err.Error())
 		}
 
 		_, err = Provider(ctx).SelectUserIDsOfRoomUser(
@@ -233,10 +255,11 @@ func TestRoomUserStore(t *testing.T) {
 			SelectUserIDsOfRoomUserOptionWithUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectUserIDsOfRoomUser)
 		}
-		if err.Error() != "An error occurred while getting room userIDs. At the same time, roomID, userIDs, roles can not be specified" {
-			t.Fatalf("Failed to %s", TestNameSelectRoomUsers)
+		errMsg = "An error occurred while getting room userIDs. At the same time, roomID, userIDs, roles can not be specified"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectUserIDsOfRoomUser, errMsg, err.Error())
 		}
 
 		_, err = Provider(ctx).SelectUserIDsOfRoomUser(
@@ -244,10 +267,11 @@ func TestRoomUserStore(t *testing.T) {
 			SelectUserIDsOfRoomUserOptionWithUserIDs([]string{"datastore-user-id-0001"}),
 		)
 		if err == nil {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be not nil, but it was nil", TestNameSelectUserIDsOfRoomUser)
 		}
-		if err.Error() != "An error occurred while getting room userIDs. When roles is specified, roomID must be specified" {
-			t.Fatalf("Failed to %s", TestNameSelectUserIDsOfRoomUser)
+		errMsg = "An error occurred while getting room userIDs. When roles is specified, roomID must be specified"
+		if err.Error() != errMsg {
+			t.Fatalf("Failed to %s. Expected err message to be \"%s\", but it was %s", TestNameSelectUserIDsOfRoomUser, errMsg, err.Error())
 		}
 	})
 
@@ -255,15 +279,15 @@ func TestRoomUserStore(t *testing.T) {
 		roomUser.UnreadCount = 10
 		err = Provider(ctx).UpdateRoomUser(roomUser)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameUpdateRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateRoomUser, err.Error())
 		}
 
 		updatedRoomUser, err := Provider(ctx).SelectRoomUser(roomUser.RoomID, roomUser.UserID)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameUpdateRoomUser)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameUpdateRoomUser, err.Error())
 		}
 		if updatedRoomUser.UnreadCount != 10 {
-			t.Fatalf("Failed to %s", TestNameUpdateRoomUser)
+			t.Fatalf("Failed to %s. Expected updatedRoomUser.UnreadCount to be 10, but it was %d", TestNameUpdateRoomUser, updatedRoomUser.UnreadCount)
 		}
 	})
 
@@ -273,46 +297,46 @@ func TestRoomUserStore(t *testing.T) {
 			DeleteRoomUsersOptionFilterByUserIDs([]string{"datastore-user-id-0001", "datastore-user-id-0011"}), // datastore-user-id-0011 is not exist
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
 		roomUser, err := Provider(ctx).SelectRoomUser("datastore-room-id-0002", "datastore-user-id-0001")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
 		if roomUser != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected roomUser to be nil, but it was not nil", TestNameDeleteRoomUsers)
 		}
 
 		err = Provider(ctx).DeleteRoomUsers(
 			DeleteRoomUsersOptionFilterByRoomIDs([]string{"datastore-room-id-0001"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
 		roomUser, err = Provider(ctx).SelectRoomUser("datastore-room-id-0001", "datastore-user-id-0001")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
 		if roomUser != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected roomUser to be nil, but it was not nil", TestNameDeleteRoomUsers)
 		}
 		roomUser, err = Provider(ctx).SelectRoomUser("datastore-room-id-0001", "datastore-user-id-0011")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
 		if roomUser != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected roomUser to be nil, but it was not nil", TestNameDeleteRoomUsers)
 		}
 
 		err = Provider(ctx).DeleteRoomUsers(
 			DeleteRoomUsersOptionFilterByUserIDs([]string{"datastore-user-id-0002"}),
 		)
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
-		roomUser, err = Provider(ctx).SelectRoomUser("datastore-room-id-0002", "datastore-user-id-0002")
+		_, err = Provider(ctx).SelectRoomUser("datastore-room-id-0002", "datastore-user-id-0002")
 		if err != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteRoomUsers)
+			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestNameDeleteRoomUsers, err.Error())
 		}
 	})
 }

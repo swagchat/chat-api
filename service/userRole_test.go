@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/swagchat/chat-api/model"
@@ -18,14 +19,18 @@ func TestUserRole(t *testing.T) {
 		req.Roles = []int32{1, 2, 3}
 		errRes := CreateUserRoles(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameCreateUserRoles)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameCreateUserRoles, errMsg)
 		}
 
 		req = &model.CreateUserRolesRequest{}
 		req.UserID = "not-exist-user"
 		errRes = CreateUserRoles(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s", TestNameCreateUserRoles)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateUserRoles)
 		}
 	})
 
@@ -35,14 +40,18 @@ func TestUserRole(t *testing.T) {
 		req.Roles = []int32{1, 2, 3}
 		errRes := DeleteUserRoles(ctx, req)
 		if errRes != nil {
-			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
+			errMsg := ""
+			if errRes.Error != nil {
+				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
+			}
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestNameDeleteUserRoles, errMsg)
 		}
 
 		req = &model.DeleteUserRolesRequest{}
 		req.UserID = "not-exist-user"
 		errRes = DeleteUserRoles(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s", TestNameDeleteUserRoles)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteUserRoles)
 		}
 	})
 }
