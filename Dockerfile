@@ -11,6 +11,7 @@ RUN make install
 
 COPY . /go/src/github.com/swagchat/chat-api
 WORKDIR /go/src/github.com/swagchat/chat-api/
+RUN go test -covermode=atomic -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 RUN go build -o chat-api
 
 FROM alpine:3.7
