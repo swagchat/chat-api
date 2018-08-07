@@ -31,4 +31,4 @@ COPY --from=build /usr/local/include/librdkafka /usr/local/include/librdkafka
 STOPSIGNAL SIGTERM
 
 EXPOSE 8101 9101
-CMD /bin/sh -c "cd /app && ./chat-api"
+ENTRYPOINT ["/app/chat-api"]
