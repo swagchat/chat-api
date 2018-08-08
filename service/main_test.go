@@ -32,29 +32,52 @@ func TestMain(m *testing.M) {
 	nowTimestamp := time.Now().Unix()
 
 	var newUser *model.User
+	userRoles := make([]*model.UserRole, 20, 20)
+
 	for i := 1; i <= 10; i++ {
+		userID := fmt.Sprintf("service-user-id-%04d", i)
+
 		newUser = &model.User{}
-		newUser.UserID = fmt.Sprintf("service-user-id-%04d", i)
+		newUser.UserID = userID
 		newUser.MetaData = []byte(`{"key":"value"}`)
 		newUser.LastAccessed = nowTimestamp + int64(i)
 		newUser.Created = nowTimestamp + int64(i)
 		newUser.Modified = nowTimestamp + int64(i)
+		newUser.Roles = []int32{1}
 		err := datastore.Provider(ctx).InsertUser(newUser)
 		if err != nil {
 			fmt.Errorf("Failed to insert user on main test")
 		}
+
+		newUserRole := &model.UserRole{}
+		newUserRole.UserID = userID
+		newUserRole.Role = 1
+		userRoles[i-1] = newUserRole
 	}
 	for i := 11; i <= 20; i++ {
+		userID := fmt.Sprintf("service-user-id-%04d", i)
+
 		newUser = &model.User{}
-		newUser.UserID = fmt.Sprintf("service-user-id-%04d", i)
+		newUser.UserID = userID
 		newUser.MetaData = []byte(`{"key":"value"}`)
 		newUser.LastAccessed = nowTimestamp
 		newUser.Created = nowTimestamp + int64(i)
 		newUser.Modified = nowTimestamp + int64(i)
+		newUser.Roles = []int32{2}
 		err := datastore.Provider(ctx).InsertUser(newUser)
 		if err != nil {
 			fmt.Errorf("Failed to insert user on main test")
 		}
+
+		newUserRole := &model.UserRole{}
+		newUserRole.UserID = userID
+		newUserRole.Role = 2
+		userRoles[i-1] = newUserRole
+	}
+
+	err := datastore.Provider(ctx).InsertUserRoles(userRoles)
+	if err != nil {
+		fmt.Errorf("Failed to insert user roles on main test")
 	}
 
 	var newRoom *model.Room
@@ -88,6 +111,9 @@ func TestMain(m *testing.M) {
 	time.Sleep(1 * time.Second)
 
 	code := m.Run()
+
+	datastore.Provider(ctx).DropDatabase()
 	datastore.Provider(ctx).Close()
+
 	os.Exit(code)
 }

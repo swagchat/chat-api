@@ -52,7 +52,6 @@ type selectUserOptions struct {
 	withBlocks  bool
 	withDevices bool
 	withRoles   bool
-	withRooms   bool
 }
 
 type SelectUserOption func(*selectUserOptions)
@@ -72,12 +71,6 @@ func SelectUserOptionWithDevices(withDevices bool) SelectUserOption {
 func SelectUserOptionWithRoles(withRoles bool) SelectUserOption {
 	return func(ops *selectUserOptions) {
 		ops.withRoles = withRoles
-	}
-}
-
-func SelectUserOptionWithRooms(withRooms bool) SelectUserOption {
-	return func(ops *selectUserOptions) {
-		ops.withRooms = withRooms
 	}
 }
 
@@ -106,7 +99,7 @@ type userStore interface {
 	InsertUser(user *model.User, opts ...InsertUserOption) error
 	SelectUsers(limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error)
 	SelectUser(userID string, opts ...SelectUserOption) (*model.User, error)
-	SelectCountUsers(opts ...SelectUsersOption) (int64, error)
+	SelectCountUsers() (int64, error)
 	SelectUserIDsOfUser(userIDs []string) ([]string, error)
 	UpdateUser(user *model.User, opts ...UpdateUserOption) error
 

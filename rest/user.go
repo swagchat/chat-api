@@ -260,7 +260,8 @@ func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req.RoleID = int32(roleIDInt)
+	roleIDInt32 := int32(roleIDInt)
+	req.RoleID = &roleIDInt32
 
 	roleUsers, errRes := service.GetRoleUsers(ctx, req)
 	if errRes != nil {

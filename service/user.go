@@ -88,7 +88,7 @@ func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *mode
 		req.UserID,
 		datastore.SelectUserOptionWithBlocks(true),
 		datastore.SelectUserOptionWithDevices(true),
-		datastore.SelectUserOptionWithRooms(true),
+		datastore.SelectUserOptionWithRoles(true),
 	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get user.", http.StatusInternalServerError, model.WithError(err))
@@ -231,6 +231,7 @@ func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User,
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
+		errRes.Status = http.StatusNotFound
 		return nil, errRes
 	}
 
@@ -244,7 +245,12 @@ func GetRoleUsers(ctx context.Context, req *model.GetRoleUsersRequest) (*model.R
 	span := tracer.Provider(ctx).StartSpan("GetRoleUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(req.RoleID)
+	errRes := req.Validate()
+	if errRes != nil {
+		return nil, errRes
+	}
+
+	userIDs, err := datastore.Provider(ctx).SelectUserIDsOfUserRole(*req.RoleID)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to get userIds of user roles.", http.StatusInternalServerError, model.WithError(err))
 	}

@@ -47,9 +47,9 @@ func (p *mysqlProvider) SelectUser(userID string, opts ...SelectUserOption) (*mo
 	return rdbSelectUser(p.ctx, replica, userID, opts...)
 }
 
-func (p *mysqlProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, error) {
+func (p *mysqlProvider) SelectCountUsers() (int64, error) {
 	replica := RdbStore(p.database).replica()
-	return rdbSelectCountUsers(p.ctx, replica, opts...)
+	return rdbSelectCountUsers(p.ctx, replica)
 }
 
 func (p *mysqlProvider) SelectUserIDsOfUser(userIDs []string) ([]string, error) {

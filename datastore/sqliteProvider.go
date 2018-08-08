@@ -71,7 +71,8 @@ func (p *sqliteProvider) CreateTables() {
 }
 
 func (p *sqliteProvider) DropDatabase() error {
-	if err := os.Remove(p.database); err != nil {
+	dbPath := fmt.Sprintf("%s/%s.db", p.dirPath, p.database)
+	if err := os.Remove(dbPath); err != nil {
 		err = errors.Wrap(err, "Drop database failure")
 		logger.Error(err.Error())
 		return err

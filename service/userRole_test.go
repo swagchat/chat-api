@@ -16,7 +16,7 @@ func TestUserRole(t *testing.T) {
 	t.Run(TestNameCreateUserRoles, func(t *testing.T) {
 		req := &model.CreateUserRolesRequest{}
 		req.UserID = "service-user-id-0001"
-		req.Roles = []int32{1, 2, 3}
+		req.Roles = []int32{4, 5, 6}
 		errRes := CreateUserRoles(ctx, req)
 		if errRes != nil {
 			errMsg := ""
@@ -37,7 +37,7 @@ func TestUserRole(t *testing.T) {
 	t.Run(TestNameDeleteUserRoles, func(t *testing.T) {
 		req := &model.DeleteUserRolesRequest{}
 		req.UserID = "service-user-id-0001"
-		req.Roles = []int32{1, 2, 3}
+		req.Roles = []int32{4, 5, 6}
 		errRes := DeleteUserRoles(ctx, req)
 		if errRes != nil {
 			errMsg := ""

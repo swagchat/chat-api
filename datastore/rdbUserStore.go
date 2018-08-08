@@ -3,7 +3,6 @@ package datastore
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"gopkg.in/gorp.v2"
@@ -231,14 +230,9 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 	return user, nil
 }
 
-func rdbSelectCountUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectUsersOption) (int64, error) {
+func rdbSelectCountUsers(ctx context.Context, dbMap *gorp.DbMap) (int64, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectCountUsers", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
-
-	opt := selectUsersOptions{}
-	for _, o := range opts {
-		o(&opt)
-	}
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0", tableNameUser)
 	params := make(map[string]interface{})
@@ -406,15 +400,21 @@ WHERE
 	OR
 	(
 		u.user_id IN (
-			SELECT ru.user_id FROM %s as ru WHERE ru.user_id!=:userId AND ru.room_id IN (
-				SELECT ru.room_id FROM %s as ru LEFT JOIN %s as r ON ru.room_id = r.room_id WHERE ru.user_id=:userId AND r.type!=%s
-			)
+			SELECT ru.user_id FROM %s as ru
+			WHERE
+				ru.user_id!=:userId AND
+				ru.room_id IN (
+					SELECT ru.room_id FROM %s as ru
+					LEFT JOIN %s as r ON ru.room_id = r.room_id
+					WHERE ru.user_id=:userId AND r.type!=:type
+				)
 		) AND
 		u.public=1 AND
 		u.deleted=0
 	)
-GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom, strconv.Itoa(int(scpb.RoomType_RoomTypeNoticeRoom)))
+GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom)
 	params := make(map[string]interface{})
+	params["type"] = scpb.RoomType_RoomTypeNoticeRoom
 
 	query = fmt.Sprintf("%s ORDER BY", query)
 	if opt.orders == nil {

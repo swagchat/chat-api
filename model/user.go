@@ -188,8 +188,8 @@ type CreateUserRequest struct {
 	MetaData JSONText `json:"metaData,omitempty" db:"meta_data"`
 }
 
-func (u *CreateUserRequest) Validate() *ErrorResponse {
-	if u.UserID != nil && *u.UserID != "" && !IsValidID(*u.UserID) {
+func (cur *CreateUserRequest) Validate() *ErrorResponse {
+	if cur.UserID != nil && *cur.UserID != "" && !IsValidID(*cur.UserID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -199,7 +199,17 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if u.UserID != nil && len(*u.UserID) > 36 {
+	if cur.Name == nil || (cur.Name != nil && *cur.Name == "") {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "name",
+				Reason: "name is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if cur.UserID != nil && len(*cur.UserID) > 36 {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -209,14 +219,20 @@ func (u *CreateUserRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if u.Name == nil || (u.Name != nil && *u.Name == "") {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "name",
-				Reason: "name is required, but it's empty.",
-			},
+	// TODO check lang
+
+	if cur.UserID != nil && *cur.UserID != "" {
+		for _, blockUserID := range cur.BlockUsers {
+			if blockUserID == *cur.UserID {
+				invalidParams := []*scpb.InvalidParam{
+					&scpb.InvalidParam{
+						Name:   "blockUsers",
+						Reason: "blockUsers can not include own UserId.",
+					},
+				}
+				return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+			}
 		}
-		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	return nil
@@ -368,6 +384,20 @@ type UpdateUserRequest struct {
 }
 
 func (uur *UpdateUserRequest) Validate() *ErrorResponse {
+	// TODO check lang
+
+	for _, blockUserID := range uur.BlockUsers {
+		if blockUserID == uur.UserID {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "blockUsers",
+					Reason: "blockUsers can not include own UserId.",
+				},
+			}
+			return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+		}
+	}
+
 	return nil
 }
 
@@ -454,6 +484,21 @@ type GetProfileRequest struct {
 
 type GetRoleUsersRequest struct {
 	scpb.GetRoleUsersRequest
+}
+
+func (grur *GetRoleUsersRequest) Validate() *ErrorResponse {
+	if grur.RoleID == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "roleId",
+				Reason: "roleId is required, but it's empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+
+	}
+
+	return nil
 }
 
 type RoleUsersResponse struct {

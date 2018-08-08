@@ -152,7 +152,7 @@ message GetProfileRequest {
 
 message GetRoleUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
-  optional int32 role_id = 11 [(gogoproto.customname) = "RoleID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roleId"];
+  optional int32 role_id = 11 [(gogoproto.customname) = "RoleID", (gogoproto.jsontag) = "roleId"];
 }
 
 message RoleUsersResponse {

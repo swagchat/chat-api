@@ -47,9 +47,9 @@ func (p *sqliteProvider) SelectUser(userID string, opts ...SelectUserOption) (*m
 	return rdbSelectUser(p.ctx, replica, userID, opts...)
 }
 
-func (p *sqliteProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, error) {
+func (p *sqliteProvider) SelectCountUsers() (int64, error) {
 	replica := RdbStore(p.database).replica()
-	return rdbSelectCountUsers(p.ctx, replica, opts...)
+	return rdbSelectCountUsers(p.ctx, replica)
 }
 
 func (p *sqliteProvider) SelectUserIDsOfUser(userIDs []string) ([]string, error) {

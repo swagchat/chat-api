@@ -144,28 +144,45 @@ func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		o(&opt)
 	}
 
+	if (opt.userIDs == nil || len(opt.userIDs) == 0) && (opt.roles == nil || len(opt.roles) == 0) {
+		err := errors.New("An error occurred while deleting user roles. Be sure to specify either userIds or roles")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
+		return err
+	}
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE", tableNameUserRole)
+	var userIDsQuery string
+	userIDsParams := make([]interface{}, 0)
+	var rolesQuery string
+	rolesParams := make([]interface{}, 0)
+
 	if opt.userIDs != nil && len(opt.userIDs) > 0 {
-		userIDsQuery, userIDsParams := makePrepareExpressionForInOperand(opt.userIDs)
-		query := fmt.Sprintf("DELETE FROM %s WHERE user_id IN (%s)", tableNameUserRole, userIDsQuery)
-		_, err := tx.Exec(query, userIDsParams...)
-		if err != nil {
-			err = errors.Wrap(err, "An error occurred while deleting user roles")
-			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
-			return err
-		}
+		userIDsQuery, userIDsParams = makePrepareExpressionForInOperand(opt.userIDs)
+		query = fmt.Sprintf("%s user_id IN (%s) AND", query, userIDsQuery)
 	}
 
 	if opt.roles != nil && len(opt.roles) > 0 {
-		rolesQuery, rolesParams := makePrepareExpressionForInOperand(opt.roles)
-		query := fmt.Sprintf("DELETE FROM %s WHERE role IN (%s)", tableNameUserRole, rolesQuery)
-		_, err := tx.Exec(query, rolesParams...)
-		if err != nil {
-			err = errors.Wrap(err, "An error occurred while deleting user roles")
-			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
-			return err
-		}
+		rolesQuery, rolesParams = makePrepareExpressionForInOperand(opt.roles)
+		query = fmt.Sprintf("%s role IN (%s) AND", query, rolesQuery)
+	}
+
+	params := make([]interface{}, len(userIDsParams)+len(rolesParams))
+	var i int
+	for i = 0; i < len(userIDsParams); i++ {
+		params[i] = userIDsParams[i]
+	}
+	for j := 0; j < len(rolesParams); j++ {
+		params[i+j] = rolesParams[j]
+	}
+	query = query[0 : len(query)-len(" AND")]
+
+	_, err := tx.Exec(query, params...)
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while deleting user roles")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
+		return err
 	}
 
 	return nil

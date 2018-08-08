@@ -47,9 +47,9 @@ func (p *gcpSQLProvider) SelectUser(userID string, opts ...SelectUserOption) (*m
 	return rdbSelectUser(p.ctx, replica, userID, opts...)
 }
 
-func (p *gcpSQLProvider) SelectCountUsers(opts ...SelectUsersOption) (int64, error) {
+func (p *gcpSQLProvider) SelectCountUsers() (int64, error) {
 	replica := RdbStore(p.database).replica()
-	return rdbSelectCountUsers(p.ctx, replica, opts...)
+	return rdbSelectCountUsers(p.ctx, replica)
 }
 
 func (p *gcpSQLProvider) SelectUserIDsOfUser(userIDs []string) ([]string, error) {

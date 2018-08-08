@@ -110,6 +110,9 @@ func TestMain(m *testing.M) {
 	time.Sleep(1 * time.Second)
 
 	code := m.Run()
+
+	Provider(ctx).DropDatabase()
 	Provider(ctx).Close()
+
 	os.Exit(code)
 }
