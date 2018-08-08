@@ -636,7 +636,7 @@ func (c *config) parseFlag(args []string) error {
 		return nil
 	}
 
-	flags := flag.NewFlagSet("ChatAPI Flags", flag.ContinueOnError)
+	flags := flag.NewFlagSet(fmt.Sprintf("%s Flags", AppName), flag.ContinueOnError)
 
 	flags.BoolVar(&showVersion, "v", false, "show version")
 	flags.BoolVar(&showVersion, "version", false, "show version")
