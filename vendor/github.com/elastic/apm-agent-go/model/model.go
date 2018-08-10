@@ -236,10 +236,16 @@ type User struct {
 
 	// ID identifies the user, e.g. a primary key. This may be
 	// a string or number.
-	ID string `json:"id,omitempty"`
+	ID UserID `json:"id,omitempty"`
 
 	// Email holds the email address of the user.
 	Email string `json:"email,omitempty"`
+}
+
+// UserID represents a user ID as either a number or a string.
+type UserID struct {
+	String string
+	Number float64
 }
 
 // Error represents an error occurring in the service.
@@ -485,22 +491,3 @@ type Time time.Time
 
 // UUID holds a 128-bit UUID.
 type UUID [16]byte
-
-// Metrics holds a set of metric samples, with an optional set of labels.
-type Metrics struct {
-	// Timestamp holds the time at which the metric samples were taken.
-	Timestamp Time `json:"timestamp"`
-
-	// Labels holds a set of labels associated with the metrics.
-	// The labels apply uniformly to all metric samples in the set.
-	Labels StringMap `json:"labels,omitempty"`
-
-	// Samples holds a map of metric samples, keyed by metric name.
-	Samples map[string]Metric `json:"samples"`
-}
-
-// Metric holds metric values.
-type Metric struct {
-	// Value holds the metric value.
-	Value float64 `json:"value"`
-}

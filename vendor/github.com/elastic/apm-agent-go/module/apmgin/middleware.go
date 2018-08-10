@@ -27,11 +27,7 @@ func init() {
 // By default, the middleware will use elasticapm.DefaultTracer.
 // Use WithTracer to specify an alternative tracer.
 func Middleware(engine *gin.Engine, o ...Option) gin.HandlerFunc {
-	m := &middleware{
-		engine:         engine,
-		tracer:         elasticapm.DefaultTracer,
-		requestIgnorer: apmhttp.DefaultServerRequestIgnorer(),
-	}
+	m := &middleware{engine: engine, tracer: elasticapm.DefaultTracer}
 	for _, o := range o {
 		o(m)
 	}
@@ -39,9 +35,8 @@ func Middleware(engine *gin.Engine, o ...Option) gin.HandlerFunc {
 }
 
 type middleware struct {
-	engine         *gin.Engine
-	tracer         *elasticapm.Tracer
-	requestIgnorer apmhttp.RequestIgnorerFunc
+	engine *gin.Engine
+	tracer *elasticapm.Tracer
 
 	setRouteMapOnce sync.Once
 	routeMap        map[string]map[string]routeInfo
@@ -52,7 +47,7 @@ type routeInfo struct {
 }
 
 func (m *middleware) handle(c *gin.Context) {
-	if !m.tracer.Active() || m.requestIgnorer(c.Request) {
+	if !m.tracer.Active() {
 		c.Next()
 		return
 	}
@@ -132,17 +127,5 @@ func WithTracer(t *elasticapm.Tracer) Option {
 	}
 	return func(m *middleware) {
 		m.tracer = t
-	}
-}
-
-// WithRequestIgnorer returns a Option which sets r as the
-// function to use to determine whether or not a request should
-// be ignored. If r is nil, all requests will be reported.
-func WithRequestIgnorer(r apmhttp.RequestIgnorerFunc) Option {
-	if r == nil {
-		r = apmhttp.IgnoreNone
-	}
-	return func(m *middleware) {
-		m.requestIgnorer = r
 	}
 }

@@ -4,9 +4,7 @@
 To adapt the Elastic APM Go agent to your needs, you can configure it using
 environment variables.
 
-By default, the agent will attempt to send data to the Elastic APM Server
-at `http://localhost:8200`, to simplify development and testing. To send
-data to an alternative location, you must configure
+In order to send your data to an Elastic APM server, you must at least configure
 <<config-server-url, ELASTIC_APM_SERVER_URL>>. Depending on the configuration
 of your server, you may also need to set <<config-secret-token, ELASTIC_APM_SECRET_TOKEN>>
 and <<config-verify-server-cert, ELASTIC_APM_VERIFY_SERVER_CERT>>. All other
@@ -18,8 +16,8 @@ variables have usable defaults.
 
 [options="header"]
 |============
-| Environment              | Default                 | Example
-| `ELASTIC_APM_SERVER_URL` | `http://localhost:8200` | `http://localhost:8200`
+| Environment              | Default  | Example
+| `ELASTIC_APM_SERVER_URL` |          | `http://localhost:9200`
 |============
 
 The URL for your Elastic APM server. The server supports both HTTP and HTTPS.
@@ -27,18 +25,8 @@ If you use HTTPS, then you may need to configure your client machines so
 that the server certificate can be verified. You can also disable certificate
 verification with <<config-verify-server-cert>>.
 
-[float]
-[[config-server-timeout]]
-=== `ELASTIC_APM_SERVER_TIMEOUT`
-
-[options="header"]
-|============
-| Environment                  | Default | Example
-| `ELASTIC_APM_SERVER_TIMEOUT` | `30s`   | `30s`
-|============
-
-The timeout for requests made to your Elastic APM server. When set to zero
-or a negative value, timeouts will be disabled.
+NOTE: If `ELASTIC_APM_SERVER_URL` is not specified, then all transactions and
+errors will be discarded.
 
 [float]
 [[config-secret-token]]
@@ -117,24 +105,6 @@ The name of the environment this service is deployed in, e.g. "production" or "s
 
 Enable or disable the tracer. If set to false, then the Go agent does not send
 any data to the Elastic APM server, and instrumentation overhead is minimized.
-
-[float]
-[[config-ignore-urls]]
-=== `ELASTIC_APM_IGNORE_URLS`
-
-[options="header"]
-|============
-| Environment               | Default | Example
-| `ELASTIC_APM_IGNORE_URLS` |         | `/heartbeat\|/_internal/.*`
-|============
-
-A regular expression matching the request line of HTTP requests for which
-transactions should not be reported.
-
-The pattern specified in `ELASTIC_APM_IGNORE_URLS` is treated
-case-insensitively by default. To override this behavior and match case-sensitively,
-wrap the value like `(?-i:<value>)`. For a full definition of Go's regular
-expression syntax, see https://golang.org/pkg/regexp/syntax/.
 
 [float]
 [[config-sanitize-field-names]]

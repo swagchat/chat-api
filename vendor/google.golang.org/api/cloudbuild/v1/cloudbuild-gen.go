@@ -1,6 +1,6 @@
-// Package cloudbuild provides access to the Cloud Container Builder.
+// Package cloudbuild provides access to the Cloud Build API.
 //
-// See https://cloud.google.com/container-builder/docs/
+// See https://cloud.google.com/cloud-build/docs/
 //
 // Usage example:
 //
@@ -260,7 +260,7 @@ func (s *Artifacts) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Build: A build resource in the Container Builder API.
+// Build: A build resource in the Cloud Build API.
 //
 // At a high level, a `Build` describes where to find source code, how
 // to build
@@ -1151,6 +1151,15 @@ type Results struct {
 	// corresponding to build step
 	// indices.
 	BuildStepImages []string `json:"buildStepImages,omitempty"`
+
+	// BuildStepOutputs: List of build step outputs, produced by builder
+	// images, in the order
+	// corresponding to build step indices.
+	//
+	// Builders can produce this output by writing to
+	// `$BUILDER_OUTPUT/output`.
+	// Only the first 4KB of data is stored.
+	BuildStepOutputs []string `json:"buildStepOutputs,omitempty"`
 
 	// Images: Container images that were built as a part of the build.
 	Images []*BuiltImage `json:"images,omitempty"`

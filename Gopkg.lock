@@ -4,14 +4,14 @@
 [[projects]]
   name = "cloud.google.com/go"
   packages = ["compute/metadata"]
-  revision = "0fd7230b2a7505833d5f69b75cbd6c9582401479"
-  version = "v0.23.0"
+  revision = "64a2037ec6be8a4b0c1d1f706ed35b428b989239"
+  version = "v0.26.0"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
   packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/csm","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/sdkio","internal/sdkrand","internal/sdkuri","internal/shareddefaults","private/protocol","private/protocol/eventstream","private/protocol/eventstream/eventstreamapi","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/s3","service/sns","service/sts"]
-  revision = "8cf662a972fa7fba8f2c1ec57648cf840e2bb401"
-  version = "v1.14.30"
+  revision = "859b69a01f8cb52b639bd8c868b116144bddc74a"
+  version = "v1.15.9"
 
 [[projects]]
   branch = "master"
@@ -32,22 +32,40 @@
   version = "v0.11.4"
 
 [[projects]]
-  branch = "master"
   name = "github.com/elastic/apm-agent-go"
-  packages = [".","internal/apmconfig","internal/apmdebug","internal/apmhttputil","internal/apmschema","internal/apmstrings","internal/fastjson","internal/krtext","internal/pretty","internal/radix","internal/uuid","model","stacktrace","transport"]
-  revision = "2717dc2664902081ffad80aeda97f929bdd99137"
+  packages = [".","internal/apmdebug","internal/apmhttputil","internal/apmstrings","internal/fastjson","internal/krtext","internal/pretty","internal/radix","internal/uuid","model","stacktrace","transport"]
+  revision = "a22839728ee5955c96524d56af60813250d26a5b"
+  version = "v0.4.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/elastic/go-sysinfo"
-  packages = [".","internal/registry","providers/darwin","providers/linux","providers/shared","providers/windows","types"]
-  revision = "b603f0b7f2050dbc69b053eb5c796be0f3ac9fd2"
+  name = "github.com/elastic/apm-server"
+  packages = ["config","model","processor","processor/error","processor/transaction","sourcemap","utility"]
+  revision = "ef78610de1a796723c54f62455ce71cfd15d7c27"
+  version = "v6.3.2"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/elastic/go-windows"
+  name = "github.com/elastic/beats"
+  packages = ["libbeat/beat","libbeat/common","libbeat/common/atomic","libbeat/common/cfgwarn","libbeat/common/dtfmt","libbeat/common/file","libbeat/common/fmtstr","libbeat/common/match","libbeat/common/streambuf","libbeat/logp","libbeat/monitoring","libbeat/outputs","libbeat/outputs/codec","libbeat/outputs/elasticsearch","libbeat/outputs/outil","libbeat/outputs/transport","libbeat/paths","libbeat/plugin","libbeat/processors","libbeat/publisher","libbeat/testing"]
+  revision = "45a9a9e1561b6c540e94211ebe03d18abcacae55"
+  version = "v6.3.2"
+
+[[projects]]
+  name = "github.com/elastic/go-structform"
+  packages = [".","gotype","internal/unsafe","json","visitors"]
+  revision = "0ea09ff9b43c387dd183a4088f6d573bf823e4ed"
+  version = "v0.0.4"
+
+[[projects]]
+  name = "github.com/elastic/go-ucfg"
+  packages = [".","cfgutil","flag","internal/parse","json","yaml"]
+  revision = "581f7b1fe9d84f4c18ef0694d6e0eb944a925dae"
+  version = "v0.6.1"
+
+[[projects]]
+  name = "github.com/fatih/color"
   packages = ["."]
-  revision = "f11b8c9a625322edbca44926f9c0e4dc4916c9ac"
+  revision = "5b77d2a35fb0ede96d138fc9a99f5c9b6aef11b4"
+  version = "v1.7.0"
 
 [[projects]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -60,6 +78,12 @@
   packages = ["."]
   revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
   version = "v1.38.1"
+
+[[projects]]
+  name = "github.com/go-sourcemap/sourcemap"
+  packages = [".","internal/base64vlq"]
+  revision = "b019cc30c1eaa584753491b0d8f8c1534bf1eb44"
+  version = "v2.1.2"
 
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
@@ -115,6 +139,18 @@
   revision = "d65d576e9348f5982d7f6d83682b694e731a45c6"
 
 [[projects]]
+  name = "github.com/mattn/go-colorable"
+  packages = ["."]
+  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
+  version = "v0.0.9"
+
+[[projects]]
+  name = "github.com/mattn/go-isatty"
+  packages = ["."]
+  revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
+  version = "v0.0.3"
+
+[[projects]]
   name = "github.com/mattn/go-sqlite3"
   packages = ["."]
   revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
@@ -133,16 +169,16 @@
   version = "v1.0.2"
 
 [[projects]]
+  name = "github.com/patrickmn/go-cache"
+  packages = ["."]
+  revision = "a3647f8e31d79543b2d0f0ae2fe5c379d72cedc0"
+  version = "v2.1.0"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/prometheus/procfs"
-  packages = [".","internal/util","nfs","xfs"]
-  revision = "05ee40e3a273f7245e8777337fc7b46e533a9a92"
 
 [[projects]]
   name = "github.com/santhosh-tekuri/jsonschema"
@@ -164,7 +200,7 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/swagchat/protobuf/protoc-gen-go"
+  name = "github.com/swagchat/protobuf"
   packages = ["protoc-gen-go"]
   revision = "a6e3f3473f28b6524c31676e1d261f79f6d1ab26"
 
@@ -194,27 +230,27 @@
 
 [[projects]]
   name = "go.uber.org/zap"
-  packages = [".","buffer","internal/bufferpool","internal/color","internal/exit","zapcore"]
-  revision = "4d45f9617f7d90f7a663ff21c7a4321dbe78098b"
-  version = "v1.9.0"
+  packages = [".","buffer","internal/bufferpool","internal/color","internal/exit","zapcore","zaptest/observer"]
+  revision = "ff33455a0e382e8a81d14dd7c922020b6b5e7982"
+  version = "v1.9.1"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","http/httpguts","http2","http2/hpack","idna","internal/timeseries","trace"]
-  revision = "a680a1efc54dd51c040b3b5ce4939ea3cf2ea0d1"
+  packages = ["context","context/ctxhttp","http/httpguts","http2","http2/hpack","idna","internal/socks","internal/timeseries","proxy","trace"]
+  revision = "f9ce57c11b242f0f1599cf25c89d8cb02c45295a"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
   packages = [".","google","internal","jws","jwt"]
-  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
+  revision = "3d292e4d0cdc3a0113e6d207bb137145ef1de42f"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["windows","windows/registry"]
-  revision = "0ffbfd41fbef8ffcf9b62b0b0aa3a5873ed7a4fe"
+  packages = ["unix","windows","windows/registry","windows/svc/eventlog"]
+  revision = "f0d5e33068cb57c22a181f5df0ffda885309eb5a"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -226,7 +262,7 @@
   branch = "master"
   name = "google.golang.org/api"
   packages = ["gensupport","googleapi","googleapi/internal/uritemplates","storage/v1"]
-  revision = "efcb5f25ac56eae06c8b5672456c0b7767522685"
+  revision = "d089d6ac97131b2ee652f2fe736865338659a668"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -238,13 +274,13 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/api/annotations","googleapis/rpc/status"]
-  revision = "fedd2861243fd1a8152376292b921b394c7bef7e"
+  revision = "383e8b2c3b9e36c4076b235b32537292176bae20"
 
 [[projects]]
   name = "google.golang.org/grpc"
-  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/grpcrand","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap","transport"]
-  revision = "168a6198bcb0ef175f7dacec0b8691fc141dc9b8"
-  version = "v1.13.0"
+  packages = [".","balancer","balancer/base","balancer/roundrobin","codes","connectivity","credentials","encoding","encoding/proto","grpclog","internal","internal/backoff","internal/channelz","internal/envconfig","internal/grpcrand","internal/transport","keepalive","metadata","naming","peer","reflection","reflection/grpc_reflection_v1alpha","resolver","resolver/dns","resolver/passthrough","stats","status","tap"]
+  revision = "32fb0ac620c32ba40a4626ddf94d90d12cce3455"
+  version = "v1.14.0"
 
 [[projects]]
   name = "gopkg.in/gorp.v2"
@@ -264,15 +300,9 @@
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
-[[projects]]
-  branch = "master"
-  name = "howett.net/plist"
-  packages = ["."]
-  revision = "500bd5b9081b5957ac10389f86e069869f00c348"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7a5e6a85bf058bccbd38e6516d56e4270a724d4a3f4f30bd5f9e9740b0f97822"
+  inputs-digest = "b0ec3a044b074490fd13a87d7b477811fd888b2d95f05b0d336773a5ab32fc35"
   solver-name = "gps-cdcl"
   solver-version = 1

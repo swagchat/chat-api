@@ -1,0 +1,140 @@
+########################### apm-server #######################################
+
+apm-server:
+  host: "localhost:8200"
+  secret_token: {{ secret_token }}
+
+  ssl.enabled: {{ ssl_enabled }}
+  ssl.certificate:  {{ ssl_cert }}
+  ssl.key: {{ ssl_key }}
+
+  frontend.enabled: {{ enable_frontend }}
+  frontend.rate_limit: 3
+  frontend.allow_origins: {{ allow_origins }}
+  frontend.library_pattern: "~/test|library"
+  frontend.exclude_from_grouping: "~/test"
+
+  {% if smap_cache_expiration%}
+  frontend.source_mapping.cache.expiration: {{ smap_cache_expiration}}
+  {% endif %}
+  {% if smap_index_pattern%}
+  frontend.source_mapping.index_pattern: {{ smap_index_pattern}}
+  {% endif %}
+
+  {% if expvar_enabled %}
+  expvar.enabled: {{ expvar_enabled }}
+  {% endif %}
+  {% if expvar_url %}
+  expvar.url: {{ expvar_url }}
+  {% endif %}
+############################# Setup ##########################################
+
+{% if index_name %}
+
+setup.template.name: {{ index_name }}
+setup.template.pattern: {{ index_name }}*
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+  index.refresh_interval: 1ms
+
+{% endif %}
+
+############################# Output ##########################################
+
+# File as output
+output.file:
+  enabled: {{ file_enabled|default("true") }}
+  # Path to the directory where to save the generated files. The option is mandatory.
+  path: {{ output_file_path|default(beat.working_dir + "/output") }}
+
+  # Name of the generated files. The default is `apm-server` and it generates
+  # files: `apm-server`, `apm-server.1`, `apm-server.2`, etc.
+  #filename: "{{ output_file_filename|default("apm-server") }}"
+
+  # Maximum size in kilobytes of each file. When this size is reached, the files are
+  # rotated. The default value is 10 MB.
+  #rotate_every_kb: {{ rotate_every_kb | default(1000) }}
+  # Maximum number of files under path. When this number of files is reached, the
+  # oldest file is deleted and the rest are shifted from last to first. The default
+  # is 7 files.
+  #number_of_files: 7
+
+{% if elasticsearch_host %}
+output.elasticsearch:
+  hosts: ["{{ elasticsearch_host }}"]
+
+  index: {{ index_name }}
+  {% if smap_index or index_name_transaction or index_name_span or index_name_error %}
+  indices:
+  {% endif %}
+
+  {% if smap_index %}
+    - index: {{ smap_index }}
+      when.contains:
+        processor.event: "sourcemap"
+  {% endif %}
+
+  {% if index_name_transaction %}
+    - index: {{ index_name_transaction }}
+      when.contains:
+        processor.event: "transaction"
+  {% endif %}
+
+  {% if index_name_span %}
+    - index: {{ index_name_span }}
+      when.contains:
+        processor.event: "span"
+  {% endif %}
+
+  {% if index_name_error %}
+    - index: {{ index_name_error }}
+      when.contains:
+        processor.event: "error"
+  {% endif %}
+
+{% endif %}
+
+############################# Beat #########################################
+
+# The name of the shipper that publishes the network data. It can be used to group
+# all the transactions sent by a single shipper in the web interface.
+# If this options is not defined, the hostname is used.
+#name:
+
+# The tags of the shipper are included in their own field with each
+# transaction published. Tags make it easy to group servers by different
+# logical properties.
+#tags: ["service-X", "web-tier"]
+
+
+############################# Logging #########################################
+
+#logging:
+  # Send all logging output to syslog. On Windows default is false, otherwise
+  # default is true.
+  #to_syslog: true
+
+  # Write all logging output to files. Beats automatically rotate files if configurable
+  # limit is reached.
+  #to_files: false
+
+  # Enable debug output for selected components.
+  #selectors: []
+
+  # Set log level
+  #level: error
+
+  #files:
+    # The directory where the log files will written to.
+    #path: /var/log/apm-server
+
+    # The name of the files where the logs are written to.
+    #name: apm-server
+
+    # Configure log file size limit. If limit is reached, log file will be
+    # automatically rotated
+    #rotateeverybytes: 10485760 # = 10MB
+
+    # Number of rotated log files to keep. Oldest files will be deleted first.
+    #keepfiles: 7

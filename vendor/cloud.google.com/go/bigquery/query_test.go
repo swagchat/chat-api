@@ -1,4 +1,4 @@
-// Copyright 2015 Google Inc. All Rights Reserved.
+// Copyright 2015 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -351,6 +351,9 @@ func TestConfiguringQuery(t *testing.T) {
 	query.DefaultProjectID = "def-project-id"
 	query.DefaultDatasetID = "def-dataset-id"
 	query.TimePartitioning = &TimePartitioning{Expiration: 1234 * time.Second, Field: "f"}
+	query.Clustering = &Clustering{
+		Fields: []string{"cfield1"},
+	}
 	query.DestinationEncryptionConfig = &EncryptionConfig{KMSKeyName: "keyName"}
 	query.SchemaUpdateOptions = []string{"ALLOW_FIELD_ADDITION"}
 
@@ -368,6 +371,7 @@ func TestConfiguringQuery(t *testing.T) {
 				},
 				UseLegacySql:                       &pfalse,
 				TimePartitioning:                   &bq.TimePartitioning{ExpirationMs: 1234000, Field: "f", Type: "DAY"},
+				Clustering:                         &bq.Clustering{Fields: []string{"cfield1"}},
 				DestinationEncryptionConfiguration: &bq.EncryptionConfiguration{KmsKeyName: "keyName"},
 				SchemaUpdateOptions:                []string{"ALLOW_FIELD_ADDITION"},
 			},

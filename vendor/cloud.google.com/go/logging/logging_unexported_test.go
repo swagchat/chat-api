@@ -1,4 +1,4 @@
-// Copyright 2016 Google Inc. All Rights Reserved.
+// Copyright 2016 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -227,6 +227,58 @@ func TestToLogEntryPayload(t *testing.T) {
 	}
 }
 
+func TestToLogEntryTrace(t *testing.T) {
+	// Verify that we get the trace from the HTTP request if it isn't
+	// provided by the caller.
+	u := &url.URL{Scheme: "http"}
+	for _, test := range []struct {
+		in   Entry
+		want string
+	}{
+		{Entry{}, ""},
+		{Entry{Trace: "t1"}, "t1"},
+		{
+			Entry{
+				HTTPRequest: &HTTPRequest{
+					Request: &http.Request{URL: u, Header: http.Header{"foo": {"bar"}}},
+				},
+			},
+			"",
+		},
+		{
+			Entry{
+				HTTPRequest: &HTTPRequest{
+					Request: &http.Request{
+						URL:    u,
+						Header: http.Header{"X-Cloud-Trace-Context": {"t2"}},
+					},
+				},
+			},
+			"t2",
+		},
+		{
+			Entry{
+				HTTPRequest: &HTTPRequest{
+					Request: &http.Request{
+						URL:    u,
+						Header: http.Header{"X-Cloud-Trace-Context": {"t3"}},
+					},
+				},
+				Trace: "t4",
+			},
+			"t4",
+		},
+	} {
+		e, err := toLogEntry(test.in)
+		if err != nil {
+			t.Fatalf("%+v: %v", test.in, err)
+		}
+		if got := e.Trace; got != test.want {
+			t.Errorf("got %q, want %q", got, test.want)
+		}
+	}
+}
+
 func TestFromHTTPRequest(t *testing.T) {
 	const testURL = "http:://example.com/path?q=1"
 	u, err := url.Parse(testURL)
@@ -238,8 +290,8 @@ func TestFromHTTPRequest(t *testing.T) {
 			Method: "GET",
 			URL:    u,
 			Header: map[string][]string{
-				"User-Agent": []string{"user-agent"},
-				"Referer":    []string{"referer"},
+				"User-Agent": {"user-agent"},
+				"Referer":    {"referer"},
 			},
 		},
 		RequestSize:                    100,

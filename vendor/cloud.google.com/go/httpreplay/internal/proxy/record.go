@@ -1,4 +1,4 @@
-// Copyright 2018 Google Inc. All Rights Reserved.
+// Copyright 2018 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import (
 
 	"github.com/google/martian"
 	"github.com/google/martian/fifo"
-	"github.com/google/martian/har"
 	"github.com/google/martian/httpspec"
 	"github.com/google/martian/martianlog"
 	"github.com/google/martian/mitm"
@@ -49,12 +48,13 @@ type Proxy struct {
 	// The URL of the proxy.
 	URL *url.URL
 
-	// Initial state of the client. Must be serializable with json.Marshal.
-	Initial interface{}
+	// Initial state of the client.
+	Initial []byte
 
-	mproxy   *martian.Proxy
-	filename string      // for log
-	logger   *har.Logger // for recording only
+	mproxy        *martian.Proxy
+	filename      string          // for log
+	logger        *Logger         // for recording only
+	ignoreHeaders map[string]bool // headers the user has asked to ignore
 }
 
 // ForRecording returns a Proxy configured to record.
@@ -63,15 +63,6 @@ func ForRecording(filename string, port int) (*Proxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Configure the transport for the proxy's outgoing traffic.
-	p.mproxy.SetRoundTripper(&http.Transport{
-		Dial: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: time.Second,
-	})
 
 	// Construct a group that performs the standard proxy stack of request/response
 	// modifications.
@@ -84,9 +75,8 @@ func ForRecording(filename string, port int) (*Proxy, error) {
 	skipAuth := skipLoggingByHost("accounts.google.com")
 	logGroup.AddRequestModifier(skipAuth)
 	logGroup.AddResponseModifier(skipAuth)
-	p.logger = har.NewLogger()
-	logGroup.AddRequestModifier(martian.RequestModifierFunc(
-		func(req *http.Request) error { return withRedactedHeaders(req, p.logger) }))
+	p.logger = NewLogger()
+	logGroup.AddRequestModifier(p.logger)
 	logGroup.AddResponseModifier(p.logger)
 
 	stack.AddRequestModifier(logGroup)
@@ -102,6 +92,12 @@ func ForRecording(filename string, port int) (*Proxy, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+type hideTransport http.Transport
+
+func (t *hideTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	return (*http.Transport)(t).RoundTrip(req)
 }
 
 func newProxy(filename string) (*Proxy, error) {
@@ -123,15 +119,20 @@ func newProxy(filename string) (*Proxy, error) {
 		return nil, err
 	}
 	mproxy.SetMITM(mc)
+	ih := map[string]bool{}
+	for k, v := range ignoreHeaders {
+		ih[k] = v
+	}
 	return &Proxy{
-		mproxy:   mproxy,
-		CACert:   x509c,
-		filename: filename,
+		mproxy:        mproxy,
+		CACert:        x509c,
+		filename:      filename,
+		ignoreHeaders: ih,
 	}, nil
 }
 
 func (p *Proxy) start(port int) error {
-	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	l, err := net.Listen("tcp4", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return err
 	}
@@ -150,6 +151,11 @@ func (p *Proxy) Transport() *http.Transport {
 	}
 }
 
+// IgnoreHeader will cause h to be ignored during matching on replay.
+func (p *Proxy) IgnoreHeader(h string) {
+	p.ignoreHeaders[http.CanonicalHeaderKey(h)] = true
+}
+
 // Close closes the proxy. If the proxy is recording, it also writes the log.
 func (p *Proxy) Close() error {
 	p.mproxy.Close()
@@ -159,45 +165,14 @@ func (p *Proxy) Close() error {
 	return nil
 }
 
-type httprFile struct {
-	Initial interface{}
-	HAR     *har.HAR
-}
-
 func (p *Proxy) writeLog() error {
-	f := httprFile{
-		Initial: p.Initial,
-		HAR:     p.logger.ExportAndReset(),
-	}
-	bytes, err := json.Marshal(f)
+	lg := p.logger.Extract()
+	lg.Initial = p.Initial
+	bytes, err := json.MarshalIndent(lg, "", "  ")
 	if err != nil {
 		return err
 	}
 	return ioutil.WriteFile(p.filename, bytes, 0600) // only accessible by owner
-}
-
-// Headers that may contain sensitive data (auth tokens, keys).
-var sensitiveHeaders = []string{
-	"Authorization",
-	"X-Goog-Encryption-Key",             // used by Cloud Storage for customer-supplied encryption
-	"X-Goog-Copy-Source-Encryption-Key", // ditto
-}
-
-// withRedactedHeaders removes sensitive header contents before calling mod.
-func withRedactedHeaders(req *http.Request, mod martian.RequestModifier) error {
-	// We have to change the headers, then log, then restore them.
-	replaced := map[string]string{}
-	for _, h := range sensitiveHeaders {
-		if v := req.Header.Get(h); v != "" {
-			replaced[h] = v
-			req.Header.Set(h, "REDACTED")
-		}
-	}
-	err := mod.ModifyRequest(req)
-	for h, v := range replaced {
-		req.Header.Set(h, v)
-	}
-	return err
 }
 
 // skipLoggingByHost disables logging for traffic to a particular host.

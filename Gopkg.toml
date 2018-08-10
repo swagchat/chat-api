@@ -23,7 +23,7 @@
 
 [[constraint]]
   name = "github.com/aws/aws-sdk-go"
-  version = "1.14.30"
+  version = "1.15.9"
 
 [[constraint]]
   branch = "master"
@@ -34,8 +34,8 @@
   version = "0.11.4"
 
 [[constraint]]
-  name = "github.com/fatih/structs"
-  version = "1.0.0"
+  name = "github.com/elastic/apm-agent-go"
+  version = "0.4.0"
 
 [[constraint]]
   name = "github.com/fukata/golang-stats-api-handler"
@@ -66,6 +66,10 @@
   version = "1.0.7"
 
 [[constraint]]
+  name = "github.com/opentracing/opentracing-go"
+  version = "1.0.2"
+
+[[constraint]]
   name = "github.com/pkg/errors"
   version = "0.8.0"
 
@@ -79,6 +83,14 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/swagchat/protobuf"
+
+[[constraint]]
+  name = "github.com/uber/jaeger-client-go"
+  version = "2.14.0"
+
+[[constraint]]
+  branch = "master"
   name = "golang.org/x/oauth2"
 
 [[constraint]]
@@ -86,12 +98,8 @@
   name = "google.golang.org/api"
 
 [[constraint]]
-  branch = "master"
-  name = "google.golang.org/genproto"
-
-[[constraint]]
   name = "google.golang.org/grpc"
-  version = "1.13.0"
+  version = "1.14.0"
 
 [[constraint]]
   name = "gopkg.in/gorp.v2"
@@ -100,7 +108,3 @@
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.1"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/elastic/apm-agent-go"

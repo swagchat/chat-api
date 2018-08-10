@@ -14,7 +14,6 @@ import (
 type ChannelTransport struct {
 	Transactions chan<- SendTransactionsRequest
 	Errors       chan<- SendErrorsRequest
-	Metrics      chan<- SendMetricsRequest
 }
 
 // SendTransactionsRequest is the type of values sent over the
@@ -30,14 +29,6 @@ type SendTransactionsRequest struct {
 // method is called.
 type SendErrorsRequest struct {
 	Payload *model.ErrorsPayload
-	Result  chan<- error
-}
-
-// SendMetricsRequest is the type of values sent over the
-// ChannelTransport.Metrics channel when its SendMetrics
-// method is called.
-type SendMetricsRequest struct {
-	Payload *model.MetricsPayload
 	Result  chan<- error
 }
 
@@ -69,24 +60,6 @@ func (c *ChannelTransport) SendErrors(ctx context.Context, payload *model.Errors
 	case <-ctx.Done():
 		return ctx.Err()
 	case c.Errors <- SendErrorsRequest{payload, result}:
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case err := <-result:
-			return err
-		}
-	}
-}
-
-// SendMetrics sends a SendMetricsRequest value over the c.Metrics channel
-// with the given payload, and waits for a response on the error channel
-// included in the request, or for the context to be canceled.
-func (c *ChannelTransport) SendMetrics(ctx context.Context, payload *model.MetricsPayload) error {
-	result := make(chan error, 1)
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case c.Metrics <- SendMetricsRequest{payload, result}:
 		select {
 		case <-ctx.Done():
 			return ctx.Err()

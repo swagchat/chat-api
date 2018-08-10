@@ -1,0 +1,57 @@
+[[common-problems]]
+== Common problems
+
+This section describes common problems you might encounter with APM Server.
+
+* <<queue-full>>
+* <<request-timed-out>>
+
+[[queue-full]]
+[float]
+=== HTTP 503: Queue is full
+
+APM Server has an internal queue that buffers documents until they can be delivered to Elasticsearch.
+The internal queue helps to:
+
+* alleviate problems that might occur if Elasticsearch is intermittently unavailable
+* handle large spikes of data arriving at the APM Server at the same time
+* send documents to Elasticsearch in bulk, instead of individually
+
+When the internal queue has reached the maximum buffer size, 
+APM Server returns an HTTP 503 status with the message "Queue is full".
+
+A full queue generally means that the agents collect more data than APM server is able to deliver to Elasticsearch.
+This might happen when APM Server is not configured properly for the size of your Elasticsearch cluster,
+or because your Elasticsearch cluster is underpowered or not configured properly for the given workload.
+
+The queue can also fill up if Elasticsearch is unavailable for a prolonged period,
+it runs out of disk space,
+or a sudden spike of data arrives at the APM Server.
+
+If the APM Server only returns 503 responses, it might indicate that an Elasticsearch disk is full.
+If the APM Server returns interleaved 503 and 202 responses, it might indicate that the APM Server can't process that much data.
+
+You have a few options to solve this problem: 
+
+* <<reduce-storage, Reduce storage>>
+* <<tune-output-config>>
+* <<adjust-queue-size>>
+* <<tune-es, Tune Elasticsearch for higher ingestion>>
+
+[[request-timed-out]]
+[float]
+=== HTTP 503: Request timed out waiting to be processed
+
+There is a limit to the number of requests that the APM Server can process concurrently.
+The APM Server returns an HTTP 503 status with the message "Request timed out waiting to be processed" when the limit is reached and the request from an agent is blocked.
+This limit is determined by the `apm-server.concurrent_requests` configuration parameter.
+
+To alleviate this problem,
+you can try to:
+
+* <<reduce-sample-rate>>
+* <<reduce-stacktrace>>
+* <<reduce-payload-size>>
+* <<adjust-concurrent-requests>>
+* <<add-apm-server-nodes>>
+

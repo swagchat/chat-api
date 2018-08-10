@@ -1742,7 +1742,8 @@ type NonComplianceDetail struct {
 	//   "NO_LICENSES_REMAINING" - There are no licenses available to assign
 	// to the user.
 	//   "NOT_ENROLLED" - The enterprise is no longer enrolled with managed
-	// Play or Android Device Policy is not enabled for the enterprise.
+	// Play or the admin has not accepted the latest managed Play terms of
+	// service.
 	//   "USER_INVALID" - The user is no longer valid. The user may have
 	// been deleted or disabled.
 	InstallationFailureReason string `json:"installationFailureReason,omitempty"`
@@ -2061,7 +2062,7 @@ func (s *PasswordRequirements) MarshalJSON() ([]byte, error) {
 // PermissionGrant: Configuration for an Android permission and its
 // grant state.
 type PermissionGrant struct {
-	// Permission: The android permission or group, e.g.
+	// Permission: The Android permission or group, e.g.
 	// android.permission.READ_CALENDAR or
 	// android.permission_group.CALENDAR.
 	Permission string `json:"permission,omitempty"`

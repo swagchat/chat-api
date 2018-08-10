@@ -1,0 +1,13 @@
+[[intake-api]]
+= Intake API
+[partintro]
+--
+The APM Server exposes API Endpoints for 
+
+* <<transaction-api,Transaction API>>
+* <<error-api,Error API>>
+* <<sourcemap-api,Source Map API>>
+--
+include::./transaction-api.asciidoc[]
+include::./error-api.asciidoc[]
+include::./sourcemap-api.asciidoc[]

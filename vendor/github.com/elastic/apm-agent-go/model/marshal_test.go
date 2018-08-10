@@ -105,35 +105,6 @@ func TestMarshalTransaction(t *testing.T) {
 	assert.Equal(t, expect, in)
 }
 
-func TestMarshalMetrics(t *testing.T) {
-	metrics := fakeMetrics()
-
-	var w fastjson.Writer
-	metrics.MarshalFastJSON(&w)
-
-	var in map[string]interface{}
-	if err := json.Unmarshal(w.Bytes(), &in); err != nil {
-		t.Fatalf("unmarshalling result failed: %v", err)
-	}
-
-	expect := map[string]interface{}{
-		"timestamp": "1970-01-01T00:02:03Z",
-		"labels": map[string]interface{}{
-			"foo": "bar",
-		},
-		"samples": map[string]interface{}{
-			"metric_one": map[string]interface{}{
-				"value": float64(1024),
-			},
-			"metric_two": map[string]interface{}{
-				"value": float64(-66.6),
-			},
-		},
-	}
-
-	assert.Equal(t, expect, in)
-}
-
 func TestMarshalPayloads(t *testing.T) {
 	tp := fakeTransactionsPayload(0)
 	var w fastjson.Writer
@@ -196,23 +167,6 @@ func TestMarshalPayloads(t *testing.T) {
 	}
 	delete(expect, "transactions")
 	expect["errors"] = []interface{}{}
-	assert.Equal(t, expect, in)
-
-	mp := &model.MetricsPayload{
-		Service: tp.Service,
-		Process: tp.Process,
-		System:  tp.System,
-		Metrics: []*model.Metrics{},
-	}
-	w.Reset()
-	mp.MarshalFastJSON(&w)
-
-	in = make(map[string]interface{})
-	if err := json.Unmarshal(w.Bytes(), &in); err != nil {
-		t.Fatalf("unmarshalling result failed: %v", err)
-	}
-	delete(expect, "errors")
-	expect["metrics"] = []interface{}{}
 	assert.Equal(t, expect, in)
 }
 
@@ -331,12 +285,12 @@ func TestMarshalExceptionCode(t *testing.T) {
 func TestMarshalUser(t *testing.T) {
 	user := model.User{
 		Email:    "foo@example.com",
-		ID:       "123",
+		ID:       model.UserID{Number: 123},
 		Username: "bar",
 	}
 	var w fastjson.Writer
 	user.MarshalFastJSON(&w)
-	assert.Equal(t, `{"email":"foo@example.com","id":"123","username":"bar"}`, string(w.Bytes()))
+	assert.Equal(t, `{"email":"foo@example.com","id":123,"username":"bar"}`, string(w.Bytes()))
 }
 
 func TestMarshalStacktraceFrame(t *testing.T) {
@@ -566,17 +520,6 @@ func fakeTransaction() model.Transaction {
 	}
 }
 
-func fakeMetrics() *model.Metrics {
-	return &model.Metrics{
-		Timestamp: model.Time(time.Unix(123, 0).UTC()),
-		Labels:    model.StringMap{{Key: "foo", Value: "bar"}},
-		Samples: map[string]model.Metric{
-			"metric_one": {Value: 1024},
-			"metric_two": {Value: -66.6},
-		},
-	}
-}
-
 func fakeService() *model.Service {
 	return &model.Service{
 		Name:        "fake-service",
@@ -639,12 +582,4 @@ func mustParseURL(s string) *url.URL {
 		panic(err)
 	}
 	return u
-}
-
-func newUint64(v uint64) *uint64 {
-	return &v
-}
-
-func newFloat64(v float64) *float64 {
-	return &v
 }

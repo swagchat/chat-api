@@ -19,34 +19,26 @@ import (
 // By default, the middleware will use elasticapm.DefaultTracer.
 // Use WithTracer to specify an alternative tracer.
 func Middleware(o ...Option) echo.MiddlewareFunc {
-	opts := options{
-		tracer:         elasticapm.DefaultTracer,
-		requestIgnorer: apmhttp.DefaultServerRequestIgnorer(),
-	}
+	opts := options{tracer: elasticapm.DefaultTracer}
 	for _, o := range o {
 		o(&opts)
 	}
 	return func(h echo.HandlerFunc) echo.HandlerFunc {
-		m := &middleware{
-			tracer:         opts.tracer,
-			handler:        h,
-			requestIgnorer: opts.requestIgnorer,
-		}
+		m := &middleware{tracer: opts.tracer, handler: h}
 		return m.handle
 	}
 }
 
 type middleware struct {
-	handler        echo.HandlerFunc
-	tracer         *elasticapm.Tracer
-	requestIgnorer apmhttp.RequestIgnorerFunc
+	handler echo.HandlerFunc
+	tracer  *elasticapm.Tracer
 }
 
 func (m *middleware) handle(c echo.Context) error {
-	req := c.Request()
-	if !m.tracer.Active() || m.requestIgnorer(req) {
+	if !m.tracer.Active() {
 		return m.handler(c)
 	}
+	req := c.Request()
 	name := req.Method + " " + c.Path()
 	tx := m.tracer.StartTransaction(name, "request")
 	ctx := elasticapm.ContextWithTransaction(req.Context(), tx)
@@ -92,8 +84,7 @@ func (m *middleware) handle(c echo.Context) error {
 }
 
 type options struct {
-	tracer         *elasticapm.Tracer
-	requestIgnorer apmhttp.RequestIgnorerFunc
+	tracer *elasticapm.Tracer
 }
 
 // Option sets options for tracing.
@@ -107,17 +98,5 @@ func WithTracer(t *elasticapm.Tracer) Option {
 	}
 	return func(o *options) {
 		o.tracer = t
-	}
-}
-
-// WithRequestIgnorer returns a Option which sets r as the
-// function to use to determine whether or not a request should
-// be ignored. If r is nil, all requests will be reported.
-func WithRequestIgnorer(r apmhttp.RequestIgnorerFunc) Option {
-	if r == nil {
-		r = apmhttp.IgnoreNone
-	}
-	return func(o *options) {
-		o.requestIgnorer = r
 	}
 }

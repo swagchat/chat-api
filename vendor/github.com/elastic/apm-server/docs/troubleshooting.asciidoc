@@ -1,0 +1,34 @@
+//////////////////////////////////////////////////////////////////////////
+//// This content is mainly copied from filebeat and adapted for apm-server
+//////////////////////////////////////////////////////////////////////////
+
+[[troubleshooting]]
+= Troubleshooting
+
+[partintro]
+--
+If you have issues installing or running APM Server, 
+read the following tips:
+
+* <<common-problems>>
+* <<getting-help>>
+* <<enable-apm-server-debugging>>
+
+//sets block macro for getting-help.asciidoc included in next section
+
+--
+
+include::common-problems.asciidoc[]
+
+
+[[getting-help]]
+== Get help
+
+include::copied-from-beats/getting-help.asciidoc[]
+
+//sets block macro for debugging.asciidoc included in next section
+
+[[enable-apm-server-debugging]]
+== Debug
+
+include::copied-from-beats/debugging.asciidoc[]

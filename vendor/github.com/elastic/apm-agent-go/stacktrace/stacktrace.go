@@ -27,7 +27,7 @@ func AppendStacktrace(frames []Frame, skip, n int) []Frame {
 		pc = pc[:runtime.Callers(skip+1, pc)]
 	} else {
 		// n is negative, get all frames.
-		n := 0
+		n = 0
 		pc = make([]uintptr, 10)
 		for {
 			n += runtime.Callers(skip+n+1, pc[n:])
@@ -38,21 +38,19 @@ func AppendStacktrace(frames []Frame, skip, n int) []Frame {
 			pc = append(pc, 0)
 		}
 	}
-	return AppendCallerFrames(frames, pc, n)
+	return AppendCallerFrames(frames, pc)
 }
 
-// AppendCallerFrames appends to n frames for the PCs in callers,
-// and returns the extended slice. If n is negative, all available
-// frames will be added. Multiple frames may exist for the same
-// caller/PC in the case of function call inlining.
+// AppendCallerFrames appends to frames for the PCs in callers,
+// and returns the extended slice.
 //
 // See RuntimeFrame for information on what details are included.
-func AppendCallerFrames(frames []Frame, callers []uintptr, n int) []Frame {
+func AppendCallerFrames(frames []Frame, callers []uintptr) []Frame {
 	if len(callers) == 0 {
 		return frames
 	}
 	runtimeFrames := runtime.CallersFrames(callers)
-	for i := 0; n < 0 || i < n; i++ {
+	for {
 		runtimeFrame, more := runtimeFrames.Next()
 		frames = append(frames, RuntimeFrame(runtimeFrame))
 		if !more {
