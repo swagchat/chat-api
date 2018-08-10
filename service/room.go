@@ -30,7 +30,7 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 		return nil, errRes
 	}
 
-	if *req.Type == scpb.RoomType_RoomTypeOneOnOne {
+	if *req.Type == scpb.RoomType_OneOnOneRoom {
 		roomUser, err := datastore.Provider(ctx).SelectRoomUserOfOneOnOne(*req.UserID, req.UserIDs[0])
 		if err != nil {
 			return nil, model.NewErrorResponse("Failed to create room.", http.StatusBadRequest, model.WithError(err))

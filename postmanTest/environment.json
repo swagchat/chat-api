@@ -8,7 +8,7 @@
       "enabled": true
     },
     {
-      "value": "{\"required\":[\"userId\",\"name\",\"pictureUrl\",\"informationUrl\",\"unreadCount\",\"metaData\",\"public\",\"canBlock\",\"lang\",\"lastAccessRoomId\",\"lastAccessed\",\"created\",\"modified\"],\"properties\":{\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000},\"metaData\":{\"type\":\"object\"},\"public\":{\"type\":\"boolean\"},\"canBlock\":{\"type\":\"boolean\"},\"lang\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":2},\"lastAccessRoomId\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastAccessed\":{\"type\":\"string\"},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"},\"roles\":{\"type\":\"array\"},\"devices\":{\"type\":\"array\"},\"blocks\":{\"type\":\"array\"}}}",
+      "value": "{\"required\":[\"userId\",\"name\",\"pictureUrl\",\"informationUrl\",\"unreadCount\",\"metaData\",\"publicProfileScope\",\"canBlock\",\"lang\",\"lastAccessRoomId\",\"lastAccessed\",\"created\",\"modified\"],\"properties\":{\"userId\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":255},\"name\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":50},\"pictureUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"informationUrl\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"unreadCount\":{\"type\":\"integer\",\"minimum\":0,\"maximum\":1000000},\"metaData\":{\"type\":\"object\"},\"publicProfileScope\":{\"type\":\"integer\"},\"canBlock\":{\"type\":\"boolean\"},\"lang\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":2},\"lastAccessRoomId\":{\"type\":\"string\",\"minLength\":0,\"maxLength\":255},\"lastAccessed\":{\"type\":\"string\"},\"created\":{\"type\":\"string\"},\"modified\":{\"type\":\"string\"},\"roles\":{\"type\":\"array\"},\"devices\":{\"type\":\"array\"},\"blocks\":{\"type\":\"array\"}}}",
       "key": "userSchema",
       "enabled": true
     },
@@ -58,7 +58,7 @@
       "enabled": true
     },
     {
-      "value": "degbehca",
+      "value": "bbefbdad",
       "key": "randomUserName",
       "enabled": true
     },
@@ -68,7 +68,7 @@
       "enabled": true
     },
     {
-      "value": "efcahecc",
+      "value": "adbhcgcf",
       "key": "randomUserId",
       "enabled": true
     },
@@ -78,22 +78,22 @@
       "enabled": true
     },
     {
-      "value": "cfaefgdf",
+      "value": "ddaahhbe",
       "key": "randomRoomId",
       "enabled": true
     },
     {
-      "value": "cacgedgf",
+      "value": "hcbbgfga",
       "key": "randomUserName2",
       "enabled": true
     },
     {
-      "value": "agacdbbh",
+      "value": "hbccfaag",
       "key": "randomUserId2",
       "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",
-  "_postman_exported_at": "2018-08-04T07:14:53.462Z",
-  "_postman_exported_using": "Postman/6.2.2"
+  "_postman_exported_at": "2018-08-10T07:17:51.698Z",
+  "_postman_exported_using": "Postman/6.2.4"
 }

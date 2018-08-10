@@ -19,41 +19,41 @@ func (u *User) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 
 	return json.Marshal(&struct {
-		UserID           string    `json:"userId"`
-		Name             string    `json:"name"`
-		PictureURL       string    `json:"pictureUrl"`
-		InformationURL   string    `json:"informationUrl"`
-		UnreadCount      uint64    `json:"unreadCount"`
-		MetaData         JSONText  `json:"metaData"`
-		Public           bool      `json:"public"`
-		CanBlock         bool      `json:"canBlock"`
-		Lang             string    `json:"lang"`
-		AccessToken      string    `json:"accessToken,omitempty"`
-		LastAccessRoomID string    `json:"lastAccessRoomId"`
-		LastAccessed     string    `json:"lastAccessed"`
-		Created          string    `json:"created"`
-		Modified         string    `json:"modified"`
-		BlockUsers       []string  `json:"blockUsers,omitempty"`
-		Devices          []*Device `json:"devices,omitempty"`
-		Roles            []int32   `json:"roles,omitempty"`
+		UserID             string                  `json:"userId"`
+		Name               string                  `json:"name"`
+		PictureURL         string                  `json:"pictureUrl"`
+		InformationURL     string                  `json:"informationUrl"`
+		UnreadCount        uint64                  `json:"unreadCount"`
+		MetaData           JSONText                `json:"metaData"`
+		PublicProfileScope scpb.PublicProfileScope `json:"publicProfileScope"`
+		CanBlock           bool                    `json:"canBlock"`
+		Lang               string                  `json:"lang"`
+		AccessToken        string                  `json:"accessToken,omitempty"`
+		LastAccessRoomID   string                  `json:"lastAccessRoomId"`
+		LastAccessed       string                  `json:"lastAccessed"`
+		Created            string                  `json:"created"`
+		Modified           string                  `json:"modified"`
+		BlockUsers         []string                `json:"blockUsers,omitempty"`
+		Devices            []*Device               `json:"devices,omitempty"`
+		Roles              []int32                 `json:"roles,omitempty"`
 	}{
-		UserID:           u.UserID,
-		Name:             u.Name,
-		PictureURL:       u.PictureURL,
-		InformationURL:   u.InformationURL,
-		UnreadCount:      u.UnreadCount,
-		MetaData:         u.MetaData,
-		Public:           u.Public,
-		CanBlock:         u.CanBlock,
-		Lang:             u.Lang,
-		AccessToken:      u.AccessToken,
-		LastAccessRoomID: u.LastAccessRoomID,
-		LastAccessed:     time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
-		Created:          time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
-		Modified:         time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
-		BlockUsers:       u.BlockUsers,
-		Devices:          u.Devices,
-		Roles:            u.Roles,
+		UserID:             u.UserID,
+		Name:               u.Name,
+		PictureURL:         u.PictureURL,
+		InformationURL:     u.InformationURL,
+		UnreadCount:        u.UnreadCount,
+		MetaData:           u.MetaData,
+		PublicProfileScope: u.PublicProfileScope,
+		CanBlock:           u.CanBlock,
+		Lang:               u.Lang,
+		AccessToken:        u.AccessToken,
+		LastAccessRoomID:   u.LastAccessRoomID,
+		LastAccessed:       time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
+		Created:            time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
+		Modified:           time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
+		BlockUsers:         u.BlockUsers,
+		Devices:            u.Devices,
+		Roles:              u.Roles,
 	})
 }
 
@@ -83,23 +83,23 @@ func (u *User) ConvertToPbUser() *scpb.User {
 	}
 
 	pbUser := &scpb.User{
-		UserID:           u.UserID,
-		Name:             u.Name,
-		PictureURL:       u.PictureURL,
-		InformationURL:   u.InformationURL,
-		UnreadCount:      u.UnreadCount,
-		MetaData:         u.MetaData,
-		Public:           u.Public,
-		CanBlock:         u.CanBlock,
-		Lang:             u.Lang,
-		AccessToken:      u.AccessToken,
-		LastAccessRoomID: u.LastAccessRoomID,
-		LastAccessed:     u.LastAccessed,
-		Created:          u.Created,
-		Modified:         u.Modified,
-		BlockUsers:       u.BlockUsers,
-		Devices:          devices,
-		Roles:            u.Roles,
+		UserID:             u.UserID,
+		Name:               u.Name,
+		PictureURL:         u.PictureURL,
+		InformationURL:     u.InformationURL,
+		UnreadCount:        u.UnreadCount,
+		MetaData:           u.MetaData,
+		PublicProfileScope: u.PublicProfileScope,
+		CanBlock:           u.CanBlock,
+		Lang:               u.Lang,
+		AccessToken:        u.AccessToken,
+		LastAccessRoomID:   u.LastAccessRoomID,
+		LastAccessed:       u.LastAccessed,
+		Created:            u.Created,
+		Modified:           u.Modified,
+		BlockUsers:         u.BlockUsers,
+		Devices:            devices,
+		Roles:              u.Roles,
 	}
 
 	return pbUser
@@ -122,8 +122,8 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 		u.MetaData = req.MetaData
 	}
 
-	if req.Public != nil {
-		u.Public = *req.Public
+	if req.PublicProfileScope != nil {
+		u.PublicProfileScope = *req.PublicProfileScope
 	}
 
 	if req.CanBlock != nil {
@@ -271,10 +271,10 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 		u.MetaData = cur.MetaData
 	}
 
-	if cur.Public == nil {
-		u.Public = true
+	if cur.PublicProfileScope == nil {
+		u.PublicProfileScope = scpb.PublicProfileScope_All
 	} else {
-		u.Public = *cur.Public
+		u.PublicProfileScope = *cur.PublicProfileScope
 	}
 
 	if cur.CanBlock == nil {
@@ -353,20 +353,20 @@ func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
 	for i, v := range u.Users {
 		metaData, _ := v.MetaData.MarshalJSON()
 		users[i] = &scpb.User{
-			UserID:           v.UserID,
-			Name:             v.Name,
-			PictureURL:       v.PictureURL,
-			InformationURL:   v.InformationURL,
-			UnreadCount:      v.UnreadCount,
-			MetaData:         metaData,
-			Public:           v.Public,
-			CanBlock:         v.CanBlock,
-			Lang:             v.Lang,
-			AccessToken:      v.AccessToken,
-			LastAccessRoomID: v.LastAccessRoomID,
-			LastAccessed:     v.LastAccessed,
-			Created:          v.Created,
-			Modified:         v.Modified,
+			UserID:             v.UserID,
+			Name:               v.Name,
+			PictureURL:         v.PictureURL,
+			InformationURL:     v.InformationURL,
+			UnreadCount:        v.UnreadCount,
+			MetaData:           metaData,
+			PublicProfileScope: v.PublicProfileScope,
+			CanBlock:           v.CanBlock,
+			Lang:               v.Lang,
+			AccessToken:        v.AccessToken,
+			LastAccessRoomID:   v.LastAccessRoomID,
+			LastAccessed:       v.LastAccessed,
+			Created:            v.Created,
+			Modified:           v.Modified,
 		}
 	}
 	return &scpb.UsersResponse{

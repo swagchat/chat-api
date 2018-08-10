@@ -62,7 +62,7 @@ func TestRoomUser(t *testing.T) {
 		room := &Room{}
 		room.RoomID = "model-room-id-0001"
 		room.UserID = "model-user-id-0001"
-		room.Type = scpb.RoomType_RoomTypeOneOnOne
+		room.Type = scpb.RoomType_OneOnOneRoom
 		req.Room = room
 		errRes = req.Validate()
 		if errRes == nil {
@@ -75,7 +75,7 @@ func TestRoomUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"room.type\", but it was %s", TestNameCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
-		req.Room.Type = scpb.RoomType_RoomTypePublicRoom
+		req.Room.Type = scpb.RoomType_PublicRoom
 		errRes = req.Validate()
 		if errRes == nil {
 			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateRoomUsersRequest)
@@ -182,7 +182,7 @@ func TestRoomUser(t *testing.T) {
 		room := &Room{}
 		room.RoomID = "model-room-id-0001"
 		room.UserID = "model-user-id-0001"
-		room.Type = scpb.RoomType_RoomTypeOneOnOne
+		room.Type = scpb.RoomType_OneOnOneRoom
 		req.Room = room
 		errRes = req.Validate()
 		if errRes == nil {
@@ -195,7 +195,7 @@ func TestRoomUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"room.type\", but it was %s", TestNameDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
-		req.Room.Type = scpb.RoomType_RoomTypePublicRoom
+		req.Room.Type = scpb.RoomType_PublicRoom
 		errRes = req.Validate()
 		if errRes == nil {
 			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteRoomUsersRequest)

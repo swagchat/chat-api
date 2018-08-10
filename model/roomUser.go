@@ -36,7 +36,7 @@ func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if crur.Room.Type == scpb.RoomType_RoomTypeOneOnOne {
+	if crur.Room.Type == scpb.RoomType_OneOnOneRoom {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "room.type",
@@ -142,7 +142,7 @@ func (drur *DeleteRoomUsersRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if drur.Room.Type == scpb.RoomType_RoomTypeOneOnOne {
+	if drur.Room.Type == scpb.RoomType_OneOnOneRoom {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "room.type",

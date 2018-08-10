@@ -1,0 +1,12 @@
+{
+  "name": "swagchat-protobuf",
+  "version": "0.1.0",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "dependencies": {
+    "google-protobuf": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "^3.2.7"
+  }
+}

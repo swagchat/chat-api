@@ -194,7 +194,7 @@ WHERE room_id IN (
 	SELECT room_id FROM %s WHERE type=:type AND user_id=:myUserId
 ) AND user_id=:opponentUserId;`, tableNameRoomUser, tableNameRoom)
 	params := map[string]interface{}{
-		"type":           scpb.RoomType_RoomTypeOneOnOne,
+		"type":           scpb.RoomType_OneOnOneRoom,
 		"myUserId":       myUserID,
 		"opponentUserId": opponentUserID,
 	}

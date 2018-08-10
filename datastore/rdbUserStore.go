@@ -3,7 +3,6 @@ package datastore
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"gopkg.in/gorp.v2"
 
@@ -77,7 +76,7 @@ func rdbSelectUsers(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 	}
 
 	var users []*model.User
-	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public, can_block, created, modified FROM %s WHERE deleted = 0 ORDER BY", tableNameUser)
+	query := fmt.Sprintf("SELECT user_id, name, picture_url, information_url, unread_count, meta_data, public_profile_scope, can_block, created, modified FROM %s WHERE deleted = 0 ORDER BY", tableNameUser)
 	params := make(map[string]interface{})
 
 	// query = fmt.Sprintf("%s ORDER BY", query)
@@ -281,7 +280,7 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	}
 
 	if user.Deleted != 0 {
-		return rdbUpdateUserDeleted(ctx, dbMap, tx, user.UserID)
+		return rdbUpdateUserDeleted(ctx, dbMap, tx, user)
 	}
 
 	_, err := tx.Update(user)
@@ -309,18 +308,16 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	return nil
 }
 
-func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, userID string) error {
+func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, user *model.User) error {
 	span := tracer.Provider(ctx).StartSpan("rdbUpdateUserDeleted", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	deleted := time.Now().Unix()
-
-	err := rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByUserIDs([]string{userID}))
+	err := rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByUserIDs([]string{user.UserID}))
 	if err != nil {
 		return err
 	}
 
-	err = rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByBlockUserIDs([]string{userID}))
+	err = rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByBlockUserIDs([]string{user.UserID}))
 	if err != nil {
 		return err
 	}
@@ -329,8 +326,8 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 		ctx,
 		dbMap,
 		tx,
-		DeleteDevicesOptionWithLogicalDeleted(deleted),
-		DeleteDevicesOptionFilterByUserID(userID),
+		DeleteDevicesOptionWithLogicalDeleted(user.Deleted),
+		DeleteDevicesOptionFilterByUserID(user.UserID),
 	)
 	if err != nil {
 		return err
@@ -340,7 +337,7 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 		ctx,
 		dbMap,
 		tx,
-		DeleteRoomUsersOptionFilterByUserIDs([]string{userID}),
+		DeleteRoomUsersOptionFilterByUserIDs([]string{user.UserID}),
 	)
 	if err != nil {
 		return err
@@ -350,20 +347,20 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 		ctx,
 		dbMap,
 		tx,
-		DeleteSubscriptionsOptionWithLogicalDeleted(deleted),
-		DeleteSubscriptionsOptionFilterByUserID(userID),
+		DeleteSubscriptionsOptionWithLogicalDeleted(user.Deleted),
+		DeleteSubscriptionsOptionFilterByUserID(user.UserID),
 	)
 	if err != nil {
 		return err
 	}
 
-	err = rdbDeleteUserRoles(ctx, dbMap, tx, DeleteUserRolesOptionFilterByUserIDs([]string{userID}))
+	err = rdbDeleteUserRoles(ctx, dbMap, tx, DeleteUserRolesOptionFilterByUserIDs([]string{user.UserID}))
 	if err != nil {
 		return err
 	}
 
 	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameUser)
-	_, err = tx.Exec(query, deleted, userID)
+	_, err = tx.Exec(query, user.Deleted, user.UserID)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting user")
 		logger.Error(err.Error())
@@ -391,12 +388,12 @@ u.picture_url,
 u.information_url,
 u.unread_count,
 u.meta_data,
-u.public,
+u.public_profile_scope,
 u.created,
 u.modified
 FROM %s as u
 WHERE
-	(u.public=1 AND u.user_id!=:userId AND u.deleted=0)
+	(u.public_profile_scope=:publicProfileScope AND u.user_id!=:userId AND u.deleted=0)
 	OR
 	(
 		u.user_id IN (
@@ -409,12 +406,13 @@ WHERE
 					WHERE ru.user_id=:userId AND r.type!=:type
 				)
 		) AND
-		u.public=1 AND
+		u.public_profile_scope=:publicProfileScope AND
 		u.deleted=0
 	)
 GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableNameRoom)
 	params := make(map[string]interface{})
-	params["type"] = scpb.RoomType_RoomTypeNoticeRoom
+	params["publicProfileScope"] = scpb.PublicProfileScope_All
+	params["type"] = scpb.RoomType_NoticeRoom
 
 	query = fmt.Sprintf("%s ORDER BY", query)
 	if opt.orders == nil {

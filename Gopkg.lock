@@ -164,9 +164,9 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/swagchat/protobuf"
+  name = "github.com/swagchat/protobuf/protoc-gen-go"
   packages = ["protoc-gen-go"]
-  revision = "26ec2ce0735f057c6ee84c38cb3515eba1e6ee7a"
+  revision = "a6e3f3473f28b6524c31676e1d261f79f6d1ab26"
 
 [[projects]]
   name = "github.com/uber/jaeger-client-go"
@@ -273,6 +273,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "77a9aa060b9428873329a8c88f42886eb07cf5d8ad87b75354c45215f106f830"
+  inputs-digest = "7a5e6a85bf058bccbd38e6516d56e4270a724d4a3f4f30bd5f9e9740b0f97822"
   solver-name = "gps-cdcl"
   solver-version = 1

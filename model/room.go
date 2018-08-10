@@ -220,7 +220,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if *r.Type == scpb.RoomType_RoomTypeOneOnOne && len(r.UserIDs) == 0 {
+	if *r.Type == scpb.RoomType_OneOnOneRoom && len(r.UserIDs) == 0 {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "type",
@@ -276,7 +276,7 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 	}
 
 	if crr.Type == nil {
-		r.Type = scpb.RoomType_RoomTypePublicRoom
+		r.Type = scpb.RoomType_PublicRoom
 	} else {
 		r.Type = *crr.Type
 	}
@@ -374,7 +374,7 @@ type UpdateRoomRequest struct {
 func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 	// TODO
 	if uur.Type != nil {
-		if room.Type == scpb.RoomType_RoomTypeOneOnOne && *uur.Type != scpb.RoomType_RoomTypeOneOnOne {
+		if room.Type == scpb.RoomType_OneOnOneRoom && *uur.Type != scpb.RoomType_OneOnOneRoom {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "type",
@@ -382,7 +382,7 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 				},
 			}
 			return NewErrorResponse("Failed to update room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
-		} else if room.Type != scpb.RoomType_RoomTypeOneOnOne && *uur.Type == scpb.RoomType_RoomTypeOneOnOne {
+		} else if room.Type != scpb.RoomType_OneOnOneRoom && *uur.Type == scpb.RoomType_OneOnOneRoom {
 			invalidParams := []*scpb.InvalidParam{
 				&scpb.InvalidParam{
 					Name:   "type",

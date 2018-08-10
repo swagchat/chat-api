@@ -7,11 +7,9 @@
 	},
 	"item": [
 		{
-			"_postman_id": "17a94f63-807c-4000-ab89-cc71d116e569",
 			"name": "Set environment variables",
 			"item": [
 				{
-					"_postman_id": "cd32ae54-81f8-4f4e-aa00-8fef11ab579b",
 					"name": "SET_ENVIRONMENT",
 					"event": [
 						{
@@ -53,17 +51,15 @@
 			]
 		},
 		{
-			"_postman_id": "d0322de0-7681-4d2c-be5f-daab21bff071",
 			"name": "Management users",
 			"item": [
 				{
-					"_postman_id": "63db3bd3-5b98-4ae2-ac89-781e75f5ad05",
 					"name": "/users - 0001",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "5808dc05-c796-4830-a5a5-5c38ea4b5fb3",
+								"id": "ed8c514f-96ea-4ee6-bc65-de4c984f1337",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
@@ -89,7 +85,7 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/picture.png\");",
 									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.publicProfileScope).to.eql(1);",
 									"    pm.expect(res.canBlock).to.eql(true);",
 									"    pm.expect(res.lang).to.eql(\"en\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
@@ -137,7 +133,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": true,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roles\": [1, 2, 3]\n}"
+							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"publicProfileScope\": 1,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roles\": [1, 2, 3]\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/users",
@@ -152,13 +148,12 @@
 					"response": []
 				},
 				{
-					"_postman_id": "7843f4f4-6a02-4247-b2c8-a9e0faa39b90",
 					"name": "/users - 0002",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "55ad700d-1e6e-4aa7-9014-222add822779",
+								"id": "7310ea46-ccc8-4534-a53e-f1af3971d35c",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
@@ -187,7 +182,7 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.publicProfileScope).to.eql(1);",
 									"    pm.expect(res.canBlock).to.eql(true);",
 									"    pm.expect(res.lang).to.eql(\"\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
@@ -256,13 +251,12 @@
 					"response": []
 				},
 				{
-					"_postman_id": "2d153514-1847-4440-9ab5-247bba4d636b",
 					"name": "/users - 0003",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "a44b5f18-1694-4a9a-a791-25834e6d42f5",
+								"id": "89e030cd-77c3-4d71-897f-a52f0b92a5fe",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
@@ -291,7 +285,7 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.publicProfileScope).to.eql(1);",
 									"    pm.expect(res.canBlock).to.eql(true);",
 									"    pm.expect(res.lang).to.eql(\"\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
@@ -360,7 +354,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "13bcd6b3-57b7-4e5b-b05d-bfe2d6711f11",
 					"name": "/users",
 					"event": [
 						{
@@ -429,13 +422,12 @@
 					"response": []
 				},
 				{
-					"_postman_id": "c4ba485b-ebf2-41c3-9adf-18680ac56a19",
 					"name": "/users/{userId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "0706eb79-3241-4605-a23d-92a22a1d7b17",
+								"id": "3996a78f-ca63-4340-b02e-cbe775c440e7",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -462,7 +454,7 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"\");",
 									"    pm.expect(res.informationUrl).to.eql(\"\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(true);",
+									"    pm.expect(res.publicProfileScope).to.eql(1);",
 									"    pm.expect(res.canBlock).to.eql(true);",
 									"    pm.expect(res.lang).to.eql(\"\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
@@ -512,13 +504,12 @@
 					"response": []
 				},
 				{
-					"_postman_id": "7ebe96eb-a7a0-4d66-baaf-2e1d0af9ea43",
 					"name": "/users/{userId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "9b5d790f-9b29-4eb1-b84e-6e746d785c5e",
+								"id": "6d3bc5fb-74c2-4f9b-81db-23db8f49a938",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -545,7 +536,7 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/update.png\");",
 									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users/update\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(false);",
+									"    pm.expect(res.publicProfileScope).to.eql(0);",
 									"    pm.expect(res.canBlock).to.eql(false);",
 									"    pm.expect(res.lang).to.eql(\"en\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
@@ -576,7 +567,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\": \"http://example.com/img/update.png\",\n\t\"informationUrl\": \"http://example.com/users/update\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"public\": false,\n\t\"canBlock\": false,\n\t\"lang\": \"en\"\n}"
+							"raw": "{\n\t\"name\":\"update\",\n\t\"pictureUrl\": \"http://example.com/img/update.png\",\n\t\"informationUrl\": \"http://example.com/users/update\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"publicProfileScope\": 0,\n\t\"canBlock\": false,\n\t\"lang\": \"en\"\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/users/{{randomUserId}}",
@@ -592,7 +583,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "337d0b07-2283-4b21-a967-7ad33e5bbbc4",
 					"name": "/users/{userId}/contacts",
 					"event": [
 						{
@@ -645,13 +635,12 @@
 					"response": []
 				},
 				{
-					"_postman_id": "620d0f92-a9f4-4aed-a779-f7dbc92a5e4f",
 					"name": "/profiles/{userId}",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
-								"id": "b11934fd-3653-45b8-a320-ce6cf1007a81",
+								"id": "1c76265e-da9d-40ac-8abd-6275a5de1886",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -678,7 +667,7 @@
 									"    pm.expect(res.pictureUrl).to.eql(\"http://example.com/img/update.png\");",
 									"    pm.expect(res.informationUrl).to.eql(\"http://example.com/users/update\");",
 									"    pm.expect(res.unreadCount).to.eql(0);",
-									"    pm.expect(res.public).to.eql(false);",
+									"    pm.expect(res.publicProfileScope).to.eql(0);",
 									"    pm.expect(res.canBlock).to.eql(false);",
 									"    pm.expect(res.lang).to.eql(\"en\");",
 									"    pm.expect(res.lastAccessRoomId).to.eql(\"\");",
@@ -718,7 +707,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "8effcc86-4552-4b5f-8f82-e8fb8d91c64a",
 					"name": "/users/{userId}/blockUsers",
 					"request": {
 						"method": "POST",
@@ -751,7 +739,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "7d529d91-0750-4051-beff-fe0d8037b81e",
 					"name": "/users/{userId}/blockUsers",
 					"request": {
 						"method": "GET",
@@ -784,7 +771,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "0fcf1c51-b5fb-4baf-a831-2b6636af4fd2",
 					"name": "/users/{userId}/blockedUsers",
 					"request": {
 						"method": "GET",
@@ -817,7 +803,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "902605d7-b257-43ec-855f-81174ffcb61e",
 					"name": "/users/{userId}/blockUsers",
 					"request": {
 						"method": "DELETE",
@@ -852,11 +837,9 @@
 			]
 		},
 		{
-			"_postman_id": "baadf421-834f-4ea0-887c-f98a1c13f7c3",
 			"name": "Management user roles",
 			"item": [
 				{
-					"_postman_id": "1eb544f8-3ffd-422a-bca6-b9950ca351be",
 					"name": "/users/{userId}/roles",
 					"event": [
 						{
@@ -920,7 +903,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "4543fca1-2580-4c26-bf0a-b900cb42a37d",
 					"name": "/roles/{roleId}/users",
 					"request": {
 						"method": "GET",
@@ -946,7 +928,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "deba4b16-6713-46af-ac71-3e24453475fa",
 					"name": "/users/{userId}/roles",
 					"event": [
 						{
@@ -1012,11 +993,9 @@
 			]
 		},
 		{
-			"_postman_id": "fb8f808d-d57e-4026-8d7e-1cc362b5175b",
 			"name": "Management rooms",
 			"item": [
 				{
-					"_postman_id": "1223023d-80b4-46ed-ab87-eec70b0ce450",
 					"name": "/rooms - 0001",
 					"event": [
 						{
@@ -1105,7 +1084,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "a91046bb-669e-410b-8696-fc23ac2665ba",
 					"name": "/rooms - 0002",
 					"event": [
 						{
@@ -1200,7 +1178,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "694c844f-82a0-46a2-a7fd-6c1d520ba4d9",
 					"name": "/rooms",
 					"event": [
 						{
@@ -1269,7 +1246,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "42f8b863-805f-4079-8e1f-9972f0fc384a",
 					"name": "/rooms/{roomId}",
 					"event": [
 						{
@@ -1352,7 +1328,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "d3539076-87d5-4ea0-86b8-e9554115c78e",
 					"name": "/rooms{roomId}",
 					"event": [
 						{
@@ -1439,11 +1414,9 @@
 			]
 		},
 		{
-			"_postman_id": "d84aa9aa-b1f4-48de-8eb8-0fdb8b0aafb4",
 			"name": "Management room users",
 			"item": [
 				{
-					"_postman_id": "df011449-d06c-4eda-9e7d-6d557ed84431",
 					"name": "/rooms/{roomId}/users",
 					"event": [
 						{
@@ -1507,7 +1480,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "e9431570-88dc-4a54-bf85-1ff2e45238c9",
 					"name": "{{apiEndpoint}}/rooms/{{randomRoomId}}/userIds",
 					"request": {
 						"method": "GET",
@@ -1533,7 +1505,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "93b98e57-899f-413c-9858-5669dfaa8413",
 					"name": "/rooms/{roomId}/users",
 					"event": [
 						{
@@ -1598,7 +1569,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "c8d5b084-5b6c-4313-9c2a-0bfc1e9216f5",
 					"name": "/rooms/{roomId}/users",
 					"event": [
 						{
@@ -1664,11 +1634,9 @@
 			]
 		},
 		{
-			"_postman_id": "2688ad52-0529-42ec-95b4-5a003d71eeaa",
 			"name": "Management message",
 			"item": [
 				{
-					"_postman_id": "324abcac-070d-413b-8e79-3067e84fee6c",
 					"name": "/messages(text)",
 					"request": {
 						"method": "POST",
@@ -1695,7 +1663,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "934ecd64-3297-4574-b132-57a599b57d54",
 					"name": "/messages(image)",
 					"request": {
 						"method": "POST",
@@ -1722,7 +1689,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "0eb70f75-4654-4806-9471-e21d3578d086",
 					"name": "/messages(indicator-start)",
 					"request": {
 						"method": "POST",
@@ -1749,7 +1715,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "05c0fa7b-31d8-424a-9889-9a1fb56fb0a0",
 					"name": "/messages(indicator-end)",
 					"request": {
 						"method": "POST",
@@ -1778,11 +1743,9 @@
 			]
 		},
 		{
-			"_postman_id": "b0be1434-df0e-432e-b682-5dd167b9f341",
 			"name": "Delete resources",
 			"item": [
 				{
-					"_postman_id": "ed561a4c-93d3-43af-a609-30a13ee94b16",
 					"name": "/users/{userId}",
 					"event": [
 						{
@@ -1828,7 +1791,6 @@
 					"response": []
 				},
 				{
-					"_postman_id": "d8b1d84a-00ff-47e9-a9ce-c4f8048de77b",
 					"name": "/rooms{roomId}",
 					"event": [
 						{
@@ -1876,11 +1838,9 @@
 			]
 		},
 		{
-			"_postman_id": "ac0be272-40b5-4f10-a979-e2cd9ed0611d",
 			"name": "Delete environment variables",
 			"item": [
 				{
-					"_postman_id": "efedfa5a-b297-47fb-a0c0-23ff42c2c843",
 					"name": "DELETE_ENVIRONMENT",
 					"event": [
 						{

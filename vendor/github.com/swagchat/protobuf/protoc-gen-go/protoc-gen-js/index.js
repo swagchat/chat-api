@@ -1,0 +1,13 @@
+require('./commonMessage_pb');
+require('./deviceMessage_pb');
+require('./messageMessage_pb');
+require('./messageService_pb');
+require('./roomMessage_pb');
+require('./roomService_pb');
+require('./roomUserMessage_pb');
+require('./roomUserService_pb');
+require('./userMessage_pb');
+require('./userRoleMessage_pb');
+require('./userRoleService_pb');
+require('./userService_pb');
+require('./webhookService_pb');

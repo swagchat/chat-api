@@ -41,7 +41,7 @@ func RoomAuthz(ctx context.Context, roomID, userID string) *model.ErrorResponse 
 		return errRes
 	}
 
-	if room.Type == scpb.RoomType_RoomTypePublicRoom {
+	if room.Type == scpb.RoomType_PublicRoom {
 		return nil
 	}
 

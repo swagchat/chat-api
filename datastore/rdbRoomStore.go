@@ -3,7 +3,6 @@ package datastore
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/logger"
@@ -224,32 +223,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	}
 
 	if room.Deleted != 0 {
-		query := fmt.Sprintf("DELETE FROM %s WHERE room_id=?;", tableNameRoomUser)
-		_, err := tx.Exec(query, room.RoomID)
-		if err != nil {
-			err = errors.Wrap(err, "An error occurred while deleting room")
-			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
-			return err
-		}
-
-		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameSubscription)
-		_, err = tx.Exec(query, time.Now().Unix(), room.RoomID)
-		if err != nil {
-			err = errors.Wrap(err, "An error occurred while deleting room")
-			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
-			return err
-		}
-
-		query = fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
-		_, err = tx.Exec(query, time.Now().Unix(), room.RoomID)
-		if err != nil {
-			err = errors.Wrap(err, "An error occurred while deleting room")
-			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
-			return err
-		}
+		return rdbUpdateRoomDeleted(ctx, dbMap, tx, room)
 	}
 
 	_, err := tx.Update(room)
@@ -277,6 +251,43 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 			tracer.Provider(ctx).SetError(span, err)
 			return err
 		}
+	}
+
+	return nil
+}
+
+func rdbUpdateRoomDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, room *model.Room) error {
+	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoomDeleted", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
+
+	err := rdbDeleteRoomUsers(
+		ctx,
+		dbMap,
+		tx,
+		DeleteRoomUsersOptionFilterByRoomIDs([]string{room.RoomID}),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = rdbDeleteSubscriptions(
+		ctx,
+		dbMap,
+		tx,
+		DeleteSubscriptionsOptionWithLogicalDeleted(room.Deleted),
+		DeleteSubscriptionsOptionFilterByRoomID(room.RoomID),
+	)
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
+	_, err = tx.Exec(query, room.Deleted, room.RoomID)
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while deleting room")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
+		return err
 	}
 
 	return nil
