@@ -14,7 +14,7 @@ var global = Function('return this')();
 var gogoproto_gogo_pb = require('./gogoproto/gogo_pb.js');
 goog.exportSymbol('proto.swagchat.protobuf.CreateRoomUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.DeleteRoomUsersRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetRoomUsersRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveRoomUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.RoomUser', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.RoomUserIdsResponse', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.RoomUsersResponse', null, global);
@@ -558,19 +558,19 @@ proto.swagchat.protobuf.CreateRoomUsersRequest.prototype.hasDisplay = function()
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetRoomUsersRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.GetRoomUsersRequest.repeatedFields_, null);
+proto.swagchat.protobuf.RetrieveRoomUsersRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.RetrieveRoomUsersRequest.repeatedFields_, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetRoomUsersRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveRoomUsersRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetRoomUsersRequest.displayName = 'proto.swagchat.protobuf.GetRoomUsersRequest';
+  proto.swagchat.protobuf.RetrieveRoomUsersRequest.displayName = 'proto.swagchat.protobuf.RetrieveRoomUsersRequest';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.repeatedFields_ = [12,13];
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.repeatedFields_ = [12,13];
 
 
 
@@ -585,8 +585,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetRoomUsersRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveRoomUsersRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -595,11 +595,11 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.toObject = function(opt_in
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetRoomUsersRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveRoomUsersRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     roomId: jspb.Message.getField(msg, 11),
     userIdsList: jspb.Message.getRepeatedField(msg, 12),
@@ -617,23 +617,23 @@ proto.swagchat.protobuf.GetRoomUsersRequest.toObject = function(includeInstance,
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetRoomUsersRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveRoomUsersRequest}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetRoomUsersRequest;
-  return proto.swagchat.protobuf.GetRoomUsersRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveRoomUsersRequest;
+  return proto.swagchat.protobuf.RetrieveRoomUsersRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetRoomUsersRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveRoomUsersRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetRoomUsersRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveRoomUsersRequest}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -665,9 +665,9 @@ proto.swagchat.protobuf.GetRoomUsersRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetRoomUsersRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveRoomUsersRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -675,11 +675,11 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetRoomUsersRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveRoomUsersRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {string} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -709,18 +709,18 @@ proto.swagchat.protobuf.GetRoomUsersRequest.serializeBinaryToWriter = function(m
  * optional string room_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.getRoomId = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.getRoomId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.setRoomId = function(value) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.setRoomId = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.clearRoomId = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.clearRoomId = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -729,7 +729,7 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.clearRoomId = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.hasRoomId = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.hasRoomId = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -738,13 +738,13 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.hasRoomId = function() {
  * repeated string user_ids = 12;
  * @return {!Array.<string>}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.getUserIdsList = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.getUserIdsList = function() {
   return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 12));
 };
 
 
 /** @param {!Array.<string>} value */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.setUserIdsList = function(value) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.setUserIdsList = function(value) {
   jspb.Message.setField(this, 12, value || []);
 };
 
@@ -753,12 +753,12 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.setUserIdsList = function(
  * @param {!string} value
  * @param {number=} opt_index
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.addUserIds = function(value, opt_index) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.addUserIds = function(value, opt_index) {
   jspb.Message.addToRepeatedField(this, 12, value, opt_index);
 };
 
 
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.clearUserIdsList = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.clearUserIdsList = function() {
   this.setUserIdsList([]);
 };
 
@@ -767,13 +767,13 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.clearUserIdsList = functio
  * repeated int32 role_ids = 13;
  * @return {!Array.<number>}
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.getRoleIdsList = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.getRoleIdsList = function() {
   return /** @type {!Array.<number>} */ (jspb.Message.getRepeatedField(this, 13));
 };
 
 
 /** @param {!Array.<number>} value */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.setRoleIdsList = function(value) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.setRoleIdsList = function(value) {
   jspb.Message.setField(this, 13, value || []);
 };
 
@@ -782,12 +782,12 @@ proto.swagchat.protobuf.GetRoomUsersRequest.prototype.setRoleIdsList = function(
  * @param {!number} value
  * @param {number=} opt_index
  */
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.addRoleIds = function(value, opt_index) {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.addRoleIds = function(value, opt_index) {
   jspb.Message.addToRepeatedField(this, 13, value, opt_index);
 };
 
 
-proto.swagchat.protobuf.GetRoomUsersRequest.prototype.clearRoleIdsList = function() {
+proto.swagchat.protobuf.RetrieveRoomUsersRequest.prototype.clearRoleIdsList = function() {
   this.setRoleIdsList([]);
 };
 

@@ -9,14 +9,14 @@ import "userMessage.proto";
 
 service UserService {
   rpc CreateUser (CreateUserRequest) returns (User) {}
-  rpc GetUsers (GetUsersRequest) returns (UsersResponse) {}
-  rpc GetUser (GetUserRequest) returns (User) {}
+  rpc RetrieveUsers (RetrieveUsersRequest) returns (UsersResponse) {}
+  rpc RetrieveUser (RetrieveUserRequest) returns (User) {}
   rpc UpdateUser (UpdateUserRequest) returns (User) {}
   rpc DeleteUser (DeleteUserRequest) returns (google.protobuf.Empty) {}
 
-  rpc GetUserRooms (GetUserRoomsRequest) returns (UserRoomsResponse) {}
-  rpc GetContacts (GetContactsRequest) returns (UsersResponse) {}
-  rpc GetProfile (GetProfileRequest) returns (User) {}
-  // rpc GetDeviceUsers (GetDeviceUsersRequest) returns (DeviceUsersResponse) {}
-  rpc GetRoleUsers (GetRoleUsersRequest) returns (RoleUsersResponse) {}
+  rpc RetrieveUserRooms (RetrieveUserRoomsRequest) returns (UserRoomsResponse) {}
+  rpc RetrieveContacts (RetrieveContactsRequest) returns (UsersResponse) {}
+  rpc RetrieveProfile (RetrieveProfileRequest) returns (User) {}
+  // rpc RetrieveDeviceUsers (RetrieveDeviceUsersRequest) returns (DeviceUsersResponse) {}
+  rpc RetrieveRoleUsers (RetrieveRoleUsersRequest) returns (RoleUsersResponse) {}
 }

@@ -51,7 +51,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getUsers", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetUsersRequest{}
+	req := &model.RetrieveUsersRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
@@ -69,7 +69,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	users, errRes := service.GetUsers(ctx, req)
+	users, errRes := service.RetrieveUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -83,12 +83,12 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getUser", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetUserRequest{}
+	req := &model.RetrieveUserRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	user, errRes := service.GetUser(ctx, req)
+	user, errRes := service.RetrieveUser(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -143,7 +143,7 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getUserRooms", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetUserRoomsRequest{}
+	req := &model.RetrieveUserRoomsRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
@@ -175,7 +175,7 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	roomUsers, errRes := service.GetUserRooms(ctx, req)
+	roomUsers, errRes := service.RetrieveUserRooms(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -189,7 +189,7 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getContacts", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetContactsRequest{}
+	req := &model.RetrieveContactsRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
@@ -211,7 +211,7 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	contacts, errRes := service.GetContacts(ctx, req)
+	contacts, errRes := service.RetrieveContacts(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -225,12 +225,12 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getProfile", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetProfileRequest{}
+	req := &model.RetrieveProfileRequest{}
 
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	user, errRes := service.GetProfile(ctx, req)
+	user, errRes := service.RetrieveProfile(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -244,7 +244,7 @@ func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getRoleUsers", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetRoleUsersRequest{}
+	req := &model.RetrieveRoleUsersRequest{}
 
 	roleIDString := bone.GetValue(r, "roleId")
 	roleIDInt, err := strconv.ParseInt(roleIDString, 10, 32)
@@ -263,7 +263,7 @@ func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 	roleIDInt32 := int32(roleIDInt)
 	req.RoleID = &roleIDInt32
 
-	roleUsers, errRes := service.GetRoleUsers(ctx, req)
+	roleUsers, errRes := service.RetrieveRoleUsers(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -274,7 +274,7 @@ func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 // func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
 // 	userID := bone.GetValue(r, "userId")
 
-// 	userUnreadCount, pd := service.GetUserUnreadCount(r.Context(), userID)
+// 	userUnreadCount, pd := service.RetrieveUserUnreadCount(r.Context(), userID)
 // 	if pd != nil {
 // 		respondErr(w, r, pd.Status, pd)
 // 		return

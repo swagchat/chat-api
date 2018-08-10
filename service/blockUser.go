@@ -40,9 +40,9 @@ func CreateBlockUsers(ctx context.Context, req *model.CreateBlockUsersRequest) *
 	return nil
 }
 
-// GetBlockUsers gets block users
-func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model.BlockUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetBlockUsers", "service")
+// RetrieveBlockUsers retrieves block users
+func RetrieveBlockUsers(ctx context.Context, req *model.RetrieveBlockUsersRequest) (*model.BlockUsersResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveBlockUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
@@ -62,9 +62,9 @@ func GetBlockUsers(ctx context.Context, req *model.GetBlockUsersRequest) (*model
 	return res, nil
 }
 
-// GetBlockUserIDs gets block userIds
-func GetBlockUserIDs(ctx context.Context, req *model.GetBlockUsersRequest) (*model.BlockUserIdsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetBlockUserIDs", "service")
+// RetrieveBlockUserIDs retrieves block userIds
+func RetrieveBlockUserIDs(ctx context.Context, req *model.RetrieveBlockUsersRequest) (*model.BlockUserIdsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveBlockUserIDs", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
@@ -84,9 +84,9 @@ func GetBlockUserIDs(ctx context.Context, req *model.GetBlockUsersRequest) (*mod
 	return res, nil
 }
 
-// GetBlockedUsers gets blocked users
-func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*model.BlockedUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetBlockedUsers", "service")
+// RetrieveBlockedUsers retrieves blocked users
+func RetrieveBlockedUsers(ctx context.Context, req *model.RetrieveBlockedUsersRequest) (*model.BlockedUsersResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveBlockedUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
@@ -106,9 +106,9 @@ func GetBlockedUsers(ctx context.Context, req *model.GetBlockedUsersRequest) (*m
 	return res, nil
 }
 
-// GetBlockedUserIDs gets blocked userIds
-func GetBlockedUserIDs(ctx context.Context, req *model.GetBlockedUsersRequest) (*model.BlockedUserIdsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetBlockedUserIDs", "service")
+// RetrieveBlockedUserIDs retrieves blocked userIds
+func RetrieveBlockedUserIDs(ctx context.Context, req *model.RetrieveBlockedUsersRequest) (*model.BlockedUserIdsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveBlockedUserIDs", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)

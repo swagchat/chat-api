@@ -28,3 +28,5 @@ protoc \
   userRoleMessage.proto \
   userRoleService.proto \
   webhookService.proto
+
+rm -f ./protoc-gen-js/*Service*

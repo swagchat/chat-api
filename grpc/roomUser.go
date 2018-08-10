@@ -21,9 +21,9 @@ func (urs *roomUserServiceServer) CreateRoomUsers(ctx context.Context, in *scpb.
 	return &empty.Empty{}, nil
 }
 
-func (urs *roomUserServiceServer) GetRoomUsers(ctx context.Context, in *scpb.GetRoomUsersRequest) (*scpb.RoomUsersResponse, error) {
-	req := &model.GetRoomUsersRequest{*in}
-	res, errRes := service.GetRoomUsers(ctx, req)
+func (urs *roomUserServiceServer) RetrieveRoomUsers(ctx context.Context, in *scpb.RetrieveRoomUsersRequest) (*scpb.RoomUsersResponse, error) {
+	req := &model.RetrieveRoomUsersRequest{*in}
+	res, errRes := service.RetrieveRoomUsers(ctx, req)
 	if errRes != nil {
 		return &scpb.RoomUsersResponse{}, errRes.Error
 	}
@@ -32,9 +32,9 @@ func (urs *roomUserServiceServer) GetRoomUsers(ctx context.Context, in *scpb.Get
 	return roomUsers, nil
 }
 
-func (urs *roomUserServiceServer) GetRoomUserIds(ctx context.Context, in *scpb.GetRoomUsersRequest) (*scpb.RoomUserIdsResponse, error) {
-	req := &model.GetRoomUsersRequest{*in}
-	res, errRes := service.GetRoomUserIDs(ctx, req)
+func (urs *roomUserServiceServer) RetrieveRoomUserIds(ctx context.Context, in *scpb.RetrieveRoomUsersRequest) (*scpb.RoomUserIdsResponse, error) {
+	req := &model.RetrieveRoomUsersRequest{*in}
+	res, errRes := service.RetrieveRoomUserIDs(ctx, req)
 	if errRes != nil {
 		return &scpb.RoomUserIdsResponse{}, errRes.Error
 	}

@@ -68,21 +68,21 @@ export namespace CreateDeviceRequest {
   }
 }
 
-export class GetDevicesRequest extends jspb.Message {
+export class RetrieveDevicesRequest extends jspb.Message {
   getUserId(): string;
   setUserId(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetDevicesRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetDevicesRequest): GetDevicesRequest.AsObject;
+  toObject(includeInstance?: boolean): RetrieveDevicesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetrieveDevicesRequest): RetrieveDevicesRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetDevicesRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetDevicesRequest;
-  static deserializeBinaryFromReader(message: GetDevicesRequest, reader: jspb.BinaryReader): GetDevicesRequest;
+  static serializeBinaryToWriter(message: RetrieveDevicesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetrieveDevicesRequest;
+  static deserializeBinaryFromReader(message: RetrieveDevicesRequest, reader: jspb.BinaryReader): RetrieveDevicesRequest;
 }
 
-export namespace GetDevicesRequest {
+export namespace RetrieveDevicesRequest {
   export type AsObject = {
     userId: string,
   }

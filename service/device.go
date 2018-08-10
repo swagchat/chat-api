@@ -61,9 +61,9 @@ func CreateDevice(ctx context.Context, req *model.CreateDeviceRequest) (*model.D
 	return newDevice, nil
 }
 
-// GetDevices gets devices
-func GetDevices(ctx context.Context, req *model.GetDevicesRequest) (*model.DevicesResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetDevices", "service")
+// RetrieveDevices retrieves devices
+func RetrieveDevices(ctx context.Context, req *model.RetrieveDevicesRequest) (*model.DevicesResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveDevices", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(req.UserID))

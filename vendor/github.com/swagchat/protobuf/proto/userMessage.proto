@@ -73,7 +73,7 @@ message CreateUserRequest {
   repeated int32 roles = 21 [(gogoproto.customname) = "Roles", (gogoproto.jsontag) = "roles"];
 }
 
-message GetUsersRequest {
+message RetrieveUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional int32 limit = 11 [(gogoproto.nullable) = false];
   optional int32 offset = 12 [(gogoproto.nullable) = false];
@@ -89,7 +89,7 @@ message UsersResponse {
   repeated OrderInfo orders = 5;
 }
 
-message GetUserRequest {
+message RetrieveUserRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
 }
@@ -113,7 +113,7 @@ message DeleteUserRequest {
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
 }
 
-message GetUserRoomsRequest {
+message RetrieveUserRoomsRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional int32 limit = 11 [(gogoproto.nullable) = false];
   optional int32 offset = 12 [(gogoproto.nullable) = false];
@@ -131,7 +131,7 @@ message UserRoomsResponse {
   repeated OrderInfo orders = 5;
 }
 
-message GetContactsRequest {
+message RetrieveContactsRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId", (gogoproto.moretags) = "db:\"user_id\""];
   optional int32 limit = 12 [(gogoproto.nullable) = false];
@@ -139,12 +139,12 @@ message GetContactsRequest {
   repeated OrderInfo orders = 14;
 }
 
-message GetProfileRequest {
+message RetrieveProfileRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "userId"];
 }
 
-// message GetDeviceUsersRequest {
+// message RetrieveDeviceUsersRequest {
 //   option (gogoproto.goproto_unrecognized) = false;
 //   optional int32 platform = 11 [(gogoproto.nullable) = false];
 // }
@@ -155,7 +155,7 @@ message GetProfileRequest {
 //   repeated string user_ids = 12 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds,omitempty"];
 // }
 
-message GetRoleUsersRequest {
+message RetrieveRoleUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional int32 role_id = 11 [(gogoproto.customname) = "RoleID", (gogoproto.jsontag) = "roleId"];
 }

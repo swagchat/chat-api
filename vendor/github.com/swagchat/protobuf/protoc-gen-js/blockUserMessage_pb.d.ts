@@ -55,21 +55,21 @@ export namespace CreateBlockUsersRequest {
   }
 }
 
-export class GetBlockUsersRequest extends jspb.Message {
+export class RetrieveBlockUsersRequest extends jspb.Message {
   getUserId(): string;
   setUserId(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetBlockUsersRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetBlockUsersRequest): GetBlockUsersRequest.AsObject;
+  toObject(includeInstance?: boolean): RetrieveBlockUsersRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetrieveBlockUsersRequest): RetrieveBlockUsersRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetBlockUsersRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetBlockUsersRequest;
-  static deserializeBinaryFromReader(message: GetBlockUsersRequest, reader: jspb.BinaryReader): GetBlockUsersRequest;
+  static serializeBinaryToWriter(message: RetrieveBlockUsersRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetrieveBlockUsersRequest;
+  static deserializeBinaryFromReader(message: RetrieveBlockUsersRequest, reader: jspb.BinaryReader): RetrieveBlockUsersRequest;
 }
 
-export namespace GetBlockUsersRequest {
+export namespace RetrieveBlockUsersRequest {
   export type AsObject = {
     userId: string,
   }
@@ -119,21 +119,21 @@ export namespace BlockUserIdsResponse {
   }
 }
 
-export class GetBlockedUsersRequest extends jspb.Message {
+export class RetrieveBlockedUsersRequest extends jspb.Message {
   getUserId(): string;
   setUserId(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetBlockedUsersRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetBlockedUsersRequest): GetBlockedUsersRequest.AsObject;
+  toObject(includeInstance?: boolean): RetrieveBlockedUsersRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetrieveBlockedUsersRequest): RetrieveBlockedUsersRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetBlockedUsersRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetBlockedUsersRequest;
-  static deserializeBinaryFromReader(message: GetBlockedUsersRequest, reader: jspb.BinaryReader): GetBlockedUsersRequest;
+  static serializeBinaryToWriter(message: RetrieveBlockedUsersRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetrieveBlockedUsersRequest;
+  static deserializeBinaryFromReader(message: RetrieveBlockedUsersRequest, reader: jspb.BinaryReader): RetrieveBlockedUsersRequest;
 }
 
-export namespace GetBlockedUsersRequest {
+export namespace RetrieveBlockedUsersRequest {
   export type AsObject = {
     userId: string,
   }

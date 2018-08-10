@@ -43,19 +43,19 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getBlockUsers", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetBlockUsersRequest{}
+	req := &model.RetrieveBlockUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
 
 	responseType := bone.GetValue(r, "responseType")
 	if responseType == "UserIdList" {
-		blockUserIDs, errRes := service.GetBlockUserIDs(ctx, req)
+		blockUserIDs, errRes := service.RetrieveBlockUserIDs(ctx, req)
 		if errRes != nil {
 			respondError(w, r, errRes)
 			return
 		}
 		respond(w, r, http.StatusOK, "application/json", blockUserIDs)
 	} else {
-		blockUsers, errRes := service.GetBlockUsers(ctx, req)
+		blockUsers, errRes := service.RetrieveBlockUsers(ctx, req)
 		if errRes != nil {
 			respondError(w, r, errRes)
 			return
@@ -69,19 +69,19 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getBlockedUsers", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetBlockedUsersRequest{}
+	req := &model.RetrieveBlockedUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
 
 	responseType := bone.GetValue(r, "responseType")
 	if responseType == "UserIdList" {
-		blockedUserIDs, errRes := service.GetBlockedUserIDs(ctx, req)
+		blockedUserIDs, errRes := service.RetrieveBlockedUserIDs(ctx, req)
 		if errRes != nil {
 			respondError(w, r, errRes)
 			return
 		}
 		respond(w, r, http.StatusOK, "application/json", blockedUserIDs)
 	} else {
-		blockedUsers, errRes := service.GetBlockedUsers(ctx, req)
+		blockedUsers, errRes := service.RetrieveBlockedUsers(ctx, req)
 		if errRes != nil {
 			respondError(w, r, errRes)
 			return

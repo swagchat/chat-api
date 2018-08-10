@@ -11,10 +11,10 @@ import (
 
 // ContactsAuthz is contacts authorize
 func ContactsAuthz(ctx context.Context, requestUserID, resourceUserID string) *model.ErrorResponse {
-	req := &model.GetContactsRequest{}
+	req := &model.RetrieveContactsRequest{}
 	req.UserID = requestUserID
 
-	contacts, errRes := GetContacts(ctx, req)
+	contacts, errRes := RetrieveContacts(ctx, req)
 	if errRes != nil {
 		return errRes
 	}

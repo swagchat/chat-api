@@ -17,14 +17,14 @@ var roomMessage_pb = require('./roomMessage_pb.js');
 var commonMessage_pb = require('./commonMessage_pb.js');
 goog.exportSymbol('proto.swagchat.protobuf.CreateUserRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.DeleteUserRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetContactsRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetProfileRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetRoleUsersRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetUserRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetUserRoomsRequest', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.GetUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.MiniRoom', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.PublicProfileScope', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveContactsRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveProfileRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveRoleUsersRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveUserRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveUserRoomsRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.RetrieveUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.RoleUsersResponse', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.UpdateUserRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.User', null, global);
@@ -2259,19 +2259,19 @@ proto.swagchat.protobuf.CreateUserRequest.prototype.clearRolesList = function() 
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetUsersRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.GetUsersRequest.repeatedFields_, null);
+proto.swagchat.protobuf.RetrieveUsersRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.RetrieveUsersRequest.repeatedFields_, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetUsersRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveUsersRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetUsersRequest.displayName = 'proto.swagchat.protobuf.GetUsersRequest';
+  proto.swagchat.protobuf.RetrieveUsersRequest.displayName = 'proto.swagchat.protobuf.RetrieveUsersRequest';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.GetUsersRequest.repeatedFields_ = [13];
+proto.swagchat.protobuf.RetrieveUsersRequest.repeatedFields_ = [13];
 
 
 
@@ -2286,8 +2286,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetUsersRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveUsersRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2296,11 +2296,11 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.toObject = function(opt_includ
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetUsersRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveUsersRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetUsersRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveUsersRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getField(msg, 11),
     offset: jspb.Message.getField(msg, 12),
@@ -2319,23 +2319,23 @@ proto.swagchat.protobuf.GetUsersRequest.toObject = function(includeInstance, msg
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetUsersRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveUsersRequest}
  */
-proto.swagchat.protobuf.GetUsersRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveUsersRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetUsersRequest;
-  return proto.swagchat.protobuf.GetUsersRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveUsersRequest;
+  return proto.swagchat.protobuf.RetrieveUsersRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetUsersRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveUsersRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetUsersRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveUsersRequest}
  */
-proto.swagchat.protobuf.GetUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2368,9 +2368,9 @@ proto.swagchat.protobuf.GetUsersRequest.deserializeBinaryFromReader = function(m
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetUsersRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveUsersRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2378,11 +2378,11 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetUsersRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveUsersRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetUsersRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveUsersRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {number} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -2413,18 +2413,18 @@ proto.swagchat.protobuf.GetUsersRequest.serializeBinaryToWriter = function(messa
  * optional int32 limit = 11;
  * @return {number}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.getLimit = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetUsersRequest.prototype.setLimit = function(value) {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.setLimit = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetUsersRequest.prototype.clearLimit = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.clearLimit = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -2433,7 +2433,7 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.clearLimit = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.hasLimit = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.hasLimit = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -2442,18 +2442,18 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.hasLimit = function() {
  * optional int32 offset = 12;
  * @return {number}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.getOffset = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.getOffset = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetUsersRequest.prototype.setOffset = function(value) {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.setOffset = function(value) {
   jspb.Message.setField(this, 12, value);
 };
 
 
-proto.swagchat.protobuf.GetUsersRequest.prototype.clearOffset = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.clearOffset = function() {
   jspb.Message.setField(this, 12, undefined);
 };
 
@@ -2462,7 +2462,7 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.clearOffset = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.hasOffset = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.hasOffset = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
@@ -2471,14 +2471,14 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.hasOffset = function() {
  * repeated OrderInfo orders = 13;
  * @return {!Array.<!proto.swagchat.protobuf.OrderInfo>}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.getOrdersList = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.getOrdersList = function() {
   return /** @type{!Array.<!proto.swagchat.protobuf.OrderInfo>} */ (
     jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 13));
 };
 
 
 /** @param {!Array.<!proto.swagchat.protobuf.OrderInfo>} value */
-proto.swagchat.protobuf.GetUsersRequest.prototype.setOrdersList = function(value) {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.setOrdersList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 13, value);
 };
 
@@ -2488,12 +2488,12 @@ proto.swagchat.protobuf.GetUsersRequest.prototype.setOrdersList = function(value
  * @param {number=} opt_index
  * @return {!proto.swagchat.protobuf.OrderInfo}
  */
-proto.swagchat.protobuf.GetUsersRequest.prototype.addOrders = function(opt_value, opt_index) {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.addOrders = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 13, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
 };
 
 
-proto.swagchat.protobuf.GetUsersRequest.prototype.clearOrdersList = function() {
+proto.swagchat.protobuf.RetrieveUsersRequest.prototype.clearOrdersList = function() {
   this.setOrdersList([]);
 };
 
@@ -2846,12 +2846,12 @@ proto.swagchat.protobuf.UsersResponse.prototype.clearOrdersList = function() {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetUserRequest = function(opt_data) {
+proto.swagchat.protobuf.RetrieveUserRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetUserRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveUserRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetUserRequest.displayName = 'proto.swagchat.protobuf.GetUserRequest';
+  proto.swagchat.protobuf.RetrieveUserRequest.displayName = 'proto.swagchat.protobuf.RetrieveUserRequest';
 }
 
 
@@ -2866,8 +2866,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetUserRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetUserRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveUserRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveUserRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -2876,11 +2876,11 @@ proto.swagchat.protobuf.GetUserRequest.prototype.toObject = function(opt_include
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetUserRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveUserRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetUserRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveUserRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     userId: jspb.Message.getField(msg, 11)
   };
@@ -2896,23 +2896,23 @@ proto.swagchat.protobuf.GetUserRequest.toObject = function(includeInstance, msg)
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetUserRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveUserRequest}
  */
-proto.swagchat.protobuf.GetUserRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveUserRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetUserRequest;
-  return proto.swagchat.protobuf.GetUserRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveUserRequest;
+  return proto.swagchat.protobuf.RetrieveUserRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetUserRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveUserRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetUserRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveUserRequest}
  */
-proto.swagchat.protobuf.GetUserRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveUserRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -2936,9 +2936,9 @@ proto.swagchat.protobuf.GetUserRequest.deserializeBinaryFromReader = function(ms
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetUserRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveUserRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetUserRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveUserRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -2946,11 +2946,11 @@ proto.swagchat.protobuf.GetUserRequest.prototype.serializeBinary = function() {
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetUserRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveUserRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetUserRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveUserRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {string} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -2966,18 +2966,18 @@ proto.swagchat.protobuf.GetUserRequest.serializeBinaryToWriter = function(messag
  * optional string user_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.GetUserRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.GetUserRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.RetrieveUserRequest.prototype.setUserId = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetUserRequest.prototype.clearUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRequest.prototype.clearUserId = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -2986,7 +2986,7 @@ proto.swagchat.protobuf.GetUserRequest.prototype.clearUserId = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUserRequest.prototype.hasUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRequest.prototype.hasUserId = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -3716,19 +3716,19 @@ proto.swagchat.protobuf.DeleteUserRequest.prototype.hasUserId = function() {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetUserRoomsRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.GetUserRoomsRequest.repeatedFields_, null);
+proto.swagchat.protobuf.RetrieveUserRoomsRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.RetrieveUserRoomsRequest.repeatedFields_, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetUserRoomsRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveUserRoomsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetUserRoomsRequest.displayName = 'proto.swagchat.protobuf.GetUserRoomsRequest';
+  proto.swagchat.protobuf.RetrieveUserRoomsRequest.displayName = 'proto.swagchat.protobuf.RetrieveUserRoomsRequest';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.repeatedFields_ = [13];
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.repeatedFields_ = [13];
 
 
 
@@ -3743,8 +3743,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetUserRoomsRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveUserRoomsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -3753,11 +3753,11 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.toObject = function(opt_in
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetUserRoomsRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveUserRoomsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     limit: jspb.Message.getField(msg, 11),
     offset: jspb.Message.getField(msg, 12),
@@ -3778,23 +3778,23 @@ proto.swagchat.protobuf.GetUserRoomsRequest.toObject = function(includeInstance,
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetUserRoomsRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveUserRoomsRequest}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetUserRoomsRequest;
-  return proto.swagchat.protobuf.GetUserRoomsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveUserRoomsRequest;
+  return proto.swagchat.protobuf.RetrieveUserRoomsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetUserRoomsRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveUserRoomsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetUserRoomsRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveUserRoomsRequest}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -3835,9 +3835,9 @@ proto.swagchat.protobuf.GetUserRoomsRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetUserRoomsRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveUserRoomsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -3845,11 +3845,11 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetUserRoomsRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveUserRoomsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {number} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -3894,18 +3894,18 @@ proto.swagchat.protobuf.GetUserRoomsRequest.serializeBinaryToWriter = function(m
  * optional int32 limit = 11;
  * @return {number}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.getLimit = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.setLimit = function(value) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setLimit = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearLimit = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearLimit = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -3914,7 +3914,7 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearLimit = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasLimit = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasLimit = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -3923,18 +3923,18 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasLimit = function() {
  * optional int32 offset = 12;
  * @return {number}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.getOffset = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getOffset = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.setOffset = function(value) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setOffset = function(value) {
   jspb.Message.setField(this, 12, value);
 };
 
 
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearOffset = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearOffset = function() {
   jspb.Message.setField(this, 12, undefined);
 };
 
@@ -3943,7 +3943,7 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearOffset = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasOffset = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasOffset = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
@@ -3952,14 +3952,14 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasOffset = function() {
  * repeated OrderInfo orders = 13;
  * @return {!Array.<!proto.swagchat.protobuf.OrderInfo>}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.getOrdersList = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getOrdersList = function() {
   return /** @type{!Array.<!proto.swagchat.protobuf.OrderInfo>} */ (
     jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 13));
 };
 
 
 /** @param {!Array.<!proto.swagchat.protobuf.OrderInfo>} value */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.setOrdersList = function(value) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setOrdersList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 13, value);
 };
 
@@ -3969,12 +3969,12 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.setOrdersList = function(v
  * @param {number=} opt_index
  * @return {!proto.swagchat.protobuf.OrderInfo}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.addOrders = function(opt_value, opt_index) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.addOrders = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 13, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
 };
 
 
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearOrdersList = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearOrdersList = function() {
   this.setOrdersList([]);
 };
 
@@ -3983,18 +3983,18 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearOrdersList = function
  * optional string user_id = 14;
  * @return {string}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 14, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setUserId = function(value) {
   jspb.Message.setField(this, 14, value);
 };
 
 
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearUserId = function() {
   jspb.Message.setField(this, 14, undefined);
 };
 
@@ -4003,7 +4003,7 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearUserId = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasUserId = function() {
   return jspb.Message.getField(this, 14) != null;
 };
 
@@ -4012,18 +4012,18 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasUserId = function() {
  * optional UserRoomsFilter filter = 15;
  * @return {!proto.swagchat.protobuf.UserRoomsFilter}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.getFilter = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getFilter = function() {
   return /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
 };
 
 
 /** @param {!proto.swagchat.protobuf.UserRoomsFilter} value */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.setFilter = function(value) {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setFilter = function(value) {
   jspb.Message.setField(this, 15, value);
 };
 
 
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearFilter = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearFilter = function() {
   jspb.Message.setField(this, 15, undefined);
 };
 
@@ -4032,7 +4032,7 @@ proto.swagchat.protobuf.GetUserRoomsRequest.prototype.clearFilter = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetUserRoomsRequest.prototype.hasFilter = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasFilter = function() {
   return jspb.Message.getField(this, 15) != null;
 };
 
@@ -4385,19 +4385,19 @@ proto.swagchat.protobuf.UserRoomsResponse.prototype.clearOrdersList = function()
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetContactsRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.GetContactsRequest.repeatedFields_, null);
+proto.swagchat.protobuf.RetrieveContactsRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.RetrieveContactsRequest.repeatedFields_, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetContactsRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveContactsRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetContactsRequest.displayName = 'proto.swagchat.protobuf.GetContactsRequest';
+  proto.swagchat.protobuf.RetrieveContactsRequest.displayName = 'proto.swagchat.protobuf.RetrieveContactsRequest';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.GetContactsRequest.repeatedFields_ = [14];
+proto.swagchat.protobuf.RetrieveContactsRequest.repeatedFields_ = [14];
 
 
 
@@ -4412,8 +4412,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetContactsRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveContactsRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -4422,11 +4422,11 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.toObject = function(opt_inc
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetContactsRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveContactsRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetContactsRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveContactsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     userId: jspb.Message.getField(msg, 11),
     limit: jspb.Message.getField(msg, 12),
@@ -4446,23 +4446,23 @@ proto.swagchat.protobuf.GetContactsRequest.toObject = function(includeInstance, 
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetContactsRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveContactsRequest}
  */
-proto.swagchat.protobuf.GetContactsRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveContactsRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetContactsRequest;
-  return proto.swagchat.protobuf.GetContactsRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveContactsRequest;
+  return proto.swagchat.protobuf.RetrieveContactsRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetContactsRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveContactsRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetContactsRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveContactsRequest}
  */
-proto.swagchat.protobuf.GetContactsRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveContactsRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4499,9 +4499,9 @@ proto.swagchat.protobuf.GetContactsRequest.deserializeBinaryFromReader = functio
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetContactsRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveContactsRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4509,11 +4509,11 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.serializeBinary = function(
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetContactsRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveContactsRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetContactsRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveContactsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {string} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -4551,18 +4551,18 @@ proto.swagchat.protobuf.GetContactsRequest.serializeBinaryToWriter = function(me
  * optional string user_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.GetContactsRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.setUserId = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetContactsRequest.prototype.clearUserId = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.clearUserId = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -4571,7 +4571,7 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.clearUserId = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.hasUserId = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.hasUserId = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -4580,18 +4580,18 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.hasUserId = function() {
  * optional int32 limit = 12;
  * @return {number}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.getLimit = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.getLimit = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetContactsRequest.prototype.setLimit = function(value) {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.setLimit = function(value) {
   jspb.Message.setField(this, 12, value);
 };
 
 
-proto.swagchat.protobuf.GetContactsRequest.prototype.clearLimit = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.clearLimit = function() {
   jspb.Message.setField(this, 12, undefined);
 };
 
@@ -4600,7 +4600,7 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.clearLimit = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.hasLimit = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.hasLimit = function() {
   return jspb.Message.getField(this, 12) != null;
 };
 
@@ -4609,18 +4609,18 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.hasLimit = function() {
  * optional int32 offset = 13;
  * @return {number}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.getOffset = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.getOffset = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 13, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetContactsRequest.prototype.setOffset = function(value) {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.setOffset = function(value) {
   jspb.Message.setField(this, 13, value);
 };
 
 
-proto.swagchat.protobuf.GetContactsRequest.prototype.clearOffset = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.clearOffset = function() {
   jspb.Message.setField(this, 13, undefined);
 };
 
@@ -4629,7 +4629,7 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.clearOffset = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.hasOffset = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.hasOffset = function() {
   return jspb.Message.getField(this, 13) != null;
 };
 
@@ -4638,14 +4638,14 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.hasOffset = function() {
  * repeated OrderInfo orders = 14;
  * @return {!Array.<!proto.swagchat.protobuf.OrderInfo>}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.getOrdersList = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.getOrdersList = function() {
   return /** @type{!Array.<!proto.swagchat.protobuf.OrderInfo>} */ (
     jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 14));
 };
 
 
 /** @param {!Array.<!proto.swagchat.protobuf.OrderInfo>} value */
-proto.swagchat.protobuf.GetContactsRequest.prototype.setOrdersList = function(value) {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.setOrdersList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 14, value);
 };
 
@@ -4655,12 +4655,12 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.setOrdersList = function(va
  * @param {number=} opt_index
  * @return {!proto.swagchat.protobuf.OrderInfo}
  */
-proto.swagchat.protobuf.GetContactsRequest.prototype.addOrders = function(opt_value, opt_index) {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.addOrders = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 14, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
 };
 
 
-proto.swagchat.protobuf.GetContactsRequest.prototype.clearOrdersList = function() {
+proto.swagchat.protobuf.RetrieveContactsRequest.prototype.clearOrdersList = function() {
   this.setOrdersList([]);
 };
 
@@ -4676,12 +4676,12 @@ proto.swagchat.protobuf.GetContactsRequest.prototype.clearOrdersList = function(
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetProfileRequest = function(opt_data) {
+proto.swagchat.protobuf.RetrieveProfileRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetProfileRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveProfileRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetProfileRequest.displayName = 'proto.swagchat.protobuf.GetProfileRequest';
+  proto.swagchat.protobuf.RetrieveProfileRequest.displayName = 'proto.swagchat.protobuf.RetrieveProfileRequest';
 }
 
 
@@ -4696,8 +4696,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetProfileRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetProfileRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveProfileRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveProfileRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -4706,11 +4706,11 @@ proto.swagchat.protobuf.GetProfileRequest.prototype.toObject = function(opt_incl
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetProfileRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveProfileRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetProfileRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveProfileRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     userId: jspb.Message.getField(msg, 11)
   };
@@ -4726,23 +4726,23 @@ proto.swagchat.protobuf.GetProfileRequest.toObject = function(includeInstance, m
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetProfileRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveProfileRequest}
  */
-proto.swagchat.protobuf.GetProfileRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveProfileRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetProfileRequest;
-  return proto.swagchat.protobuf.GetProfileRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveProfileRequest;
+  return proto.swagchat.protobuf.RetrieveProfileRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetProfileRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveProfileRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetProfileRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveProfileRequest}
  */
-proto.swagchat.protobuf.GetProfileRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveProfileRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4766,9 +4766,9 @@ proto.swagchat.protobuf.GetProfileRequest.deserializeBinaryFromReader = function
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetProfileRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveProfileRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetProfileRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveProfileRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4776,11 +4776,11 @@ proto.swagchat.protobuf.GetProfileRequest.prototype.serializeBinary = function()
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetProfileRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveProfileRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetProfileRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveProfileRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {string} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -4796,18 +4796,18 @@ proto.swagchat.protobuf.GetProfileRequest.serializeBinaryToWriter = function(mes
  * optional string user_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.GetProfileRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.RetrieveProfileRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.GetProfileRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.RetrieveProfileRequest.prototype.setUserId = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetProfileRequest.prototype.clearUserId = function() {
+proto.swagchat.protobuf.RetrieveProfileRequest.prototype.clearUserId = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -4816,7 +4816,7 @@ proto.swagchat.protobuf.GetProfileRequest.prototype.clearUserId = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetProfileRequest.prototype.hasUserId = function() {
+proto.swagchat.protobuf.RetrieveProfileRequest.prototype.hasUserId = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 
@@ -4832,12 +4832,12 @@ proto.swagchat.protobuf.GetProfileRequest.prototype.hasUserId = function() {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.GetRoleUsersRequest = function(opt_data) {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.swagchat.protobuf.GetRoleUsersRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.RetrieveRoleUsersRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.GetRoleUsersRequest.displayName = 'proto.swagchat.protobuf.GetRoleUsersRequest';
+  proto.swagchat.protobuf.RetrieveRoleUsersRequest.displayName = 'proto.swagchat.protobuf.RetrieveRoleUsersRequest';
 }
 
 
@@ -4852,8 +4852,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.GetRoleUsersRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.RetrieveRoleUsersRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -4862,11 +4862,11 @@ proto.swagchat.protobuf.GetRoleUsersRequest.prototype.toObject = function(opt_in
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.GetRoleUsersRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.RetrieveRoleUsersRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     roleId: jspb.Message.getField(msg, 11)
   };
@@ -4882,23 +4882,23 @@ proto.swagchat.protobuf.GetRoleUsersRequest.toObject = function(includeInstance,
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.GetRoleUsersRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveRoleUsersRequest}
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.GetRoleUsersRequest;
-  return proto.swagchat.protobuf.GetRoleUsersRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.RetrieveRoleUsersRequest;
+  return proto.swagchat.protobuf.RetrieveRoleUsersRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.GetRoleUsersRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.RetrieveRoleUsersRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.GetRoleUsersRequest}
+ * @return {!proto.swagchat.protobuf.RetrieveRoleUsersRequest}
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -4922,9 +4922,9 @@ proto.swagchat.protobuf.GetRoleUsersRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.GetRoleUsersRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.RetrieveRoleUsersRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -4932,11 +4932,11 @@ proto.swagchat.protobuf.GetRoleUsersRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.GetRoleUsersRequest} message
+ * @param {!proto.swagchat.protobuf.RetrieveRoleUsersRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = /** @type {number} */ (jspb.Message.getField(message, 11));
   if (f != null) {
@@ -4952,18 +4952,18 @@ proto.swagchat.protobuf.GetRoleUsersRequest.serializeBinaryToWriter = function(m
  * optional int32 role_id = 11;
  * @return {number}
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.prototype.getRoleId = function() {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.prototype.getRoleId = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 11, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.GetRoleUsersRequest.prototype.setRoleId = function(value) {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.prototype.setRoleId = function(value) {
   jspb.Message.setField(this, 11, value);
 };
 
 
-proto.swagchat.protobuf.GetRoleUsersRequest.prototype.clearRoleId = function() {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.prototype.clearRoleId = function() {
   jspb.Message.setField(this, 11, undefined);
 };
 
@@ -4972,7 +4972,7 @@ proto.swagchat.protobuf.GetRoleUsersRequest.prototype.clearRoleId = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.GetRoleUsersRequest.prototype.hasRoleId = function() {
+proto.swagchat.protobuf.RetrieveRoleUsersRequest.prototype.hasRoleId = function() {
   return jspb.Message.getField(this, 11) != null;
 };
 

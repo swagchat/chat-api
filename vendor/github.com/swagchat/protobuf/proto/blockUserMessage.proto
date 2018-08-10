@@ -18,7 +18,7 @@ message CreateBlockUsersRequest {
   repeated string block_user_ids = 12 [(gogoproto.customname) = "BlockUserIDs", (gogoproto.jsontag) = "blockUserIds"];
 }
 
-message GetBlockUsersRequest {
+message RetrieveBlockUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
   string user_id = 11 [(gogoproto.customname) = "UserID"];
 }
@@ -33,7 +33,7 @@ message BlockUserIdsResponse {
   repeated string block_user_ids = 12 [(gogoproto.customname) = "BlockUserIDs", (gogoproto.jsontag) = "blockUserIds"];
 }
 
-message GetBlockedUsersRequest {
+message RetrieveBlockedUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
   string user_id = 11 [(gogoproto.customname) = "UserID"];
 }

@@ -47,7 +47,7 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
-	req := &model.GetRoomUsersRequest{}
+	req := &model.RetrieveRoomUsersRequest{}
 	req.RoomID = bone.GetValue(r, "roomId")
 
 	commaSeparatedRoleIDs := ""
@@ -65,14 +65,14 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	responseType := bone.GetValue(r, "responseType")
 	if responseType == "UserIdList" {
-		roomUserIDs, errRes := service.GetRoomUserIDs(ctx, req)
+		roomUserIDs, errRes := service.RetrieveRoomUserIDs(ctx, req)
 		if errRes != nil {
 			respondError(w, r, errRes)
 			return
 		}
 		respond(w, r, http.StatusOK, "application/json", roomUserIDs)
 	} else {
-		roomUsers, errRes := service.GetRoomUsers(ctx, req)
+		roomUsers, errRes := service.RetrieveRoomUsers(ctx, req)
 		if errRes != nil {
 			respondError(w, r, errRes)
 			return

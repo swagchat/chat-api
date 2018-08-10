@@ -62,8 +62,9 @@ func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *mo
 	return nil
 }
 
-func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.RoomUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetRoomUsers", "service")
+// RetrieveRoomUsers retrieves room users
+func RetrieveRoomUsers(ctx context.Context, req *model.RetrieveRoomUsersRequest) (*model.RoomUsersResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveRoomUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmRoomExist(ctx, req.RoomID)
@@ -86,8 +87,9 @@ func GetRoomUsers(ctx context.Context, req *model.GetRoomUsersRequest) (*model.R
 	return res, nil
 }
 
-func GetRoomUserIDs(ctx context.Context, req *model.GetRoomUsersRequest) (*model.RoomUserIdsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetRoomUserIDs", "service")
+// RetrieveRoomUserIDs retrieves room userIds
+func RetrieveRoomUserIDs(ctx context.Context, req *model.RetrieveRoomUsersRequest) (*model.RoomUserIdsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveRoomUserIDs", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	_, errRes := confirmRoomExist(ctx, req.RoomID)

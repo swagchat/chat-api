@@ -29,9 +29,9 @@ func (us *roomServiceServer) CreateRoom(ctx context.Context, in *scpb.CreateRoom
 	return pbRoom, nil
 }
 
-func (us *roomServiceServer) GetUsers(ctx context.Context, in *scpb.GetRoomsRequest) (*scpb.RoomsResponse, error) {
-	req := &model.GetRoomsRequest{*in}
-	rooms, errRes := service.GetRooms(ctx, req)
+func (us *roomServiceServer) RetrieveUsers(ctx context.Context, in *scpb.RetrieveRoomsRequest) (*scpb.RoomsResponse, error) {
+	req := &model.RetrieveRoomsRequest{*in}
+	rooms, errRes := service.RetrieveRooms(ctx, req)
 	if errRes != nil {
 		return &scpb.RoomsResponse{}, errRes.Error
 	}
@@ -40,9 +40,9 @@ func (us *roomServiceServer) GetUsers(ctx context.Context, in *scpb.GetRoomsRequ
 	return pbRooms, nil
 }
 
-func (us *roomServiceServer) GetRoom(ctx context.Context, in *scpb.GetRoomRequest) (*scpb.Room, error) {
-	req := &model.GetRoomRequest{*in}
-	room, errRes := service.GetRoom(ctx, req)
+func (us *roomServiceServer) RetrieveRoom(ctx context.Context, in *scpb.RetrieveRoomRequest) (*scpb.Room, error) {
+	req := &model.RetrieveRoomRequest{*in}
+	room, errRes := service.RetrieveRoom(ctx, req)
 	if errRes != nil {
 		return &scpb.Room{}, errRes.Error
 	}
@@ -79,9 +79,9 @@ func (us *roomServiceServer) DeleteRoom(ctx context.Context, in *scpb.DeleteRoom
 	return &empty.Empty{}, nil
 }
 
-func (us *roomServiceServer) GetRoomMessages(ctx context.Context, in *scpb.GetRoomMessagesRequest) (*scpb.RoomMessagesResponse, error) {
-	req := &model.GetRoomMessagesRequest{*in}
-	roomMessages, errRes := service.GetRoomMessages(ctx, req)
+func (us *roomServiceServer) RetrieveRoomMessages(ctx context.Context, in *scpb.RetrieveRoomMessagesRequest) (*scpb.RoomMessagesResponse, error) {
+	req := &model.RetrieveRoomMessagesRequest{*in}
+	roomMessages, errRes := service.RetrieveRoomMessages(ctx, req)
 	if errRes != nil {
 		return &scpb.RoomMessagesResponse{}, errRes.Error
 	}

@@ -20,7 +20,7 @@ message CreateRoomUsersRequest {
   optional bool display = 13 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "display,omitempty"];
 }
 
-message GetRoomUsersRequest {
+message RetrieveRoomUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional string room_id = 11 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false];
   repeated string user_ids = 12 [(gogoproto.customname) = "UserIDs"];

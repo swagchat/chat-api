@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	TestServiceSetUpBlockUser    = "[service] set up blockUser"
-	TestServiceCreateBlockUsers  = "[service] create block users test"
-	TestServiceGetBlockUsers     = "[service] get block users test"
-	TestServiceGetBlockUserIDs   = "[service] get block userIds test"
-	TestServiceGetBlockedUsers   = "[service] get blocked users test"
-	TestServiceGetBlockedUserIDs = "[service] get blocked userIds test"
-	TestServiceDeleteBlockUsers  = "[service] delete block users test"
-	TestServiceTearDownBlockUser = "[service] tear down blockUser"
+	TestServiceSetUpBlockUser         = "[service] set up blockUser"
+	TestServiceCreateBlockUsers       = "[service] create block users test"
+	TestServiceRetrieveBlockUsers     = "[service] retrieve block users test"
+	TestServiceRetrieveBlockUserIDs   = "[service] retrieve block userIds test"
+	TestServiceRetrieveBlockedUsers   = "[service] retrieve blocked users test"
+	TestServiceRetrieveBlockedUserIDs = "[service] retrieve blocked userIds test"
+	TestServiceDeleteBlockUsers       = "[service] delete block users test"
+	TestServiceTearDownBlockUser      = "[service] tear down blockUser"
 )
 
 func TestBlockUser(t *testing.T) {
@@ -79,95 +79,95 @@ func TestBlockUser(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceGetBlockUsers, func(t *testing.T) {
-		req := &model.GetBlockUsersRequest{}
+	t.Run(TestServiceRetrieveBlockUsers, func(t *testing.T) {
+		req := &model.RetrieveBlockUsersRequest{}
 		req.UserID = "block-user-service-user-id-0001"
-		blockUsers, errRes := GetBlockUsers(ctx, req)
+		blockUsers, errRes := RetrieveBlockUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetBlockUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveBlockUsers, errMsg)
 		}
 		if len(blockUsers.BlockUsers) != 3 {
-			t.Fatalf("Failed to %s. Expected blockUsers.BlockUsers count to be 3, but it was %d", TestServiceGetBlockUsers, len(blockUsers.BlockUsers))
+			t.Fatalf("Failed to %s. Expected blockUsers.BlockUsers count to be 3, but it was %d", TestServiceRetrieveBlockUsers, len(blockUsers.BlockUsers))
 		}
 
-		req = &model.GetBlockUsersRequest{}
+		req = &model.RetrieveBlockUsersRequest{}
 		req.UserID = "not-exist-user"
-		_, errRes = GetBlockUsers(ctx, req)
+		_, errRes = RetrieveBlockUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetBlockUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveBlockUsers)
 		}
 	})
 
-	t.Run(TestServiceGetBlockUserIDs, func(t *testing.T) {
-		req := &model.GetBlockUsersRequest{}
+	t.Run(TestServiceRetrieveBlockUserIDs, func(t *testing.T) {
+		req := &model.RetrieveBlockUsersRequest{}
 		req.UserID = "block-user-service-user-id-0001"
-		blockUserIDs, errRes := GetBlockUserIDs(ctx, req)
+		blockUserIDs, errRes := RetrieveBlockUserIDs(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetBlockUserIDs, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveBlockUserIDs, errMsg)
 		}
 		if len(blockUserIDs.BlockUserIDs) != 3 {
-			t.Fatalf("Failed to %s. Expected blockUserIDs.BlockUserIDs count to be 3, but it was %d", TestServiceGetBlockUserIDs, len(blockUserIDs.BlockUserIDs))
+			t.Fatalf("Failed to %s. Expected blockUserIDs.BlockUserIDs count to be 3, but it was %d", TestServiceRetrieveBlockUserIDs, len(blockUserIDs.BlockUserIDs))
 		}
 
-		req = &model.GetBlockUsersRequest{}
+		req = &model.RetrieveBlockUsersRequest{}
 		req.UserID = "not-exist-user"
-		_, errRes = GetBlockUserIDs(ctx, req)
+		_, errRes = RetrieveBlockUserIDs(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetBlockUserIDs)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveBlockUserIDs)
 		}
 	})
 
-	t.Run(TestServiceGetBlockedUsers, func(t *testing.T) {
-		req := &model.GetBlockedUsersRequest{}
+	t.Run(TestServiceRetrieveBlockedUsers, func(t *testing.T) {
+		req := &model.RetrieveBlockedUsersRequest{}
 		req.UserID = "block-user-service-user-id-0002"
-		blockedUsers, errRes := GetBlockedUsers(ctx, req)
+		blockedUsers, errRes := RetrieveBlockedUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetBlockedUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveBlockedUsers, errMsg)
 		}
 		if len(blockedUsers.BlockedUsers) != 1 {
-			t.Fatalf("Failed to %s. Expected blockedUsers.BlockedUsers count to be 1, but it was %d", TestServiceGetBlockedUsers, len(blockedUsers.BlockedUsers))
+			t.Fatalf("Failed to %s. Expected blockedUsers.BlockedUsers count to be 1, but it was %d", TestServiceRetrieveBlockedUsers, len(blockedUsers.BlockedUsers))
 		}
 
-		req = &model.GetBlockedUsersRequest{}
+		req = &model.RetrieveBlockedUsersRequest{}
 		req.UserID = "not-exist-user"
-		_, errRes = GetBlockedUsers(ctx, req)
+		_, errRes = RetrieveBlockedUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetBlockedUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveBlockedUsers)
 		}
 	})
 
-	t.Run(TestServiceGetBlockedUserIDs, func(t *testing.T) {
-		req := &model.GetBlockedUsersRequest{}
+	t.Run(TestServiceRetrieveBlockedUserIDs, func(t *testing.T) {
+		req := &model.RetrieveBlockedUsersRequest{}
 		req.UserID = "block-user-service-user-id-0002"
-		blockedUserIDs, errRes := GetBlockedUserIDs(ctx, req)
+		blockedUserIDs, errRes := RetrieveBlockedUserIDs(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetBlockedUserIDs, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveBlockedUserIDs, errMsg)
 		}
 		if len(blockedUserIDs.BlockedUserIDs) != 1 {
-			t.Fatalf("Failed to %s. Expected blockedUserIDs.BlockedUserIDs count to be 1, but it was %d", TestServiceGetBlockedUserIDs, len(blockedUserIDs.BlockedUserIDs))
+			t.Fatalf("Failed to %s. Expected blockedUserIDs.BlockedUserIDs count to be 1, but it was %d", TestServiceRetrieveBlockedUserIDs, len(blockedUserIDs.BlockedUserIDs))
 		}
 
-		req = &model.GetBlockedUsersRequest{}
+		req = &model.RetrieveBlockedUsersRequest{}
 		req.UserID = "not-exist-user"
-		blockedUserIDs, errRes = GetBlockedUserIDs(ctx, req)
+		blockedUserIDs, errRes = RetrieveBlockedUserIDs(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetBlockedUserIDs)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveBlockedUserIDs)
 		}
 	})
 
@@ -184,9 +184,9 @@ func TestBlockUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceDeleteBlockUsers, errMsg)
 		}
 
-		gbuReq := &model.GetBlockUsersRequest{}
+		gbuReq := &model.RetrieveBlockUsersRequest{}
 		gbuReq.UserID = "block-user-service-user-id-0001"
-		blockUsers, errRes := GetBlockUsers(ctx, gbuReq)
+		blockUsers, errRes := RetrieveBlockUsers(ctx, gbuReq)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {

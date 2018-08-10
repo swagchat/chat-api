@@ -339,8 +339,8 @@ func (u *User) DoPostProcessing() {
 	}
 }
 
-type GetUsersRequest struct {
-	scpb.GetUsersRequest
+type RetrieveUsersRequest struct {
+	scpb.RetrieveUsersRequest
 }
 
 type UsersResponse struct {
@@ -374,8 +374,8 @@ func (u *UsersResponse) ConvertToPbUsers() *scpb.UsersResponse {
 	}
 }
 
-type GetUserRequest struct {
-	scpb.GetUserRequest
+type RetrieveUserRequest struct {
+	scpb.RetrieveUserRequest
 }
 
 type UpdateUserRequest struct {
@@ -418,8 +418,8 @@ type DeleteUserRequest struct {
 	scpb.DeleteUserRequest
 }
 
-type GetUserRoomsRequest struct {
-	scpb.GetUserRoomsRequest
+type RetrieveUserRoomsRequest struct {
+	scpb.RetrieveUserRoomsRequest
 }
 
 type UserRoomsResponse struct {
@@ -474,19 +474,19 @@ func (urr *UserRoomsResponse) ConvertToPbUserRooms() *scpb.UserRoomsResponse {
 	return userRooms
 }
 
-type GetContactsRequest struct {
-	scpb.GetContactsRequest
+type RetrieveContactsRequest struct {
+	scpb.RetrieveContactsRequest
 }
 
-type GetProfileRequest struct {
-	scpb.GetProfileRequest
+type RetrieveProfileRequest struct {
+	scpb.RetrieveProfileRequest
 }
 
-type GetRoleUsersRequest struct {
-	scpb.GetRoleUsersRequest
+type RetrieveRoleUsersRequest struct {
+	scpb.RetrieveRoleUsersRequest
 }
 
-func (grur *GetRoleUsersRequest) Validate() *ErrorResponse {
+func (grur *RetrieveRoleUsersRequest) Validate() *ErrorResponse {
 	if grur.RoleID == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{

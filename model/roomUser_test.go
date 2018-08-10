@@ -7,15 +7,15 @@ import (
 )
 
 const (
-	TestNameRoomUser               = "UpdateRoomUser test"
-	TestNameCreateRoomUsersRequest = "CreateRoomUsersRequest test"
-	TestNameRoomUsersResponse      = "RoomUsersResponse test"
-	TestNameRoomUserIdsResponse    = "RoomUserIdsResponse test"
-	TestNameDeleteRoomUsersRequest = "DeleteRoomUsersRequest test"
+	TestModelRoomUser               = "[model] UpdateRoomUser test"
+	TestModelCreateRoomUsersRequest = "[model] CreateRoomUsersRequest test"
+	TestModelRoomUsersResponse      = "[model] RoomUsersResponse test"
+	TestModelRoomUserIdsResponse    = "[model] RoomUserIdsResponse test"
+	TestModelDeleteRoomUsersRequest = "[model] DeleteRoomUsersRequest test"
 )
 
 func TestRoomUser(t *testing.T) {
-	t.Run(TestNameRoomUser, func(t *testing.T) {
+	t.Run(TestModelRoomUser, func(t *testing.T) {
 		req := &UpdateRoomUserRequest{}
 		unreadCount := int32(10)
 		req.UnreadCount = &unreadCount
@@ -31,32 +31,32 @@ func TestRoomUser(t *testing.T) {
 		ru.UpdateRoomUser(req)
 
 		if ru.RoomID != "model-room-id-0001" {
-			t.Fatalf("Failed to %s. Expected ru.RoomID to be \"model-room-id-0001\", but it was %s", TestNameRoomUser, ru.RoomID)
+			t.Fatalf("Failed to %s. Expected ru.RoomID to be \"model-room-id-0001\", but it was %s", TestModelRoomUser, ru.RoomID)
 		}
 		if ru.UserID != "model-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected ru.UserID to be \"model-user-id-0001\", but it was %s", TestNameRoomUser, ru.UserID)
+			t.Fatalf("Failed to %s. Expected ru.UserID to be \"model-user-id-0001\", but it was %s", TestModelRoomUser, ru.UserID)
 		}
 		if ru.UnreadCount != 10 {
-			t.Fatalf("Failed to %s. Expected ru.UnreadCount to be 10, but it was %d", TestNameRoomUser, ru.UnreadCount)
+			t.Fatalf("Failed to %s. Expected ru.UnreadCount to be 10, but it was %d", TestModelRoomUser, ru.UnreadCount)
 		}
 		if ru.Display != true {
-			t.Fatalf("Failed to %s. Expected ru.Display to be true, but it was %t", TestNameRoomUser, ru.Display)
+			t.Fatalf("Failed to %s. Expected ru.Display to be true, but it was %t", TestModelRoomUser, ru.Display)
 		}
 	})
 
-	t.Run(TestNameCreateRoomUsersRequest, func(t *testing.T) {
+	t.Run(TestModelCreateRoomUsersRequest, func(t *testing.T) {
 		req := &CreateRoomUsersRequest{}
 		req.RoomID = "model-room-id-0001"
 		req.Display = true
 		errRes := req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameCreateRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "roomId" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"roomId\", but it was %s", TestNameCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"roomId\", but it was %s", TestModelCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		room := &Room{}
@@ -66,76 +66,76 @@ func TestRoomUser(t *testing.T) {
 		req.Room = room
 		errRes = req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameCreateRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "room.type" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"room.type\", but it was %s", TestNameCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"room.type\", but it was %s", TestModelCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		req.Room.Type = scpb.RoomType_PublicRoom
 		errRes = req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameCreateRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "userIds" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestNameCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestModelCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		req.UserIDs = []string{"model-user-id-0001", "model-user-id-0002"}
 		errRes = req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameCreateRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameCreateRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "userIds" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestNameCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestModelCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		req.UserIDs = []string{"model-user-id-0002", "model-user-id-0003"}
 		errRes = req.Validate()
 		if errRes != nil {
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestNameCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestModelCreateRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		roomUsers := req.GenerateRoomUsers()
 		if len(roomUsers) != 2 {
-			t.Fatalf("Failed to %s. Expected room users count to be 2, but it was %d", TestNameCreateRoomUsersRequest, len(roomUsers))
+			t.Fatalf("Failed to %s. Expected room users count to be 2, but it was %d", TestModelCreateRoomUsersRequest, len(roomUsers))
 		}
 		if roomUsers[0].RoomID != "model-room-id-0001" {
-			t.Fatalf("Failed to %s. Expected roomUsers[0].RoomID to be \"model-room-id-0001\", but it was %s", TestNameCreateRoomUsersRequest, roomUsers[0].RoomID)
+			t.Fatalf("Failed to %s. Expected roomUsers[0].RoomID to be \"model-room-id-0001\", but it was %s", TestModelCreateRoomUsersRequest, roomUsers[0].RoomID)
 		}
 		if roomUsers[0].UserID != "model-user-id-0002" {
-			t.Fatalf("Failed to %s. Expected roomUsers[0].UserID to be \"model-user-id-0002\", but it was %s", TestNameCreateRoomUsersRequest, roomUsers[0].UserID)
+			t.Fatalf("Failed to %s. Expected roomUsers[0].UserID to be \"model-user-id-0002\", but it was %s", TestModelCreateRoomUsersRequest, roomUsers[0].UserID)
 		}
 		if roomUsers[0].UnreadCount != 0 {
-			t.Fatalf("Failed to %s. Expected roomUsers[0].UnreadCount to be 0, but it was %d", TestNameCreateRoomUsersRequest, roomUsers[0].UnreadCount)
+			t.Fatalf("Failed to %s. Expected roomUsers[0].UnreadCount to be 0, but it was %d", TestModelCreateRoomUsersRequest, roomUsers[0].UnreadCount)
 		}
 		if roomUsers[0].Display != true {
-			t.Fatalf("Failed to %s. Expected roomUsers[0].Display to be true, but it was %t", TestNameCreateRoomUsersRequest, roomUsers[0].Display)
+			t.Fatalf("Failed to %s. Expected roomUsers[0].Display to be true, but it was %t", TestModelCreateRoomUsersRequest, roomUsers[0].Display)
 		}
 		if roomUsers[1].RoomID != "model-room-id-0001" {
-			t.Fatalf("Failed to %s. Expected roomUsers[1].RoomID to be \"model-room-id-0001\", but it was %s", TestNameCreateRoomUsersRequest, roomUsers[1].RoomID)
+			t.Fatalf("Failed to %s. Expected roomUsers[1].RoomID to be \"model-room-id-0001\", but it was %s", TestModelCreateRoomUsersRequest, roomUsers[1].RoomID)
 		}
 		if roomUsers[1].UserID != "model-user-id-0003" {
-			t.Fatalf("Failed to %s. Expected roomUsers[1].UserID to be \"model-user-id-0003\", but it was %s", TestNameCreateRoomUsersRequest, roomUsers[1].UserID)
+			t.Fatalf("Failed to %s. Expected roomUsers[1].UserID to be \"model-user-id-0003\", but it was %s", TestModelCreateRoomUsersRequest, roomUsers[1].UserID)
 		}
 		if roomUsers[1].UnreadCount != 0 {
-			t.Fatalf("Failed to %s. Expected roomUsers[1].UnreadCount to be 0, but it was %d", TestNameCreateRoomUsersRequest, roomUsers[1].UnreadCount)
+			t.Fatalf("Failed to %s. Expected roomUsers[1].UnreadCount to be 0, but it was %d", TestModelCreateRoomUsersRequest, roomUsers[1].UnreadCount)
 		}
 		if roomUsers[1].Display != true {
-			t.Fatalf("Failed to %s. Expected roomUsers[1].Display to be true, but it was %t", TestNameCreateRoomUsersRequest, roomUsers[1].Display)
+			t.Fatalf("Failed to %s. Expected roomUsers[1].Display to be true, but it was %t", TestModelCreateRoomUsersRequest, roomUsers[1].Display)
 		}
 	})
 
-	t.Run(TestNameRoomUsersResponse, func(t *testing.T) {
+	t.Run(TestModelRoomUsersResponse, func(t *testing.T) {
 		roomUsers := &RoomUsersResponse{}
 		ru1_2 := &RoomUser{}
 		ru1_2.RoomID = "model-room-id-0001"
@@ -152,31 +152,31 @@ func TestRoomUser(t *testing.T) {
 		roomUsers.Users = []*RoomUser{ru1_2, ru1_3}
 		pbRoomUsers := roomUsers.ConvertToPbRoomUsers()
 		if len(pbRoomUsers.Users) != 2 {
-			t.Fatalf("Failed to %s. Expected pbRoomUsers.Users count to be 2, but it was %d", TestNameRoomUsersResponse, len(pbRoomUsers.Users))
+			t.Fatalf("Failed to %s. Expected pbRoomUsers.Users count to be 2, but it was %d", TestModelRoomUsersResponse, len(pbRoomUsers.Users))
 		}
 	})
 
-	t.Run(TestNameRoomUserIdsResponse, func(t *testing.T) {
+	t.Run(TestModelRoomUserIdsResponse, func(t *testing.T) {
 		roomUserIDs := &RoomUserIdsResponse{}
 		roomUserIDs.UserIDs = []string{"model-user-id-0001", "model-user-id-0002"}
 		pbRoomUserIDs := roomUserIDs.ConvertToPbRoomUserIDs()
 		if len(pbRoomUserIDs.UserIDs) != 2 {
-			t.Fatalf("Failed to %s. Expected pbRoomUserIDs.UserIDs count to be 2, but it was %d", TestNameRoomUserIdsResponse, len(pbRoomUserIDs.UserIDs))
+			t.Fatalf("Failed to %s. Expected pbRoomUserIDs.UserIDs count to be 2, but it was %d", TestModelRoomUserIdsResponse, len(pbRoomUserIDs.UserIDs))
 		}
 	})
 
-	t.Run(TestNameDeleteRoomUsersRequest, func(t *testing.T) {
+	t.Run(TestModelDeleteRoomUsersRequest, func(t *testing.T) {
 		req := &DeleteRoomUsersRequest{}
 		req.RoomID = "model-room-id-0001"
 		errRes := req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelDeleteRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameDeleteRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelDeleteRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "roomId" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"roomId\", but it was %s", TestNameDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"roomId\", but it was %s", TestModelDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		room := &Room{}
@@ -186,43 +186,43 @@ func TestRoomUser(t *testing.T) {
 		req.Room = room
 		errRes = req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelDeleteRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameDeleteRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelDeleteRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "room.type" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"room.type\", but it was %s", TestNameDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"room.type\", but it was %s", TestModelDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		req.Room.Type = scpb.RoomType_PublicRoom
 		errRes = req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelDeleteRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameDeleteRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelDeleteRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "userIds" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestNameDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestModelDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		req.UserIDs = []string{"model-user-id-0001", "model-user-id-0002"}
 		errRes = req.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestNameDeleteRoomUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelDeleteRoomUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestNameDeleteRoomUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelDeleteRoomUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "userIds" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestNameDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userIds\", but it was %s", TestModelDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		req.UserIDs = []string{"model-user-id-0002", "model-user-id-0003"}
 		errRes = req.Validate()
 		if errRes != nil {
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestNameDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestModelDeleteRoomUsersRequest, errRes.InvalidParams[0].Name)
 		}
 	})
 }

@@ -22,9 +22,9 @@ func (urs *deviceServiceServer) CreateDevice(ctx context.Context, in *scpb.Creat
 	return pbDevice, nil
 }
 
-func (urs *deviceServiceServer) GetDevices(ctx context.Context, in *scpb.GetDevicesRequest) (*scpb.DevicesResponse, error) {
-	req := &model.GetDevicesRequest{*in}
-	res, errRes := service.GetDevices(ctx, req)
+func (urs *deviceServiceServer) RetrieveDevices(ctx context.Context, in *scpb.RetrieveDevicesRequest) (*scpb.DevicesResponse, error) {
+	req := &model.RetrieveDevicesRequest{*in}
+	res, errRes := service.RetrieveDevices(ctx, req)
 	if errRes != nil {
 		return &scpb.DevicesResponse{}, errRes.Error
 	}

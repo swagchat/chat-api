@@ -22,9 +22,9 @@ func (bus *blockUserServiceServer) CreateBlockUsers(ctx context.Context, in *scp
 	return &empty.Empty{}, nil
 }
 
-func (bus *blockUserServiceServer) GetBlockUsers(ctx context.Context, in *scpb.GetBlockUsersRequest) (*scpb.BlockUsersResponse, error) {
-	req := &model.GetBlockUsersRequest{*in}
-	res, errRes := service.GetBlockUsers(ctx, req)
+func (bus *blockUserServiceServer) RetrieveBlockUsers(ctx context.Context, in *scpb.RetrieveBlockUsersRequest) (*scpb.BlockUsersResponse, error) {
+	req := &model.RetrieveBlockUsersRequest{*in}
+	res, errRes := service.RetrieveBlockUsers(ctx, req)
 	if errRes != nil {
 		return &scpb.BlockUsersResponse{}, errRes.Error
 	}
@@ -33,9 +33,9 @@ func (bus *blockUserServiceServer) GetBlockUsers(ctx context.Context, in *scpb.G
 	return blockUsers, nil
 }
 
-func (bus *blockUserServiceServer) GetBlockUserIds(ctx context.Context, in *scpb.GetBlockUsersRequest) (*scpb.BlockUserIdsResponse, error) {
-	req := &model.GetBlockUsersRequest{*in}
-	res, errRes := service.GetBlockUserIDs(ctx, req)
+func (bus *blockUserServiceServer) RetrieveBlockUserIds(ctx context.Context, in *scpb.RetrieveBlockUsersRequest) (*scpb.BlockUserIdsResponse, error) {
+	req := &model.RetrieveBlockUsersRequest{*in}
+	res, errRes := service.RetrieveBlockUserIDs(ctx, req)
 	if errRes != nil {
 		return &scpb.BlockUserIdsResponse{}, errRes.Error
 	}
@@ -44,9 +44,9 @@ func (bus *blockUserServiceServer) GetBlockUserIds(ctx context.Context, in *scpb
 	return blockUserIds, nil
 }
 
-func (bus *blockUserServiceServer) GetBlockedUsers(ctx context.Context, in *scpb.GetBlockedUsersRequest) (*scpb.BlockedUsersResponse, error) {
-	req := &model.GetBlockedUsersRequest{*in}
-	res, errRes := service.GetBlockedUsers(ctx, req)
+func (bus *blockUserServiceServer) RetrieveBlockedUsers(ctx context.Context, in *scpb.RetrieveBlockedUsersRequest) (*scpb.BlockedUsersResponse, error) {
+	req := &model.RetrieveBlockedUsersRequest{*in}
+	res, errRes := service.RetrieveBlockedUsers(ctx, req)
 	if errRes != nil {
 		return &scpb.BlockedUsersResponse{}, errRes.Error
 	}
@@ -55,9 +55,9 @@ func (bus *blockUserServiceServer) GetBlockedUsers(ctx context.Context, in *scpb
 	return blockedUsers, nil
 }
 
-func (bus *blockUserServiceServer) GetBlockedUserIds(ctx context.Context, in *scpb.GetBlockedUsersRequest) (*scpb.BlockedUserIdsResponse, error) {
-	req := &model.GetBlockedUsersRequest{*in}
-	res, errRes := service.GetBlockedUserIDs(ctx, req)
+func (bus *blockUserServiceServer) RetrieveBlockedUserIds(ctx context.Context, in *scpb.RetrieveBlockedUsersRequest) (*scpb.BlockedUserIdsResponse, error) {
+	req := &model.RetrieveBlockedUsersRequest{*in}
+	res, errRes := service.RetrieveBlockedUserIDs(ctx, req)
 	if errRes != nil {
 		return &scpb.BlockedUserIdsResponse{}, errRes.Error
 	}

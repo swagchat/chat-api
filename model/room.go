@@ -333,8 +333,8 @@ func (crr *CreateRoomRequest) GenerateRoomUsers() []*RoomUser {
 	return rus
 }
 
-type GetRoomsRequest struct {
-	scpb.GetRoomsRequest
+type RetrieveRoomsRequest struct {
+	scpb.RetrieveRoomsRequest
 }
 
 type RoomsResponse struct {
@@ -362,8 +362,8 @@ func (rr *RoomsResponse) ConvertToPbRooms() *scpb.RoomsResponse {
 	}
 }
 
-type GetRoomRequest struct {
-	scpb.GetRoomRequest
+type RetrieveRoomRequest struct {
+	scpb.RetrieveRoomRequest
 }
 
 type UpdateRoomRequest struct {
@@ -419,8 +419,8 @@ type DeleteRoomRequest struct {
 	scpb.DeleteRoomRequest
 }
 
-type GetRoomMessagesRequest struct {
-	scpb.GetRoomMessagesRequest
+type RetrieveRoomMessagesRequest struct {
+	scpb.RetrieveRoomMessagesRequest
 }
 
 type RoomMessagesResponse struct {

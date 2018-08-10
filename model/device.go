@@ -55,8 +55,8 @@ func (cdr *CreateDeviceRequest) GenerateDevice() *Device {
 	return device
 }
 
-type GetDevicesRequest struct {
-	scpb.GetDevicesRequest
+type RetrieveDevicesRequest struct {
+	scpb.RetrieveDevicesRequest
 }
 
 type DevicesResponse struct {

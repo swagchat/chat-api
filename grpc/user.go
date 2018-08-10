@@ -29,9 +29,9 @@ func (us *userServiceServer) CreateUser(ctx context.Context, in *scpb.CreateUser
 	return pbUser, nil
 }
 
-func (us *userServiceServer) GetUsers(ctx context.Context, in *scpb.GetUsersRequest) (*scpb.UsersResponse, error) {
-	req := &model.GetUsersRequest{*in}
-	users, errRes := service.GetUsers(ctx, req)
+func (us *userServiceServer) RetrieveUsers(ctx context.Context, in *scpb.RetrieveUsersRequest) (*scpb.UsersResponse, error) {
+	req := &model.RetrieveUsersRequest{*in}
+	users, errRes := service.RetrieveUsers(ctx, req)
 	if errRes != nil {
 		return &scpb.UsersResponse{}, errRes.Error
 	}
@@ -40,9 +40,9 @@ func (us *userServiceServer) GetUsers(ctx context.Context, in *scpb.GetUsersRequ
 	return pbUsers, nil
 }
 
-func (us *userServiceServer) GetUser(ctx context.Context, in *scpb.GetUserRequest) (*scpb.User, error) {
-	req := &model.GetUserRequest{*in}
-	user, errRes := service.GetUser(ctx, req)
+func (us *userServiceServer) RetrieveUser(ctx context.Context, in *scpb.RetrieveUserRequest) (*scpb.User, error) {
+	req := &model.RetrieveUserRequest{*in}
+	user, errRes := service.RetrieveUser(ctx, req)
 	if errRes != nil {
 		return &scpb.User{}, errRes.Error
 	}
@@ -79,9 +79,9 @@ func (us *userServiceServer) DeleteUser(ctx context.Context, in *scpb.DeleteUser
 	return &empty.Empty{}, nil
 }
 
-func (urs *userServiceServer) GetUserRooms(ctx context.Context, in *scpb.GetUserRoomsRequest) (*scpb.UserRoomsResponse, error) {
-	req := &model.GetUserRoomsRequest{*in}
-	res, errRes := service.GetUserRooms(ctx, req)
+func (urs *userServiceServer) RetrieveUserRooms(ctx context.Context, in *scpb.RetrieveUserRoomsRequest) (*scpb.UserRoomsResponse, error) {
+	req := &model.RetrieveUserRoomsRequest{*in}
+	res, errRes := service.RetrieveUserRooms(ctx, req)
 	if errRes != nil {
 		return &scpb.UserRoomsResponse{}, errRes.Error
 	}
@@ -90,9 +90,9 @@ func (urs *userServiceServer) GetUserRooms(ctx context.Context, in *scpb.GetUser
 	return userRooms, nil
 }
 
-func (us *userServiceServer) GetContacts(ctx context.Context, in *scpb.GetContactsRequest) (*scpb.UsersResponse, error) {
-	req := &model.GetContactsRequest{*in}
-	users, errRes := service.GetContacts(ctx, req)
+func (us *userServiceServer) RetrieveContacts(ctx context.Context, in *scpb.RetrieveContactsRequest) (*scpb.UsersResponse, error) {
+	req := &model.RetrieveContactsRequest{*in}
+	users, errRes := service.RetrieveContacts(ctx, req)
 	if errRes != nil {
 		return &scpb.UsersResponse{}, errRes.Error
 	}
@@ -101,9 +101,9 @@ func (us *userServiceServer) GetContacts(ctx context.Context, in *scpb.GetContac
 	return pbUsers, nil
 }
 
-func (us *userServiceServer) GetProfile(ctx context.Context, in *scpb.GetProfileRequest) (*scpb.User, error) {
-	req := &model.GetProfileRequest{*in}
-	user, errRes := service.GetProfile(ctx, req)
+func (us *userServiceServer) RetrieveProfile(ctx context.Context, in *scpb.RetrieveProfileRequest) (*scpb.User, error) {
+	req := &model.RetrieveProfileRequest{*in}
+	user, errRes := service.RetrieveProfile(ctx, req)
 	if errRes != nil {
 		return &scpb.User{}, errRes.Error
 	}
@@ -112,9 +112,9 @@ func (us *userServiceServer) GetProfile(ctx context.Context, in *scpb.GetProfile
 	return pbUser, nil
 }
 
-func (us *userServiceServer) GetRoleUsers(ctx context.Context, in *scpb.GetRoleUsersRequest) (*scpb.RoleUsersResponse, error) {
-	req := &model.GetRoleUsersRequest{*in}
-	res, errRes := service.GetRoleUsers(ctx, req)
+func (us *userServiceServer) RetrieveRoleUsers(ctx context.Context, in *scpb.RetrieveRoleUsersRequest) (*scpb.RoleUsersResponse, error) {
+	req := &model.RetrieveRoleUsersRequest{*in}
+	res, errRes := service.RetrieveRoleUsers(ctx, req)
 	if errRes != nil {
 		return &scpb.RoleUsersResponse{}, errRes.Error
 	}

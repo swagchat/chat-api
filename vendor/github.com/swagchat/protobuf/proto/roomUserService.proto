@@ -9,8 +9,8 @@ import "roomUserMessage.proto";
 
 service RoomUserService {
   rpc CreateRoomUsers (CreateRoomUsersRequest) returns (google.protobuf.Empty) {}
-  rpc GetRoomUsers (GetRoomUsersRequest) returns (RoomUsersResponse) {}
-  rpc GetRoomUserIds (GetRoomUsersRequest) returns (RoomUserIdsResponse) {}
+  rpc RetrieveRoomUsers (RetrieveRoomUsersRequest) returns (RoomUsersResponse) {}
+  rpc RetrieveRoomUserIds (RetrieveRoomUsersRequest) returns (RoomUserIdsResponse) {}
   rpc UpdateRoomUser (UpdateRoomUserRequest) returns (google.protobuf.Empty) {}
   rpc DeleteRoomUsers (DeleteRoomUsersRequest) returns (google.protobuf.Empty) {}
 }

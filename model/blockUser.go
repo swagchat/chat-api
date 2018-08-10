@@ -64,8 +64,8 @@ func (cbur *CreateBlockUsersRequest) GenerateBlockUsers() []*BlockUser {
 	return blockUsers
 }
 
-type GetBlockUsersRequest struct {
-	scpb.GetBlockUsersRequest
+type RetrieveBlockUsersRequest struct {
+	scpb.RetrieveBlockUsersRequest
 }
 
 type BlockUsersResponse struct {
@@ -113,8 +113,8 @@ func (buidsr *BlockUserIdsResponse) ConvertToPbBlockUserIds() *scpb.BlockUserIds
 	return res
 }
 
-type GetBlockedUsersRequest struct {
-	scpb.GetBlockedUsersRequest
+type RetrieveBlockedUsersRequest struct {
+	scpb.RetrieveBlockedUsersRequest
 }
 
 type BlockedUsersResponse struct {

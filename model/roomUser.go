@@ -84,8 +84,8 @@ func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
 	return roomUsers
 }
 
-type GetRoomUsersRequest struct {
-	scpb.GetRoomUsersRequest
+type RetrieveRoomUsersRequest struct {
+	scpb.RetrieveRoomUsersRequest
 }
 
 type RoomUsersResponse struct {

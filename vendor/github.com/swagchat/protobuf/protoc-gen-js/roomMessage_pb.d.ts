@@ -300,7 +300,7 @@ export namespace CreateRoomRequest {
   }
 }
 
-export class GetRoomsRequest extends jspb.Message {
+export class RetrieveRoomsRequest extends jspb.Message {
   hasLimit(): boolean;
   clearLimit(): void;
   getLimit(): number | undefined;
@@ -322,16 +322,16 @@ export class GetRoomsRequest extends jspb.Message {
   setUserId(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetRoomsRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetRoomsRequest): GetRoomsRequest.AsObject;
+  toObject(includeInstance?: boolean): RetrieveRoomsRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetrieveRoomsRequest): RetrieveRoomsRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetRoomsRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetRoomsRequest;
-  static deserializeBinaryFromReader(message: GetRoomsRequest, reader: jspb.BinaryReader): GetRoomsRequest;
+  static serializeBinaryToWriter(message: RetrieveRoomsRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetrieveRoomsRequest;
+  static deserializeBinaryFromReader(message: RetrieveRoomsRequest, reader: jspb.BinaryReader): RetrieveRoomsRequest;
 }
 
-export namespace GetRoomsRequest {
+export namespace RetrieveRoomsRequest {
   export type AsObject = {
     limit?: number,
     offset?: number,
@@ -386,23 +386,23 @@ export namespace RoomsResponse {
   }
 }
 
-export class GetRoomRequest extends jspb.Message {
+export class RetrieveRoomRequest extends jspb.Message {
   hasRoomId(): boolean;
   clearRoomId(): void;
   getRoomId(): string | undefined;
   setRoomId(value: string): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetRoomRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetRoomRequest): GetRoomRequest.AsObject;
+  toObject(includeInstance?: boolean): RetrieveRoomRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetrieveRoomRequest): RetrieveRoomRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetRoomRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetRoomRequest;
-  static deserializeBinaryFromReader(message: GetRoomRequest, reader: jspb.BinaryReader): GetRoomRequest;
+  static serializeBinaryToWriter(message: RetrieveRoomRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetrieveRoomRequest;
+  static deserializeBinaryFromReader(message: RetrieveRoomRequest, reader: jspb.BinaryReader): RetrieveRoomRequest;
 }
 
-export namespace GetRoomRequest {
+export namespace RetrieveRoomRequest {
   export type AsObject = {
     roomId?: string,
   }
@@ -508,7 +508,7 @@ export namespace DeleteRoomRequest {
   }
 }
 
-export class GetRoomMessagesRequest extends jspb.Message {
+export class RetrieveRoomMessagesRequest extends jspb.Message {
   hasLimit(): boolean;
   clearLimit(): void;
   getLimit(): number | undefined;
@@ -535,16 +535,16 @@ export class GetRoomMessagesRequest extends jspb.Message {
   addRoleIds(value: number, index?: number): number;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): GetRoomMessagesRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: GetRoomMessagesRequest): GetRoomMessagesRequest.AsObject;
+  toObject(includeInstance?: boolean): RetrieveRoomMessagesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetrieveRoomMessagesRequest): RetrieveRoomMessagesRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: GetRoomMessagesRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): GetRoomMessagesRequest;
-  static deserializeBinaryFromReader(message: GetRoomMessagesRequest, reader: jspb.BinaryReader): GetRoomMessagesRequest;
+  static serializeBinaryToWriter(message: RetrieveRoomMessagesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetrieveRoomMessagesRequest;
+  static deserializeBinaryFromReader(message: RetrieveRoomMessagesRequest, reader: jspb.BinaryReader): RetrieveRoomMessagesRequest;
 }
 
-export namespace GetRoomMessagesRequest {
+export namespace RetrieveRoomMessagesRequest {
   export type AsObject = {
     limit?: number,
     offset?: number,

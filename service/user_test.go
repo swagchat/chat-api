@@ -15,17 +15,17 @@ import (
 )
 
 const (
-	TestServiceSetUpUser    = "[service] set up user"
-	TestServiceCreateUser   = "[service] create user test"
-	TestServiceGetUsers     = "[service] get users test"
-	TestServiceGetUser      = "[service] get user test"
-	TestServiceUpdateUser   = "[service] update user test"
-	TestServiceDeleteUser   = "[service] delete user test"
-	TestServiceGetUserRooms = "[service] get user rooms test"
-	TestServiceGetContacts  = "[service] get contacts test"
-	TestServiceGetProfile   = "[service] get profile test"
-	TestServiceGetRoleUsers = "[service] get user roles test"
-	TestServiceTearDownUser = "[service] tear down user"
+	TestServiceSetUpUser         = "[service] set up user"
+	TestServiceCreateUser        = "[service] create user test"
+	TestServiceRetrieveUsers     = "[service] retrieve users test"
+	TestServiceRetrieveUser      = "[service] retrieve user test"
+	TestServiceUpdateUser        = "[service] update user test"
+	TestServiceDeleteUser        = "[service] delete user test"
+	TestServiceRetrieveUserRooms = "[service] retrieve user rooms test"
+	TestServiceRetrieveContacts  = "[service] retrieve contacts test"
+	TestServiceRetrieveProfile   = "[service] retrieve profile test"
+	TestServiceRetrieveRoleUsers = "[service] retrieve user roles test"
+	TestServiceTearDownUser      = "[service] tear down user"
 )
 
 func TestUser(t *testing.T) {
@@ -136,18 +136,18 @@ func TestUser(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceGetUsers, func(t *testing.T) {
-		req := &model.GetUsersRequest{}
-		res, errRes := GetUsers(ctx, req)
+	t.Run(TestServiceRetrieveUsers, func(t *testing.T) {
+		req := &model.RetrieveUsersRequest{}
+		res, errRes := RetrieveUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveUsers, errMsg)
 		}
 		if res == nil {
-			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceGetUsers)
+			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceRetrieveUsers)
 		}
 
 		req.Limit = 10
@@ -157,82 +157,82 @@ func TestUser(t *testing.T) {
 			Order: scpb.Order_Asc,
 		}
 		req.Orders = []*scpb.OrderInfo{orderInfo1}
-		res, errRes = GetUsers(ctx, req)
+		res, errRes = RetrieveUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveUsers, errMsg)
 		}
 		if res == nil {
-			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceGetUsers)
+			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceRetrieveUsers)
 		}
 	})
 
-	t.Run(TestServiceGetUser, func(t *testing.T) {
+	t.Run(TestServiceRetrieveUser, func(t *testing.T) {
 		ctx := context.WithValue(ctx, config.CtxUserID, "user-service-insert-user-id-0001")
 
-		req := &model.GetUserRequest{}
+		req := &model.RetrieveUserRequest{}
 		req.UserID = "user-service-insert-user-id-0001"
-		res, errRes := GetUser(ctx, req)
+		res, errRes := RetrieveUser(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetUser, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveUser, errMsg)
 		}
 		if res == nil {
-			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceGetUser)
+			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceRetrieveUser)
 		}
 		if res.UserID != "user-service-insert-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected res.UserID to be \"user-service-insert-user-id-0001\", but it was %s", TestServiceGetUser, res.UserID)
+			t.Fatalf("Failed to %s. Expected res.UserID to be \"user-service-insert-user-id-0001\", but it was %s", TestServiceRetrieveUser, res.UserID)
 		}
 		if res.Name != "user-name-0001" {
-			t.Fatalf("Failed to %s. Expected res.Name to be \"user-name-0001\", but it was %s", TestServiceGetUser, res.Name)
+			t.Fatalf("Failed to %s. Expected res.Name to be \"user-name-0001\", but it was %s", TestServiceRetrieveUser, res.Name)
 		}
 		if res.PictureURL != "http://example.com/dummy.png" {
-			t.Fatalf("Failed to %s. Expected res.PictureURL to be \"http://example.com/dummy.png\", but it was %s", TestServiceGetUser, res.PictureURL)
+			t.Fatalf("Failed to %s. Expected res.PictureURL to be \"http://example.com/dummy.png\", but it was %s", TestServiceRetrieveUser, res.PictureURL)
 		}
 		if res.InformationURL != "http://example.com" {
-			t.Fatalf("Failed to %s. Expected res.InformationURL to be \"http://example.com\", but it was %s", TestServiceGetUser, res.InformationURL)
+			t.Fatalf("Failed to %s. Expected res.InformationURL to be \"http://example.com\", but it was %s", TestServiceRetrieveUser, res.InformationURL)
 		}
 		if res.UnreadCount != 0 {
-			t.Fatalf("Failed to %s. Expected res.UnreadCount to be 0, but it was %d", TestServiceGetUser, res.UnreadCount)
+			t.Fatalf("Failed to %s. Expected res.UnreadCount to be 0, but it was %d", TestServiceRetrieveUser, res.UnreadCount)
 		}
 		if res.MetaData == nil {
-			t.Fatalf("Failed to %s. Expected res.MetaData to be not nil, but it was nil", TestServiceGetUser)
+			t.Fatalf("Failed to %s. Expected res.MetaData to be not nil, but it was nil", TestServiceRetrieveUser)
 		}
 		if res.MetaData.String() != `{"key":"value"}` {
-			t.Fatalf("Failed to %s. Expected res.MetaData to be {\"key\":\"value\"}, but it was %s", TestServiceGetUser, res.MetaData.String())
+			t.Fatalf("Failed to %s. Expected res.MetaData to be {\"key\":\"value\"}, but it was %s", TestServiceRetrieveUser, res.MetaData.String())
 		}
 		if res.PublicProfileScope != scpb.PublicProfileScope_All {
-			t.Fatalf("Failed to %s. Expected res.Public to be %d, but it was %d", TestServiceGetUser, scpb.PublicProfileScope_Self, res.PublicProfileScope)
+			t.Fatalf("Failed to %s. Expected res.Public to be %d, but it was %d", TestServiceRetrieveUser, scpb.PublicProfileScope_Self, res.PublicProfileScope)
 		}
 		if res.CanBlock != true {
-			t.Fatalf("Failed to %s. Expected res.CanBlock to be true, but it was %t", TestServiceGetUser, res.CanBlock)
+			t.Fatalf("Failed to %s. Expected res.CanBlock to be true, but it was %t", TestServiceRetrieveUser, res.CanBlock)
 		}
 		if res.Lang != "" {
-			t.Fatalf("Failed to %s. Expected res.Lang to be \"\", but it was %s", TestServiceGetUser, res.Lang)
+			t.Fatalf("Failed to %s. Expected res.Lang to be \"\", but it was %s", TestServiceRetrieveUser, res.Lang)
 		}
 		if res.LastAccessRoomID != "" {
-			t.Fatalf("Failed to %s. Expected res.LastAccessRoomID to be \"\", but it was %s", TestServiceGetUser, res.LastAccessRoomID)
+			t.Fatalf("Failed to %s. Expected res.LastAccessRoomID to be \"\", but it was %s", TestServiceRetrieveUser, res.LastAccessRoomID)
 		}
 		if res.LastAccessed == int64(0) {
-			t.Fatalf("Failed to %s. Expected res.LastAccessed to be 0, but it was %d", TestServiceGetUser, res.LastAccessed)
+			t.Fatalf("Failed to %s. Expected res.LastAccessed to be 0, but it was %d", TestServiceRetrieveUser, res.LastAccessed)
 		}
 		if res.Created == int64(0) {
-			t.Fatalf("Failed to %s. Expected res.Created to be 0, but it was %d", TestServiceGetUser, res.Created)
+			t.Fatalf("Failed to %s. Expected res.Created to be 0, but it was %d", TestServiceRetrieveUser, res.Created)
 		}
 		if res.Modified == int64(0) {
-			t.Fatalf("Failed to %s. Expected res.Modified to be 0, but it was %d", TestServiceGetUser, res.Modified)
+			t.Fatalf("Failed to %s. Expected res.Modified to be 0, but it was %d", TestServiceRetrieveUser, res.Modified)
 		}
 		if len(res.BlockUsers) != 2 {
-			t.Fatalf("Failed to %s. Expected res.BlockUsers count to be 2, but it was %d", TestServiceGetUser, len(res.BlockUsers))
+			t.Fatalf("Failed to %s. Expected res.BlockUsers count to be 2, but it was %d", TestServiceRetrieveUser, len(res.BlockUsers))
 		}
 		if len(res.Roles) != 3 {
-			t.Fatalf("Failed to %s. Expected res.Roles count to be 3, but it was %d", TestServiceGetUser, len(res.Roles))
+			t.Fatalf("Failed to %s. Expected res.Roles count to be 3, but it was %d", TestServiceRetrieveUser, len(res.Roles))
 		}
 	})
 
@@ -253,9 +253,9 @@ func TestUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected res to be not nil, but it was nil", TestServiceUpdateUser)
 		}
 
-		gReq := &model.GetUserRequest{}
+		gReq := &model.RetrieveUserRequest{}
 		gReq.UserID = "user-service-insert-user-id-0001"
-		gRes, errRes := GetUser(ctx, gReq)
+		gRes, errRes := RetrieveUser(ctx, gReq)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
@@ -311,9 +311,9 @@ func TestUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceDeleteUser, errMsg)
 		}
 
-		gReq := &model.GetUserRequest{}
+		gReq := &model.RetrieveUserRequest{}
 		gReq.UserID = "user-service-insert-user-id-0001"
-		_, errRes = GetUser(ctx, gReq)
+		_, errRes = RetrieveUser(ctx, gReq)
 		if errRes == nil {
 			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceDeleteUser)
 		}
@@ -331,75 +331,75 @@ func TestUser(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceGetUserRooms, func(t *testing.T) {
-		req := &model.GetUserRoomsRequest{}
-		_, errRes := GetUserRooms(ctx, req)
+	t.Run(TestServiceRetrieveUserRooms, func(t *testing.T) {
+		req := &model.RetrieveUserRoomsRequest{}
+		_, errRes := RetrieveUserRooms(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetUserRooms, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveUserRooms, errMsg)
 		}
 	})
 
-	t.Run(TestServiceGetContacts, func(t *testing.T) {
-		req := &model.GetContactsRequest{}
+	t.Run(TestServiceRetrieveContacts, func(t *testing.T) {
+		req := &model.RetrieveContactsRequest{}
 		req.UserID = "user-service-insert-user-id-0001"
-		_, errRes := GetContacts(ctx, req)
+		_, errRes := RetrieveContacts(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetContacts, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveContacts, errMsg)
 		}
 	})
 
-	t.Run(TestServiceGetProfile, func(t *testing.T) {
-		req := &model.GetProfileRequest{}
+	t.Run(TestServiceRetrieveProfile, func(t *testing.T) {
+		req := &model.RetrieveProfileRequest{}
 		req.UserID = "user-service-user-id-0001"
-		_, errRes := GetProfile(ctx, req)
+		_, errRes := RetrieveProfile(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetProfile, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveProfile, errMsg)
 		}
 
 		req.UserID = "not-exist-user"
-		_, errRes = GetProfile(ctx, req)
+		_, errRes = RetrieveProfile(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetProfile)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveProfile)
 		}
 		if errRes.Status != http.StatusNotFound {
-			t.Fatalf("Failed to %s. Expected errRes.Status to be 404 but it was %d", TestServiceGetProfile, errRes.Status)
+			t.Fatalf("Failed to %s. Expected errRes.Status to be 404 but it was %d", TestServiceRetrieveProfile, errRes.Status)
 		}
 	})
 
-	t.Run(TestServiceGetRoleUsers, func(t *testing.T) {
-		req := &model.GetRoleUsersRequest{}
-		_, errRes := GetRoleUsers(ctx, req)
+	t.Run(TestServiceRetrieveRoleUsers, func(t *testing.T) {
+		req := &model.RetrieveRoleUsersRequest{}
+		_, errRes := RetrieveRoleUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetRoleUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveRoleUsers)
 		}
 		if errRes.Status != http.StatusBadRequest {
-			t.Fatalf("Failed to %s. Expected errRes.Status to be 404 but it was %d", TestServiceGetRoleUsers, errRes.Status)
+			t.Fatalf("Failed to %s. Expected errRes.Status to be 404 but it was %d", TestServiceRetrieveRoleUsers, errRes.Status)
 		}
 
 		roleID := int32(1)
 		req.RoleID = &roleID
-		res, errRes := GetRoleUsers(ctx, req)
+		res, errRes := RetrieveRoleUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetRoleUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveRoleUsers, errMsg)
 		}
 		if len(res.UserIDs) != 10 {
-			t.Fatalf("Failed to %s. Expected res.UserIDs count to be 10, but it was %d", TestServiceGetRoleUsers, len(res.UserIDs))
+			t.Fatalf("Failed to %s. Expected res.UserIDs count to be 10, but it was %d", TestServiceRetrieveRoleUsers, len(res.UserIDs))
 		}
 	})
 

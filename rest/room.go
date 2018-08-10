@@ -44,7 +44,7 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getRooms", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetRoomsRequest{}
+	req := &model.RetrieveRoomsRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithError(err))
@@ -62,7 +62,7 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	rooms, errRes := service.GetRooms(ctx, req)
+	rooms, errRes := service.RetrieveRooms(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -76,12 +76,12 @@ func getRoom(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getRoom", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetRoomRequest{}
+	req := &model.RetrieveRoomRequest{}
 
 	roomID := bone.GetValue(r, "roomId")
 	req.RoomID = roomID
 
-	room, errRes := service.GetRoom(ctx, req)
+	room, errRes := service.RetrieveRoom(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -136,7 +136,7 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getRoomMessages", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetRoomMessagesRequest{}
+	req := &model.RetrieveRoomMessagesRequest{}
 
 	roomID := bone.GetValue(r, "roomId")
 	req.RoomID = roomID
@@ -158,7 +158,7 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	req.Offset = offset
 	req.Orders = orders
 
-	messages, errRes := service.GetRoomMessages(ctx, req)
+	messages, errRes := service.RetrieveRoomMessages(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

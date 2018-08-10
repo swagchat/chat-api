@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	TestServiceSetUpRoomUser    = "[service] set up roomUser"
-	TestServiceCreateRoomUsers  = "[service] create block users test"
-	TestServiceGetRoomUsers     = "[service] get block users test"
-	TestServiceGetRoomUserIDs   = "[service] get block userIds test"
-	TestServiceUpdateRoomUser   = "[service] update block user test"
-	TestServiceDeleteRoomUsers  = "[service] delete block users test"
-	TestServiceTearDownRoomUser = "[service] tear down roomUser"
+	TestServiceSetUpRoomUser       = "[service] set up roomUser"
+	TestServiceCreateRoomUsers     = "[service] create block users test"
+	TestServiceRetrieveRoomUsers   = "[service] retrieve block users test"
+	TestServiceRetrieveRoomUserIDs = "[service] retrieve block userIds test"
+	TestServiceUpdateRoomUser      = "[service] update block user test"
+	TestServiceDeleteRoomUsers     = "[service] delete block users test"
+	TestServiceTearDownRoomUser    = "[service] tear down roomUser"
 )
 
 func TestRoomUser(t *testing.T) {
@@ -143,49 +143,49 @@ func TestRoomUser(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceGetRoomUsers, func(t *testing.T) {
-		req := &model.GetRoomUsersRequest{}
+	t.Run(TestServiceRetrieveRoomUsers, func(t *testing.T) {
+		req := &model.RetrieveRoomUsersRequest{}
 		req.RoomID = "room-user-service-room-id-0011"
-		res, errRes := GetRoomUsers(ctx, req)
+		res, errRes := RetrieveRoomUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetRoomUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveRoomUsers, errMsg)
 		}
 		if len(res.Users) != 3 {
-			t.Fatalf("Failed to %s. Expected res.Users count to be 3, but it was %d", TestServiceGetRoomUsers, len(res.Users))
+			t.Fatalf("Failed to %s. Expected res.Users count to be 3, but it was %d", TestServiceRetrieveRoomUsers, len(res.Users))
 		}
 
-		req = &model.GetRoomUsersRequest{}
+		req = &model.RetrieveRoomUsersRequest{}
 		req.RoomID = "not-exist-room"
-		_, errRes = GetRoomUsers(ctx, req)
+		_, errRes = RetrieveRoomUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetRoomUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveRoomUsers)
 		}
 	})
 
-	t.Run(TestServiceGetRoomUserIDs, func(t *testing.T) {
-		req := &model.GetRoomUsersRequest{}
+	t.Run(TestServiceRetrieveRoomUserIDs, func(t *testing.T) {
+		req := &model.RetrieveRoomUsersRequest{}
 		req.RoomID = "room-user-service-room-id-0011"
-		res, errRes := GetRoomUserIDs(ctx, req)
+		res, errRes := RetrieveRoomUserIDs(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceGetRoomUserIDs, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceRetrieveRoomUserIDs, errMsg)
 		}
 		if len(res.UserIDs) != 3 {
-			t.Fatalf("Failed to %s. Expected res.UserIDs count to be 3, but it was %d", TestServiceGetRoomUserIDs, len(res.UserIDs))
+			t.Fatalf("Failed to %s. Expected res.UserIDs count to be 3, but it was %d", TestServiceRetrieveRoomUserIDs, len(res.UserIDs))
 		}
 
-		req = &model.GetRoomUsersRequest{}
+		req = &model.RetrieveRoomUsersRequest{}
 		req.RoomID = "not-exist-room"
-		_, errRes = GetRoomUserIDs(ctx, req)
+		_, errRes = RetrieveRoomUserIDs(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceGetRoomUserIDs)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceRetrieveRoomUserIDs)
 		}
 	})
 
@@ -204,10 +204,10 @@ func TestRoomUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceUpdateRoomUser, errMsg)
 		}
 
-		gruReq := &model.GetRoomUsersRequest{}
+		gruReq := &model.RetrieveRoomUsersRequest{}
 		gruReq.RoomID = "room-user-service-room-id-0011"
 		gruReq.UserIDs = []string{"room-user-service-user-id-0002"}
-		res, errRes := GetRoomUsers(ctx, gruReq)
+		res, errRes := RetrieveRoomUsers(ctx, gruReq)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
@@ -243,9 +243,9 @@ func TestRoomUser(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceDeleteRoomUsers, errMsg)
 		}
 
-		gbuReq := &model.GetRoomUsersRequest{}
+		gbuReq := &model.RetrieveRoomUsersRequest{}
 		gbuReq.RoomID = "room-user-service-room-id-0011"
-		res, errRes := GetRoomUsers(ctx, gbuReq)
+		res, errRes := RetrieveRoomUsers(ctx, gbuReq)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {

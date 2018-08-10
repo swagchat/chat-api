@@ -93,9 +93,9 @@ func CreateRoom(ctx context.Context, req *model.CreateRoomRequest) (*model.Room,
 	return room, nil
 }
 
-// GetRooms gets rooms
-func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetRooms", "service")
+// RetrieveRooms retrieves rooms
+func RetrieveRooms(ctx context.Context, req *model.RetrieveRoomsRequest) (*model.RoomsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveRooms", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	rooms, err := datastore.Provider(ctx).SelectRooms(
@@ -121,9 +121,9 @@ func GetRooms(ctx context.Context, req *model.GetRoomsRequest) (*model.RoomsResp
 	return res, nil
 }
 
-// GetRoom gets a room
-func GetRoom(ctx context.Context, req *model.GetRoomRequest) (*model.Room, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetRoom", "service")
+// RetrieveRoom retrieves a room
+func RetrieveRoom(ctx context.Context, req *model.RetrieveRoomRequest) (*model.Room, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveRoom", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	room, err := datastore.Provider(ctx).SelectRoom(req.RoomID, datastore.SelectRoomOptionWithUsers(true))
@@ -228,9 +228,9 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorR
 	return nil
 }
 
-// GetRoomMessages gets room messages
-func GetRoomMessages(ctx context.Context, req *model.GetRoomMessagesRequest) (*model.RoomMessagesResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetRoomMessages", "service")
+// RetrieveRoomMessages retrieves room messages
+func RetrieveRoomMessages(ctx context.Context, req *model.RetrieveRoomMessagesRequest) (*model.RoomMessagesResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveRoomMessages", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	userID := ctx.Value(config.CtxUserID).(string)

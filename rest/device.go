@@ -46,10 +46,10 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("getDevices", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	req := &model.GetDevicesRequest{}
+	req := &model.RetrieveDevicesRequest{}
 	req.UserID = bone.GetValue(r, "userId")
 
-	devices, errRes := service.GetDevices(ctx, req)
+	devices, errRes := service.RetrieveDevices(ctx, req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

@@ -50,9 +50,9 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 	return user, nil
 }
 
-// GetUsers gets users
-func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetUsers", "service")
+// RetrieveUsers retrieves users
+func RetrieveUsers(ctx context.Context, req *model.RetrieveUsersRequest) (*model.UsersResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	users, err := datastore.Provider(ctx).SelectUsers(
@@ -61,12 +61,12 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 		datastore.SelectUsersOptionWithOrders(req.Orders),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Get users failed", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Retrieve users failed", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountUsers()
 	if err != nil {
-		return nil, model.NewErrorResponse("Get users failed", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Retrieve users failed", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res := &model.UsersResponse{}
@@ -79,9 +79,9 @@ func GetUsers(ctx context.Context, req *model.GetUsersRequest) (*model.UsersResp
 	return res, nil
 }
 
-// GetUser gets a user
-func GetUser(ctx context.Context, req *model.GetUserRequest) (*model.User, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetUser", "service")
+// RetrieveUser retrieves a user
+func RetrieveUser(ctx context.Context, req *model.RetrieveUserRequest) (*model.User, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveUser", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	user, err := datastore.Provider(ctx).SelectUser(
@@ -177,8 +177,8 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 	return nil
 }
 
-// GetUserUnreadCount is get user unread count
-// func GetUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCount, *model.ProblemDetail) {
+// RetrieveUserUnreadCount is get user unread count
+// func RetrieveUserUnreadCount(ctx context.Context, userID string) (*model.UserUnreadCount, *model.ProblemDetail) {
 // 	user, pd := selectUser(ctx, userID)
 // 	if pd != nil {
 // 		return nil, pd
@@ -191,17 +191,19 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 // 	return userUnreadCount, nil
 // }
 
-// GetContacts gets contacts
+// RetrieveContacts gets contacts
 
-func GetUserRooms(ctx context.Context, req *model.GetUserRoomsRequest) (*model.UserRoomsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetUserRooms", "service")
+// RetrieveUserRooms retrieves user rooms
+func RetrieveUserRooms(ctx context.Context, req *model.RetrieveUserRoomsRequest) (*model.UserRoomsResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveUserRooms", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	return &model.UserRoomsResponse{}, nil
 }
 
-func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.UsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetContacts", "service")
+// RetrieveContacts retrieves contacts
+func RetrieveContacts(ctx context.Context, req *model.RetrieveContactsRequest) (*model.UsersResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveContacts", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	contacts, err := datastore.Provider(ctx).SelectContacts(
@@ -224,9 +226,9 @@ func GetContacts(ctx context.Context, req *model.GetContactsRequest) (*model.Use
 	return res, nil
 }
 
-// GetProfile gets a profile
-func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetProfile", "service")
+// RetrieveProfile retrieves a profile
+func RetrieveProfile(ctx context.Context, req *model.RetrieveProfileRequest) (*model.User, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveProfile", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
@@ -240,9 +242,9 @@ func GetProfile(ctx context.Context, req *model.GetProfileRequest) (*model.User,
 	return user, nil
 }
 
-// GetRoleUsers gets users or userIds of user roles
-func GetRoleUsers(ctx context.Context, req *model.GetRoleUsersRequest) (*model.RoleUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetRoleUsers", "service")
+// RetrieveRoleUsers retrieves users or userIds of user roles
+func RetrieveRoleUsers(ctx context.Context, req *model.RetrieveRoleUsersRequest) (*model.RoleUsersResponse, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveRoleUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	errRes := req.Validate()
