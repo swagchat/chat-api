@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"context"
+	"net/http"
 )
 
 type notuseProvider struct {
@@ -18,6 +19,9 @@ func (np *notuseProvider) StartTransaction(name, transactionType string, opts ..
 
 func (np *notuseProvider) StartSpan(name, spanType string) interface{} {
 	return nil
+}
+
+func (np *notuseProvider) InjectHTTPRequest(span interface{}, req *http.Request) {
 }
 
 func (np *notuseProvider) SetTag(span interface{}, key string, value interface{}) {

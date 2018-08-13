@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -77,40 +78,62 @@ func (jp *jaegerProvider) StartSpan(name, spanType string) interface{} {
 	return span
 }
 
-func (jp *jaegerProvider) SetTag(span interface{}, key string, value interface{}) {
-	if span != nil {
-		span.(opentracing.Span).SetTag(key, value)
+func (jp *jaegerProvider) InjectHTTPRequest(span interface{}, req *http.Request) {
+	if span == nil {
+		return
 	}
+
+	s := span.(opentracing.Span)
+	ext.SpanKindRPCClient.Set(s)
+	ext.HTTPUrl.Set(s, req.RequestURI)
+	ext.HTTPMethod.Set(s, req.Method)
+	s.Tracer().Inject(
+		s.Context(),
+		opentracing.HTTPHeaders,
+		opentracing.HTTPHeadersCarrier(req.Header),
+	)
+}
+
+func (jp *jaegerProvider) SetTag(span interface{}, key string, value interface{}) {
+	if span == nil {
+		return
+	}
+	span.(opentracing.Span).SetTag(key, value)
 }
 
 func (jp *jaegerProvider) SetHTTPStatusCode(span interface{}, statusCode int) {
-	if span != nil {
-		span.(opentracing.Span).SetTag("http.status_code", statusCode)
+	if span == nil {
+		return
 	}
+	span.(opentracing.Span).SetTag("http.status_code", statusCode)
 }
 
 func (jp *jaegerProvider) SetError(span interface{}, err error) {
-	if span != nil {
-		span.(opentracing.Span).SetTag("error", true)
-		span.(opentracing.Span).SetTag("message", err.Error())
+	if span == nil {
+		return
 	}
+	span.(opentracing.Span).SetTag("error", true)
+	span.(opentracing.Span).SetTag("message", err.Error())
 }
 
 func (jp *jaegerProvider) Finish(span interface{}) {
-	if span != nil {
-		span.(opentracing.Span).Finish()
+	if span == nil {
+		return
 	}
+	span.(opentracing.Span).Finish()
 }
 
 func (jp *jaegerProvider) CloseTransaction() {
 	span := jp.ctx.Value(config.CtxTracerSpan)
-	if span != nil {
-		span.(opentracing.Span).Finish()
+	if span == nil {
+		return
 	}
+	span.(opentracing.Span).Finish()
 }
 
 func (jp *jaegerProvider) Close() {
-	if jaegerCloser != nil {
-		jaegerCloser.Close()
+	if jaegerCloser == nil {
+		return
 	}
+	jaegerCloser.Close()
 }

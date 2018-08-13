@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"context"
+	"net/http"
 
 	elasticapm "github.com/elastic/apm-agent-go"
 	"github.com/swagchat/chat-api/config"
@@ -40,6 +41,12 @@ func (ep *elasticapmProvider) StartTransaction(name, transactionType string, opt
 func (ep *elasticapmProvider) StartSpan(name, spanType string) interface{} {
 	span, _ := elasticapm.StartSpan(ep.ctx, name, spanType)
 	return span
+}
+
+func (ep *elasticapmProvider) InjectHTTPRequest(span interface{}, req *http.Request) {
+	if span == nil {
+		return
+	}
 }
 
 func (ep *elasticapmProvider) SetTag(span interface{}, key string, value interface{}) {

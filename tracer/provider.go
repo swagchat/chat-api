@@ -11,6 +11,7 @@ type provider interface {
 	NewTracer() error
 	StartTransaction(name, transactionType string, opts ...StartTransactionOption) (context.Context, interface{})
 	StartSpan(name, spanType string) interface{}
+	InjectHTTPRequest(span interface{}, req *http.Request)
 	SetTag(span interface{}, key string, value interface{})
 	SetHTTPStatusCode(span interface{}, statusCode int)
 	SetError(span interface{}, err error)
