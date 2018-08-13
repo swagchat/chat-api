@@ -1,17 +1,20 @@
 package model
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"regexp"
+
+	"github.com/swagchat/chat-api/logger"
 )
 
-// IsURL is url
-func IsURL(checkURL string) error {
+func isURL(checkURL string) error {
 	urlStruct, err := url.Parse(checkURL)
 	if err != nil {
-		return errors.New(fmt.Sprintf("url parse error. %s", err.Error()))
+		err := fmt.Errorf("url parse error. %s", err.Error())
+		logger.Error(err.Error())
+		return err
 	}
 	schemes := []string{"http", "https"}
 	for _, scheme := range schemes {
@@ -19,11 +22,18 @@ func IsURL(checkURL string) error {
 			return nil
 		}
 	}
-	return errors.New("url is not http or https.")
+
+	err = fmt.Errorf("url is not http or https")
+	logger.Error(err.Error())
+	return err
 }
 
-// IsValidID is valid ID
-func IsValidID(ID string) bool {
+func isValidID(ID string) bool {
 	r := regexp.MustCompile(`(?m)^[0-9a-z-]+$`)
 	return r.MatchString(ID)
+}
+
+func isJSON(s string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
 }

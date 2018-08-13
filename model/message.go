@@ -100,7 +100,7 @@ type CreateMessageRequest struct {
 }
 
 func (m *CreateMessageRequest) Validate() *ErrorResponse {
-	if m.MessageID != nil && *m.MessageID != "" && !IsValidID(*m.MessageID) {
+	if m.MessageID != nil && *m.MessageID != "" && !isValidID(*m.MessageID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "messageId",
@@ -135,6 +135,26 @@ func (m *CreateMessageRequest) Validate() *ErrorResponse {
 			&scpb.InvalidParam{
 				Name:   "type",
 				Reason: "type is empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if m.Payload == nil {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "payload",
+				Reason: "payload is empty.",
+			},
+		}
+		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if !isJSON(m.Payload.String()) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "payload",
+				Reason: "payload is not json format.",
 			},
 		}
 		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
@@ -176,16 +196,6 @@ func (m *CreateMessageRequest) Validate() *ErrorResponse {
 			}
 			return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
-	}
-
-	if m.Payload == nil {
-		invalidParams := []*scpb.InvalidParam{
-			&scpb.InvalidParam{
-				Name:   "payload",
-				Reason: "payload is empty.",
-			},
-		}
-		return NewErrorResponse("Failed to create a message.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	return nil

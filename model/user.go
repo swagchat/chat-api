@@ -189,7 +189,7 @@ type CreateUserRequest struct {
 }
 
 func (cur *CreateUserRequest) Validate() *ErrorResponse {
-	if cur.UserID != nil && *cur.UserID != "" && !IsValidID(*cur.UserID) {
+	if cur.UserID != nil && *cur.UserID != "" && !isValidID(*cur.UserID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -233,6 +233,16 @@ func (cur *CreateUserRequest) Validate() *ErrorResponse {
 				return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 			}
 		}
+	}
+
+	if cur.MetaData != nil && !isJSON(cur.MetaData.String()) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "metaData",
+				Reason: "metaData is not json format.",
+			},
+		}
+		return NewErrorResponse("Failed to create user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	return nil
@@ -394,8 +404,18 @@ func (uur *UpdateUserRequest) Validate() *ErrorResponse {
 					Reason: "blockUsers can not include own UserId.",
 				},
 			}
-			return NewErrorResponse("Failed to create block users.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+			return NewErrorResponse("Failed to update user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
+	}
+
+	if uur.MetaData != nil && !isJSON(uur.MetaData.String()) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "metaData",
+				Reason: "metaData is not json format.",
+			},
+		}
+		return NewErrorResponse("Failed to update user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
 	return nil

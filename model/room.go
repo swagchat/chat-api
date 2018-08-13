@@ -169,7 +169,7 @@ type CreateRoomRequest struct {
 }
 
 func (r *CreateRoomRequest) Validate() *ErrorResponse {
-	if r.RoomID != nil && *r.RoomID != "" && !IsValidID(*r.RoomID) {
+	if r.RoomID != nil && *r.RoomID != "" && !isValidID(*r.RoomID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "roomId",
@@ -189,7 +189,7 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 	}
 
-	if !IsValidID(*r.UserID) {
+	if !isValidID(*r.UserID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
 				Name:   "userId",
@@ -225,6 +225,16 @@ func (r *CreateRoomRequest) Validate() *ErrorResponse {
 			&scpb.InvalidParam{
 				Name:   "type",
 				Reason: "In case of 1on1 type, it is necessary to set userIds.",
+			},
+		}
+		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
+	if r.MetaData != nil && !isJSON(r.MetaData.String()) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "metaData",
+				Reason: "metaData is not json format.",
 			},
 		}
 		return NewErrorResponse("Failed to create room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
@@ -392,6 +402,17 @@ func (uur *UpdateRoomRequest) Validate(room *Room) *ErrorResponse {
 			return NewErrorResponse("Failed to update room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
 		}
 	}
+
+	if uur.MetaData != nil && !isJSON(uur.MetaData.String()) {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "metaData",
+				Reason: "metaData is not json format.",
+			},
+		}
+		return NewErrorResponse("Failed to update room.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
+
 	return nil
 }
 
