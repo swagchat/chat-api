@@ -133,7 +133,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key1\": \"value1\"\n\t},\n\t\"publicProfileScope\": 1,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roles\": [1, 2, 3]\n}"
+							"raw": "{\n\t\"name\":\"{{randomUserName}}\",\n\t\"pictureUrl\": \"http://example.com/img/picture.png\",\n\t\"informationUrl\": \"http://example.com/users\",\n\t\"metaData\": {\n\t\t\"key\": \"value\"\n\t},\n\t\"publicProfileScope\": 1,\n\t\"canBlock\": true,\n\t\"lang\": \"en\",\n\t\"roles\": [1, 2, 3]\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/users",
@@ -359,7 +359,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "14957a23-c31c-4b16-ada7-be7001a502e8",
+								"id": "d4d00ef1-db11-49e4-8819-f2fdac09898f",
 								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
@@ -374,6 +374,7 @@
 									"",
 									"const usersSchemaString = pm.environment.get(\"usersSchema\");",
 									"const usersSchema = JSON.parse(usersSchemaString);",
+									"console.log(usersSchema);",
 									"pm.test('Schema is valid', function() {",
 									"    pm.expect(tv4.validate(res, usersSchema)).to.be.true;",
 									"});",
