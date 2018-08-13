@@ -279,7 +279,18 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		o(&opt)
 	}
 
-	if user.Deleted != 0 {
+	if opt.markAllAsRead {
+		query := fmt.Sprintf("UPDATE %s SET unread_count=0 WHERE user_id=?;", tableNameRoomUser)
+		_, err := tx.Exec(query, user.UserID)
+		if err != nil {
+			err = errors.Wrap(err, "An error occurred while updating user")
+			logger.Error(err.Error())
+			tracer.Provider(ctx).SetError(span, err)
+			return err
+		}
+	}
+
+	if user.DeletedTimestamp != 0 {
 		return rdbUpdateUserDeleted(ctx, dbMap, tx, user)
 	}
 
@@ -326,7 +337,7 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 		ctx,
 		dbMap,
 		tx,
-		DeleteDevicesOptionWithLogicalDeleted(user.Deleted),
+		DeleteDevicesOptionWithLogicalDeleted(user.DeletedTimestamp),
 		DeleteDevicesOptionFilterByUserID(user.UserID),
 	)
 	if err != nil {
@@ -347,7 +358,7 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 		ctx,
 		dbMap,
 		tx,
-		DeleteSubscriptionsOptionWithLogicalDeleted(user.Deleted),
+		DeleteSubscriptionsOptionWithLogicalDeleted(user.DeletedTimestamp),
 		DeleteSubscriptionsOptionFilterByUserID(user.UserID),
 	)
 	if err != nil {
@@ -360,7 +371,7 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 	}
 
 	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE user_id=?;", tableNameUser)
-	_, err = tx.Exec(query, user.Deleted, user.UserID)
+	_, err = tx.Exec(query, user.DeletedTimestamp, user.UserID)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting user")
 		logger.Error(err.Error())

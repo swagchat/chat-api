@@ -40,9 +40,9 @@ func TestUser(t *testing.T) {
 			newUser = &model.User{}
 			newUser.UserID = userID
 			newUser.MetaData = []byte(`{"key":"value"}`)
-			newUser.LastAccessed = nowTimestamp + int64(i)
-			newUser.Created = nowTimestamp + int64(i)
-			newUser.Modified = nowTimestamp + int64(i)
+			newUser.LastAccessedTimestamp = nowTimestamp + int64(i)
+			newUser.CreatedTimestamp = nowTimestamp + int64(i)
+			newUser.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := datastore.Provider(ctx).InsertUser(newUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceSetUpUser, err.Error())
@@ -59,9 +59,9 @@ func TestUser(t *testing.T) {
 			newUser = &model.User{}
 			newUser.UserID = userID
 			newUser.MetaData = []byte(`{"key":"value"}`)
-			newUser.LastAccessed = nowTimestamp
-			newUser.Created = nowTimestamp + int64(i)
-			newUser.Modified = nowTimestamp + int64(i)
+			newUser.LastAccessedTimestamp = nowTimestamp
+			newUser.CreatedTimestamp = nowTimestamp + int64(i)
+			newUser.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := datastore.Provider(ctx).InsertUser(newUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceSetUpUser, err.Error())
@@ -219,14 +219,14 @@ func TestUser(t *testing.T) {
 		if res.LastAccessRoomID != "" {
 			t.Fatalf("Failed to %s. Expected res.LastAccessRoomID to be \"\", but it was %s", TestServiceRetrieveUser, res.LastAccessRoomID)
 		}
-		if res.LastAccessed == int64(0) {
-			t.Fatalf("Failed to %s. Expected res.LastAccessed to be 0, but it was %d", TestServiceRetrieveUser, res.LastAccessed)
+		if res.LastAccessedTimestamp == int64(0) {
+			t.Fatalf("Failed to %s. Expected res.LastAccessedTimestamp to be 0, but it was %d", TestServiceRetrieveUser, res.LastAccessedTimestamp)
 		}
-		if res.Created == int64(0) {
-			t.Fatalf("Failed to %s. Expected res.Created to be 0, but it was %d", TestServiceRetrieveUser, res.Created)
+		if res.CreatedTimestamp == int64(0) {
+			t.Fatalf("Failed to %s. Expected res.CreatedTimestamp to be 0, but it was %d", TestServiceRetrieveUser, res.CreatedTimestamp)
 		}
-		if res.Modified == int64(0) {
-			t.Fatalf("Failed to %s. Expected res.Modified to be 0, but it was %d", TestServiceRetrieveUser, res.Modified)
+		if res.ModifiedTimestamp == int64(0) {
+			t.Fatalf("Failed to %s. Expected res.ModifiedTimestamp to be 0, but it was %d", TestServiceRetrieveUser, res.ModifiedTimestamp)
 		}
 		if len(res.BlockUsers) != 2 {
 			t.Fatalf("Failed to %s. Expected res.BlockUsers count to be 2, but it was %d", TestServiceRetrieveUser, len(res.BlockUsers))
@@ -410,7 +410,7 @@ func TestUser(t *testing.T) {
 
 			deleteUser = &model.User{}
 			deleteUser.UserID = userID
-			deleteUser.Deleted = 1
+			deleteUser.DeletedTimestamp = 1
 			err := datastore.Provider(ctx).UpdateUser(deleteUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceTearDownUser, err.Error())

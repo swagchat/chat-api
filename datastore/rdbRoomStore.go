@@ -222,7 +222,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		o(&opt)
 	}
 
-	if room.Deleted != 0 {
+	if room.DeletedTimestamp != 0 {
 		return rdbUpdateRoomDeleted(ctx, dbMap, tx, room)
 	}
 
@@ -274,7 +274,7 @@ func rdbUpdateRoomDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 		ctx,
 		dbMap,
 		tx,
-		DeleteSubscriptionsOptionWithLogicalDeleted(room.Deleted),
+		DeleteSubscriptionsOptionWithLogicalDeleted(room.DeletedTimestamp),
 		DeleteSubscriptionsOptionFilterByRoomID(room.RoomID),
 	)
 	if err != nil {
@@ -282,7 +282,7 @@ func rdbUpdateRoomDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 	}
 
 	query := fmt.Sprintf("UPDATE %s SET deleted=? WHERE room_id=?;", tableNameRoom)
-	_, err = tx.Exec(query, room.Deleted, room.RoomID)
+	_, err = tx.Exec(query, room.DeletedTimestamp, room.RoomID)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting room")
 		logger.Error(err.Error())

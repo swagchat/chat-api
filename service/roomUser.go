@@ -43,7 +43,7 @@ func AddRoomUsers(ctx context.Context, req *model.AddRoomUsersRequest) *model.Er
 		}
 
 		room.NotificationTopicID = notificationTopicID
-		room.Modified = time.Now().Unix()
+		room.ModifiedTimestamp = time.Now().Unix()
 		err := datastore.Provider(ctx).UpdateRoom(room)
 		if err != nil {
 			return model.NewErrorResponse("Failed to create room users.", http.StatusInternalServerError, model.WithError(err))
@@ -69,7 +69,7 @@ func RetrieveRoomUsers(ctx context.Context, req *model.RetrieveRoomUsersRequest)
 
 	_, errRes := confirmRoomExist(ctx, req.RoomID)
 	if errRes != nil {
-		errRes.Message = "Failed to get roomUsers."
+		errRes.Message = "Failed to retrieve room users."
 		return nil, errRes
 	}
 
@@ -80,7 +80,7 @@ func RetrieveRoomUsers(ctx context.Context, req *model.RetrieveRoomUsersRequest)
 		datastore.SelectRoomUsersOptionWithUserIDs(req.UserIDs),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get roomUsers.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve room users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res.Users = roomUsers
@@ -94,7 +94,7 @@ func RetrieveRoomUserIDs(ctx context.Context, req *model.RetrieveRoomUsersReques
 
 	_, errRes := confirmRoomExist(ctx, req.RoomID)
 	if errRes != nil {
-		errRes.Message = "Failed to get userIds."
+		errRes.Message = "Failed to retrieve userIds."
 		return nil, errRes
 	}
 
@@ -105,7 +105,7 @@ func RetrieveRoomUserIDs(ctx context.Context, req *model.RetrieveRoomUsersReques
 		datastore.SelectUserIDsOfRoomUserOptionWithRoles(req.RoleIDs),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get userIds.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve userIds.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res.UserIDs = userIDs

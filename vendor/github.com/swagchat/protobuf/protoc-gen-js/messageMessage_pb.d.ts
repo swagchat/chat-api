@@ -88,20 +88,30 @@ export class Message extends jspb.Message {
   getRole(): number | undefined;
   setRole(value: number): void;
 
+  hasCreatedTimestamp(): boolean;
+  clearCreatedTimestamp(): void;
+  getCreatedTimestamp(): number | undefined;
+  setCreatedTimestamp(value: number): void;
+
   hasCreated(): boolean;
   clearCreated(): void;
-  getCreated(): number | undefined;
-  setCreated(value: number): void;
+  getCreated(): string | undefined;
+  setCreated(value: string): void;
+
+  hasModifiedTimestamp(): boolean;
+  clearModifiedTimestamp(): void;
+  getModifiedTimestamp(): number | undefined;
+  setModifiedTimestamp(value: number): void;
 
   hasModified(): boolean;
   clearModified(): void;
-  getModified(): number | undefined;
-  setModified(value: number): void;
+  getModified(): string | undefined;
+  setModified(value: string): void;
 
-  hasDeleted(): boolean;
-  clearDeleted(): void;
-  getDeleted(): number | undefined;
-  setDeleted(value: number): void;
+  hasDeletedTimestamp(): boolean;
+  clearDeletedTimestamp(): void;
+  getDeletedTimestamp(): number | undefined;
+  setDeletedTimestamp(value: number): void;
 
   hasEventName(): boolean;
   clearEventName(): void;
@@ -132,9 +142,11 @@ export namespace Message {
     type?: string,
     payload: Uint8Array | string,
     role?: number,
-    created?: number,
-    modified?: number,
-    deleted?: number,
+    createdTimestamp?: number,
+    created?: string,
+    modifiedTimestamp?: number,
+    modified?: string,
+    deletedTimestamp?: number,
     eventName?: string,
     userIdsList: Array<string>,
   }

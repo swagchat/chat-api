@@ -40,8 +40,8 @@ type Room struct {
 func (r *Room) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	lmu := ""
-	if r.LastMessageUpdated != 0 {
-		lmu = time.Unix(r.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
+	if r.LastMessageUpdatedTimestamp != 0 {
+		lmu = time.Unix(r.LastMessageUpdatedTimestamp, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
 		RoomID                string           `json:"roomId"`
@@ -75,8 +75,8 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		LastMessage:           r.LastMessage,
 		LastMessageUpdated:    lmu,
 		MessageCount:          r.MessageCount,
-		Created:               time.Unix(r.Created, 0).In(l).Format(time.RFC3339),
-		Modified:              time.Unix(r.Modified, 0).In(l).Format(time.RFC3339),
+		Created:               time.Unix(r.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
+		Modified:              time.Unix(r.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
 		Users:                 r.Users,
 	})
 }
@@ -129,7 +129,7 @@ func (r *Room) UpdateRoom(req *UpdateRoomRequest) {
 	}
 
 	nowTimestamp := time.Now().Unix()
-	r.Modified = nowTimestamp
+	r.ModifiedTimestamp = nowTimestamp
 }
 
 type MiniUser struct {
@@ -156,9 +156,9 @@ func (ufr *MiniUser) MarshalJSON() ([]byte, error) {
 		InformationURL: ufr.InformationURL,
 		MetaData:       ufr.MetaData,
 		CanBlock:       ufr.CanBlock,
-		LastAccessed:   time.Unix(ufr.LastAccessed, 0).In(l).Format(time.RFC3339),
-		Created:        time.Unix(ufr.Created, 0).In(l).Format(time.RFC3339),
-		Modified:       time.Unix(ufr.Modified, 0).In(l).Format(time.RFC3339),
+		LastAccessed:   time.Unix(ufr.LastAccessedTimestamp, 0).In(l).Format(time.RFC3339),
+		Created:        time.Unix(ufr.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
+		Modified:       time.Unix(ufr.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
 		RuDisplay:      ufr.RuDisplay,
 	})
 }
@@ -316,9 +316,9 @@ func (crr *CreateRoomRequest) GenerateRoom() *Room {
 	}
 
 	nowTimestamp := time.Now().Unix()
-	r.LastMessageUpdated = nowTimestamp
-	r.Created = nowTimestamp
-	r.Modified = nowTimestamp
+	r.LastMessageUpdatedTimestamp = nowTimestamp
+	r.CreatedTimestamp = nowTimestamp
+	r.ModifiedTimestamp = nowTimestamp
 
 	return r
 }
@@ -464,7 +464,6 @@ func (rmr *RoomMessagesResponse) ConvertToPbRoomMessages() *scpb.RoomMessagesRes
 			Role:      v.Role,
 			Created:   v.Created,
 			Modified:  v.Modified,
-			Deleted:   v.Deleted,
 			EventName: v.EventName,
 			UserIDs:   v.UserIDs,
 		}

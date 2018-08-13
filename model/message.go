@@ -46,8 +46,8 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 		EventName: m.EventName,
 		Payload:   m.Payload,
 		Role:      m.Role,
-		Created:   time.Unix(m.Created, 0).In(l).Format(time.RFC3339),
-		Modified:  time.Unix(m.Modified, 0).In(l).Format(time.RFC3339),
+		Created:   time.Unix(m.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
+		Modified:  time.Unix(m.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
 	})
 }
 
@@ -61,7 +61,6 @@ func (m *Message) ConvertToPbMessage() *scpb.Message {
 	pbMessage.Role = m.Role
 	pbMessage.Created = m.Created
 	pbMessage.Modified = m.Modified
-	pbMessage.Deleted = m.Deleted
 	pbMessage.EventName = m.EventName
 	pbMessage.UserIDs = m.UserIDs
 	return pbMessage
@@ -224,9 +223,9 @@ func (cmr *SendMessageRequest) GenerateMessage() *Message {
 	m.EventName = EventNameMessage
 
 	nowTimestamp := time.Now().Unix()
-	m.Created = nowTimestamp
-	m.Modified = nowTimestamp
-	m.Deleted = 0
+	m.CreatedTimestamp = nowTimestamp
+	m.ModifiedTimestamp = nowTimestamp
+	m.DeletedTimestamp = 0
 
 	return m
 }

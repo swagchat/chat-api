@@ -223,7 +223,7 @@ func updateLastAccessedHandler(fn http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 
-			user.LastAccessed = time.Now().Unix()
+			user.LastAccessedTimestamp = time.Now().Unix()
 			err = datastore.Provider(ctx).UpdateUser(user)
 			if err != nil {
 				logger.Error(err.Error())

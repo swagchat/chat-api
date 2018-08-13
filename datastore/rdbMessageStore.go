@@ -99,7 +99,7 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 		}
 	}
 	room.LastMessage = lastMessage
-	room.LastMessageUpdated = time.Now().Unix()
+	room.LastMessageUpdatedTimestamp = time.Now().Unix()
 	_, err = tx.Update(room)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting message")

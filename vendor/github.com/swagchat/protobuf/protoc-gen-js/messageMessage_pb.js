@@ -409,9 +409,11 @@ proto.swagchat.protobuf.Message.toObject = function(includeInstance, msg) {
     type: jspb.Message.getField(msg, 15),
     payload: msg.getPayload_asB64(),
     role: jspb.Message.getField(msg, 17),
-    created: jspb.Message.getField(msg, 30),
-    modified: jspb.Message.getField(msg, 31),
-    deleted: jspb.Message.getField(msg, 32),
+    createdTimestamp: jspb.Message.getField(msg, 30),
+    created: jspb.Message.getField(msg, 31),
+    modifiedTimestamp: jspb.Message.getField(msg, 32),
+    modified: jspb.Message.getField(msg, 33),
+    deletedTimestamp: jspb.Message.getField(msg, 34),
     eventName: jspb.Message.getField(msg, 41),
     userIdsList: jspb.Message.getRepeatedField(msg, 42)
   };
@@ -480,15 +482,23 @@ proto.swagchat.protobuf.Message.deserializeBinaryFromReader = function(msg, read
       break;
     case 30:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setCreated(value);
+      msg.setCreatedTimestamp(value);
       break;
     case 31:
-      var value = /** @type {number} */ (reader.readInt64());
-      msg.setModified(value);
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCreated(value);
       break;
     case 32:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setDeleted(value);
+      msg.setModifiedTimestamp(value);
+      break;
+    case 33:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setModified(value);
+      break;
+    case 34:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setDeletedTimestamp(value);
       break;
     case 41:
       var value = /** @type {string} */ (reader.readString());
@@ -583,9 +593,9 @@ proto.swagchat.protobuf.Message.serializeBinaryToWriter = function(message, writ
       f
     );
   }
-  f = /** @type {number} */ (jspb.Message.getField(message, 31));
+  f = /** @type {string} */ (jspb.Message.getField(message, 31));
   if (f != null) {
-    writer.writeInt64(
+    writer.writeString(
       31,
       f
     );
@@ -594,6 +604,20 @@ proto.swagchat.protobuf.Message.serializeBinaryToWriter = function(message, writ
   if (f != null) {
     writer.writeInt64(
       32,
+      f
+    );
+  }
+  f = /** @type {string} */ (jspb.Message.getField(message, 33));
+  if (f != null) {
+    writer.writeString(
+      33,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 34));
+  if (f != null) {
+    writer.writeInt64(
+      34,
       f
     );
   }
@@ -842,21 +866,21 @@ proto.swagchat.protobuf.Message.prototype.hasRole = function() {
 
 
 /**
- * optional int64 created = 30;
+ * optional int64 created_timestamp = 30;
  * @return {number}
  */
-proto.swagchat.protobuf.Message.prototype.getCreated = function() {
+proto.swagchat.protobuf.Message.prototype.getCreatedTimestamp = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 30, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.Message.prototype.setCreated = function(value) {
+proto.swagchat.protobuf.Message.prototype.setCreatedTimestamp = function(value) {
   jspb.Message.setField(this, 30, value);
 };
 
 
-proto.swagchat.protobuf.Message.prototype.clearCreated = function() {
+proto.swagchat.protobuf.Message.prototype.clearCreatedTimestamp = function() {
   jspb.Message.setField(this, 30, undefined);
 };
 
@@ -865,27 +889,27 @@ proto.swagchat.protobuf.Message.prototype.clearCreated = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.Message.prototype.hasCreated = function() {
+proto.swagchat.protobuf.Message.prototype.hasCreatedTimestamp = function() {
   return jspb.Message.getField(this, 30) != null;
 };
 
 
 /**
- * optional int64 modified = 31;
- * @return {number}
+ * optional string created = 31;
+ * @return {string}
  */
-proto.swagchat.protobuf.Message.prototype.getModified = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 31, 0));
+proto.swagchat.protobuf.Message.prototype.getCreated = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 31, ""));
 };
 
 
-/** @param {number} value */
-proto.swagchat.protobuf.Message.prototype.setModified = function(value) {
+/** @param {string} value */
+proto.swagchat.protobuf.Message.prototype.setCreated = function(value) {
   jspb.Message.setField(this, 31, value);
 };
 
 
-proto.swagchat.protobuf.Message.prototype.clearModified = function() {
+proto.swagchat.protobuf.Message.prototype.clearCreated = function() {
   jspb.Message.setField(this, 31, undefined);
 };
 
@@ -894,27 +918,27 @@ proto.swagchat.protobuf.Message.prototype.clearModified = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.Message.prototype.hasModified = function() {
+proto.swagchat.protobuf.Message.prototype.hasCreated = function() {
   return jspb.Message.getField(this, 31) != null;
 };
 
 
 /**
- * optional int64 deleted = 32;
+ * optional int64 modified_timestamp = 32;
  * @return {number}
  */
-proto.swagchat.protobuf.Message.prototype.getDeleted = function() {
+proto.swagchat.protobuf.Message.prototype.getModifiedTimestamp = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 32, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.Message.prototype.setDeleted = function(value) {
+proto.swagchat.protobuf.Message.prototype.setModifiedTimestamp = function(value) {
   jspb.Message.setField(this, 32, value);
 };
 
 
-proto.swagchat.protobuf.Message.prototype.clearDeleted = function() {
+proto.swagchat.protobuf.Message.prototype.clearModifiedTimestamp = function() {
   jspb.Message.setField(this, 32, undefined);
 };
 
@@ -923,8 +947,66 @@ proto.swagchat.protobuf.Message.prototype.clearDeleted = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.Message.prototype.hasDeleted = function() {
+proto.swagchat.protobuf.Message.prototype.hasModifiedTimestamp = function() {
   return jspb.Message.getField(this, 32) != null;
+};
+
+
+/**
+ * optional string modified = 33;
+ * @return {string}
+ */
+proto.swagchat.protobuf.Message.prototype.getModified = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 33, ""));
+};
+
+
+/** @param {string} value */
+proto.swagchat.protobuf.Message.prototype.setModified = function(value) {
+  jspb.Message.setField(this, 33, value);
+};
+
+
+proto.swagchat.protobuf.Message.prototype.clearModified = function() {
+  jspb.Message.setField(this, 33, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.Message.prototype.hasModified = function() {
+  return jspb.Message.getField(this, 33) != null;
+};
+
+
+/**
+ * optional int64 deleted_timestamp = 34;
+ * @return {number}
+ */
+proto.swagchat.protobuf.Message.prototype.getDeletedTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 34, 0));
+};
+
+
+/** @param {number} value */
+proto.swagchat.protobuf.Message.prototype.setDeletedTimestamp = function(value) {
+  jspb.Message.setField(this, 34, value);
+};
+
+
+proto.swagchat.protobuf.Message.prototype.clearDeletedTimestamp = function() {
+  jspb.Message.setField(this, 34, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.Message.prototype.hasDeletedTimestamp = function() {
+  return jspb.Message.getField(this, 34) != null;
 };
 
 

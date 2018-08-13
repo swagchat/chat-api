@@ -69,10 +69,15 @@ export class Room extends jspb.Message {
   getLastMessage(): string | undefined;
   setLastMessage(value: string): void;
 
+  hasLastMessageUpdatedTimestamp(): boolean;
+  clearLastMessageUpdatedTimestamp(): void;
+  getLastMessageUpdatedTimestamp(): number | undefined;
+  setLastMessageUpdatedTimestamp(value: number): void;
+
   hasLastMessageUpdated(): boolean;
   clearLastMessageUpdated(): void;
-  getLastMessageUpdated(): number | undefined;
-  setLastMessageUpdated(value: number): void;
+  getLastMessageUpdated(): string | undefined;
+  setLastMessageUpdated(value: string): void;
 
   hasMessageCount(): boolean;
   clearMessageCount(): void;
@@ -84,20 +89,30 @@ export class Room extends jspb.Message {
   getNotificationTopicId(): string | undefined;
   setNotificationTopicId(value: string): void;
 
+  hasCreatedTimestamp(): boolean;
+  clearCreatedTimestamp(): void;
+  getCreatedTimestamp(): number | undefined;
+  setCreatedTimestamp(value: number): void;
+
   hasCreated(): boolean;
   clearCreated(): void;
-  getCreated(): number | undefined;
-  setCreated(value: number): void;
+  getCreated(): string | undefined;
+  setCreated(value: string): void;
+
+  hasModifiedTimestamp(): boolean;
+  clearModifiedTimestamp(): void;
+  getModifiedTimestamp(): number | undefined;
+  setModifiedTimestamp(value: number): void;
 
   hasModified(): boolean;
   clearModified(): void;
-  getModified(): number | undefined;
-  setModified(value: number): void;
+  getModified(): string | undefined;
+  setModified(value: string): void;
 
-  hasDeleted(): boolean;
-  clearDeleted(): void;
-  getDeleted(): number | undefined;
-  setDeleted(value: number): void;
+  hasDeletedTimestamp(): boolean;
+  clearDeletedTimestamp(): void;
+  getDeletedTimestamp(): number | undefined;
+  setDeletedTimestamp(value: number): void;
 
   clearUsersList(): void;
   getUsersList(): Array<MiniUser>;
@@ -128,12 +143,15 @@ export namespace Room {
     metaData: Uint8Array | string,
     availableMessageTypes?: string,
     lastMessage?: string,
-    lastMessageUpdated?: number,
+    lastMessageUpdatedTimestamp?: number,
+    lastMessageUpdated?: string,
     messageCount?: number,
     notificationTopicId?: string,
-    created?: number,
-    modified?: number,
-    deleted?: number,
+    createdTimestamp?: number,
+    created?: string,
+    modifiedTimestamp?: number,
+    modified?: string,
+    deletedTimestamp?: number,
     usersList: Array<MiniUser.AsObject>,
   }
 }
@@ -171,25 +189,40 @@ export class MiniUser extends jspb.Message {
   getCanBlock(): boolean | undefined;
   setCanBlock(value: boolean): void;
 
+  hasLastAccessedTimestamp(): boolean;
+  clearLastAccessedTimestamp(): void;
+  getLastAccessedTimestamp(): number | undefined;
+  setLastAccessedTimestamp(value: number): void;
+
   hasLastAccessed(): boolean;
   clearLastAccessed(): void;
-  getLastAccessed(): number | undefined;
-  setLastAccessed(value: number): void;
+  getLastAccessed(): string | undefined;
+  setLastAccessed(value: string): void;
 
   hasRuDisplay(): boolean;
   clearRuDisplay(): void;
   getRuDisplay(): boolean | undefined;
   setRuDisplay(value: boolean): void;
 
+  hasCreatedTimestamp(): boolean;
+  clearCreatedTimestamp(): void;
+  getCreatedTimestamp(): number | undefined;
+  setCreatedTimestamp(value: number): void;
+
   hasCreated(): boolean;
   clearCreated(): void;
-  getCreated(): number | undefined;
-  setCreated(value: number): void;
+  getCreated(): string | undefined;
+  setCreated(value: string): void;
+
+  hasModifiedTimestamp(): boolean;
+  clearModifiedTimestamp(): void;
+  getModifiedTimestamp(): number | undefined;
+  setModifiedTimestamp(value: number): void;
 
   hasModified(): boolean;
   clearModified(): void;
-  getModified(): number | undefined;
-  setModified(value: number): void;
+  getModified(): string | undefined;
+  setModified(value: string): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): MiniUser.AsObject;
@@ -209,10 +242,13 @@ export namespace MiniUser {
     informationUrl?: string,
     metaData: Uint8Array | string,
     canBlock?: boolean,
-    lastAccessed?: number,
+    lastAccessedTimestamp?: number,
+    lastAccessed?: string,
     ruDisplay?: boolean,
-    created?: number,
-    modified?: number,
+    createdTimestamp?: number,
+    created?: string,
+    modifiedTimestamp?: number,
+    modified?: string,
   }
 }
 

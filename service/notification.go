@@ -44,7 +44,7 @@ func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.D
 					}
 
 					room.NotificationTopicID = notificationTopicID
-					room.Modified = time.Now().Unix()
+					room.ModifiedTimestamp = time.Now().Unix()
 					err := datastore.Provider(ctx).UpdateRoom(room)
 					if err != nil {
 						errCh <- err

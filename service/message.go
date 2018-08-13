@@ -79,9 +79,9 @@ func SendMessage(ctx context.Context, req *model.SendMessageRequest) (*model.Mes
 	return message, nil
 }
 
-// GetMessage gets message
-func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetMessage", "service")
+// RetrieveMessage gets message
+func RetrieveMessage(ctx context.Context, messageID string) (*model.Message, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("RetrieveMessage", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	if messageID == "" {
@@ -91,12 +91,12 @@ func GetMessage(ctx context.Context, messageID string) (*model.Message, *model.E
 				Reason: "messageId is required, but it's empty.",
 			},
 		}
-		return nil, model.NewErrorResponse("Failed to get message.", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+		return nil, model.NewErrorResponse("Failed to retrieve message.", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 	}
 
 	message, err := datastore.Provider(ctx).SelectMessage(messageID)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get message.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve message.", http.StatusInternalServerError, model.WithError(err))
 	}
 	if message == nil {
 		return nil, model.NewErrorResponse("", http.StatusNotFound)

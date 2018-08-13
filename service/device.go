@@ -68,7 +68,7 @@ func RetrieveDevices(ctx context.Context, req *model.RetrieveDevicesRequest) (*m
 
 	devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(req.UserID))
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get devices.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve devices.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	return &model.DevicesResponse{

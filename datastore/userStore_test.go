@@ -36,9 +36,9 @@ func TestUserStore(t *testing.T) {
 			newUser = &model.User{}
 			newUser.UserID = userID
 			newUser.MetaData = []byte(`{"key":"value"}`)
-			newUser.LastAccessed = nowTimestamp + int64(i)
-			newUser.Created = nowTimestamp + int64(i)
-			newUser.Modified = nowTimestamp + int64(i)
+			newUser.LastAccessedTimestamp = nowTimestamp + int64(i)
+			newUser.CreatedTimestamp = nowTimestamp + int64(i)
+			newUser.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := Provider(ctx).InsertUser(newUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreSetUpUser, err.Error())
@@ -50,9 +50,9 @@ func TestUserStore(t *testing.T) {
 			newUser = &model.User{}
 			newUser.UserID = userID
 			newUser.MetaData = []byte(`{"key":"value"}`)
-			newUser.LastAccessed = nowTimestamp
-			newUser.Created = nowTimestamp + int64(i)
-			newUser.Modified = nowTimestamp + int64(i)
+			newUser.LastAccessedTimestamp = nowTimestamp
+			newUser.CreatedTimestamp = nowTimestamp + int64(i)
+			newUser.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := Provider(ctx).InsertUser(newUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreSetUpUser, err.Error())
@@ -144,8 +144,8 @@ func TestUserStore(t *testing.T) {
 		newUser1.UserID = "user-store-insert-user-id-0001"
 		newUser1.Name = "name"
 		newUser1.MetaData = []byte(`{"key":"value"}`)
-		newUser1.Created = nowTimestamp + 1
-		newUser1.Modified = nowTimestamp + 1
+		newUser1.CreatedTimestamp = nowTimestamp + 1
+		newUser1.ModifiedTimestamp = nowTimestamp + 1
 
 		err = Provider(ctx).InsertUser(newUser1)
 		if err != nil {
@@ -156,8 +156,8 @@ func TestUserStore(t *testing.T) {
 		newUser2.UserID = "user-store-insert-user-id-0002"
 		newUser2.Name = "name"
 		newUser2.MetaData = []byte(`{"key":"value"}`)
-		newUser2.Created = nowTimestamp + 2
-		newUser2.Modified = nowTimestamp + 2
+		newUser2.CreatedTimestamp = nowTimestamp + 2
+		newUser2.ModifiedTimestamp = nowTimestamp + 2
 
 		newUserRole := &model.UserRole{}
 		newUserRole.UserID = newUser2.UserID
@@ -276,7 +276,7 @@ func TestUserStore(t *testing.T) {
 			t.Fatalf("Failed to %s. Expected updatedUser.BlockUsers to be 1, but it was %d", TestStoreUpdateUser, len(updatedUser.BlockUsers))
 		}
 
-		user.Deleted = 1
+		user.DeletedTimestamp = 1
 		err = Provider(ctx).UpdateUser(user)
 		if err != nil {
 			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreUpdateUser, err.Error())
@@ -329,7 +329,7 @@ func TestUserStore(t *testing.T) {
 
 			deleteUser = &model.User{}
 			deleteUser.UserID = userID
-			deleteUser.Deleted = 1
+			deleteUser.DeletedTimestamp = 1
 			err = Provider(ctx).UpdateUser(deleteUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreTearDownUser, err.Error())

@@ -77,8 +77,9 @@ func SelectUserOptionWithRoles(withRoles bool) SelectUserOption {
 type UpdateUserOption func(*updateUserOptions)
 
 type updateUserOptions struct {
-	blockUsers []*model.BlockUser
-	userRoles  []*model.UserRole
+	blockUsers    []*model.BlockUser
+	userRoles     []*model.UserRole
+	markAllAsRead bool
 }
 
 func UpdateUserOptionWithBlockUsers(blockUsers []*model.BlockUser) UpdateUserOption {
@@ -90,6 +91,12 @@ func UpdateUserOptionWithBlockUsers(blockUsers []*model.BlockUser) UpdateUserOpt
 func UpdateUserOptionWithUserRoles(userRoles []*model.UserRole) UpdateUserOption {
 	return func(ops *updateUserOptions) {
 		ops.userRoles = userRoles
+	}
+}
+
+func UpdateUserOptionMarkAllAsRead(markAllAsRead bool) UpdateUserOption {
+	return func(ops *updateUserOptions) {
+		ops.markAllAsRead = markAllAsRead
 	}
 }
 

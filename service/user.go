@@ -61,12 +61,12 @@ func RetrieveUsers(ctx context.Context, req *model.RetrieveUsersRequest) (*model
 		datastore.SelectUsersOptionWithOrders(req.Orders),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Retrieve users failed", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountUsers()
 	if err != nil {
-		return nil, model.NewErrorResponse("Retrieve users failed", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res := &model.UsersResponse{}
@@ -91,7 +91,7 @@ func RetrieveUser(ctx context.Context, req *model.RetrieveUserRequest) (*model.U
 		datastore.SelectUserOptionWithRoles(true),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get user.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve user.", http.StatusInternalServerError, model.WithError(err))
 	}
 	if user == nil {
 		return nil, model.NewErrorResponse("", http.StatusNotFound)
@@ -130,7 +130,16 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 	user.UpdateUser(req)
 	urs := req.GenerateUserRoles()
 
-	err := datastore.Provider(ctx).UpdateUser(user, datastore.UpdateUserOptionWithUserRoles(urs))
+	markAllAsRead := false
+	if req.UnreadCount != nil {
+		markAllAsRead = true
+	}
+
+	err := datastore.Provider(ctx).UpdateUser(
+		user,
+		datastore.UpdateUserOptionWithUserRoles(urs),
+		datastore.UpdateUserOptionMarkAllAsRead(markAllAsRead),
+	)
 	if err != nil {
 		return nil, model.NewErrorResponse("Failed to update user.", http.StatusInternalServerError, model.WithError(err))
 	}
@@ -166,7 +175,7 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 		}
 	}
 
-	user.Deleted = time.Now().Unix()
+	user.DeletedTimestamp = time.Now().Unix()
 	err = dsp.UpdateUser(user)
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete user.", http.StatusInternalServerError, model.WithError(err))
@@ -190,8 +199,6 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 
 // 	return userUnreadCount, nil
 // }
-
-// RetrieveContacts gets contacts
 
 // RetrieveUserRooms retrieves user rooms
 func RetrieveUserRooms(ctx context.Context, req *model.RetrieveUserRoomsRequest) (*model.UserRoomsResponse, *model.ErrorResponse) {

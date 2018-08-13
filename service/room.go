@@ -213,7 +213,7 @@ func DeleteRoom(ctx context.Context, req *model.DeleteRoomRequest) *model.ErrorR
 		}
 	}
 
-	room.Deleted = time.Now().Unix()
+	room.DeletedTimestamp = time.Now().Unix()
 	err := datastore.Provider(ctx).UpdateRoom(room)
 	if err != nil {
 		return model.NewErrorResponse("Failed to delete room.", http.StatusInternalServerError, model.WithError(err))

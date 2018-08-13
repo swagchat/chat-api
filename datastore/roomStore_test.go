@@ -31,9 +31,9 @@ func TestRoomStore(t *testing.T) {
 		newUser := &model.User{}
 		newUser.UserID = userID
 		newUser.MetaData = []byte(`{"key":"value"}`)
-		newUser.LastAccessed = nowTimestamp
-		newUser.Created = nowTimestamp
-		newUser.Modified = nowTimestamp
+		newUser.LastAccessedTimestamp = nowTimestamp
+		newUser.CreatedTimestamp = nowTimestamp
+		newUser.ModifiedTimestamp = nowTimestamp
 		err := Provider(ctx).InsertUser(newUser)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestRoomStoreSetUp)
@@ -46,9 +46,9 @@ func TestRoomStore(t *testing.T) {
 			newRoom.UserID = userID
 			newRoom.Type = scpb.RoomType_OneOnOneRoom
 			newRoom.MetaData = []byte(`{"key":"value"}`)
-			newRoom.LastMessageUpdated = nowTimestamp + int64(i)
-			newRoom.Created = nowTimestamp + int64(i)
-			newRoom.Modified = nowTimestamp + int64(i)
+			newRoom.LastMessageUpdatedTimestamp = nowTimestamp + int64(i)
+			newRoom.CreatedTimestamp = nowTimestamp + int64(i)
+			newRoom.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := Provider(ctx).InsertRoom(newRoom)
 			if err != nil {
 				fmt.Errorf("Failed to insert room on main test")
@@ -60,9 +60,9 @@ func TestRoomStore(t *testing.T) {
 			newRoom.UserID = userID
 			newRoom.Type = scpb.RoomType_PrivateRoom
 			newRoom.MetaData = []byte(`{"key":"value"}`)
-			newRoom.LastMessageUpdated = nowTimestamp
-			newRoom.Created = nowTimestamp + int64(i)
-			newRoom.Modified = nowTimestamp + int64(i)
+			newRoom.LastMessageUpdatedTimestamp = nowTimestamp
+			newRoom.CreatedTimestamp = nowTimestamp + int64(i)
+			newRoom.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := Provider(ctx).InsertRoom(newRoom)
 			if err != nil {
 				fmt.Errorf("Failed to insert room on main test")
@@ -75,8 +75,8 @@ func TestRoomStore(t *testing.T) {
 		newRoom.RoomID = testRoomID
 		newRoom.Name = "name"
 		newRoom.MetaData = []byte(`{"key":"value"}`)
-		newRoom.Created = 123456789
-		newRoom.Modified = 123456789
+		newRoom.CreatedTimestamp = 123456789
+		newRoom.ModifiedTimestamp = 123456789
 		newRoomUser := &model.RoomUser{}
 		newRoomUser.RoomID = testRoomID
 		newRoomUser.UserID = "room-store-user-id-0001"
@@ -121,7 +121,7 @@ func TestRoomStore(t *testing.T) {
 			t.Fatalf("Failed to %s", TestNameUpdateRoom)
 		}
 
-		updatedRoom.Deleted = 1
+		updatedRoom.DeletedTimestamp = 1
 		err = Provider(ctx).UpdateRoom(updatedRoom)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestNameUpdateRoom)
@@ -225,7 +225,7 @@ func TestRoomStore(t *testing.T) {
 	t.Run(TestRoomStoreTearDown, func(t *testing.T) {
 		deleteUser := &model.User{}
 		deleteUser.UserID = "room-store-user-id-0001"
-		deleteUser.Deleted = 1
+		deleteUser.DeletedTimestamp = 1
 		err := Provider(ctx).UpdateUser(deleteUser)
 		if err != nil {
 			t.Fatalf("Failed to %s", TestRoomStoreTearDown)
@@ -236,7 +236,7 @@ func TestRoomStore(t *testing.T) {
 			roomID := fmt.Sprintf("room-store-room-id-%04d", i)
 			deleteRoom = &model.Room{}
 			deleteRoom.RoomID = roomID
-			deleteRoom.Deleted = 1
+			deleteRoom.DeletedTimestamp = 1
 			err = Provider(ctx).UpdateRoom(deleteRoom)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreTearDownRoomUser, err.Error())

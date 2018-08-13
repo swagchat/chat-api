@@ -70,25 +70,40 @@ export class User extends jspb.Message {
   getLastAccessRoomId(): string | undefined;
   setLastAccessRoomId(value: string): void;
 
+  hasLastAccessedTimestamp(): boolean;
+  clearLastAccessedTimestamp(): void;
+  getLastAccessedTimestamp(): number | undefined;
+  setLastAccessedTimestamp(value: number): void;
+
   hasLastAccessed(): boolean;
   clearLastAccessed(): void;
-  getLastAccessed(): number | undefined;
-  setLastAccessed(value: number): void;
+  getLastAccessed(): string | undefined;
+  setLastAccessed(value: string): void;
+
+  hasCreatedTimestamp(): boolean;
+  clearCreatedTimestamp(): void;
+  getCreatedTimestamp(): number | undefined;
+  setCreatedTimestamp(value: number): void;
 
   hasCreated(): boolean;
   clearCreated(): void;
-  getCreated(): number | undefined;
-  setCreated(value: number): void;
+  getCreated(): string | undefined;
+  setCreated(value: string): void;
+
+  hasModifiedTimestamp(): boolean;
+  clearModifiedTimestamp(): void;
+  getModifiedTimestamp(): number | undefined;
+  setModifiedTimestamp(value: number): void;
 
   hasModified(): boolean;
   clearModified(): void;
-  getModified(): number | undefined;
-  setModified(value: number): void;
+  getModified(): string | undefined;
+  setModified(value: string): void;
 
-  hasDeleted(): boolean;
-  clearDeleted(): void;
-  getDeleted(): number | undefined;
-  setDeleted(value: number): void;
+  hasDeletedTimestamp(): boolean;
+  clearDeletedTimestamp(): void;
+  getDeletedTimestamp(): number | undefined;
+  setDeletedTimestamp(value: number): void;
 
   clearBlockUsersList(): void;
   getBlockUsersList(): Array<string>;
@@ -129,10 +144,13 @@ export namespace User {
     lang?: string,
     accessToken?: string,
     lastAccessRoomId?: string,
-    lastAccessed?: number,
-    created?: number,
-    modified?: number,
-    deleted?: number,
+    lastAccessedTimestamp?: number,
+    lastAccessed?: string,
+    createdTimestamp?: number,
+    created?: string,
+    modifiedTimestamp?: number,
+    modified?: string,
+    deletedTimestamp?: number,
     blockUsersList: Array<string>,
     devicesList: Array<deviceMessage_pb.Device.AsObject>,
     rolesList: Array<number>,
@@ -192,15 +210,25 @@ export class MiniRoom extends jspb.Message {
   getCanLeft(): boolean | undefined;
   setCanLeft(value: boolean): void;
 
+  hasCreatedTimestamp(): boolean;
+  clearCreatedTimestamp(): void;
+  getCreatedTimestamp(): number | undefined;
+  setCreatedTimestamp(value: number): void;
+
   hasCreated(): boolean;
   clearCreated(): void;
-  getCreated(): number | undefined;
-  setCreated(value: number): void;
+  getCreated(): string | undefined;
+  setCreated(value: string): void;
+
+  hasModifiedTimestamp(): boolean;
+  clearModifiedTimestamp(): void;
+  getModifiedTimestamp(): number | undefined;
+  setModifiedTimestamp(value: number): void;
 
   hasModified(): boolean;
   clearModified(): void;
-  getModified(): number | undefined;
-  setModified(value: number): void;
+  getModified(): string | undefined;
+  setModified(value: string): void;
 
   clearUsersList(): void;
   getUsersList(): Array<roomMessage_pb.MiniUser>;
@@ -234,8 +262,10 @@ export namespace MiniRoom {
     lastMessage?: string,
     lastMessageUpdated?: number,
     canLeft?: boolean,
-    created?: number,
-    modified?: number,
+    createdTimestamp?: number,
+    created?: string,
+    modifiedTimestamp?: number,
+    modified?: string,
     usersList: Array<roomMessage_pb.MiniUser.AsObject>,
     ruUnreadCount?: number,
   }
@@ -442,6 +472,11 @@ export class UpdateUserRequest extends jspb.Message {
   getInformationUrl(): string | undefined;
   setInformationUrl(value: string): void;
 
+  hasUnreadCount(): boolean;
+  clearUnreadCount(): void;
+  getUnreadCount(): number | undefined;
+  setUnreadCount(value: number): void;
+
   hasMetaData(): boolean;
   clearMetaData(): void;
   getMetaData(): Uint8Array | string;
@@ -490,6 +525,7 @@ export namespace UpdateUserRequest {
     name?: string,
     pictureUrl?: string,
     informationUrl?: string,
+    unreadCount?: number,
     metaData: Uint8Array | string,
     publicProfileScope?: PublicProfileScope,
     canBlock?: boolean,

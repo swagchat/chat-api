@@ -202,7 +202,7 @@
   branch = "master"
   name = "github.com/swagchat/protobuf"
   packages = ["protoc-gen-go"]
-  revision = "f5e6f4ed7a2d745498b54c384e0f94c778a74ff6"
+  revision = "b6d80c5ca7d3bbb04a36cc4ff252987a04c99697"
 
 [[projects]]
   name = "github.com/uber/jaeger-client-go"

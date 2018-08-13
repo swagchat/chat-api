@@ -36,9 +36,9 @@ func TestRoom(t *testing.T) {
 			newUser = &model.User{}
 			newUser.UserID = userID
 			newUser.MetaData = []byte(`{"key":"value"}`)
-			newUser.LastAccessed = nowTimestamp
-			newUser.Created = nowTimestamp
-			newUser.Modified = nowTimestamp
+			newUser.LastAccessedTimestamp = nowTimestamp
+			newUser.CreatedTimestamp = nowTimestamp
+			newUser.ModifiedTimestamp = nowTimestamp
 			err := datastore.Provider(ctx).InsertUser(newUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceSetUpRoom, err.Error())
@@ -52,9 +52,9 @@ func TestRoom(t *testing.T) {
 			newRoom.UserID = "room-service-user-id-0001"
 			newRoom.Type = scpb.RoomType_OneOnOneRoom
 			newRoom.MetaData = []byte(`{"key":"value"}`)
-			newRoom.LastMessageUpdated = nowTimestamp + int64(i)
-			newRoom.Created = nowTimestamp + int64(i)
-			newRoom.Modified = nowTimestamp + int64(i)
+			newRoom.LastMessageUpdatedTimestamp = nowTimestamp + int64(i)
+			newRoom.CreatedTimestamp = nowTimestamp + int64(i)
+			newRoom.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := datastore.Provider(ctx).InsertRoom(newRoom)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceSetUpRoom, err.Error())
@@ -66,9 +66,9 @@ func TestRoom(t *testing.T) {
 			newRoom.UserID = "room-service-user-id-0001"
 			newRoom.Type = scpb.RoomType_PrivateRoom
 			newRoom.MetaData = []byte(`{"key":"value"}`)
-			newRoom.LastMessageUpdated = nowTimestamp
-			newRoom.Created = nowTimestamp + int64(i)
-			newRoom.Modified = nowTimestamp + int64(i)
+			newRoom.LastMessageUpdatedTimestamp = nowTimestamp
+			newRoom.CreatedTimestamp = nowTimestamp + int64(i)
+			newRoom.ModifiedTimestamp = nowTimestamp + int64(i)
 			err := datastore.Provider(ctx).InsertRoom(newRoom)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceSetUpRoom, err.Error())
@@ -215,7 +215,7 @@ func TestRoom(t *testing.T) {
 		for i := 1; i <= 2; i++ {
 			deleteUser = &model.User{}
 			deleteUser.UserID = fmt.Sprintf("room-service-user-id-%04d", i)
-			deleteUser.Deleted = 1
+			deleteUser.DeletedTimestamp = 1
 			err := datastore.Provider(ctx).UpdateUser(deleteUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceTearDownRoom, err.Error())
@@ -226,7 +226,7 @@ func TestRoom(t *testing.T) {
 		for i := 1; i <= 20; i++ {
 			deleteRoom = &model.Room{}
 			deleteRoom.RoomID = fmt.Sprintf("room-service-room-id-%04d", i)
-			deleteRoom.Deleted = 1
+			deleteRoom.DeletedTimestamp = 1
 			err := datastore.Provider(ctx).UpdateRoom(deleteRoom)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceTearDownRoom, err.Error())

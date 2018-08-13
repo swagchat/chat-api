@@ -37,7 +37,7 @@ func postDevice(w http.ResponseWriter, r *http.Request) {
 	if device == nil {
 		respond(w, r, http.StatusNotModified, "", nil)
 	} else {
-		respond(w, r, http.StatusOK, "application/json", device)
+		respond(w, r, http.StatusCreated, "application/json", device)
 	}
 }
 

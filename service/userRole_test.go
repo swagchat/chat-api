@@ -22,9 +22,9 @@ func TestUserRole(t *testing.T) {
 		newUser := &model.User{}
 		newUser.UserID = "user-role-service-user-id-0001"
 		newUser.MetaData = []byte(`{"key":"value"}`)
-		newUser.LastAccessed = nowTimestamp
-		newUser.Created = nowTimestamp
-		newUser.Modified = nowTimestamp
+		newUser.LastAccessedTimestamp = nowTimestamp
+		newUser.CreatedTimestamp = nowTimestamp
+		newUser.ModifiedTimestamp = nowTimestamp
 		err := datastore.Provider(ctx).InsertUser(newUser)
 		if err != nil {
 			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceSetUpUserRole, err.Error())
@@ -76,7 +76,7 @@ func TestUserRole(t *testing.T) {
 	t.Run(TestServiceTearDownUserRole, func(t *testing.T) {
 		delUser := &model.User{}
 		delUser.UserID = "user-role-service-user-id-0001"
-		delUser.Deleted = 1
+		delUser.DeletedTimestamp = 1
 		err := datastore.Provider(ctx).UpdateUser(delUser)
 		if err != nil {
 			t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestServiceTearDownUserRole, err.Error())

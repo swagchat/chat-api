@@ -1,4 +1,5 @@
 export * from './commonMessage_pb'
+export * from './blockUserMessage_pb'
 export * from './deviceMessage_pb'
 export * from './messageMessage_pb'
 export * from './roomMessage_pb'

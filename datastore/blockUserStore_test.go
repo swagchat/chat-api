@@ -34,9 +34,9 @@ func TestBlockUserStore(t *testing.T) {
 			newUser = &model.User{}
 			newUser.UserID = userID
 			newUser.MetaData = []byte(`{"key":"value"}`)
-			newUser.LastAccessed = nowTimestamp
-			newUser.Created = nowTimestamp
-			newUser.Modified = nowTimestamp
+			newUser.LastAccessedTimestamp = nowTimestamp
+			newUser.CreatedTimestamp = nowTimestamp
+			newUser.ModifiedTimestamp = nowTimestamp
 			err := Provider(ctx).InsertUser(newUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreSetUpBlockUser, err.Error())
@@ -298,7 +298,7 @@ func TestBlockUserStore(t *testing.T) {
 
 			deleteUser = &model.User{}
 			deleteUser.UserID = userID
-			deleteUser.Deleted = 1
+			deleteUser.DeletedTimestamp = 1
 			err = Provider(ctx).UpdateUser(deleteUser)
 			if err != nil {
 				t.Fatalf("Failed to %s. Expected err to be nil, but it was not nil [%s]", TestStoreTearDownBlockUser, err.Error())

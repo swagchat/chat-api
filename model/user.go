@@ -48,9 +48,9 @@ func (u *User) MarshalJSON() ([]byte, error) {
 		Lang:               u.Lang,
 		AccessToken:        u.AccessToken,
 		LastAccessRoomID:   u.LastAccessRoomID,
-		LastAccessed:       time.Unix(u.LastAccessed, 0).In(l).Format(time.RFC3339),
-		Created:            time.Unix(u.Created, 0).In(l).Format(time.RFC3339),
-		Modified:           time.Unix(u.Modified, 0).In(l).Format(time.RFC3339),
+		LastAccessed:       time.Unix(u.LastAccessedTimestamp, 0).In(l).Format(time.RFC3339),
+		Created:            time.Unix(u.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
+		Modified:           time.Unix(u.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
 		BlockUsers:         u.BlockUsers,
 		Devices:            u.Devices,
 		Roles:              u.Roles,
@@ -135,7 +135,7 @@ func (u *User) UpdateUser(req *UpdateUserRequest) {
 	}
 
 	nowTimestamp := time.Now().Unix()
-	u.Modified = nowTimestamp
+	u.ModifiedTimestamp = nowTimestamp
 }
 
 type MiniRoom struct {
@@ -176,8 +176,8 @@ func (rfu *MiniRoom) MarshalJSON() ([]byte, error) {
 		LastMessage:        rfu.LastMessage,
 		LastMessageUpdated: lmu,
 		CanLeft:            rfu.CanLeft,
-		Created:            time.Unix(rfu.Created, 0).In(l).Format(time.RFC3339),
-		Modified:           time.Unix(rfu.Modified, 0).In(l).Format(time.RFC3339),
+		Created:            time.Unix(rfu.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
+		Modified:           time.Unix(rfu.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
 		Users:              rfu.Users,
 		RuUnreadCount:      rfu.RuUnreadCount,
 	})
@@ -302,9 +302,9 @@ func (cur *CreateUserRequest) GenerateUser() *User {
 	u.UnreadCount = uint64(0)
 
 	nowTimestamp := time.Now().Unix()
-	u.LastAccessed = nowTimestamp
-	u.Created = nowTimestamp
-	u.Modified = nowTimestamp
+	u.LastAccessedTimestamp = nowTimestamp
+	u.CreatedTimestamp = nowTimestamp
+	u.ModifiedTimestamp = nowTimestamp
 
 	return u
 }
@@ -395,6 +395,17 @@ type UpdateUserRequest struct {
 
 func (uur *UpdateUserRequest) Validate() *ErrorResponse {
 	// TODO check lang
+
+	zero := uint64(0)
+	if uur.UnreadCount != nil && uur.UnreadCount != &zero {
+		invalidParams := []*scpb.InvalidParam{
+			&scpb.InvalidParam{
+				Name:   "unreadCount",
+				Reason: "unreadCount can only be updated with 0.",
+			},
+		}
+		return NewErrorResponse("Failed to update user.", http.StatusBadRequest, WithInvalidParams(invalidParams))
+	}
 
 	for _, blockUserID := range uur.BlockUsers {
 		if blockUserID == uur.UserID {

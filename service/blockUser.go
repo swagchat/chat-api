@@ -47,7 +47,7 @@ func RetrieveBlockUsers(ctx context.Context, req *model.RetrieveBlockUsersReques
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
-		errRes.Message = "Failed to create block users."
+		errRes.Message = "Failed to retrieve block users."
 		return nil, errRes
 	}
 
@@ -55,7 +55,7 @@ func RetrieveBlockUsers(ctx context.Context, req *model.RetrieveBlockUsersReques
 
 	blockUsers, err := datastore.Provider(ctx).SelectBlockUsers(req.UserID)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get block users.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve block users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res.BlockUsers = blockUsers
@@ -69,7 +69,7 @@ func RetrieveBlockUserIDs(ctx context.Context, req *model.RetrieveBlockUsersRequ
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
-		errRes.Message = "Failed to create block users."
+		errRes.Message = "Failed to retrieve block userIds."
 		return nil, errRes
 	}
 
@@ -77,7 +77,7 @@ func RetrieveBlockUserIDs(ctx context.Context, req *model.RetrieveBlockUsersRequ
 
 	blockUserIDs, err := datastore.Provider(ctx).SelectBlockUserIDs(req.UserID)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get block userIds.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve block userIds.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res.BlockUserIDs = blockUserIDs
@@ -91,7 +91,7 @@ func RetrieveBlockedUsers(ctx context.Context, req *model.RetrieveBlockedUsersRe
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
-		errRes.Message = "Failed to create block users."
+		errRes.Message = "Failed to retrieve blocked users."
 		return nil, errRes
 	}
 
@@ -99,7 +99,7 @@ func RetrieveBlockedUsers(ctx context.Context, req *model.RetrieveBlockedUsersRe
 
 	blockedUsers, err := datastore.Provider(ctx).SelectBlockedUsers(req.UserID)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get blocked users.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve blocked users.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res.BlockedUsers = blockedUsers
@@ -113,7 +113,7 @@ func RetrieveBlockedUserIDs(ctx context.Context, req *model.RetrieveBlockedUsers
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
-		errRes.Message = "Failed to create block users."
+		errRes.Message = "Failed to retrieve blocked userIds."
 		return nil, errRes
 	}
 
@@ -121,7 +121,7 @@ func RetrieveBlockedUserIDs(ctx context.Context, req *model.RetrieveBlockedUsers
 
 	blockedUserIDs, err := datastore.Provider(ctx).SelectBlockedUserIDs(req.UserID)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get blocked userIds.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve blocked userIds.", http.StatusInternalServerError, model.WithError(err))
 	}
 
 	res.BlockedUserIDs = blockedUserIDs
