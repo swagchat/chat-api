@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 import "roomUserMessage.proto";
 
 service RoomUserService {
-  rpc CreateRoomUsers (CreateRoomUsersRequest) returns (google.protobuf.Empty) {}
+  rpc AddRoomUsers (AddRoomUsersRequest) returns (google.protobuf.Empty) {}
   rpc RetrieveRoomUsers (RetrieveRoomUsersRequest) returns (RoomUsersResponse) {}
   rpc RetrieveRoomUserIds (RetrieveRoomUsersRequest) returns (RoomUserIdsResponse) {}
   rpc UpdateRoomUser (UpdateRoomUserRequest) returns (google.protobuf.Empty) {}

@@ -12,7 +12,7 @@ var goog = jspb;
 var global = Function('return this')();
 
 var gogoproto_gogo_pb = require('./gogoproto/gogo_pb.js');
-goog.exportSymbol('proto.swagchat.protobuf.CreateUserRolesRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.AddUserRolesRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.DeleteUserRolesRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.UserRole', null, global);
 
@@ -195,19 +195,19 @@ proto.swagchat.protobuf.UserRole.prototype.setRole = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.CreateUserRolesRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.CreateUserRolesRequest.repeatedFields_, null);
+proto.swagchat.protobuf.AddUserRolesRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.AddUserRolesRequest.repeatedFields_, null);
 };
-goog.inherits(proto.swagchat.protobuf.CreateUserRolesRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.AddUserRolesRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.CreateUserRolesRequest.displayName = 'proto.swagchat.protobuf.CreateUserRolesRequest';
+  proto.swagchat.protobuf.AddUserRolesRequest.displayName = 'proto.swagchat.protobuf.AddUserRolesRequest';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.repeatedFields_ = [12];
+proto.swagchat.protobuf.AddUserRolesRequest.repeatedFields_ = [12];
 
 
 
@@ -222,8 +222,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.CreateUserRolesRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.AddUserRolesRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -232,11 +232,11 @@ proto.swagchat.protobuf.CreateUserRolesRequest.prototype.toObject = function(opt
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.CreateUserRolesRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.AddUserRolesRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.AddUserRolesRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     userId: jspb.Message.getFieldWithDefault(msg, 11, ""),
     rolesList: jspb.Message.getRepeatedField(msg, 12)
@@ -253,23 +253,23 @@ proto.swagchat.protobuf.CreateUserRolesRequest.toObject = function(includeInstan
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.CreateUserRolesRequest}
+ * @return {!proto.swagchat.protobuf.AddUserRolesRequest}
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.AddUserRolesRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.CreateUserRolesRequest;
-  return proto.swagchat.protobuf.CreateUserRolesRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.AddUserRolesRequest;
+  return proto.swagchat.protobuf.AddUserRolesRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.CreateUserRolesRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.AddUserRolesRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.CreateUserRolesRequest}
+ * @return {!proto.swagchat.protobuf.AddUserRolesRequest}
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.AddUserRolesRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -297,9 +297,9 @@ proto.swagchat.protobuf.CreateUserRolesRequest.deserializeBinaryFromReader = fun
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.CreateUserRolesRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.AddUserRolesRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -307,11 +307,11 @@ proto.swagchat.protobuf.CreateUserRolesRequest.prototype.serializeBinary = funct
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.CreateUserRolesRequest} message
+ * @param {!proto.swagchat.protobuf.AddUserRolesRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.AddUserRolesRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUserId();
   if (f.length > 0) {
@@ -334,13 +334,13 @@ proto.swagchat.protobuf.CreateUserRolesRequest.serializeBinaryToWriter = functio
  * optional string user_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.setUserId = function(value) {
   jspb.Message.setProto3StringField(this, 11, value);
 };
 
@@ -349,13 +349,13 @@ proto.swagchat.protobuf.CreateUserRolesRequest.prototype.setUserId = function(va
  * repeated int32 roles = 12;
  * @return {!Array.<number>}
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.getRolesList = function() {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.getRolesList = function() {
   return /** @type {!Array.<number>} */ (jspb.Message.getRepeatedField(this, 12));
 };
 
 
 /** @param {!Array.<number>} value */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.setRolesList = function(value) {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.setRolesList = function(value) {
   jspb.Message.setField(this, 12, value || []);
 };
 
@@ -364,12 +364,12 @@ proto.swagchat.protobuf.CreateUserRolesRequest.prototype.setRolesList = function
  * @param {!number} value
  * @param {number=} opt_index
  */
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.addRoles = function(value, opt_index) {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.addRoles = function(value, opt_index) {
   jspb.Message.addToRepeatedField(this, 12, value, opt_index);
 };
 
 
-proto.swagchat.protobuf.CreateUserRolesRequest.prototype.clearRolesList = function() {
+proto.swagchat.protobuf.AddUserRolesRequest.prototype.clearRolesList = function() {
   this.setRolesList([]);
 };
 

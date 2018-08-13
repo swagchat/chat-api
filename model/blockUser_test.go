@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	TestModelCreateBlockUsersRequest = "[model] CreateBlockUsersRequest test"
+	TestModelAddBlockUsersRequest    = "[model] AddBlockUsersRequest test"
 	TestModelBlockUsersResponse      = "[model] BlockUsersResponse test"
 	TestModelBlockUserIDsResponse    = "[model] BlockUserIdsResponse test"
 	TestModelBlockedUsersResponse    = "[model] BlockedUsersResponse test"
@@ -14,74 +14,74 @@ const (
 )
 
 func TestBlockUser(t *testing.T) {
-	t.Run(TestModelCreateBlockUsersRequest, func(t *testing.T) {
-		cbur := &CreateBlockUsersRequest{}
+	t.Run(TestModelAddBlockUsersRequest, func(t *testing.T) {
+		cbur := &AddBlockUsersRequest{}
 		errRes := cbur.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateBlockUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelAddBlockUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateBlockUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelAddBlockUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "userId" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userId\", but it was %s", TestModelCreateBlockUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"userId\", but it was %s", TestModelAddBlockUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		cbur.UserID = "model-user-id-0001"
 		errRes = cbur.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateBlockUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelAddBlockUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateBlockUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelAddBlockUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "blockUserIds" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"blockUserIds\", but it was %s", TestModelCreateBlockUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"blockUserIds\", but it was %s", TestModelAddBlockUsersRequest, errRes.InvalidParams[0].Name)
 		}
 		reason := "blockUserIds is required, but it's empty."
 		if errRes.InvalidParams[0].Reason != reason {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Reason is \"%s\", but it was %s", TestModelCreateBlockUsersRequest, reason, errRes.InvalidParams[0].Reason)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Reason is \"%s\", but it was %s", TestModelAddBlockUsersRequest, reason, errRes.InvalidParams[0].Reason)
 		}
 
 		cbur.UserID = "model-user-id-0001"
 		cbur.BlockUserIDs = []string{"model-user-id-0001", "model-user-id-0002"}
 		errRes = cbur.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateBlockUsersRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelAddBlockUsersRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateBlockUsersRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelAddBlockUsersRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "blockUserIds" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"blockUserIds\", but it was %s", TestModelCreateBlockUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"blockUserIds\", but it was %s", TestModelAddBlockUsersRequest, errRes.InvalidParams[0].Name)
 		}
 		reason = "blockUserIds can not include own UserId."
 		if errRes.InvalidParams[0].Reason != reason {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Reason is \"%s\", but it was %s", TestModelCreateBlockUsersRequest, reason, errRes.InvalidParams[0].Reason)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Reason is \"%s\", but it was %s", TestModelAddBlockUsersRequest, reason, errRes.InvalidParams[0].Reason)
 		}
 
 		cbur.UserID = "model-user-id-0001"
 		cbur.BlockUserIDs = []string{"model-user-id-0002", "model-user-id-0003"}
 		errRes = cbur.Validate()
 		if errRes != nil {
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestModelCreateBlockUsersRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestModelAddBlockUsersRequest, errRes.InvalidParams[0].Name)
 		}
 
 		blockUsers := cbur.GenerateBlockUsers()
 		if len(blockUsers) != 2 {
-			t.Fatalf("Failed to %s. Expected blockUsers count to be 2, but it was %d", TestModelCreateBlockUsersRequest, len(blockUsers))
+			t.Fatalf("Failed to %s. Expected blockUsers count to be 2, but it was %d", TestModelAddBlockUsersRequest, len(blockUsers))
 		}
 		if blockUsers[0].UserID != "model-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected blockUsers[0].UserID to be \"model-user-id-0001\", but it was %s", TestModelCreateBlockUsersRequest, blockUsers[0].UserID)
+			t.Fatalf("Failed to %s. Expected blockUsers[0].UserID to be \"model-user-id-0001\", but it was %s", TestModelAddBlockUsersRequest, blockUsers[0].UserID)
 		}
 		if blockUsers[0].BlockUserID != "model-user-id-0002" {
-			t.Fatalf("Failed to %s. Expected blockUsers[0].BlockUserID to be \"model-user-id-0002\", but it was %s", TestModelCreateBlockUsersRequest, blockUsers[0].BlockUserID)
+			t.Fatalf("Failed to %s. Expected blockUsers[0].BlockUserID to be \"model-user-id-0002\", but it was %s", TestModelAddBlockUsersRequest, blockUsers[0].BlockUserID)
 		}
 		if blockUsers[1].UserID != "model-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected blockUsers[1].UserID to be \"model-user-id-0001\", but it was %s", TestModelCreateBlockUsersRequest, blockUsers[1].UserID)
+			t.Fatalf("Failed to %s. Expected blockUsers[1].UserID to be \"model-user-id-0001\", but it was %s", TestModelAddBlockUsersRequest, blockUsers[1].UserID)
 		}
 		if blockUsers[1].BlockUserID != "model-user-id-0003" {
-			t.Fatalf("Failed to %s. Expected blockUsers[1].BlockUserID to be \"model-user-id-0003\", but it was %s", TestModelCreateBlockUsersRequest, blockUsers[1].BlockUserID)
+			t.Fatalf("Failed to %s. Expected blockUsers[1].BlockUserID to be \"model-user-id-0003\", but it was %s", TestModelAddBlockUsersRequest, blockUsers[1].BlockUserID)
 		}
 	})
 

@@ -11,8 +11,8 @@ import (
 	"github.com/swagchat/chat-api/tracer"
 )
 
-// CreateDevice create a device
-func CreateDevice(ctx context.Context, req *model.CreateDeviceRequest) (*model.Device, *model.ErrorResponse) {
+// AddDevice create a device
+func AddDevice(ctx context.Context, req *model.AddDeviceRequest) (*model.Device, *model.ErrorResponse) {
 	span := tracer.Provider(ctx).StartSpan("UpdateDevice", "service")
 	defer tracer.Provider(ctx).Finish(span)
 

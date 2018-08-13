@@ -23,7 +23,7 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("postRoomUsers", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var req model.CreateRoomUsersRequest
+	var req model.AddRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -31,13 +31,13 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.RoomID = bone.GetValue(r, "roomId")
 
-	errRes := service.CreateRoomUsers(ctx, &req)
+	errRes := service.AddRoomUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
 	}
 
-	respond(w, r, http.StatusNoContent, "application/json", nil)
+	respond(w, r, http.StatusCreated, "application/json", nil)
 }
 
 func getRoomUsers(w http.ResponseWriter, r *http.Request) {

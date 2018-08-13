@@ -12,7 +12,7 @@ message BlockUser {
   string block_user_id = 12 [(gogoproto.customname) = "BlockUserID", (gogoproto.jsontag) = "blockUserId", (gogoproto.moretags) = "db:\"block_user_id,notnull\""];
 }
 
-message CreateBlockUsersRequest {
+message AddBlockUsersRequest {
   option (gogoproto.goproto_unrecognized) = false;
   string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
   repeated string block_user_ids = 12 [(gogoproto.customname) = "BlockUserIDs", (gogoproto.jsontag) = "blockUserIds"];

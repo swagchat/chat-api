@@ -8,7 +8,7 @@ import "google/protobuf/empty.proto";
 import "blockUserMessage.proto";
 
 service BlockUserService {
-  rpc CreateBlockUsers (CreateBlockUsersRequest) returns (google.protobuf.Empty) {}
+  rpc AddBlockUsers (AddBlockUsersRequest) returns (google.protobuf.Empty) {}
   rpc RetrieveBlockUsers (RetrieveBlockUsersRequest) returns (BlockUsersResponse) {}
   rpc RetrieveBlockUserIds (RetrieveBlockUsersRequest) returns (BlockUserIdsResponse) {}
   rpc RetrieveBlockedUsers (RetrieveBlockedUsersRequest) returns (BlockedUsersResponse) {}

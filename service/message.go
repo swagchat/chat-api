@@ -18,9 +18,9 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-// CreateMessage creates message
-func CreateMessage(ctx context.Context, req *model.CreateMessageRequest) (*model.Message, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("CreateMessage", "service")
+// SendMessage creates message
+func SendMessage(ctx context.Context, req *model.SendMessageRequest) (*model.Message, *model.ErrorResponse) {
+	span := tracer.Provider(ctx).StartSpan("SendMessage", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	errRes := req.Validate()
@@ -35,12 +35,6 @@ func CreateMessage(ctx context.Context, req *model.CreateMessageRequest) (*model
 	}
 
 	user, errRes := confirmUserExist(ctx, *req.UserID, datastore.SelectUserOptionWithRoles(true))
-	if errRes != nil {
-		errRes.Message = "Failed to create message."
-		return nil, errRes
-	}
-
-	errRes = req.Validate()
 	if errRes != nil {
 		errRes.Message = "Failed to create message."
 		return nil, errRes

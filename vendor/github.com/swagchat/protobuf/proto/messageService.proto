@@ -6,5 +6,5 @@ option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
 import "messageMessage.proto";
 
 service MessageService {
-  rpc CreateMessage (CreateMessageRequest) returns (Message) {}
+  rpc SendMessage (SendMessageRequest) returns (Message) {}
 }

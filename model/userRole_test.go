@@ -5,30 +5,30 @@ import (
 )
 
 const (
-	TestModelCreateUserRolesRequest = "[model] CreateUserRolesRequest test"
+	TestModelAddUserRolesRequest    = "[model] AddUserRolesRequest test"
 	TestModelDeleteUserRolesRequest = "[model] DeleteUserRolesRequest test"
 )
 
 func TestUserRole(t *testing.T) {
-	t.Run(TestModelCreateUserRolesRequest, func(t *testing.T) {
-		curr := &CreateUserRolesRequest{}
+	t.Run(TestModelAddUserRolesRequest, func(t *testing.T) {
+		curr := &AddUserRolesRequest{}
 		curr.UserID = "model-user-id-0001"
 		curr.Roles = []int32{1, 2}
 		roles := curr.GenerateUserRoles()
 		if len(roles) != 2 {
-			t.Fatalf("Failed to %s. Expected roles count to be 2, but it was %d", TestModelCreateUserRolesRequest, len(roles))
+			t.Fatalf("Failed to %s. Expected roles count to be 2, but it was %d", TestModelAddUserRolesRequest, len(roles))
 		}
 		if roles[0].UserID != "model-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected roles[0].UserID to be \"model-user-id-0001\", but it was %s", TestModelCreateUserRolesRequest, roles[0].UserID)
+			t.Fatalf("Failed to %s. Expected roles[0].UserID to be \"model-user-id-0001\", but it was %s", TestModelAddUserRolesRequest, roles[0].UserID)
 		}
 		if roles[0].Role != 1 {
-			t.Fatalf("Failed to %s. Expected roles[0].Role to be 1, but it was %d", TestModelCreateUserRolesRequest, roles[0].Role)
+			t.Fatalf("Failed to %s. Expected roles[0].Role to be 1, but it was %d", TestModelAddUserRolesRequest, roles[0].Role)
 		}
 		if roles[1].UserID != "model-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected roles[1].UserID to be \"model-user-id-0001\", but it was %s", TestModelCreateUserRolesRequest, roles[1].UserID)
+			t.Fatalf("Failed to %s. Expected roles[1].UserID to be \"model-user-id-0001\", but it was %s", TestModelAddUserRolesRequest, roles[1].UserID)
 		}
 		if roles[1].Role != 2 {
-			t.Fatalf("Failed to %s. Expected roles[1].Role to be 2, but it was %d", TestModelCreateUserRolesRequest, roles[1].Role)
+			t.Fatalf("Failed to %s. Expected roles[1].Role to be 2, but it was %d", TestModelAddUserRolesRequest, roles[1].Role)
 		}
 	})
 

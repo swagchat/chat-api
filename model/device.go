@@ -19,11 +19,11 @@ func (d *Device) ConvertToPbDevice() *scpb.Device {
 	}
 }
 
-type CreateDeviceRequest struct {
-	scpb.CreateDeviceRequest
+type AddDeviceRequest struct {
+	scpb.AddDeviceRequest
 }
 
-func (cdr *CreateDeviceRequest) Validate() *ErrorResponse {
+func (cdr *AddDeviceRequest) Validate() *ErrorResponse {
 	if !(cdr.Platform == scpb.Platform_PlatformIos || cdr.Platform == scpb.Platform_PlatformAndroid) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
@@ -47,7 +47,7 @@ func (cdr *CreateDeviceRequest) Validate() *ErrorResponse {
 	return nil
 }
 
-func (cdr *CreateDeviceRequest) GenerateDevice() *Device {
+func (cdr *AddDeviceRequest) GenerateDevice() *Device {
 	device := &Device{}
 	device.UserID = cdr.UserID
 	device.Platform = cdr.Platform

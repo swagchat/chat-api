@@ -12,7 +12,7 @@ var goog = jspb;
 var global = Function('return this')();
 
 var gogoproto_gogo_pb = require('./gogoproto/gogo_pb.js');
-goog.exportSymbol('proto.swagchat.protobuf.CreateDeviceRequest', null, global);
+goog.exportSymbol('proto.swagchat.protobuf.AddDeviceRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.DeleteDeviceRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.Device', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.DevicesResponse', null, global);
@@ -279,12 +279,12 @@ proto.swagchat.protobuf.Device.prototype.setDeleted = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.CreateDeviceRequest = function(opt_data) {
+proto.swagchat.protobuf.AddDeviceRequest = function(opt_data) {
   jspb.Message.initialize(this, opt_data, 0, -1, null, null);
 };
-goog.inherits(proto.swagchat.protobuf.CreateDeviceRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.AddDeviceRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.CreateDeviceRequest.displayName = 'proto.swagchat.protobuf.CreateDeviceRequest';
+  proto.swagchat.protobuf.AddDeviceRequest.displayName = 'proto.swagchat.protobuf.AddDeviceRequest';
 }
 
 
@@ -299,8 +299,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.CreateDeviceRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.AddDeviceRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.AddDeviceRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -309,11 +309,11 @@ proto.swagchat.protobuf.CreateDeviceRequest.prototype.toObject = function(opt_in
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.CreateDeviceRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.AddDeviceRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.CreateDeviceRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.AddDeviceRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     userId: jspb.Message.getFieldWithDefault(msg, 11, ""),
     platform: jspb.Message.getFieldWithDefault(msg, 12, 0),
@@ -331,23 +331,23 @@ proto.swagchat.protobuf.CreateDeviceRequest.toObject = function(includeInstance,
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.CreateDeviceRequest}
+ * @return {!proto.swagchat.protobuf.AddDeviceRequest}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.AddDeviceRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.CreateDeviceRequest;
-  return proto.swagchat.protobuf.CreateDeviceRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.AddDeviceRequest;
+  return proto.swagchat.protobuf.AddDeviceRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.CreateDeviceRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.AddDeviceRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.CreateDeviceRequest}
+ * @return {!proto.swagchat.protobuf.AddDeviceRequest}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.AddDeviceRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -379,9 +379,9 @@ proto.swagchat.protobuf.CreateDeviceRequest.deserializeBinaryFromReader = functi
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.CreateDeviceRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.AddDeviceRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -389,11 +389,11 @@ proto.swagchat.protobuf.CreateDeviceRequest.prototype.serializeBinary = function
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.CreateDeviceRequest} message
+ * @param {!proto.swagchat.protobuf.AddDeviceRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.CreateDeviceRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.AddDeviceRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUserId();
   if (f.length > 0) {
@@ -423,13 +423,13 @@ proto.swagchat.protobuf.CreateDeviceRequest.serializeBinaryToWriter = function(m
  * optional string user_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.setUserId = function(value) {
   jspb.Message.setProto3StringField(this, 11, value);
 };
 
@@ -438,13 +438,13 @@ proto.swagchat.protobuf.CreateDeviceRequest.prototype.setUserId = function(value
  * optional Platform platform = 12;
  * @return {!proto.swagchat.protobuf.Platform}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.getPlatform = function() {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.getPlatform = function() {
   return /** @type {!proto.swagchat.protobuf.Platform} */ (jspb.Message.getFieldWithDefault(this, 12, 0));
 };
 
 
 /** @param {!proto.swagchat.protobuf.Platform} value */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.setPlatform = function(value) {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.setPlatform = function(value) {
   jspb.Message.setProto3EnumField(this, 12, value);
 };
 
@@ -453,13 +453,13 @@ proto.swagchat.protobuf.CreateDeviceRequest.prototype.setPlatform = function(val
  * optional string token = 13;
  * @return {string}
  */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.getToken = function() {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.getToken = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 13, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.CreateDeviceRequest.prototype.setToken = function(value) {
+proto.swagchat.protobuf.AddDeviceRequest.prototype.setToken = function(value) {
   jspb.Message.setProto3StringField(this, 13, value);
 };
 

@@ -374,6 +374,8 @@ func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 				}
 			}
 		}
+
+		return nil
 	}
 
 	if len(opt.roomIDs) > 0 {
@@ -399,6 +401,8 @@ func rdbDeleteRoomUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 				return err
 			}
 		}
+
+		return nil
 	}
 
 	if len(opt.userIDs) > 0 {

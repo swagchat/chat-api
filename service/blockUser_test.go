@@ -11,7 +11,7 @@ import (
 
 const (
 	TestServiceSetUpBlockUser         = "[service] set up blockUser"
-	TestServiceCreateBlockUsers       = "[service] create block users test"
+	TestServiceAddBlockUsers          = "[service] add block users test"
 	TestServiceRetrieveBlockUsers     = "[service] retrieve block users test"
 	TestServiceRetrieveBlockUserIDs   = "[service] retrieve block userIds test"
 	TestServiceRetrieveBlockedUsers   = "[service] retrieve blocked users test"
@@ -41,41 +41,41 @@ func TestBlockUser(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceCreateBlockUsers, func(t *testing.T) {
-		req := &model.CreateBlockUsersRequest{}
+	t.Run(TestServiceAddBlockUsers, func(t *testing.T) {
+		req := &model.AddBlockUsersRequest{}
 		req.UserID = "block-user-service-user-id-0001"
 		req.BlockUserIDs = []string{"block-user-service-user-id-0002", "block-user-service-user-id-0003", "block-user-service-user-id-0004"}
-		errRes := CreateBlockUsers(ctx, req)
+		errRes := AddBlockUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceCreateBlockUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceAddBlockUsers, errMsg)
 		}
 
-		req = &model.CreateBlockUsersRequest{}
+		req = &model.AddBlockUsersRequest{}
 		req.UserID = ""
 		req.BlockUserIDs = []string{""}
-		errRes = CreateBlockUsers(ctx, req)
+		errRes = AddBlockUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateBlockUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddBlockUsers)
 		}
 
-		req = &model.CreateBlockUsersRequest{}
+		req = &model.AddBlockUsersRequest{}
 		req.UserID = "not-exist-user"
 		req.BlockUserIDs = []string{"block-user-service-user-id-0002"}
-		errRes = CreateBlockUsers(ctx, req)
+		errRes = AddBlockUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateBlockUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddBlockUsers)
 		}
 
-		req = &model.CreateBlockUsersRequest{}
+		req = &model.AddBlockUsersRequest{}
 		req.UserID = "block-user-service-user-id-0001"
 		req.BlockUserIDs = []string{"not-exist-user"}
-		errRes = CreateBlockUsers(ctx, req)
+		errRes = AddBlockUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateBlockUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddBlockUsers)
 		}
 	})
 

@@ -67,8 +67,8 @@ func (m *Message) ConvertToPbMessage() *scpb.Message {
 	return pbMessage
 }
 
-func (m *Message) ConvertToCreateMessageRequest() *CreateMessageRequest {
-	req := &CreateMessageRequest{}
+func (m *Message) ConvertToSendMessageRequest() *SendMessageRequest {
+	req := &SendMessageRequest{}
 	req.MessageID = &m.MessageID
 	req.RoomID = &m.RoomID
 	req.UserID = &m.UserID
@@ -94,12 +94,12 @@ type PayloadUsers struct {
 	Users []string `json:"users"`
 }
 
-type CreateMessageRequest struct {
-	scpb.CreateMessageRequest
+type SendMessageRequest struct {
+	scpb.SendMessageRequest
 	Payload JSONText `json:"payload" db:"payload"`
 }
 
-func (m *CreateMessageRequest) Validate() *ErrorResponse {
+func (m *SendMessageRequest) Validate() *ErrorResponse {
 	if m.MessageID != nil && *m.MessageID != "" && !isValidID(*m.MessageID) {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
@@ -201,7 +201,7 @@ func (m *CreateMessageRequest) Validate() *ErrorResponse {
 	return nil
 }
 
-func (cmr *CreateMessageRequest) GenerateMessage() *Message {
+func (cmr *SendMessageRequest) GenerateMessage() *Message {
 	m := &Message{}
 
 	if cmr.MessageID == nil || *cmr.MessageID == "" {

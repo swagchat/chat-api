@@ -9,11 +9,11 @@ type UserRole struct {
 	scpb.UserRole
 }
 
-type CreateUserRolesRequest struct {
-	scpb.CreateUserRolesRequest
+type AddUserRolesRequest struct {
+	scpb.AddUserRolesRequest
 }
 
-func (curr *CreateUserRolesRequest) GenerateUserRoles() []*UserRole {
+func (curr *AddUserRolesRequest) GenerateUserRoles() []*UserRole {
 	roles := utils.RemoveDuplicateInt32(curr.Roles)
 
 	userRoles := make([]*UserRole, len(roles))

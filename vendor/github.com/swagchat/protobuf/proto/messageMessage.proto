@@ -49,7 +49,7 @@ message MessagePayload {
   optional int32 height = 16 [(gogoproto.nullable) = false];
 }
 
-message CreateMessageRequest {
+message SendMessageRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional string message_id = 12 [(gogoproto.customname) = "MessageID", (gogoproto.jsontag) = "messageId", (gogoproto.moretags) = "db:\"message_id,notnull\""];
   optional string room_id = 13 [(gogoproto.customname) = "RoomID", (gogoproto.jsontag) = "roomId", (gogoproto.moretags) = "db:\"room_id,notnull\""];

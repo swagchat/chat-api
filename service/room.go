@@ -128,26 +128,29 @@ func RetrieveRoom(ctx context.Context, req *model.RetrieveRoomRequest) (*model.R
 
 	room, err := datastore.Provider(ctx).SelectRoom(req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get room.", http.StatusInternalServerError, model.WithError(err))
+		return nil, model.NewErrorResponse("Failed to retrieve room.", http.StatusInternalServerError, model.WithError(err))
 	}
 	if room == nil {
 		return nil, model.NewErrorResponse("", http.StatusNotFound)
 	}
 
+	var roles []int32
 	userID := ctx.Value(config.CtxUserID).(string)
-	user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
-	if errRes != nil {
-		errRes.Message = "Failed to get room."
-		return nil, errRes
+	if userID != "" {
+		user, errRes := confirmUserExist(ctx, userID, datastore.SelectUserOptionWithRoles(true))
+		if errRes != nil {
+			errRes.Message = "Failed to retrieve room."
+			return nil, errRes
+		}
+		roles = user.Roles
 	}
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(
 		datastore.SelectMessagesOptionFilterByRoomID(req.RoomID),
-		datastore.SelectMessagesOptionFilterByRoleIDs(user.Roles),
+		datastore.SelectMessagesOptionFilterByRoleIDs(roles),
 	)
 	if err != nil {
-		return nil, model.NewErrorResponse("Failed to get room.", http.StatusInternalServerError, model.WithError(err))
-
+		return nil, model.NewErrorResponse("Failed to retrieve room.", http.StatusInternalServerError, model.WithError(err))
 	}
 	room.MessageCount = count
 

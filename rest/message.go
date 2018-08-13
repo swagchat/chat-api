@@ -18,13 +18,13 @@ func postMessage(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("postMessage", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var req model.CreateMessageRequest
+	var req model.SendMessageRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	message, errRes := service.CreateMessage(ctx, &req)
+	message, errRes := service.SendMessage(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

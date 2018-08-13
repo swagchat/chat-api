@@ -11,7 +11,7 @@ message UserRole {
   int32 role = 12 [(gogoproto.customname) = "Role", (gogoproto.jsontag) = "role", (gogoproto.moretags) = "db:\"role,notnull\""];
 }
 
-message CreateUserRolesRequest {
+message AddUserRolesRequest {
   option (gogoproto.goproto_unrecognized) = false;
   string user_id = 11 [(gogoproto.customname) = "UserID", (gogoproto.jsontag) = "userId"];
   repeated int32 roles = 12 [(gogoproto.customname) = "Roles", (gogoproto.jsontag) = "roles"];

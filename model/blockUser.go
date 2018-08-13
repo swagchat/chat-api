@@ -11,11 +11,11 @@ type BlockUser struct {
 	scpb.BlockUser
 }
 
-type CreateBlockUsersRequest struct {
-	scpb.CreateBlockUsersRequest
+type AddBlockUsersRequest struct {
+	scpb.AddBlockUsersRequest
 }
 
-func (cbur *CreateBlockUsersRequest) Validate() *ErrorResponse {
+func (cbur *AddBlockUsersRequest) Validate() *ErrorResponse {
 	if cbur.UserID == "" {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
@@ -51,7 +51,7 @@ func (cbur *CreateBlockUsersRequest) Validate() *ErrorResponse {
 	return nil
 }
 
-func (cbur *CreateBlockUsersRequest) GenerateBlockUsers() []*BlockUser {
+func (cbur *AddBlockUsersRequest) GenerateBlockUsers() []*BlockUser {
 	blockUserIDs := utils.RemoveDuplicateString(cbur.BlockUserIDs)
 
 	blockUsers := make([]*BlockUser, len(blockUserIDs))

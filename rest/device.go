@@ -22,13 +22,13 @@ func postDevice(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("postDevice", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var req model.CreateDeviceRequest
+	var req model.AddDeviceRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
 	}
 
-	device, errRes := service.CreateDevice(ctx, &req)
+	device, errRes := service.AddDevice(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

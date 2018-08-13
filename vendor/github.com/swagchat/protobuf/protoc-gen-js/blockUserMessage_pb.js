@@ -13,12 +13,12 @@ var global = Function('return this')();
 
 var gogoproto_gogo_pb = require('./gogoproto/gogo_pb.js');
 var roomMessage_pb = require('./roomMessage_pb.js');
+goog.exportSymbol('proto.swagchat.protobuf.AddBlockUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.BlockUser', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.BlockUserIdsResponse', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.BlockUsersResponse', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.BlockedUserIdsResponse', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.BlockedUsersResponse', null, global);
-goog.exportSymbol('proto.swagchat.protobuf.CreateBlockUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.DeleteBlockUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.RetrieveBlockUsersRequest', null, global);
 goog.exportSymbol('proto.swagchat.protobuf.RetrieveBlockedUsersRequest', null, global);
@@ -202,19 +202,19 @@ proto.swagchat.protobuf.BlockUser.prototype.setBlockUserId = function(value) {
  * @extends {jspb.Message}
  * @constructor
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.CreateBlockUsersRequest.repeatedFields_, null);
+proto.swagchat.protobuf.AddBlockUsersRequest = function(opt_data) {
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.swagchat.protobuf.AddBlockUsersRequest.repeatedFields_, null);
 };
-goog.inherits(proto.swagchat.protobuf.CreateBlockUsersRequest, jspb.Message);
+goog.inherits(proto.swagchat.protobuf.AddBlockUsersRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
-  proto.swagchat.protobuf.CreateBlockUsersRequest.displayName = 'proto.swagchat.protobuf.CreateBlockUsersRequest';
+  proto.swagchat.protobuf.AddBlockUsersRequest.displayName = 'proto.swagchat.protobuf.AddBlockUsersRequest';
 }
 /**
  * List of repeated fields within this message type.
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.repeatedFields_ = [12];
+proto.swagchat.protobuf.AddBlockUsersRequest.repeatedFields_ = [12];
 
 
 
@@ -229,8 +229,8 @@ if (jspb.Message.GENERATE_TO_OBJECT) {
  *     for transitional soy proto support: http://goto/soy-param-migration
  * @return {!Object}
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.toObject = function(opt_includeInstance) {
-  return proto.swagchat.protobuf.CreateBlockUsersRequest.toObject(opt_includeInstance, this);
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.toObject = function(opt_includeInstance) {
+  return proto.swagchat.protobuf.AddBlockUsersRequest.toObject(opt_includeInstance, this);
 };
 
 
@@ -239,11 +239,11 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.toObject = function(op
  * @param {boolean|undefined} includeInstance Whether to include the JSPB
  *     instance for transitional soy proto support:
  *     http://goto/soy-param-migration
- * @param {!proto.swagchat.protobuf.CreateBlockUsersRequest} msg The msg instance to transform.
+ * @param {!proto.swagchat.protobuf.AddBlockUsersRequest} msg The msg instance to transform.
  * @return {!Object}
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.toObject = function(includeInstance, msg) {
+proto.swagchat.protobuf.AddBlockUsersRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
     userId: jspb.Message.getFieldWithDefault(msg, 11, ""),
     blockUserIdsList: jspb.Message.getRepeatedField(msg, 12)
@@ -260,23 +260,23 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.toObject = function(includeInsta
 /**
  * Deserializes binary data (in protobuf wire format).
  * @param {jspb.ByteSource} bytes The bytes to deserialize.
- * @return {!proto.swagchat.protobuf.CreateBlockUsersRequest}
+ * @return {!proto.swagchat.protobuf.AddBlockUsersRequest}
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.deserializeBinary = function(bytes) {
+proto.swagchat.protobuf.AddBlockUsersRequest.deserializeBinary = function(bytes) {
   var reader = new jspb.BinaryReader(bytes);
-  var msg = new proto.swagchat.protobuf.CreateBlockUsersRequest;
-  return proto.swagchat.protobuf.CreateBlockUsersRequest.deserializeBinaryFromReader(msg, reader);
+  var msg = new proto.swagchat.protobuf.AddBlockUsersRequest;
+  return proto.swagchat.protobuf.AddBlockUsersRequest.deserializeBinaryFromReader(msg, reader);
 };
 
 
 /**
  * Deserializes binary data (in protobuf wire format) from the
  * given reader into the given message object.
- * @param {!proto.swagchat.protobuf.CreateBlockUsersRequest} msg The message object to deserialize into.
+ * @param {!proto.swagchat.protobuf.AddBlockUsersRequest} msg The message object to deserialize into.
  * @param {!jspb.BinaryReader} reader The BinaryReader to use.
- * @return {!proto.swagchat.protobuf.CreateBlockUsersRequest}
+ * @return {!proto.swagchat.protobuf.AddBlockUsersRequest}
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
+proto.swagchat.protobuf.AddBlockUsersRequest.deserializeBinaryFromReader = function(msg, reader) {
   while (reader.nextField()) {
     if (reader.isEndGroup()) {
       break;
@@ -304,9 +304,9 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.deserializeBinaryFromReader = fu
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.serializeBinary = function() {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.swagchat.protobuf.CreateBlockUsersRequest.serializeBinaryToWriter(this, writer);
+  proto.swagchat.protobuf.AddBlockUsersRequest.serializeBinaryToWriter(this, writer);
   return writer.getResultBuffer();
 };
 
@@ -314,11 +314,11 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.serializeBinary = func
 /**
  * Serializes the given message to binary data (in protobuf wire
  * format), writing to the given BinaryWriter.
- * @param {!proto.swagchat.protobuf.CreateBlockUsersRequest} message
+ * @param {!proto.swagchat.protobuf.AddBlockUsersRequest} message
  * @param {!jspb.BinaryWriter} writer
  * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.serializeBinaryToWriter = function(message, writer) {
+proto.swagchat.protobuf.AddBlockUsersRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getUserId();
   if (f.length > 0) {
@@ -341,13 +341,13 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.serializeBinaryToWriter = functi
  * optional string user_id = 11;
  * @return {string}
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.getUserId = function() {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.getUserId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 11, ""));
 };
 
 
 /** @param {string} value */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.setUserId = function(value) {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.setUserId = function(value) {
   jspb.Message.setProto3StringField(this, 11, value);
 };
 
@@ -356,13 +356,13 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.setUserId = function(v
  * repeated string block_user_ids = 12;
  * @return {!Array.<string>}
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.getBlockUserIdsList = function() {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.getBlockUserIdsList = function() {
   return /** @type {!Array.<string>} */ (jspb.Message.getRepeatedField(this, 12));
 };
 
 
 /** @param {!Array.<string>} value */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.setBlockUserIdsList = function(value) {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.setBlockUserIdsList = function(value) {
   jspb.Message.setField(this, 12, value || []);
 };
 
@@ -371,12 +371,12 @@ proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.setBlockUserIdsList = 
  * @param {!string} value
  * @param {number=} opt_index
  */
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.addBlockUserIds = function(value, opt_index) {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.addBlockUserIds = function(value, opt_index) {
   jspb.Message.addToRepeatedField(this, 12, value, opt_index);
 };
 
 
-proto.swagchat.protobuf.CreateBlockUsersRequest.prototype.clearBlockUserIdsList = function() {
+proto.swagchat.protobuf.AddBlockUsersRequest.prototype.clearBlockUserIdsList = function() {
   this.setBlockUserIdsList([]);
 };
 

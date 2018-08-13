@@ -15,7 +15,7 @@ import (
 func setUserMux() {
 	mux.PostFunc("/users", commonHandler(adminAuthzHandler(postUser)))
 	mux.GetFunc("/users", commonHandler(adminAuthzHandler(getUsers)))
-	mux.GetFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(getUser)))
+	mux.GetFunc("/users/#userId^[a-z0-9-]$", commonHandler(adminAuthzHandler(selfResourceAuthzHandler(getUser))))
 	mux.PutFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(putUser)))
 	mux.DeleteFunc("/users/#userId^[a-z0-9-]$", commonHandler(selfResourceAuthzHandler(deleteUser)))
 

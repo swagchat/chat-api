@@ -44,7 +44,7 @@ export namespace RoomUser {
   }
 }
 
-export class CreateRoomUsersRequest extends jspb.Message {
+export class AddRoomUsersRequest extends jspb.Message {
   hasRoomId(): boolean;
   clearRoomId(): void;
   getRoomId(): string | undefined;
@@ -61,16 +61,16 @@ export class CreateRoomUsersRequest extends jspb.Message {
   setDisplay(value: boolean): void;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): CreateRoomUsersRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: CreateRoomUsersRequest): CreateRoomUsersRequest.AsObject;
+  toObject(includeInstance?: boolean): AddRoomUsersRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: AddRoomUsersRequest): AddRoomUsersRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: CreateRoomUsersRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): CreateRoomUsersRequest;
-  static deserializeBinaryFromReader(message: CreateRoomUsersRequest, reader: jspb.BinaryReader): CreateRoomUsersRequest;
+  static serializeBinaryToWriter(message: AddRoomUsersRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddRoomUsersRequest;
+  static deserializeBinaryFromReader(message: AddRoomUsersRequest, reader: jspb.BinaryReader): AddRoomUsersRequest;
 }
 
-export namespace CreateRoomUsersRequest {
+export namespace AddRoomUsersRequest {
   export type AsObject = {
     roomId?: string,
     userIdsList: Array<string>,

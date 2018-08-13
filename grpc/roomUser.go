@@ -11,9 +11,9 @@ import (
 
 type roomUserServiceServer struct{}
 
-func (urs *roomUserServiceServer) CreateRoomUsers(ctx context.Context, in *scpb.CreateRoomUsersRequest) (*empty.Empty, error) {
-	req := &model.CreateRoomUsersRequest{*in, nil}
-	errRes := service.CreateRoomUsers(ctx, req)
+func (urs *roomUserServiceServer) AddRoomUsers(ctx context.Context, in *scpb.AddRoomUsersRequest) (*empty.Empty, error) {
+	req := &model.AddRoomUsersRequest{*in, nil}
+	errRes := service.AddRoomUsers(ctx, req)
 	if errRes != nil {
 		return &empty.Empty{}, errRes.Error
 	}

@@ -287,11 +287,11 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run(TestServiceDeleteUser, func(t *testing.T) {
-		dReq := &model.CreateDeviceRequest{}
+		dReq := &model.AddDeviceRequest{}
 		dReq.UserID = "user-service-insert-user-id-0001"
 		dReq.Platform = scpb.Platform_PlatformIos
 		dReq.Token = "user-token-0001"
-		_, errRes := CreateDevice(ctx, dReq)
+		_, errRes := AddDevice(ctx, dReq)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {

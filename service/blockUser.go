@@ -9,9 +9,9 @@ import (
 	"github.com/swagchat/chat-api/tracer"
 )
 
-// CreateBlockUsers creates block users
-func CreateBlockUsers(ctx context.Context, req *model.CreateBlockUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("CreateBlockUsers", "service")
+// AddBlockUsers creates block users
+func AddBlockUsers(ctx context.Context, req *model.AddBlockUsersRequest) *model.ErrorResponse {
+	span := tracer.Provider(ctx).StartSpan("AddBlockUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	errRes := req.Validate()

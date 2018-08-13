@@ -12,9 +12,9 @@ import (
 
 type userRoleServiceServer struct{}
 
-func (urs *userRoleServiceServer) CreateUserRoles(ctx context.Context, in *scpb.CreateUserRolesRequest) (*empty.Empty, error) {
-	req := &model.CreateUserRolesRequest{*in}
-	errRes := service.CreateUserRoles(ctx, req)
+func (urs *userRoleServiceServer) AddUserRoles(ctx context.Context, in *scpb.AddUserRolesRequest) (*empty.Empty, error) {
+	req := &model.AddUserRolesRequest{*in}
+	errRes := service.AddUserRoles(ctx, req)
 	if errRes != nil {
 		return &empty.Empty{}, errRes.Error
 	}

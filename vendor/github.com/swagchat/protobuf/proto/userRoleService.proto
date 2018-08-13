@@ -8,6 +8,6 @@ import "google/protobuf/empty.proto";
 import "userRoleMessage.proto";
 
 service UserRoleService {
-  rpc CreateUserRoles (CreateUserRolesRequest) returns (google.protobuf.Empty) {}
+  rpc AddUserRoles (AddUserRolesRequest) returns (google.protobuf.Empty) {}
   rpc DeleteUserRoles (DeleteUserRolesRequest) returns (google.protobuf.Empty) {}
 }

@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"testing"
 	"time"
 
@@ -13,11 +12,11 @@ import (
 
 const (
 	TestServiceSetUpRoomUser       = "[service] set up roomUser"
-	TestServiceCreateRoomUsers     = "[service] create block users test"
-	TestServiceRetrieveRoomUsers   = "[service] retrieve block users test"
-	TestServiceRetrieveRoomUserIDs = "[service] retrieve block userIds test"
-	TestServiceUpdateRoomUser      = "[service] update block user test"
-	TestServiceDeleteRoomUsers     = "[service] delete block users test"
+	TestServiceAddRoomUsers        = "[service] add room users test"
+	TestServiceRetrieveRoomUsers   = "[service] retrieve room users test"
+	TestServiceRetrieveRoomUserIDs = "[service] retrieve room userIds test"
+	TestServiceUpdateRoomUser      = "[service] update room user test"
+	TestServiceDeleteRoomUsers     = "[service] delete room users test"
 	TestServiceTearDownRoomUser    = "[service] tear down roomUser"
 )
 
@@ -104,42 +103,41 @@ func TestRoomUser(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceCreateRoomUsers, func(t *testing.T) {
-		req := &model.CreateRoomUsersRequest{}
+	t.Run(TestServiceAddRoomUsers, func(t *testing.T) {
+		req := &model.AddRoomUsersRequest{}
 		req.RoomID = "room-user-service-room-id-0011"
 		req.UserIDs = []string{"room-user-service-user-id-0002", "room-user-service-user-id-0003", "room-user-service-user-id-0004"}
-		errRes := CreateRoomUsers(ctx, req)
+		errRes := AddRoomUsers(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			log.Printf("%#v\n", errRes.InvalidParams[0])
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceCreateRoomUsers, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceAddRoomUsers, errMsg)
 		}
 
-		req = &model.CreateRoomUsersRequest{}
+		req = &model.AddRoomUsersRequest{}
 		req.RoomID = ""
 		req.UserIDs = []string{""}
-		errRes = CreateRoomUsers(ctx, req)
+		errRes = AddRoomUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateRoomUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddRoomUsers)
 		}
 
-		req = &model.CreateRoomUsersRequest{}
+		req = &model.AddRoomUsersRequest{}
 		req.RoomID = "not-exist-room"
 		req.UserIDs = []string{"room-user-service-user-id-0002"}
-		errRes = CreateRoomUsers(ctx, req)
+		errRes = AddRoomUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateRoomUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddRoomUsers)
 		}
 
-		req = &model.CreateRoomUsersRequest{}
+		req = &model.AddRoomUsersRequest{}
 		req.RoomID = "room-user-service-room-id-0001"
 		req.UserIDs = []string{"not-exist-user"}
-		errRes = CreateRoomUsers(ctx, req)
+		errRes = AddRoomUsers(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateRoomUsers)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddRoomUsers)
 		}
 	})
 

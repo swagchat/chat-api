@@ -1423,11 +1423,11 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "66bac457-86dd-4774-a74b-14b3313bb44d",
+								"id": "28c64bbb-10c4-4529-9684-50039bfb8bb0",
 								"type": "text/javascript",
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {",
-									"    pm.response.to.have.status(204);",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
 									"});",
 									""
 								]
@@ -1464,7 +1464,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"userIds\": [\"{{randomUserId}}\"]\n}"
+							"raw": "{\n\t\"userIds\": [\"{{randomUserId}}\"],\n\t\"display\": false\n}"
 						},
 						"url": {
 							"raw": "{{apiEndpoint}}/rooms/{{randomRoomId}}/users",

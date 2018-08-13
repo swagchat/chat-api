@@ -28,7 +28,7 @@ export namespace UserRole {
   }
 }
 
-export class CreateUserRolesRequest extends jspb.Message {
+export class AddUserRolesRequest extends jspb.Message {
   getUserId(): string;
   setUserId(value: string): void;
 
@@ -38,16 +38,16 @@ export class CreateUserRolesRequest extends jspb.Message {
   addRoles(value: number, index?: number): number;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): CreateUserRolesRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: CreateUserRolesRequest): CreateUserRolesRequest.AsObject;
+  toObject(includeInstance?: boolean): AddUserRolesRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: AddUserRolesRequest): AddUserRolesRequest.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: CreateUserRolesRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): CreateUserRolesRequest;
-  static deserializeBinaryFromReader(message: CreateUserRolesRequest, reader: jspb.BinaryReader): CreateUserRolesRequest;
+  static serializeBinaryToWriter(message: AddUserRolesRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddUserRolesRequest;
+  static deserializeBinaryFromReader(message: AddUserRolesRequest, reader: jspb.BinaryReader): AddUserRolesRequest;
 }
 
-export namespace CreateUserRolesRequest {
+export namespace AddUserRolesRequest {
   export type AsObject = {
     userId: string,
     rolesList: Array<number>,

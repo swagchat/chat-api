@@ -11,7 +11,7 @@ import (
 
 const (
 	TestServiceSetUpUserRole    = "[service] set up userRole"
-	TestServiceCreateUserRoles  = "[service] create user roles test"
+	TestServiceAddUserRoles     = "[service] add user roles test"
 	TestServiceDeleteUserRoles  = "[service] delete user roles test"
 	TestServiceTearDownUserRole = "[service] tear down userRole"
 )
@@ -31,24 +31,24 @@ func TestUserRole(t *testing.T) {
 		}
 	})
 
-	t.Run(TestServiceCreateUserRoles, func(t *testing.T) {
-		req := &model.CreateUserRolesRequest{}
+	t.Run(TestServiceAddUserRoles, func(t *testing.T) {
+		req := &model.AddUserRolesRequest{}
 		req.UserID = "user-role-service-user-id-0001"
 		req.Roles = []int32{4, 5, 6}
-		errRes := CreateUserRoles(ctx, req)
+		errRes := AddUserRoles(ctx, req)
 		if errRes != nil {
 			errMsg := ""
 			if errRes.Error != nil {
 				errMsg = fmt.Sprintf(" [%s]", errRes.Error.Error())
 			}
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceCreateUserRoles, errMsg)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil%s", TestServiceAddUserRoles, errMsg)
 		}
 
-		req = &model.CreateUserRolesRequest{}
+		req = &model.AddUserRolesRequest{}
 		req.UserID = "not-exist-user"
-		errRes = CreateUserRoles(ctx, req)
+		errRes = AddUserRoles(ctx, req)
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceCreateUserRoles)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestServiceAddUserRoles)
 		}
 	})
 

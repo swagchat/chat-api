@@ -19,7 +19,7 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("postUserRole", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var req model.CreateUserRolesRequest
+	var req model.AddUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -28,7 +28,7 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 	userID := bone.GetValue(r, "userId")
 	req.UserID = userID
 
-	errRes := service.CreateUserRoles(ctx, &req)
+	errRes := service.AddUserRoles(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

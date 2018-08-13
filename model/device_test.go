@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	TestModelDevice              = "[model] Device test"
-	TestModelCreateDeviceRequest = "[model] CreateDeviceRequest test"
-	TestModelDevicesResponse     = "[model] DevicesResponse test"
+	TestModelDevice           = "[model] Device test"
+	TestModelAddDeviceRequest = "[model] AddDeviceRequest test"
+	TestModelDevicesResponse  = "[model] DevicesResponse test"
 )
 
 func TestDevice(t *testing.T) {
@@ -35,30 +35,30 @@ func TestDevice(t *testing.T) {
 		}
 	})
 
-	t.Run(TestModelCreateDeviceRequest, func(t *testing.T) {
-		cdr := &CreateDeviceRequest{}
+	t.Run(TestModelAddDeviceRequest, func(t *testing.T) {
+		cdr := &AddDeviceRequest{}
 		cdr.Platform = scpb.Platform_PlatformNone
 		errRes := cdr.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateDeviceRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelAddDeviceRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateDeviceRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelAddDeviceRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "platform" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"platform\", but it was %s", TestModelCreateDeviceRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"platform\", but it was %s", TestModelAddDeviceRequest, errRes.InvalidParams[0].Name)
 		}
 
 		cdr.Platform = scpb.Platform_PlatformIos
 		errRes = cdr.Validate()
 		if errRes == nil {
-			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelCreateDeviceRequest)
+			t.Fatalf("Failed to %s. Expected errRes to be not nil, but it was nil", TestModelAddDeviceRequest)
 		}
 		if len(errRes.InvalidParams) != 1 {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelCreateDeviceRequest, len(errRes.InvalidParams))
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams count to be 1, but it was %d", TestModelAddDeviceRequest, len(errRes.InvalidParams))
 		}
 		if errRes.InvalidParams[0].Name != "token" {
-			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"token\", but it was %s", TestModelCreateDeviceRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes.InvalidParams[0].Name is \"token\", but it was %s", TestModelAddDeviceRequest, errRes.InvalidParams[0].Name)
 		}
 
 		cdr.UserID = "model-user-id-0001"
@@ -66,21 +66,21 @@ func TestDevice(t *testing.T) {
 		cdr.Token = "model-token-0001"
 		errRes = cdr.Validate()
 		if errRes != nil {
-			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestModelCreateDeviceRequest, errRes.InvalidParams[0].Name)
+			t.Fatalf("Failed to %s. Expected errRes to be nil, but it was not nil. %s is invalid", TestModelAddDeviceRequest, errRes.InvalidParams[0].Name)
 		}
 
 		pbd := cdr.GenerateDevice()
 		if pbd.UserID != "model-user-id-0001" {
-			t.Fatalf("Failed to %s. Expected pbd.UserID to be \"model-user-id-0001\", but it was %s", TestModelCreateDeviceRequest, pbd.UserID)
+			t.Fatalf("Failed to %s. Expected pbd.UserID to be \"model-user-id-0001\", but it was %s", TestModelAddDeviceRequest, pbd.UserID)
 		}
 		if pbd.Platform != scpb.Platform_PlatformIos {
-			t.Fatalf("Failed to %s. Expected pbd.Platform to be 1, but it was %d", TestModelCreateDeviceRequest, pbd.Platform)
+			t.Fatalf("Failed to %s. Expected pbd.Platform to be 1, but it was %d", TestModelAddDeviceRequest, pbd.Platform)
 		}
 		if pbd.Token != "model-token-0001" {
-			t.Fatalf("Failed to %s. Expected pbd.Token to be \"model-user-id-0001\", but it was %s", TestModelCreateDeviceRequest, pbd.Token)
+			t.Fatalf("Failed to %s. Expected pbd.Token to be \"model-user-id-0001\", but it was %s", TestModelAddDeviceRequest, pbd.Token)
 		}
 		if pbd.NotificationDeviceID != "" {
-			t.Fatalf("Failed to %s. Expected pbd.NotificationDeviceID to be \"\", but it was %s", TestModelCreateDeviceRequest, pbd.NotificationDeviceID)
+			t.Fatalf("Failed to %s. Expected pbd.NotificationDeviceID to be \"\", but it was %s", TestModelAddDeviceRequest, pbd.NotificationDeviceID)
 		}
 	})
 

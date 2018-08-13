@@ -21,7 +21,7 @@ func postBlockUsers(w http.ResponseWriter, r *http.Request) {
 	span := tracer.Provider(ctx).StartSpan("postBlockUsers", "rest")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var req model.CreateBlockUsersRequest
+	var req model.AddBlockUsersRequest
 	if err := decodeBody(r, &req); err != nil {
 		respondJSONDecodeError(w, r, "")
 		return
@@ -29,13 +29,13 @@ func postBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 	req.UserID = bone.GetValue(r, "userId")
 
-	errRes := service.CreateBlockUsers(ctx, &req)
+	errRes := service.AddBlockUsers(ctx, &req)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
 	}
 
-	respond(w, r, http.StatusNoContent, "application/json", nil)
+	respond(w, r, http.StatusCreated, "application/json", nil)
 }
 
 func getBlockUsers(w http.ResponseWriter, r *http.Request) {

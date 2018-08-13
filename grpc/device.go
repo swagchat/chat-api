@@ -11,9 +11,9 @@ import (
 
 type deviceServiceServer struct{}
 
-func (urs *deviceServiceServer) CreateDevice(ctx context.Context, in *scpb.CreateDeviceRequest) (*scpb.Device, error) {
-	req := &model.CreateDeviceRequest{*in}
-	device, errRes := service.CreateDevice(ctx, req)
+func (urs *deviceServiceServer) AddDevice(ctx context.Context, in *scpb.AddDeviceRequest) (*scpb.Device, error) {
+	req := &model.AddDeviceRequest{*in}
+	device, errRes := service.AddDevice(ctx, req)
 	if errRes != nil {
 		return &scpb.Device{}, errRes.Error
 	}

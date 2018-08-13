@@ -10,7 +10,7 @@ import (
 
 type messageServer struct{}
 
-func (s *messageServer) CreateMessage(ctx context.Context, in *scpb.CreateMessageRequest) (*scpb.Message, error) {
+func (s *messageServer) SendMessage(ctx context.Context, in *scpb.SendMessageRequest) (*scpb.Message, error) {
 	payload := model.JSONText{}
 	if in.Payload != nil {
 		err := payload.UnmarshalJSON(in.Payload)
@@ -18,8 +18,8 @@ func (s *messageServer) CreateMessage(ctx context.Context, in *scpb.CreateMessag
 			return &scpb.Message{}, err
 		}
 	}
-	req := &model.CreateMessageRequest{*in, payload}
-	message, errRes := service.CreateMessage(ctx, req)
+	req := &model.SendMessageRequest{*in, payload}
+	message, errRes := service.SendMessage(ctx, req)
 	if errRes != nil {
 		return &scpb.Message{}, errRes.Error
 	}

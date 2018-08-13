@@ -11,9 +11,9 @@ import (
 	"github.com/swagchat/chat-api/tracer"
 )
 
-// CreateRoomUsers creates room users
-func CreateRoomUsers(ctx context.Context, req *model.CreateRoomUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("CreateRoomUsers", "service")
+// AddRoomUsers creates room users
+func AddRoomUsers(ctx context.Context, req *model.AddRoomUsersRequest) *model.ErrorResponse {
+	span := tracer.Provider(ctx).StartSpan("AddRoomUsers", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))

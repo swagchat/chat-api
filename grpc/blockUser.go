@@ -12,9 +12,9 @@ import (
 
 type blockUserServiceServer struct{}
 
-func (bus *blockUserServiceServer) CreateBlockUsers(ctx context.Context, in *scpb.CreateBlockUsersRequest) (*empty.Empty, error) {
-	req := &model.CreateBlockUsersRequest{*in}
-	errRes := service.CreateBlockUsers(ctx, req)
+func (bus *blockUserServiceServer) AddBlockUsers(ctx context.Context, in *scpb.AddBlockUsersRequest) (*empty.Empty, error) {
+	req := &model.AddBlockUsersRequest{*in}
+	errRes := service.AddBlockUsers(ctx, req)
 	if errRes != nil {
 		return &empty.Empty{}, errRes.Error
 	}

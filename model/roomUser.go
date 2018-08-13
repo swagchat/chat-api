@@ -20,12 +20,12 @@ func (ru *RoomUser) UpdateRoomUser(req *UpdateRoomUserRequest) {
 	}
 }
 
-type CreateRoomUsersRequest struct {
-	scpb.CreateRoomUsersRequest
+type AddRoomUsersRequest struct {
+	scpb.AddRoomUsersRequest
 	Room *Room
 }
 
-func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
+func (crur *AddRoomUsersRequest) Validate() *ErrorResponse {
 	if crur.Room == nil {
 		invalidParams := []*scpb.InvalidParam{
 			&scpb.InvalidParam{
@@ -71,7 +71,7 @@ func (crur *CreateRoomUsersRequest) Validate() *ErrorResponse {
 	return nil
 }
 
-func (crur *CreateRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
+func (crur *AddRoomUsersRequest) GenerateRoomUsers() []*RoomUser {
 	roomUsers := make([]*RoomUser, len(crur.UserIDs))
 	for i, userID := range crur.UserIDs {
 		ru := &RoomUser{}
