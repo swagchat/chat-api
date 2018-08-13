@@ -8,8 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	opentracing "github.com/opentracing/opentracing-go"
-	"github.com/opentracing/opentracing-go/ext"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
@@ -35,15 +33,7 @@ func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
 		return err
 	}
 
-	s := span.(opentracing.Span)
-	ext.SpanKindRPCClient.Set(s)
-	ext.HTTPUrl.Set(s, endpoint)
-	ext.HTTPMethod.Set(s, "GET")
-	s.Tracer().Inject(
-		s.Context(),
-		opentracing.HTTPHeaders,
-		opentracing.HTTPHeadersCarrier(req.Header),
-	)
+	tracer.Provider(dp.ctx).InjectHTTPRequest(span, req)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
