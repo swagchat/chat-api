@@ -40,11 +40,13 @@ func Provider(ctx context.Context) provider {
 	switch dsCfg.Provider {
 	case "sqlite":
 		p = &sqliteProvider{
-			ctx:           ctx,
-			onMemory:      dsCfg.SQLite.OnMemory,
-			dirPath:       dsCfg.SQLite.DirPath,
-			database:      dsCfg.Database,
-			enableLogging: dsCfg.EnableLogging,
+			ctx:               ctx,
+			onMemory:          dsCfg.SQLite.OnMemory,
+			dirPath:           dsCfg.SQLite.DirPath,
+			database:          dsCfg.Database,
+			maxIdleConnection: dsCfg.MaxIdleConnection,
+			maxOpenConnection: dsCfg.MaxOpenConnection,
+			enableLogging:     dsCfg.EnableLogging,
 		}
 	case "mysql":
 		p = &mysqlProvider{

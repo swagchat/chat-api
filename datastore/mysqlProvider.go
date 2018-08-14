@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
-	"strconv"
 
 	gorp "gopkg.in/gorp.v2"
 
@@ -24,8 +23,8 @@ type mysqlProvider struct {
 	database          string
 	masterSi          *config.ServerInfo
 	replicaSis        []*config.ServerInfo
-	maxIdleConnection string
-	maxOpenConnection string
+	maxIdleConnection int
+	maxOpenConnection int
 	enableLogging     bool
 }
 
@@ -51,15 +50,8 @@ func (p *mysqlProvider) Connect(dsCfg *config.Datastore) error {
 		}
 		logger.Info(fmt.Sprintf("Connected database. %s %s", dsCfg.Provider, ds))
 
-		mic, err := strconv.Atoi(p.maxIdleConnection)
-		if err == nil {
-			db.SetMaxIdleConns(mic)
-		}
-
-		moc, err := strconv.Atoi(p.maxOpenConnection)
-		if err == nil {
-			db.SetMaxOpenConns(moc)
-		}
+		db.SetMaxIdleConns(p.maxIdleConnection)
+		db.SetMaxOpenConns(p.maxOpenConnection)
 
 		var master *gorp.DbMap
 		master = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
@@ -86,15 +78,8 @@ func (p *mysqlProvider) Connect(dsCfg *config.Datastore) error {
 			}
 			logger.Info(fmt.Sprintf("Connected database. %s %s", dsCfg.Provider, ds))
 
-			mic, err := strconv.Atoi(p.maxIdleConnection)
-			if err == nil {
-				db.SetMaxIdleConns(mic)
-			}
-
-			moc, err := strconv.Atoi(p.maxOpenConnection)
-			if err == nil {
-				db.SetMaxOpenConns(moc)
-			}
+			db.SetMaxIdleConns(p.maxIdleConnection)
+			db.SetMaxOpenConns(p.maxOpenConnection)
 
 			var replica *gorp.DbMap
 			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}

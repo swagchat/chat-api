@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 
 	"strings"
 
@@ -135,8 +136,8 @@ type Datastore struct {
 	Password          string
 	Database          string
 	TableNamePrefix   string `yaml:"tableNamePrefix"`
-	MaxIdleConnection string `yaml:"maxIdleConnection"`
-	MaxOpenConnection string `yaml:"maxOpenConnection"`
+	MaxIdleConnection int    `yaml:"maxIdleConnection"`
+	MaxOpenConnection int    `yaml:"maxOpenConnection"`
 	Master            *ServerInfo
 	Replicas          []*ServerInfo
 	EnableLogging     bool `yaml:"enableLogging"`
@@ -280,11 +281,13 @@ func defaultSetting() *config {
 			},
 		},
 		Datastore: &Datastore{
-			Dynamic:       false,
-			Provider:      "sqlite",
-			Database:      "swagchat",
-			EnableLogging: false,
-			SQLite:        sqlite,
+			Dynamic:           false,
+			Provider:          "sqlite",
+			Database:          "swagchat",
+			MaxIdleConnection: 10,
+			MaxOpenConnection: 10,
+			EnableLogging:     false,
+			SQLite:            sqlite,
 		},
 		PBroker:      &PBroker{},
 		SBroker:      &SBroker{},
@@ -428,10 +431,16 @@ func (c *config) loadEnv() {
 		c.Datastore.TableNamePrefix = v
 	}
 	if v = os.Getenv("SWAG_DATASTORE_MAX_IDLE_CONNECTION"); v != "" {
-		c.Datastore.MaxIdleConnection = v
+		mic, err := strconv.Atoi(v)
+		if err == nil {
+			c.Datastore.MaxIdleConnection = mic
+		}
 	}
 	if v = os.Getenv("SWAG_DATASTORE_MAX_OPEN_CONNECTION"); v != "" {
-		c.Datastore.MaxOpenConnection = v
+		moc, err := strconv.Atoi(v)
+		if err == nil {
+			c.Datastore.MaxOpenConnection = moc
+		}
 	}
 
 	var master *ServerInfo
@@ -699,8 +708,8 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.Datastore.User, "datastore.user", c.Datastore.User, "")
 	flags.StringVar(&c.Datastore.Password, "datastore.password", c.Datastore.Password, "")
 	flags.StringVar(&c.Datastore.Database, "datastore.database", c.Datastore.Database, "")
-	flags.StringVar(&c.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", c.Datastore.MaxIdleConnection, "")
-	flags.StringVar(&c.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", c.Datastore.MaxOpenConnection, "")
+	flags.IntVar(&c.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", c.Datastore.MaxIdleConnection, "")
+	flags.IntVar(&c.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", c.Datastore.MaxOpenConnection, "")
 
 	var (
 		mHostStr           string

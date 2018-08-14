@@ -13,11 +13,13 @@ import (
 )
 
 type sqliteProvider struct {
-	ctx           context.Context
-	onMemory      bool
-	dirPath       string
-	database      string
-	enableLogging bool
+	ctx               context.Context
+	onMemory          bool
+	dirPath           string
+	database          string
+	maxIdleConnection int
+	maxOpenConnection int
+	enableLogging     bool
 }
 
 func (p *sqliteProvider) Connect(dsCfg *config.Datastore) error {
@@ -43,6 +45,9 @@ func (p *sqliteProvider) Connect(dsCfg *config.Datastore) error {
 		return err
 	}
 	logger.Info(fmt.Sprintf("Connected database. %s %s", dsCfg.Provider, ds))
+
+	db.SetMaxIdleConns(p.maxIdleConnection)
+	db.SetMaxOpenConns(p.maxOpenConnection)
 
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
