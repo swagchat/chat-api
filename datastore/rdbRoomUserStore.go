@@ -446,6 +446,9 @@ WHERE ru.room_id IN (
 	}
 
 	roomIDsQuery, params := makePrepareExpressionParamsForInOperand(roomIDs)
+	if roomIDsQuery == "" {
+		return rooms, nil
+	}
 
 	var miniUsers []*model.MiniUser
 	query = fmt.Sprintf(`SELECT
@@ -463,8 +466,8 @@ ru.display as ru_display
 FROM %s AS ru
 LEFT JOIN %s AS u ON ru.user_id=u.user_id
 WHERE ru.room_id IN (%s)
-AND ru.user_id!=:userId
-ORDER BY ru.room_id`, tableNameRoomUser, tableNameUser, roomIDsQuery)
+AND ru.user_id!=:userId`, tableNameRoomUser, tableNameUser, roomIDsQuery)
+
 	params["userId"] = userID
 	_, err = dbMap.Select(&miniUsers, query, params)
 	if err != nil {
