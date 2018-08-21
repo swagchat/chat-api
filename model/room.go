@@ -13,28 +13,6 @@ import (
 type Room struct {
 	scpb.Room
 	MetaData JSONText `json:"metaData" db:"meta_data"`
-	// Users    []*MiniUser `json:"users" db:"-"`
-	// ID                    uint64         `json:"-" db:"id"`
-	// RoomID                string         `json:"roomId" db:"room_id,notnull"`
-	// UserID                string         `json:"userId" db:"user_id,notnull"`
-	// Name                  string         `json:"name" db:"name,notnull"`
-	// PictureURL            string         `json:"pictureUrl,omitempty" db:"picture_url"`
-	// InformationURL        string         `json:"informationUrl,omitempty" db:"information_url"`
-	// Type                  RoomType       `json:"type,omitempty" db:"type,notnull"`
-	// CanLeft               *bool          `json:"canLeft,omitempty" db:"can_left,notnull"`
-	// SpeechMode            *SpeechMode    `json:"speechMode,omitempty" db:"speech_mode,notnull"`
-	// MetaData              JSONText `json:"metaData" db:"meta_data"`
-	// AvailableMessageTypes string         `json:"availableMessageTypes,omitempty" db:"available_message_types"`
-	// LastMessage           string         `json:"lastMessage" db:"last_message"`
-	// LastMessageUpdated    int64          `json:"lastMessageUpdated" db:"last_message_updated,notnull"`
-	// MessageCount          int64          `json:"messageCount" db:"-"`
-	// NotificationTopicID   string         `json:"notificationTopicId,omitempty" db:"notification_topic_id"`
-	// Created               int64          `json:"created" db:"created,notnull"`
-	// Modified              int64          `json:"modified" db:"modified,notnull"`
-	// Deleted               int64          `json:"-" db:"deleted,notnull"`
-
-	// Users   []*MiniUser `json:"users,omitempty" db:"-"`
-	// UserIDs []string       `json:"userIds,omitempty" db:"-"`
 }
 
 func (r *Room) MarshalJSON() ([]byte, error) {
@@ -464,7 +442,6 @@ func (rmr *RoomMessagesResponse) ConvertToPbRoomMessages() *scpb.RoomMessagesRes
 			Role:      v.Role,
 			Created:   v.Created,
 			Modified:  v.Modified,
-			EventName: v.EventName,
 			UserIDs:   v.UserIDs,
 		}
 	}

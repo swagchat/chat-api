@@ -122,12 +122,11 @@ func webhookMessage(ctx context.Context, message *model.Message, user *model.Use
 	}
 
 	pbMessage := &scpb.Message{
-		RoomID:    message.RoomID,
-		UserID:    message.UserID,
-		Type:      message.Type,
-		Payload:   payload,
-		EventName: "message",
-		UserIDs:   userIDs,
+		RoomID:  message.RoomID,
+		UserID:  message.UserID,
+		Type:    message.Type,
+		Payload: payload,
+		UserIDs: userIDs,
 	}
 
 	for _, webhook := range webhooks {

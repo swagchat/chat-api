@@ -389,7 +389,7 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 					Reason: "limit is incorrect.",
 				},
 			}
-			return limit, offset, orders, model.NewErrorResponse("Failed to create room.", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+			return limit, offset, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 		}
 		limit = int32(limitInt)
 	}
@@ -402,7 +402,7 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 					Reason: "offset is incorrect.",
 				},
 			}
-			return limit, offset, orders, model.NewErrorResponse("Failed to create room.", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+			return limit, offset, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 		}
 		offset = int32(offsetInt)
 	}

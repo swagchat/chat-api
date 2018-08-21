@@ -11,13 +11,14 @@ import (
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type directProvider struct {
 	ctx context.Context
 }
 
-func (dp directProvider) PublishMessage(rtmEvent *RTMEvent) error {
+func (dp directProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	span := tracer.Provider(dp.ctx).StartSpan("PublishMessage", "pbroker")
 	defer tracer.Provider(dp.ctx).Finish(span)
 

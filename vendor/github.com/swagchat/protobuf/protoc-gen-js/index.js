@@ -1,6 +1,7 @@
 require('./commonMessage_pb');
 require('./blockUserMessage_pb');
 require('./deviceMessage_pb');
+require('./eventMessage_pb');
 require('./messageMessage_pb');
 require('./roomMessage_pb');
 require('./roomUserMessage_pb');

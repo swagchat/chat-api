@@ -33,7 +33,6 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 		RoomID    string   `json:"roomId"`
 		UserID    string   `json:"userId"`
 		Type      string   `json:"type"`
-		EventName string   `json:"eventName,omitempty"`
 		Payload   JSONText `json:"payload"`
 		Role      int32    `json:"role"`
 		Created   string   `json:"created"`
@@ -43,7 +42,6 @@ func (m *Message) MarshalJSON() ([]byte, error) {
 		RoomID:    m.RoomID,
 		UserID:    m.UserID,
 		Type:      m.Type,
-		EventName: m.EventName,
 		Payload:   m.Payload,
 		Role:      m.Role,
 		Created:   time.Unix(m.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
@@ -61,7 +59,6 @@ func (m *Message) ConvertToPbMessage() *scpb.Message {
 	pbMessage.Role = m.Role
 	pbMessage.Created = m.Created
 	pbMessage.Modified = m.Modified
-	pbMessage.EventName = m.EventName
 	pbMessage.UserIDs = m.UserIDs
 	return pbMessage
 }
@@ -74,7 +71,6 @@ func (m *Message) ConvertToSendMessageRequest() *SendMessageRequest {
 	req.Type = &m.Type
 	req.Payload = m.Payload
 	req.Role = &m.Role
-	req.EventName = &m.EventName
 	return req
 }
 
@@ -219,8 +215,6 @@ func (cmr *SendMessageRequest) GenerateMessage() *Message {
 	} else {
 		m.Role = *cmr.Role
 	}
-
-	m.EventName = EventNameMessage
 
 	nowTimestamp := time.Now().Unix()
 	m.CreatedTimestamp = nowTimestamp

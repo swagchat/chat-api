@@ -113,11 +113,6 @@ export class Message extends jspb.Message {
   getDeletedTimestamp(): number | undefined;
   setDeletedTimestamp(value: number): void;
 
-  hasEventName(): boolean;
-  clearEventName(): void;
-  getEventName(): string | undefined;
-  setEventName(value: string): void;
-
   clearUserIdsList(): void;
   getUserIdsList(): Array<string>;
   setUserIdsList(value: Array<string>): void;
@@ -147,7 +142,6 @@ export namespace Message {
     modifiedTimestamp?: number,
     modified?: string,
     deletedTimestamp?: number,
-    eventName?: string,
     userIdsList: Array<string>,
   }
 }
@@ -243,11 +237,6 @@ export class SendMessageRequest extends jspb.Message {
   getRole(): number | undefined;
   setRole(value: number): void;
 
-  hasEventName(): boolean;
-  clearEventName(): void;
-  getEventName(): string | undefined;
-  setEventName(value: string): void;
-
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): SendMessageRequest.AsObject;
   static toObject(includeInstance: boolean, msg: SendMessageRequest): SendMessageRequest.AsObject;
@@ -266,7 +255,6 @@ export namespace SendMessageRequest {
     type?: string,
     payload: Uint8Array | string,
     role?: number,
-    eventName?: string,
   }
 }
 

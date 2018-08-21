@@ -1148,8 +1148,9 @@ proto.swagchat.protobuf.MiniRoom.toObject = function(includeInstance, msg) {
     metaData: msg.getMetaData_asB64(),
     type: jspb.Message.getField(msg, 7),
     lastMessage: jspb.Message.getField(msg, 8),
-    lastMessageUpdated: jspb.Message.getField(msg, 9),
-    canLeft: jspb.Message.getField(msg, 10),
+    lastMessageUpdatedTimestamp: jspb.Message.getField(msg, 9),
+    lastMessageUpdated: jspb.Message.getField(msg, 10),
+    canLeft: jspb.Message.getField(msg, 11),
     createdTimestamp: jspb.Message.getField(msg, 21),
     created: jspb.Message.getField(msg, 22),
     modifiedTimestamp: jspb.Message.getField(msg, 23),
@@ -1227,9 +1228,13 @@ proto.swagchat.protobuf.MiniRoom.deserializeBinaryFromReader = function(msg, rea
       break;
     case 9:
       var value = /** @type {number} */ (reader.readInt64());
-      msg.setLastMessageUpdated(value);
+      msg.setLastMessageUpdatedTimestamp(value);
       break;
     case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setLastMessageUpdated(value);
+      break;
+    case 11:
       var value = /** @type {boolean} */ (reader.readBool());
       msg.setCanLeft(value);
       break;
@@ -1350,10 +1355,17 @@ proto.swagchat.protobuf.MiniRoom.serializeBinaryToWriter = function(message, wri
       f
     );
   }
-  f = /** @type {boolean} */ (jspb.Message.getField(message, 10));
+  f = /** @type {string} */ (jspb.Message.getField(message, 10));
+  if (f != null) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
+  f = /** @type {boolean} */ (jspb.Message.getField(message, 11));
   if (f != null) {
     writer.writeBool(
-      10,
+      11,
       f
     );
   }
@@ -1660,21 +1672,21 @@ proto.swagchat.protobuf.MiniRoom.prototype.hasLastMessage = function() {
 
 
 /**
- * optional int64 last_message_updated = 9;
+ * optional int64 last_message_updated_timestamp = 9;
  * @return {number}
  */
-proto.swagchat.protobuf.MiniRoom.prototype.getLastMessageUpdated = function() {
+proto.swagchat.protobuf.MiniRoom.prototype.getLastMessageUpdatedTimestamp = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 9, 0));
 };
 
 
 /** @param {number} value */
-proto.swagchat.protobuf.MiniRoom.prototype.setLastMessageUpdated = function(value) {
+proto.swagchat.protobuf.MiniRoom.prototype.setLastMessageUpdatedTimestamp = function(value) {
   jspb.Message.setField(this, 9, value);
 };
 
 
-proto.swagchat.protobuf.MiniRoom.prototype.clearLastMessageUpdated = function() {
+proto.swagchat.protobuf.MiniRoom.prototype.clearLastMessageUpdatedTimestamp = function() {
   jspb.Message.setField(this, 9, undefined);
 };
 
@@ -1683,29 +1695,27 @@ proto.swagchat.protobuf.MiniRoom.prototype.clearLastMessageUpdated = function() 
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.MiniRoom.prototype.hasLastMessageUpdated = function() {
+proto.swagchat.protobuf.MiniRoom.prototype.hasLastMessageUpdatedTimestamp = function() {
   return jspb.Message.getField(this, 9) != null;
 };
 
 
 /**
- * optional bool can_left = 10;
- * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
- * You should avoid comparisons like {@code val === true/false} in those cases.
- * @return {boolean}
+ * optional string last_message_updated = 10;
+ * @return {string}
  */
-proto.swagchat.protobuf.MiniRoom.prototype.getCanLeft = function() {
-  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 10, false));
+proto.swagchat.protobuf.MiniRoom.prototype.getLastMessageUpdated = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
 };
 
 
-/** @param {boolean} value */
-proto.swagchat.protobuf.MiniRoom.prototype.setCanLeft = function(value) {
+/** @param {string} value */
+proto.swagchat.protobuf.MiniRoom.prototype.setLastMessageUpdated = function(value) {
   jspb.Message.setField(this, 10, value);
 };
 
 
-proto.swagchat.protobuf.MiniRoom.prototype.clearCanLeft = function() {
+proto.swagchat.protobuf.MiniRoom.prototype.clearLastMessageUpdated = function() {
   jspb.Message.setField(this, 10, undefined);
 };
 
@@ -1714,8 +1724,39 @@ proto.swagchat.protobuf.MiniRoom.prototype.clearCanLeft = function() {
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.MiniRoom.prototype.hasCanLeft = function() {
+proto.swagchat.protobuf.MiniRoom.prototype.hasLastMessageUpdated = function() {
   return jspb.Message.getField(this, 10) != null;
+};
+
+
+/**
+ * optional bool can_left = 11;
+ * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
+ * You should avoid comparisons like {@code val === true/false} in those cases.
+ * @return {boolean}
+ */
+proto.swagchat.protobuf.MiniRoom.prototype.getCanLeft = function() {
+  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 11, false));
+};
+
+
+/** @param {boolean} value */
+proto.swagchat.protobuf.MiniRoom.prototype.setCanLeft = function(value) {
+  jspb.Message.setField(this, 11, value);
+};
+
+
+proto.swagchat.protobuf.MiniRoom.prototype.clearCanLeft = function() {
+  jspb.Message.setField(this, 11, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.MiniRoom.prototype.hasCanLeft = function() {
+  return jspb.Message.getField(this, 11) != null;
 };
 
 
@@ -4005,12 +4046,12 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.toObject = function(o
  */
 proto.swagchat.protobuf.RetrieveUserRoomsRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
+    userId: jspb.Message.getField(msg, 10),
     limit: jspb.Message.getField(msg, 11),
     offset: jspb.Message.getField(msg, 12),
     ordersList: jspb.Message.toObjectList(msg.getOrdersList(),
     commonMessage_pb.OrderInfo.toObject, includeInstance),
-    userId: jspb.Message.getField(msg, 14),
-    filter: jspb.Message.getField(msg, 15)
+    filter: jspb.Message.getField(msg, 14)
   };
 
   if (includeInstance) {
@@ -4047,6 +4088,10 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.deserializeBinaryFromReader = f
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 10:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setUserId(value);
+      break;
     case 11:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setLimit(value);
@@ -4061,10 +4106,6 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.deserializeBinaryFromReader = f
       msg.addOrders(value);
       break;
     case 14:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setUserId(value);
-      break;
-    case 15:
       var value = /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (reader.readEnum());
       msg.setFilter(value);
       break;
@@ -4097,6 +4138,13 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.serializeBinary = fun
  */
 proto.swagchat.protobuf.RetrieveUserRoomsRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = /** @type {string} */ (jspb.Message.getField(message, 10));
+  if (f != null) {
+    writer.writeString(
+      10,
+      f
+    );
+  }
   f = /** @type {number} */ (jspb.Message.getField(message, 11));
   if (f != null) {
     writer.writeInt32(
@@ -4119,20 +4167,42 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.serializeBinaryToWriter = funct
       commonMessage_pb.OrderInfo.serializeBinaryToWriter
     );
   }
-  f = /** @type {string} */ (jspb.Message.getField(message, 14));
+  f = /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getField(message, 14));
   if (f != null) {
-    writer.writeString(
+    writer.writeEnum(
       14,
       f
     );
   }
-  f = /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getField(message, 15));
-  if (f != null) {
-    writer.writeEnum(
-      15,
-      f
-    );
-  }
+};
+
+
+/**
+ * optional string user_id = 10;
+ * @return {string}
+ */
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getUserId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+};
+
+
+/** @param {string} value */
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setUserId = function(value) {
+  jspb.Message.setField(this, 10, value);
+};
+
+
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearUserId = function() {
+  jspb.Message.setField(this, 10, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasUserId = function() {
+  return jspb.Message.getField(this, 10) != null;
 };
 
 
@@ -4226,21 +4296,21 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearOrdersList = fun
 
 
 /**
- * optional string user_id = 14;
- * @return {string}
+ * optional UserRoomsFilter filter = 14;
+ * @return {!proto.swagchat.protobuf.UserRoomsFilter}
  */
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getUserId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 14, ""));
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getFilter = function() {
+  return /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
 };
 
 
-/** @param {string} value */
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setUserId = function(value) {
+/** @param {!proto.swagchat.protobuf.UserRoomsFilter} value */
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setFilter = function(value) {
   jspb.Message.setField(this, 14, value);
 };
 
 
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearUserId = function() {
+proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearFilter = function() {
   jspb.Message.setField(this, 14, undefined);
 };
 
@@ -4249,37 +4319,8 @@ proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearUserId = functio
  * Returns whether this field is set.
  * @return {!boolean}
  */
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasUserId = function() {
-  return jspb.Message.getField(this, 14) != null;
-};
-
-
-/**
- * optional UserRoomsFilter filter = 15;
- * @return {!proto.swagchat.protobuf.UserRoomsFilter}
- */
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.getFilter = function() {
-  return /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getFieldWithDefault(this, 15, 0));
-};
-
-
-/** @param {!proto.swagchat.protobuf.UserRoomsFilter} value */
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.setFilter = function(value) {
-  jspb.Message.setField(this, 15, value);
-};
-
-
-proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.clearFilter = function() {
-  jspb.Message.setField(this, 15, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
 proto.swagchat.protobuf.RetrieveUserRoomsRequest.prototype.hasFilter = function() {
-  return jspb.Message.getField(this, 15) != null;
+  return jspb.Message.getField(this, 14) != null;
 };
 
 
@@ -4306,7 +4347,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.UserRoomsResponse.repeatedFields_ = [1,5];
+proto.swagchat.protobuf.UserRoomsResponse.repeatedFields_ = [3,6];
 
 
 
@@ -4337,13 +4378,14 @@ proto.swagchat.protobuf.UserRoomsResponse.prototype.toObject = function(opt_incl
  */
 proto.swagchat.protobuf.UserRoomsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    roomsList: jspb.Message.toObjectList(msg.getRoomsList(),
-    proto.swagchat.protobuf.MiniRoom.toObject, includeInstance),
-    allcount: jspb.Message.getField(msg, 2),
-    limit: jspb.Message.getField(msg, 3),
-    offset: jspb.Message.getField(msg, 4),
+    limit: jspb.Message.getField(msg, 1),
+    offset: jspb.Message.getField(msg, 2),
     ordersList: jspb.Message.toObjectList(msg.getOrdersList(),
-    commonMessage_pb.OrderInfo.toObject, includeInstance)
+    commonMessage_pb.OrderInfo.toObject, includeInstance),
+    filter: jspb.Message.getField(msg, 4),
+    allcount: jspb.Message.getField(msg, 5),
+    roomsList: jspb.Message.toObjectList(msg.getRoomsList(),
+    proto.swagchat.protobuf.MiniRoom.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -4381,26 +4423,30 @@ proto.swagchat.protobuf.UserRoomsResponse.deserializeBinaryFromReader = function
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new proto.swagchat.protobuf.MiniRoom;
-      reader.readMessage(value,proto.swagchat.protobuf.MiniRoom.deserializeBinaryFromReader);
-      msg.addRooms(value);
-      break;
-    case 2:
-      var value = /** @type {number} */ (reader.readInt64());
-      msg.setAllcount(value);
-      break;
-    case 3:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setLimit(value);
       break;
-    case 4:
+    case 2:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setOffset(value);
       break;
-    case 5:
+    case 3:
       var value = new commonMessage_pb.OrderInfo;
       reader.readMessage(value,commonMessage_pb.OrderInfo.deserializeBinaryFromReader);
       msg.addOrders(value);
+      break;
+    case 4:
+      var value = /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (reader.readEnum());
+      msg.setFilter(value);
+      break;
+    case 5:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setAllcount(value);
+      break;
+    case 6:
+      var value = new proto.swagchat.protobuf.MiniRoom;
+      reader.readMessage(value,proto.swagchat.protobuf.MiniRoom.deserializeBinaryFromReader);
+      msg.addRooms(value);
       break;
     default:
       reader.skipField();
@@ -4431,123 +4477,70 @@ proto.swagchat.protobuf.UserRoomsResponse.prototype.serializeBinary = function()
  */
 proto.swagchat.protobuf.UserRoomsResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getRoomsList();
-  if (f.length > 0) {
-    writer.writeRepeatedMessage(
+  f = /** @type {number} */ (jspb.Message.getField(message, 1));
+  if (f != null) {
+    writer.writeInt32(
       1,
-      f,
-      proto.swagchat.protobuf.MiniRoom.serializeBinaryToWriter
+      f
     );
   }
   f = /** @type {number} */ (jspb.Message.getField(message, 2));
   if (f != null) {
-    writer.writeInt64(
+    writer.writeInt32(
       2,
-      f
-    );
-  }
-  f = /** @type {number} */ (jspb.Message.getField(message, 3));
-  if (f != null) {
-    writer.writeInt32(
-      3,
-      f
-    );
-  }
-  f = /** @type {number} */ (jspb.Message.getField(message, 4));
-  if (f != null) {
-    writer.writeInt32(
-      4,
       f
     );
   }
   f = message.getOrdersList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      5,
+      3,
       f,
       commonMessage_pb.OrderInfo.serializeBinaryToWriter
+    );
+  }
+  f = /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getField(message, 4));
+  if (f != null) {
+    writer.writeEnum(
+      4,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 5));
+  if (f != null) {
+    writer.writeInt64(
+      5,
+      f
+    );
+  }
+  f = message.getRoomsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      6,
+      f,
+      proto.swagchat.protobuf.MiniRoom.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * repeated MiniRoom rooms = 1;
- * @return {!Array.<!proto.swagchat.protobuf.MiniRoom>}
- */
-proto.swagchat.protobuf.UserRoomsResponse.prototype.getRoomsList = function() {
-  return /** @type{!Array.<!proto.swagchat.protobuf.MiniRoom>} */ (
-    jspb.Message.getRepeatedWrapperField(this, proto.swagchat.protobuf.MiniRoom, 1));
-};
-
-
-/** @param {!Array.<!proto.swagchat.protobuf.MiniRoom>} value */
-proto.swagchat.protobuf.UserRoomsResponse.prototype.setRoomsList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
-};
-
-
-/**
- * @param {!proto.swagchat.protobuf.MiniRoom=} opt_value
- * @param {number=} opt_index
- * @return {!proto.swagchat.protobuf.MiniRoom}
- */
-proto.swagchat.protobuf.UserRoomsResponse.prototype.addRooms = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.swagchat.protobuf.MiniRoom, opt_index);
-};
-
-
-proto.swagchat.protobuf.UserRoomsResponse.prototype.clearRoomsList = function() {
-  this.setRoomsList([]);
-};
-
-
-/**
- * optional int64 allCount = 2;
- * @return {number}
- */
-proto.swagchat.protobuf.UserRoomsResponse.prototype.getAllcount = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
-};
-
-
-/** @param {number} value */
-proto.swagchat.protobuf.UserRoomsResponse.prototype.setAllcount = function(value) {
-  jspb.Message.setField(this, 2, value);
-};
-
-
-proto.swagchat.protobuf.UserRoomsResponse.prototype.clearAllcount = function() {
-  jspb.Message.setField(this, 2, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.swagchat.protobuf.UserRoomsResponse.prototype.hasAllcount = function() {
-  return jspb.Message.getField(this, 2) != null;
-};
-
-
-/**
- * optional int32 limit = 3;
+ * optional int32 limit = 1;
  * @return {number}
  */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.getLimit = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /** @param {number} value */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.setLimit = function(value) {
-  jspb.Message.setField(this, 3, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
 proto.swagchat.protobuf.UserRoomsResponse.prototype.clearLimit = function() {
-  jspb.Message.setField(this, 3, undefined);
+  jspb.Message.setField(this, 1, undefined);
 };
 
 
@@ -4556,27 +4549,27 @@ proto.swagchat.protobuf.UserRoomsResponse.prototype.clearLimit = function() {
  * @return {!boolean}
  */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.hasLimit = function() {
-  return jspb.Message.getField(this, 3) != null;
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
 /**
- * optional int32 offset = 4;
+ * optional int32 offset = 2;
  * @return {number}
  */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.getOffset = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
 };
 
 
 /** @param {number} value */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.setOffset = function(value) {
-  jspb.Message.setField(this, 4, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
 proto.swagchat.protobuf.UserRoomsResponse.prototype.clearOffset = function() {
-  jspb.Message.setField(this, 4, undefined);
+  jspb.Message.setField(this, 2, undefined);
 };
 
 
@@ -4585,23 +4578,23 @@ proto.swagchat.protobuf.UserRoomsResponse.prototype.clearOffset = function() {
  * @return {!boolean}
  */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.hasOffset = function() {
-  return jspb.Message.getField(this, 4) != null;
+  return jspb.Message.getField(this, 2) != null;
 };
 
 
 /**
- * repeated OrderInfo orders = 5;
+ * repeated OrderInfo orders = 3;
  * @return {!Array.<!proto.swagchat.protobuf.OrderInfo>}
  */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.getOrdersList = function() {
   return /** @type{!Array.<!proto.swagchat.protobuf.OrderInfo>} */ (
-    jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 5));
+    jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 3));
 };
 
 
 /** @param {!Array.<!proto.swagchat.protobuf.OrderInfo>} value */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.setOrdersList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 5, value);
+  jspb.Message.setRepeatedWrapperField(this, 3, value);
 };
 
 
@@ -4611,12 +4604,101 @@ proto.swagchat.protobuf.UserRoomsResponse.prototype.setOrdersList = function(val
  * @return {!proto.swagchat.protobuf.OrderInfo}
  */
 proto.swagchat.protobuf.UserRoomsResponse.prototype.addOrders = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 5, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 3, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
 };
 
 
 proto.swagchat.protobuf.UserRoomsResponse.prototype.clearOrdersList = function() {
   this.setOrdersList([]);
+};
+
+
+/**
+ * optional UserRoomsFilter filter = 4;
+ * @return {!proto.swagchat.protobuf.UserRoomsFilter}
+ */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.getFilter = function() {
+  return /** @type {!proto.swagchat.protobuf.UserRoomsFilter} */ (jspb.Message.getFieldWithDefault(this, 4, 0));
+};
+
+
+/** @param {!proto.swagchat.protobuf.UserRoomsFilter} value */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.setFilter = function(value) {
+  jspb.Message.setField(this, 4, value);
+};
+
+
+proto.swagchat.protobuf.UserRoomsResponse.prototype.clearFilter = function() {
+  jspb.Message.setField(this, 4, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.hasFilter = function() {
+  return jspb.Message.getField(this, 4) != null;
+};
+
+
+/**
+ * optional int64 allCount = 5;
+ * @return {number}
+ */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.getAllcount = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/** @param {number} value */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.setAllcount = function(value) {
+  jspb.Message.setField(this, 5, value);
+};
+
+
+proto.swagchat.protobuf.UserRoomsResponse.prototype.clearAllcount = function() {
+  jspb.Message.setField(this, 5, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.hasAllcount = function() {
+  return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * repeated MiniRoom rooms = 6;
+ * @return {!Array.<!proto.swagchat.protobuf.MiniRoom>}
+ */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.getRoomsList = function() {
+  return /** @type{!Array.<!proto.swagchat.protobuf.MiniRoom>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.swagchat.protobuf.MiniRoom, 6));
+};
+
+
+/** @param {!Array.<!proto.swagchat.protobuf.MiniRoom>} value */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.setRoomsList = function(value) {
+  jspb.Message.setRepeatedWrapperField(this, 6, value);
+};
+
+
+/**
+ * @param {!proto.swagchat.protobuf.MiniRoom=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.swagchat.protobuf.MiniRoom}
+ */
+proto.swagchat.protobuf.UserRoomsResponse.prototype.addRooms = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 6, opt_value, proto.swagchat.protobuf.MiniRoom, opt_index);
+};
+
+
+proto.swagchat.protobuf.UserRoomsResponse.prototype.clearRoomsList = function() {
+  this.setRoomsList([]);
 };
 
 
@@ -5436,8 +5518,9 @@ proto.swagchat.protobuf.RoleUsersResponse.prototype.clearUserIdsList = function(
  * @enum {number}
  */
 proto.swagchat.protobuf.UserRoomsFilter = {
-  ONLINE: 0,
-  UNREAD: 1
+  NONE: 0,
+  ONLINE: 1,
+  UNREAD: 2
 };
 
 /**

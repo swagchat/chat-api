@@ -16,6 +16,7 @@ import (
 	"github.com/swagchat/chat-api/pbroker"
 	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.Device) chan bool {
@@ -296,12 +297,6 @@ func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 }
 
 func publishUserJoin(ctx context.Context, roomID string) {
-	room, err := datastore.Provider(ctx).SelectRoom(roomID, datastore.SelectRoomOptionWithUsers(true))
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
 	go func() {
 		userIDs, err := datastore.Provider(ctx).SelectUserIDsOfRoomUser(
 			datastore.SelectUserIDsOfRoomUserOptionWithRoomID(roomID),
@@ -311,17 +306,25 @@ func publishUserJoin(ctx context.Context, roomID string) {
 			return
 		}
 
-		buffer := new(bytes.Buffer)
-		json.NewEncoder(buffer).Encode(room.Users)
-		rtmEvent := &pbroker.RTMEvent{
-			Type:    pbroker.UserJoin,
-			Payload: buffer.Bytes(),
-			UserIDs: userIDs,
-		}
-		err = pbroker.Provider(ctx).PublishMessage(rtmEvent)
-		if err != nil {
-			logger.Error(err.Error())
-			return
+		for _, userID := range userIDs {
+			miniRoom, err := datastore.Provider(ctx).SelectMiniRoom(roomID, userID)
+			if err != nil {
+				logger.Error(err.Error())
+				continue
+			}
+
+			buffer := new(bytes.Buffer)
+			json.NewEncoder(buffer).Encode(miniRoom)
+			event := &scpb.EventData{
+				Type:    scpb.EventType_UserJoinEvent,
+				Data:    buffer.Bytes(),
+				UserIDs: []string{userID},
+			}
+			err = pbroker.Provider(ctx).PublishMessage(event)
+			if err != nil {
+				logger.Error(err.Error())
+				return
+			}
 		}
 	}()
 }

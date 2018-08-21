@@ -10,6 +10,7 @@
 		commonMessage.proto
 		deviceMessage.proto
 		deviceService.proto
+		eventMessage.proto
 		messageMessage.proto
 		messageService.proto
 		roomMessage.proto
@@ -43,6 +44,8 @@
 		RetrieveDevicesRequest
 		DevicesResponse
 		DeleteDeviceRequest
+		EventData
+		UserJoinEventPayload
 		Messages
 		Message
 		MessagePayload

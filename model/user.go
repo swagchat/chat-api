@@ -147,8 +147,8 @@ type MiniRoom struct {
 func (rfu *MiniRoom) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	lmu := ""
-	if rfu.LastMessageUpdated != 0 {
-		lmu = time.Unix(rfu.LastMessageUpdated, 0).In(l).Format(time.RFC3339)
+	if rfu.LastMessageUpdatedTimestamp != 0 {
+		lmu = time.Unix(rfu.LastMessageUpdatedTimestamp, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
 		RoomID             string        `json:"roomId"`
@@ -455,30 +455,31 @@ type RetrieveUserRoomsRequest struct {
 
 type UserRoomsResponse struct {
 	scpb.UserRoomsResponse
+	Rooms []*MiniRoom `json:"rooms"`
 }
 
 func (urr *UserRoomsResponse) ConvertToPbUserRooms() *scpb.UserRoomsResponse {
-	rfus := make([]*scpb.MiniRoom, len(urr.Rooms))
+	miniRooms := make([]*scpb.MiniRoom, len(urr.Rooms))
 	for i := 0; i < len(urr.Rooms); i++ {
 		r := urr.Rooms[i]
-		// ufrs := make([]*scpb.MiniUser, len(r.Users))
-		// for j := 0; j < len(r.Users); j++ {
-		// 	u := r.Users[j]
-		// 	ufrs[i] = &scpb.MiniUser{
-		// 		RoomID:         u.RoomID,
-		// 		UserID:         u.UserID,
-		// 		Name:           u.Name,
-		// 		PictureURL:     u.PictureURL,
-		// 		InformationURL: u.InformationURL,
-		// 		MetaData:       u.MetaData,
-		// 		CanBlock:       u.CanBlock,
-		// 		LastAccessed:   u.LastAccessed,
-		// 		RuDisplay:      u.RuDisplay,
-		// 		Created:        u.Created,
-		// 		Modified:       u.Modified,
-		// 	}
-		// }
-		rfus[i] = &scpb.MiniRoom{
+		miniUsers := make([]*scpb.MiniUser, len(r.Users))
+		for j := 0; j < len(r.Users); j++ {
+			u := r.Users[j]
+			miniUsers[i] = &scpb.MiniUser{
+				RoomID:         u.RoomID,
+				UserID:         u.UserID,
+				Name:           u.Name,
+				PictureURL:     u.PictureURL,
+				InformationURL: u.InformationURL,
+				MetaData:       u.MetaData,
+				CanBlock:       u.CanBlock,
+				LastAccessed:   u.LastAccessed,
+				RuDisplay:      u.RuDisplay,
+				Created:        u.Created,
+				Modified:       u.Modified,
+			}
+		}
+		miniRooms[i] = &scpb.MiniRoom{
 			RoomID:             r.RoomID,
 			UserID:             r.UserID,
 			Name:               r.Name,
@@ -491,12 +492,12 @@ func (urr *UserRoomsResponse) ConvertToPbUserRooms() *scpb.UserRoomsResponse {
 			CanLeft:            r.CanLeft,
 			Created:            r.Created,
 			Modified:           r.Modified,
-			Users:              r.Users,
+			Users:              miniUsers,
 			RuUnreadCount:      r.RuUnreadCount,
 		}
 	}
 	userRooms := &scpb.UserRoomsResponse{}
-	userRooms.Rooms = rfus
+	userRooms.Rooms = miniRooms
 	userRooms.AllCount = urr.AllCount
 	userRooms.Limit = urr.Limit
 	userRooms.Offset = urr.Offset

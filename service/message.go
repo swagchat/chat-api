@@ -117,12 +117,12 @@ func publishMessage(ctx context.Context, message *model.Message) {
 
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(message)
-	rtmEvent := &pbroker.RTMEvent{
-		Type:    pbroker.MessageEvent,
-		Payload: buffer.Bytes(),
+	event := &scpb.EventData{
+		Type:    scpb.EventType_MessageEvent,
+		Data:    buffer.Bytes(),
 		UserIDs: userIDs,
 	}
-	err = pbroker.Provider(ctx).PublishMessage(rtmEvent)
+	err = pbroker.Provider(ctx).PublishMessage(event)
 	if err != nil {
 		logger.Error(err.Error())
 		return

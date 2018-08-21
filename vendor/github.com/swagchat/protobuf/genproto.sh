@@ -17,6 +17,7 @@ protoc \
   commonMessage.proto \
   deviceMessage.proto \
   deviceService.proto \
+  eventMessage.proto \
   messageMessage.proto \
   messageService.proto \
   roomMessage.proto \

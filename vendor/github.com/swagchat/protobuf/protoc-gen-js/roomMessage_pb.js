@@ -1128,6 +1128,7 @@ proto.swagchat.protobuf.MiniUser.prototype.toObject = function(opt_includeInstan
  */
 proto.swagchat.protobuf.MiniUser.toObject = function(includeInstance, msg) {
   var f, obj = {
+    roomId: jspb.Message.getField(msg, 1),
     userId: jspb.Message.getField(msg, 2),
     name: jspb.Message.getField(msg, 3),
     pictureUrl: jspb.Message.getField(msg, 4),
@@ -1177,6 +1178,10 @@ proto.swagchat.protobuf.MiniUser.deserializeBinaryFromReader = function(msg, rea
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRoomId(value);
+      break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setUserId(value);
@@ -1258,6 +1263,13 @@ proto.swagchat.protobuf.MiniUser.prototype.serializeBinary = function() {
  */
 proto.swagchat.protobuf.MiniUser.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = /** @type {string} */ (jspb.Message.getField(message, 1));
+  if (f != null) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
   f = /** @type {string} */ (jspb.Message.getField(message, 2));
   if (f != null) {
     writer.writeString(
@@ -1349,6 +1361,35 @@ proto.swagchat.protobuf.MiniUser.serializeBinaryToWriter = function(message, wri
       f
     );
   }
+};
+
+
+/**
+ * optional string room_id = 1;
+ * @return {string}
+ */
+proto.swagchat.protobuf.MiniUser.prototype.getRoomId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/** @param {string} value */
+proto.swagchat.protobuf.MiniUser.prototype.setRoomId = function(value) {
+  jspb.Message.setField(this, 1, value);
+};
+
+
+proto.swagchat.protobuf.MiniUser.prototype.clearRoomId = function() {
+  jspb.Message.setField(this, 1, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.MiniUser.prototype.hasRoomId = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 

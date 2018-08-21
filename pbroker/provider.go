@@ -4,25 +4,11 @@ import (
 	"context"
 
 	"github.com/swagchat/chat-api/config"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
-
-const (
-	MessageEvent = "message"
-	UserJoin     = "userJoin"
-)
-
-type RTMEvent struct {
-	Type    string
-	Payload []byte
-	UserIDs []string
-}
-
-type MessagingInfo struct {
-	Message string
-}
 
 type provider interface {
-	PublishMessage(*RTMEvent) error
+	PublishMessage(*scpb.EventData) error
 }
 
 func Provider(ctx context.Context) provider {

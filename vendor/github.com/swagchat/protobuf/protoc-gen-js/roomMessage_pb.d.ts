@@ -157,6 +157,11 @@ export namespace Room {
 }
 
 export class MiniUser extends jspb.Message {
+  hasRoomId(): boolean;
+  clearRoomId(): void;
+  getRoomId(): string | undefined;
+  setRoomId(value: string): void;
+
   hasUserId(): boolean;
   clearUserId(): void;
   getUserId(): string | undefined;
@@ -236,6 +241,7 @@ export class MiniUser extends jspb.Message {
 
 export namespace MiniUser {
   export type AsObject = {
+    roomId?: string,
     userId?: string,
     name?: string,
     pictureUrl?: string,

@@ -166,11 +166,22 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 	req.Orders = orders
 
 	if filterArray, ok := params["filter"]; ok {
-		filter := filterArray[0]
-		switch scpb.UserRoomsFilter_value[filter] {
-		case 0:
+		filter, err := strconv.Atoi(filterArray[0])
+		if err != nil {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "filter",
+					Reason: "filter is incorrect.",
+				},
+			}
+			errRes := model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+			respondError(w, r, errRes)
+			return
+		}
+		switch int32(filter) {
+		case int32(scpb.UserRoomsFilter_Online):
 			req.Filter = scpb.UserRoomsFilter_Online
-		case 1:
+		case int32(scpb.UserRoomsFilter_Unread):
 			req.Filter = scpb.UserRoomsFilter_Unread
 		}
 	}

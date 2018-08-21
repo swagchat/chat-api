@@ -15,6 +15,7 @@ import (
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 var NSQConsumer *nsq.Consumer
@@ -29,7 +30,7 @@ func b2s(b []byte) string {
 	return *(*string)(unsafe.Pointer(&sh))
 }
 
-func (np nsqProvider) PublishMessage(rtmEvent *RTMEvent) error {
+func (np nsqProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	span := tracer.Provider(np.ctx).StartSpan("PublishMessage", "pbroker")
 	defer tracer.Provider(np.ctx).Finish(span)
 

@@ -1,6 +1,9 @@
 package datastore
 
-import "github.com/swagchat/chat-api/model"
+import (
+	"github.com/swagchat/chat-api/model"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
+)
 
 type insertRoomUsersOptions struct {
 	beforeCleanRoomID string
@@ -66,6 +69,25 @@ func SelectUserIDsOfRoomUserOptionWithRoles(roles []int32) SelectUserIDsOfRoomUs
 	}
 }
 
+type selectMiniRoomsOptions struct {
+	orders []*scpb.OrderInfo
+	filter scpb.UserRoomsFilter
+}
+
+type SelectMiniRoomsOption func(*selectMiniRoomsOptions)
+
+func SelectMiniRoomsOptionWithOrders(orders []*scpb.OrderInfo) SelectMiniRoomsOption {
+	return func(ops *selectMiniRoomsOptions) {
+		ops.orders = orders
+	}
+}
+
+func SelectMiniRoomsOptionFilter(filter scpb.UserRoomsFilter) SelectMiniRoomsOption {
+	return func(ops *selectMiniRoomsOptions) {
+		ops.filter = filter
+	}
+}
+
 type deleteRoomUsersOptions struct {
 	roomIDs []string
 	userIDs []string
@@ -93,6 +115,9 @@ type roomUserStore interface {
 	SelectRoomUser(roomID, userID string) (*model.RoomUser, error)
 	SelectRoomUserOfOneOnOne(myUserID, opponentUserID string) (*model.RoomUser, error)
 	SelectUserIDsOfRoomUser(opts ...SelectUserIDsOfRoomUserOption) ([]string, error)
+	SelectMiniRoom(roomID, userID string) (*model.MiniRoom, error)
+	SelectMiniRooms(limit, offset int32, userID string, opts ...SelectMiniRoomsOption) ([]*model.MiniRoom, error)
+	SelectCountMiniRooms(userID string, opts ...SelectMiniRoomsOption) (int64, error)
 	UpdateRoomUser(roomUser *model.RoomUser) error
 	DeleteRoomUsers(opts ...DeleteRoomUsersOption) error
 }

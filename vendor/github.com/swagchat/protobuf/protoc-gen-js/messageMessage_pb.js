@@ -414,7 +414,6 @@ proto.swagchat.protobuf.Message.toObject = function(includeInstance, msg) {
     modifiedTimestamp: jspb.Message.getField(msg, 32),
     modified: jspb.Message.getField(msg, 33),
     deletedTimestamp: jspb.Message.getField(msg, 34),
-    eventName: jspb.Message.getField(msg, 41),
     userIdsList: jspb.Message.getRepeatedField(msg, 42)
   };
 
@@ -499,10 +498,6 @@ proto.swagchat.protobuf.Message.deserializeBinaryFromReader = function(msg, read
     case 34:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setDeletedTimestamp(value);
-      break;
-    case 41:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEventName(value);
       break;
     case 42:
       var value = /** @type {string} */ (reader.readString());
@@ -618,13 +613,6 @@ proto.swagchat.protobuf.Message.serializeBinaryToWriter = function(message, writ
   if (f != null) {
     writer.writeInt64(
       34,
-      f
-    );
-  }
-  f = /** @type {string} */ (jspb.Message.getField(message, 41));
-  if (f != null) {
-    writer.writeString(
-      41,
       f
     );
   }
@@ -1007,35 +995,6 @@ proto.swagchat.protobuf.Message.prototype.clearDeletedTimestamp = function() {
  */
 proto.swagchat.protobuf.Message.prototype.hasDeletedTimestamp = function() {
   return jspb.Message.getField(this, 34) != null;
-};
-
-
-/**
- * optional string event_name = 41;
- * @return {string}
- */
-proto.swagchat.protobuf.Message.prototype.getEventName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 41, ""));
-};
-
-
-/** @param {string} value */
-proto.swagchat.protobuf.Message.prototype.setEventName = function(value) {
-  jspb.Message.setField(this, 41, value);
-};
-
-
-proto.swagchat.protobuf.Message.prototype.clearEventName = function() {
-  jspb.Message.setField(this, 41, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.swagchat.protobuf.Message.prototype.hasEventName = function() {
-  return jspb.Message.getField(this, 41) != null;
 };
 
 
@@ -1522,8 +1481,7 @@ proto.swagchat.protobuf.SendMessageRequest.toObject = function(includeInstance, 
     userId: jspb.Message.getField(msg, 14),
     type: jspb.Message.getField(msg, 15),
     payload: msg.getPayload_asB64(),
-    role: jspb.Message.getField(msg, 17),
-    eventName: jspb.Message.getField(msg, 18)
+    role: jspb.Message.getField(msg, 17)
   };
 
   if (includeInstance) {
@@ -1583,10 +1541,6 @@ proto.swagchat.protobuf.SendMessageRequest.deserializeBinaryFromReader = functio
     case 17:
       var value = /** @type {number} */ (reader.readInt32());
       msg.setRole(value);
-      break;
-    case 18:
-      var value = /** @type {string} */ (reader.readString());
-      msg.setEventName(value);
       break;
     default:
       reader.skipField();
@@ -1656,13 +1610,6 @@ proto.swagchat.protobuf.SendMessageRequest.serializeBinaryToWriter = function(me
   if (f != null) {
     writer.writeInt32(
       17,
-      f
-    );
-  }
-  f = /** @type {string} */ (jspb.Message.getField(message, 18));
-  if (f != null) {
-    writer.writeString(
-      18,
       f
     );
   }
@@ -1864,35 +1811,6 @@ proto.swagchat.protobuf.SendMessageRequest.prototype.clearRole = function() {
  */
 proto.swagchat.protobuf.SendMessageRequest.prototype.hasRole = function() {
   return jspb.Message.getField(this, 17) != null;
-};
-
-
-/**
- * optional string event_name = 18;
- * @return {string}
- */
-proto.swagchat.protobuf.SendMessageRequest.prototype.getEventName = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 18, ""));
-};
-
-
-/** @param {string} value */
-proto.swagchat.protobuf.SendMessageRequest.prototype.setEventName = function(value) {
-  jspb.Message.setField(this, 18, value);
-};
-
-
-proto.swagchat.protobuf.SendMessageRequest.prototype.clearEventName = function() {
-  jspb.Message.setField(this, 18, undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {!boolean}
- */
-proto.swagchat.protobuf.SendMessageRequest.prototype.hasEventName = function() {
-  return jspb.Message.getField(this, 18) != null;
 };
 
 

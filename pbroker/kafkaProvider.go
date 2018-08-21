@@ -11,6 +11,7 @@ import (
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
+	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 var KafkaConsumer *kafka.Consumer
@@ -19,7 +20,7 @@ type kafkaProvider struct {
 	ctx context.Context
 }
 
-func (kp kafkaProvider) PublishMessage(rtmEvent *RTMEvent) error {
+func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	span := tracer.Provider(kp.ctx).StartSpan("PublishMessage", "pbroker")
 	defer tracer.Provider(kp.ctx).Finish(span)
 

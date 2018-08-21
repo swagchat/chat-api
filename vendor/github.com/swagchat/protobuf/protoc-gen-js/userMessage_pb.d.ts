@@ -200,10 +200,15 @@ export class MiniRoom extends jspb.Message {
   getLastMessage(): string | undefined;
   setLastMessage(value: string): void;
 
+  hasLastMessageUpdatedTimestamp(): boolean;
+  clearLastMessageUpdatedTimestamp(): void;
+  getLastMessageUpdatedTimestamp(): number | undefined;
+  setLastMessageUpdatedTimestamp(value: number): void;
+
   hasLastMessageUpdated(): boolean;
   clearLastMessageUpdated(): void;
-  getLastMessageUpdated(): number | undefined;
-  setLastMessageUpdated(value: number): void;
+  getLastMessageUpdated(): string | undefined;
+  setLastMessageUpdated(value: string): void;
 
   hasCanLeft(): boolean;
   clearCanLeft(): void;
@@ -260,7 +265,8 @@ export namespace MiniRoom {
     metaData: Uint8Array | string,
     type?: roomMessage_pb.RoomType,
     lastMessage?: string,
-    lastMessageUpdated?: number,
+    lastMessageUpdatedTimestamp?: number,
+    lastMessageUpdated?: string,
     canLeft?: boolean,
     createdTimestamp?: number,
     created?: string,
@@ -558,6 +564,11 @@ export namespace DeleteUserRequest {
 }
 
 export class RetrieveUserRoomsRequest extends jspb.Message {
+  hasUserId(): boolean;
+  clearUserId(): void;
+  getUserId(): string | undefined;
+  setUserId(value: string): void;
+
   hasLimit(): boolean;
   clearLimit(): void;
   getLimit(): number | undefined;
@@ -572,11 +583,6 @@ export class RetrieveUserRoomsRequest extends jspb.Message {
   getOrdersList(): Array<commonMessage_pb.OrderInfo>;
   setOrdersList(value: Array<commonMessage_pb.OrderInfo>): void;
   addOrders(value?: commonMessage_pb.OrderInfo, index?: number): commonMessage_pb.OrderInfo;
-
-  hasUserId(): boolean;
-  clearUserId(): void;
-  getUserId(): string | undefined;
-  setUserId(value: string): void;
 
   hasFilter(): boolean;
   clearFilter(): void;
@@ -595,25 +601,15 @@ export class RetrieveUserRoomsRequest extends jspb.Message {
 
 export namespace RetrieveUserRoomsRequest {
   export type AsObject = {
+    userId?: string,
     limit?: number,
     offset?: number,
     ordersList: Array<commonMessage_pb.OrderInfo.AsObject>,
-    userId?: string,
     filter?: UserRoomsFilter,
   }
 }
 
 export class UserRoomsResponse extends jspb.Message {
-  clearRoomsList(): void;
-  getRoomsList(): Array<MiniRoom>;
-  setRoomsList(value: Array<MiniRoom>): void;
-  addRooms(value?: MiniRoom, index?: number): MiniRoom;
-
-  hasAllcount(): boolean;
-  clearAllcount(): void;
-  getAllcount(): number | undefined;
-  setAllcount(value: number): void;
-
   hasLimit(): boolean;
   clearLimit(): void;
   getLimit(): number | undefined;
@@ -629,6 +625,21 @@ export class UserRoomsResponse extends jspb.Message {
   setOrdersList(value: Array<commonMessage_pb.OrderInfo>): void;
   addOrders(value?: commonMessage_pb.OrderInfo, index?: number): commonMessage_pb.OrderInfo;
 
+  hasFilter(): boolean;
+  clearFilter(): void;
+  getFilter(): UserRoomsFilter | undefined;
+  setFilter(value: UserRoomsFilter): void;
+
+  hasAllcount(): boolean;
+  clearAllcount(): void;
+  getAllcount(): number | undefined;
+  setAllcount(value: number): void;
+
+  clearRoomsList(): void;
+  getRoomsList(): Array<MiniRoom>;
+  setRoomsList(value: Array<MiniRoom>): void;
+  addRooms(value?: MiniRoom, index?: number): MiniRoom;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): UserRoomsResponse.AsObject;
   static toObject(includeInstance: boolean, msg: UserRoomsResponse): UserRoomsResponse.AsObject;
@@ -641,11 +652,12 @@ export class UserRoomsResponse extends jspb.Message {
 
 export namespace UserRoomsResponse {
   export type AsObject = {
-    roomsList: Array<MiniRoom.AsObject>,
-    allcount?: number,
     limit?: number,
     offset?: number,
     ordersList: Array<commonMessage_pb.OrderInfo.AsObject>,
+    filter?: UserRoomsFilter,
+    allcount?: number,
+    roomsList: Array<MiniRoom.AsObject>,
   }
 }
 
@@ -762,8 +774,9 @@ export namespace RoleUsersResponse {
 }
 
 export enum UserRoomsFilter {
-  ONLINE = 0,
-  UNREAD = 1,
+  NONE = 0,
+  ONLINE = 1,
+  UNREAD = 2,
 }
 
 export enum PublicProfileScope {

@@ -57,6 +57,21 @@ func (p *gcpSQLProvider) SelectUserIDsOfRoomUser(opts ...SelectUserIDsOfRoomUser
 	return rdbSelectUserIDsOfRoomUser(p.ctx, replica, opts...)
 }
 
+func (p *gcpSQLProvider) SelectMiniRoom(roomID, userID string) (*model.MiniRoom, error) {
+	replica := RdbStore(p.database).replica()
+	return rdbSelectMiniRoom(p.ctx, replica, roomID, userID)
+}
+
+func (p *gcpSQLProvider) SelectMiniRooms(limit, offset int32, userID string, opts ...SelectMiniRoomsOption) ([]*model.MiniRoom, error) {
+	replica := RdbStore(p.database).replica()
+	return rdbSelectMiniRooms(p.ctx, replica, limit, offset, userID, opts...)
+}
+
+func (p *gcpSQLProvider) SelectCountMiniRooms(userID string, opts ...SelectMiniRoomsOption) (int64, error) {
+	replica := RdbStore(p.database).replica()
+	return rdbSelectCountMiniRooms(p.ctx, replica, userID, opts...)
+}
+
 func (p *gcpSQLProvider) UpdateRoomUser(roomUser *model.RoomUser) error {
 	master := RdbStore(p.database).master()
 	tx, err := master.Begin()

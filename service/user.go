@@ -205,7 +205,34 @@ func RetrieveUserRooms(ctx context.Context, req *model.RetrieveUserRoomsRequest)
 	span := tracer.Provider(ctx).StartSpan("RetrieveUserRooms", "service")
 	defer tracer.Provider(ctx).Finish(span)
 
-	return &model.UserRoomsResponse{}, nil
+	miniRooms, err := datastore.Provider(ctx).SelectMiniRooms(
+		req.Limit,
+		req.Offset,
+		req.UserID,
+		datastore.SelectMiniRoomsOptionWithOrders(req.Orders),
+		datastore.SelectMiniRoomsOptionFilter(req.Filter),
+	)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to retrieve user rooms.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	allCount, err := datastore.Provider(ctx).SelectCountMiniRooms(
+		req.UserID,
+		datastore.SelectMiniRoomsOptionFilter(req.Filter),
+	)
+	if err != nil {
+		return nil, model.NewErrorResponse("Failed to retrieve user rooms.", http.StatusInternalServerError, model.WithError(err))
+	}
+
+	res := &model.UserRoomsResponse{}
+	res.Rooms = miniRooms
+	res.AllCount = allCount
+	res.Limit = req.Limit
+	res.Offset = req.Offset
+	res.Filter = req.Filter
+	res.Orders = req.Orders
+
+	return res, nil
 }
 
 // RetrieveContacts retrieves contacts

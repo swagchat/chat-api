@@ -15,6 +15,10 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
+var (
+	beforeLastAccessedTimestamp = int64(60 * 15) // 15 minutes
+)
+
 func rdbCreateRoomUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	span := tracer.Provider(ctx).StartSpan("rdbCreateRoomUserStore", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
@@ -104,8 +108,8 @@ func rdbSelectRoomUsers(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRo
 	}
 
 	var roomUsers []*model.RoomUser
-
 	query := fmt.Sprintf("SELECT ru.room_id, ru.user_id, ru.unread_count, ru.display FROM %s as ru", tableNameRoomUser)
+
 	if opt.roles != nil {
 		rolesQuery, params := makePrepareExpressionParamsForInOperand(opt.roles)
 		query = fmt.Sprintf("%s LEFT JOIN %s AS ur ON ru.user_id = ur.user_id WHERE ru.room_id=:roomId AND ur.role IN (%s)", query, tableNameUserRole, rolesQuery)
@@ -297,6 +301,223 @@ func rdbSelectUserIDsOfRoomUser(ctx context.Context, dbMap *gorp.DbMap, opts ...
 		return nil, err
 	}
 	return userIDs, nil
+}
+
+func rdbSelectMiniRoom(ctx context.Context, dbMap *gorp.DbMap, roomID, userID string) (*model.MiniRoom, error) {
+	span := tracer.Provider(ctx).StartSpan("rdbSelectMiniRoom", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
+
+	var rooms []*model.MiniRoom
+	query := fmt.Sprintf(`SELECT
+r.room_id,
+r.user_id,
+r.name,
+r.picture_url,
+r.information_url,
+r.meta_data,
+r.type,
+r.last_message,
+r.last_message_updated,
+r.can_left,
+r.created,
+r.modified,
+ru.unread_count AS ru_unread_count
+FROM %s AS ru
+LEFT JOIN %s AS r ON ru.room_id = r.room_id
+LEFT JOIN %s AS u ON ru.user_id = u.user_id
+WHERE ru.room_id=:roomId AND r.deleted=0 AND u.deleted=0 AND ru.user_id=:userId`, tableNameRoomUser, tableNameRoom, tableNameUser)
+	params := map[string]interface{}{
+		"roomId": roomID,
+		"userId": userID,
+	}
+
+	_, err := dbMap.Select(&rooms, query, params)
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while selecting mini room")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	var room *model.MiniRoom
+	if len(rooms) != 1 {
+		return nil, nil
+	}
+
+	room = rooms[0]
+
+	var miniUsers []*model.MiniUser
+	query = fmt.Sprintf(`SELECT
+ru.room_id,
+u.user_id,
+u.name,
+u.picture_url,
+u.information_url,
+u.meta_data,
+u.can_block,
+u.last_accessed,
+u.created,
+u.modified,
+ru.display as ru_display
+FROM %s AS ru
+LEFT JOIN %s AS u ON ru.user_id=u.user_id
+WHERE ru.room_id=:roomId
+AND ru.user_id!=:userId`, tableNameRoomUser, tableNameUser)
+	_, err = dbMap.Select(&miniUsers, query, params)
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while selecting mini users")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	room.Users = miniUsers
+
+	return room, nil
+}
+
+func rdbSelectMiniRooms(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32, userID string, opts ...SelectMiniRoomsOption) ([]*model.MiniRoom, error) {
+	span := tracer.Provider(ctx).StartSpan("rdbSelectMiniRooms", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
+
+	opt := selectMiniRoomsOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	var rooms []*model.MiniRoom
+	query := fmt.Sprintf(`SELECT
+r.room_id,
+r.user_id,
+r.name,
+r.picture_url,
+r.information_url,
+r.meta_data,
+r.type,
+r.last_message,
+r.last_message_updated,
+r.can_left,
+r.created,
+r.modified,
+ru.unread_count AS ru_unread_count
+FROM %s AS ru
+LEFT JOIN %s AS r ON ru.room_id = r.room_id
+LEFT JOIN %s AS u ON ru.user_id = u.user_id
+WHERE ru.room_id IN (	
+	SELECT room_id FROM %s WHERE user_id=:userId
+) AND r.deleted=0 AND u.deleted=0 AND ru.user_id=:userId`, tableNameRoomUser, tableNameRoom, tableNameUser, tableNameRoomUser)
+	params := map[string]interface{}{"userId": userID}
+
+	switch opt.filter {
+	case scpb.UserRoomsFilter_Online:
+		lastAccessedTimestamp := time.Now().Unix() - beforeLastAccessedTimestamp
+		query = fmt.Sprintf("%s AND u.last_accessed>%d", query, lastAccessedTimestamp)
+	case scpb.UserRoomsFilter_Unread:
+		query = fmt.Sprintf("%s AND ru.unread_count!=0", query)
+	}
+
+	query = fmt.Sprintf("%s ORDER BY", query)
+	if opt.orders == nil {
+		query = fmt.Sprintf("%s r.last_message_updated DESC", query)
+	} else {
+		i := 1
+		for _, orderInfo := range opt.orders {
+			query = fmt.Sprintf("%s r.%s %s", query, orderInfo.Field, orderInfo.Order.String())
+			if i < len(opt.orders) {
+				query = fmt.Sprintf("%s,", query)
+			}
+			i++
+		}
+	}
+	query = fmt.Sprintf("%s, r.id DESC", query)
+
+	query = fmt.Sprintf("%s LIMIT :limit OFFSET :offset", query)
+	params["limit"] = limit
+	params["offset"] = offset
+
+	_, err := dbMap.Select(&rooms, query, params)
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while selecting mini rooms")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	roomIDs := make([]string, len(rooms))
+	for i := 0; i < len(rooms); i++ {
+		roomIDs[i] = rooms[i].RoomID
+	}
+
+	roomIDsQuery, params := makePrepareExpressionParamsForInOperand(roomIDs)
+
+	var miniUsers []*model.MiniUser
+	query = fmt.Sprintf(`SELECT
+ru.room_id,
+u.user_id,
+u.name,
+u.picture_url,
+u.information_url,
+u.meta_data,
+u.can_block,
+u.last_accessed,
+u.created,
+u.modified,
+ru.display as ru_display
+FROM %s AS ru
+LEFT JOIN %s AS u ON ru.user_id=u.user_id
+WHERE ru.room_id IN (%s)
+AND ru.user_id!=:userId
+ORDER BY ru.room_id`, tableNameRoomUser, tableNameUser, roomIDsQuery)
+	params["userId"] = userID
+	_, err = dbMap.Select(&miniUsers, query, params)
+	if err != nil {
+		err = errors.Wrap(err, "An error occurred while selecting mini users")
+		logger.Error(err.Error())
+		return nil, err
+	}
+
+	for _, room := range rooms {
+		room.Users = make([]*model.MiniUser, 0)
+		for _, miniUser := range miniUsers {
+			if room.RoomID == miniUser.RoomID {
+				room.Users = append(room.Users, miniUser)
+			}
+		}
+	}
+
+	return rooms, nil
+}
+
+func rdbSelectCountMiniRooms(ctx context.Context, dbMap *gorp.DbMap, userID string, opts ...SelectMiniRoomsOption) (int64, error) {
+	span := tracer.Provider(ctx).StartSpan("rdbSelectCountRoomUsers", "datastore")
+	defer tracer.Provider(ctx).Finish(span)
+
+	opt := selectMiniRoomsOptions{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
+	query := fmt.Sprintf(`SELECT
+count(ru.room_id) FROM %s as ru
+LEFT JOIN %s AS r ON ru.room_id = r.room_id
+LEFT JOIN %s AS u ON ru.user_id = u.user_id
+WHERE ru.room_id IN (	
+	SELECT room_id FROM %s WHERE user_id=:userId
+) AND r.deleted=0 AND u.deleted=0 AND ru.user_id=:userId`, tableNameRoomUser, tableNameRoom, tableNameUser, tableNameRoomUser)
+	params := map[string]interface{}{"userId": userID}
+
+	switch opt.filter {
+	case scpb.UserRoomsFilter_Online:
+		lastAccessedTimestamp := time.Now().Unix() - beforeLastAccessedTimestamp
+		query = fmt.Sprintf("%s AND u.last_accessed>%d", query, lastAccessedTimestamp)
+	case scpb.UserRoomsFilter_Unread:
+		query = fmt.Sprintf("%s AND ru.unread_count!=0", query)
+	}
+	count, err := dbMap.SelectInt(query, params)
+	if err != nil {
+		err := errors.Wrap(err, "An error occurred while selecting mini rooms count")
+		logger.Error(err.Error())
+		tracer.Provider(ctx).SetError(span, err)
+		return 0, err
+	}
+	return count, nil
 }
 
 func rdbUpdateRoomUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, ru *model.RoomUser) error {
