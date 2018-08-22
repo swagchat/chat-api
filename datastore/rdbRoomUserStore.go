@@ -465,8 +465,7 @@ u.modified,
 ru.display as ru_display
 FROM %s AS ru
 LEFT JOIN %s AS u ON ru.user_id=u.user_id
-WHERE ru.room_id IN (%s)
-AND ru.user_id!=:userId`, tableNameRoomUser, tableNameUser, roomIDsQuery)
+WHERE ru.room_id IN (%s)`, tableNameRoomUser, tableNameUser, roomIDsQuery)
 
 	params["userId"] = userID
 	_, err = dbMap.Select(&miniUsers, query, params)
