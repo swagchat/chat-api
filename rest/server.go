@@ -375,9 +375,11 @@ func setLastModified(w http.ResponseWriter, timestamp int64) {
 	w.Header().Set("Last-Modified", lm)
 }
 
-func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model.ErrorResponse) {
+func setPagingParams(params url.Values) (int32, int32, int64, int64, []*scpb.OrderInfo, *model.ErrorResponse) {
 	limit := int32(10)
 	offset := int32(0)
+	limitTimestamp := int64(0)
+	offsetTimestamp := int64(0)
 	var orders []*scpb.OrderInfo
 
 	if limitArray, ok := params["limit"]; ok {
@@ -389,7 +391,7 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 					Reason: "limit is incorrect.",
 				},
 			}
-			return limit, offset, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+			return limit, offset, limitTimestamp, offsetTimestamp, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 		}
 		limit = int32(limitInt)
 	}
@@ -402,9 +404,35 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 					Reason: "offset is incorrect.",
 				},
 			}
-			return limit, offset, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+			return limit, offset, limitTimestamp, offsetTimestamp, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
 		}
 		offset = int32(offsetInt)
+	}
+	if limitTimestampArray, ok := params["limitTimestamp"]; ok {
+		limitTimestampInt, err := strconv.Atoi(limitTimestampArray[0])
+		if err != nil {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "limitTimestamp",
+					Reason: "limitTimestamp is incorrect.",
+				},
+			}
+			return limit, offset, limitTimestamp, offsetTimestamp, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+		}
+		limitTimestamp = int64(limitTimestampInt)
+	}
+	if offsetTimestampArray, ok := params["offsetTimestamp"]; ok {
+		offsetTimestampInt, err := strconv.Atoi(offsetTimestampArray[0])
+		if err != nil {
+			invalidParams := []*scpb.InvalidParam{
+				&scpb.InvalidParam{
+					Name:   "offsetTimestamp",
+					Reason: "offsetTimestamp is incorrect.",
+				},
+			}
+			return limit, offset, limitTimestamp, offsetTimestamp, orders, model.NewErrorResponse("", http.StatusBadRequest, model.WithInvalidParams(invalidParams))
+		}
+		offsetTimestamp = int64(offsetTimestampInt)
 	}
 	if orderArray, ok := params["order"]; ok {
 		orderString := orderArray[0] // ex) field1+desc,field2+asc
@@ -426,5 +454,5 @@ func setPagingParams(params url.Values) (int32, int32, []*scpb.OrderInfo, *model
 		}
 	}
 
-	return limit, offset, orders, nil
+	return limit, offset, limitTimestamp, offsetTimestamp, orders, nil
 }

@@ -6,13 +6,15 @@ import (
 
 	"encoding/json"
 
+	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 type Room struct {
 	scpb.Room
-	MetaData JSONText `json:"metaData" db:"meta_data"`
+	MetaData JSONText    `db:"meta_data"`
+	Users    []*MiniUser `db:"-"`
 }
 
 func (r *Room) MarshalJSON() ([]byte, error) {
@@ -22,23 +24,23 @@ func (r *Room) MarshalJSON() ([]byte, error) {
 		lmu = time.Unix(r.LastMessageUpdatedTimestamp, 0).In(l).Format(time.RFC3339)
 	}
 	return json.Marshal(&struct {
-		RoomID                string           `json:"roomId"`
-		UserID                string           `json:"userId"`
-		Name                  string           `json:"name"`
-		PictureURL            string           `json:"pictureUrl"`
-		InformationURL        string           `json:"informationUrl"`
-		Type                  scpb.RoomType    `json:"type"`
-		CanLeft               bool             `json:"canLeft"`
-		SpeechMode            scpb.SpeechMode  `json:"speechMode"`
-		MetaData              JSONText         `json:"metaData"`
-		AvailableMessageTypes string           `json:"availableMessageTypes"`
-		LastMessage           string           `json:"lastMessage"`
-		LastMessageUpdated    string           `json:"lastMessageUpdated"`
-		MessageCount          int64            `json:"messageCount"`
-		NotificationTopicID   string           `json:"notificationTopicId"`
-		Created               string           `json:"created"`
-		Modified              string           `json:"modified"`
-		Users                 []*scpb.MiniUser `json:"users,omitempty"`
+		RoomID                string          `json:"roomId"`
+		UserID                string          `json:"userId"`
+		Name                  string          `json:"name"`
+		PictureURL            string          `json:"pictureUrl"`
+		InformationURL        string          `json:"informationUrl"`
+		Type                  scpb.RoomType   `json:"type"`
+		CanLeft               bool            `json:"canLeft"`
+		SpeechMode            scpb.SpeechMode `json:"speechMode"`
+		MetaData              JSONText        `json:"metaData"`
+		AvailableMessageTypes string          `json:"availableMessageTypes"`
+		LastMessage           string          `json:"lastMessage"`
+		LastMessageUpdated    string          `json:"lastMessageUpdated"`
+		MessageCount          int64           `json:"messageCount"`
+		NotificationTopicID   string          `json:"notificationTopicId"`
+		Created               string          `json:"created"`
+		Modified              string          `json:"modified"`
+		Users                 []*MiniUser     `json:"users,omitempty"`
 	}{
 		RoomID:                r.RoomID,
 		UserID:                r.UserID,
@@ -420,6 +422,24 @@ type DeleteRoomRequest struct {
 
 type RetrieveRoomMessagesRequest struct {
 	scpb.RetrieveRoomMessagesRequest
+}
+
+func (rrmr *RetrieveRoomMessagesRequest) SetDefaultPagingParamsIfParamsNotSet() {
+	if rrmr.Limit == 0 {
+		rrmr.Limit = config.RetrieveRoomMessagesDefaultLimit
+	}
+
+	if rrmr.Orders == nil {
+		orderInfo1 := &scpb.OrderInfo{
+			Field: "created",
+			Order: scpb.Order_Desc,
+		}
+		orderInfo2 := &scpb.OrderInfo{
+			Field: "message_id",
+			Order: scpb.Order_Desc,
+		}
+		rrmr.Orders = []*scpb.OrderInfo{orderInfo1, orderInfo2}
+	}
 }
 
 type RoomMessagesResponse struct {

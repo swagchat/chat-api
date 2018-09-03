@@ -3918,7 +3918,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.RetrieveRoomMessagesRequest.repeatedFields_ = [13,15];
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.repeatedFields_ = [15,17];
 
 
 
@@ -3951,10 +3951,12 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.toObject = function(includeI
   var f, obj = {
     limit: jspb.Message.getField(msg, 11),
     offset: jspb.Message.getField(msg, 12),
+    limitTimestamp: jspb.Message.getField(msg, 13),
+    offsetTimestamp: jspb.Message.getField(msg, 14),
     ordersList: jspb.Message.toObjectList(msg.getOrdersList(),
     commonMessage_pb.OrderInfo.toObject, includeInstance),
-    roomId: jspb.Message.getField(msg, 14),
-    roleIdsList: jspb.Message.getRepeatedField(msg, 15)
+    roomId: jspb.Message.getField(msg, 16),
+    roleIdsList: jspb.Message.getRepeatedField(msg, 17)
   };
 
   if (includeInstance) {
@@ -4000,15 +4002,23 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.deserializeBinaryFromReader 
       msg.setOffset(value);
       break;
     case 13:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setLimitTimestamp(value);
+      break;
+    case 14:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setOffsetTimestamp(value);
+      break;
+    case 15:
       var value = new commonMessage_pb.OrderInfo;
       reader.readMessage(value,commonMessage_pb.OrderInfo.deserializeBinaryFromReader);
       msg.addOrders(value);
       break;
-    case 14:
+    case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.setRoomId(value);
       break;
-    case 15:
+    case 17:
       var value = /** @type {number} */ (reader.readInt32());
       msg.addRoleIds(value);
       break;
@@ -4055,25 +4065,39 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.serializeBinaryToWriter = fu
       f
     );
   }
+  f = /** @type {number} */ (jspb.Message.getField(message, 13));
+  if (f != null) {
+    writer.writeInt64(
+      13,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 14));
+  if (f != null) {
+    writer.writeInt64(
+      14,
+      f
+    );
+  }
   f = message.getOrdersList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      13,
+      15,
       f,
       commonMessage_pb.OrderInfo.serializeBinaryToWriter
     );
   }
-  f = /** @type {string} */ (jspb.Message.getField(message, 14));
+  f = /** @type {string} */ (jspb.Message.getField(message, 16));
   if (f != null) {
     writer.writeString(
-      14,
+      16,
       f
     );
   }
   f = message.getRoleIdsList();
   if (f.length > 0) {
     writer.writeRepeatedInt32(
-      15,
+      17,
       f
     );
   }
@@ -4139,18 +4163,76 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.hasOffset = functi
 
 
 /**
- * repeated OrderInfo orders = 13;
+ * optional int64 limit_timestamp = 13;
+ * @return {number}
+ */
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.getLimitTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 13, 0));
+};
+
+
+/** @param {number} value */
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setLimitTimestamp = function(value) {
+  jspb.Message.setField(this, 13, value);
+};
+
+
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.clearLimitTimestamp = function() {
+  jspb.Message.setField(this, 13, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.hasLimitTimestamp = function() {
+  return jspb.Message.getField(this, 13) != null;
+};
+
+
+/**
+ * optional int64 offset_timestamp = 14;
+ * @return {number}
+ */
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.getOffsetTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 14, 0));
+};
+
+
+/** @param {number} value */
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setOffsetTimestamp = function(value) {
+  jspb.Message.setField(this, 14, value);
+};
+
+
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.clearOffsetTimestamp = function() {
+  jspb.Message.setField(this, 14, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.hasOffsetTimestamp = function() {
+  return jspb.Message.getField(this, 14) != null;
+};
+
+
+/**
+ * repeated OrderInfo orders = 15;
  * @return {!Array.<!proto.swagchat.protobuf.OrderInfo>}
  */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.getOrdersList = function() {
   return /** @type{!Array.<!proto.swagchat.protobuf.OrderInfo>} */ (
-    jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 13));
+    jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 15));
 };
 
 
 /** @param {!Array.<!proto.swagchat.protobuf.OrderInfo>} value */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setOrdersList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 13, value);
+  jspb.Message.setRepeatedWrapperField(this, 15, value);
 };
 
 
@@ -4160,7 +4242,7 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setOrdersList = fu
  * @return {!proto.swagchat.protobuf.OrderInfo}
  */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.addOrders = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 13, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 15, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
 };
 
 
@@ -4170,22 +4252,22 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.clearOrdersList = 
 
 
 /**
- * optional string room_id = 14;
+ * optional string room_id = 16;
  * @return {string}
  */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.getRoomId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 14, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 16, ""));
 };
 
 
 /** @param {string} value */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setRoomId = function(value) {
-  jspb.Message.setField(this, 14, value);
+  jspb.Message.setField(this, 16, value);
 };
 
 
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.clearRoomId = function() {
-  jspb.Message.setField(this, 14, undefined);
+  jspb.Message.setField(this, 16, undefined);
 };
 
 
@@ -4194,22 +4276,22 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.clearRoomId = func
  * @return {!boolean}
  */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.hasRoomId = function() {
-  return jspb.Message.getField(this, 14) != null;
+  return jspb.Message.getField(this, 16) != null;
 };
 
 
 /**
- * repeated int32 role_ids = 15;
+ * repeated int32 role_ids = 17;
  * @return {!Array.<number>}
  */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.getRoleIdsList = function() {
-  return /** @type {!Array.<number>} */ (jspb.Message.getRepeatedField(this, 15));
+  return /** @type {!Array.<number>} */ (jspb.Message.getRepeatedField(this, 17));
 };
 
 
 /** @param {!Array.<number>} value */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setRoleIdsList = function(value) {
-  jspb.Message.setField(this, 15, value || []);
+  jspb.Message.setField(this, 17, value || []);
 };
 
 
@@ -4218,7 +4300,7 @@ proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.setRoleIdsList = f
  * @param {number=} opt_index
  */
 proto.swagchat.protobuf.RetrieveRoomMessagesRequest.prototype.addRoleIds = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 15, value, opt_index);
+  jspb.Message.addToRepeatedField(this, 17, value, opt_index);
 };
 
 
@@ -4250,7 +4332,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.swagchat.protobuf.RoomMessagesResponse.repeatedFields_ = [1,5,7];
+proto.swagchat.protobuf.RoomMessagesResponse.repeatedFields_ = [1,7,9];
 
 
 
@@ -4286,10 +4368,12 @@ proto.swagchat.protobuf.RoomMessagesResponse.toObject = function(includeInstance
     allcount: jspb.Message.getField(msg, 2),
     limit: jspb.Message.getField(msg, 3),
     offset: jspb.Message.getField(msg, 4),
+    limitTimestamp: jspb.Message.getField(msg, 5),
+    offsetTimestamp: jspb.Message.getField(msg, 6),
     ordersList: jspb.Message.toObjectList(msg.getOrdersList(),
     commonMessage_pb.OrderInfo.toObject, includeInstance),
-    roomId: jspb.Message.getField(msg, 6),
-    roleIdsList: jspb.Message.getRepeatedField(msg, 7)
+    roomId: jspb.Message.getField(msg, 8),
+    roleIdsList: jspb.Message.getRepeatedField(msg, 9)
   };
 
   if (includeInstance) {
@@ -4344,15 +4428,23 @@ proto.swagchat.protobuf.RoomMessagesResponse.deserializeBinaryFromReader = funct
       msg.setOffset(value);
       break;
     case 5:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setLimitTimestamp(value);
+      break;
+    case 6:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setOffsetTimestamp(value);
+      break;
+    case 7:
       var value = new commonMessage_pb.OrderInfo;
       reader.readMessage(value,commonMessage_pb.OrderInfo.deserializeBinaryFromReader);
       msg.addOrders(value);
       break;
-    case 6:
+    case 8:
       var value = /** @type {string} */ (reader.readString());
       msg.setRoomId(value);
       break;
-    case 7:
+    case 9:
       var value = /** @type {number} */ (reader.readInt32());
       msg.addRoleIds(value);
       break;
@@ -4414,25 +4506,39 @@ proto.swagchat.protobuf.RoomMessagesResponse.serializeBinaryToWriter = function(
       f
     );
   }
+  f = /** @type {number} */ (jspb.Message.getField(message, 5));
+  if (f != null) {
+    writer.writeInt64(
+      5,
+      f
+    );
+  }
+  f = /** @type {number} */ (jspb.Message.getField(message, 6));
+  if (f != null) {
+    writer.writeInt64(
+      6,
+      f
+    );
+  }
   f = message.getOrdersList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
-      5,
+      7,
       f,
       commonMessage_pb.OrderInfo.serializeBinaryToWriter
     );
   }
-  f = /** @type {string} */ (jspb.Message.getField(message, 6));
+  f = /** @type {string} */ (jspb.Message.getField(message, 8));
   if (f != null) {
     writer.writeString(
-      6,
+      8,
       f
     );
   }
   f = message.getRoleIdsList();
   if (f.length > 0) {
     writer.writeRepeatedInt32(
-      7,
+      9,
       f
     );
   }
@@ -4558,18 +4664,76 @@ proto.swagchat.protobuf.RoomMessagesResponse.prototype.hasOffset = function() {
 
 
 /**
- * repeated OrderInfo orders = 5;
+ * optional int64 limit_timestamp = 5;
+ * @return {number}
+ */
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.getLimitTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/** @param {number} value */
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.setLimitTimestamp = function(value) {
+  jspb.Message.setField(this, 5, value);
+};
+
+
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.clearLimitTimestamp = function() {
+  jspb.Message.setField(this, 5, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.hasLimitTimestamp = function() {
+  return jspb.Message.getField(this, 5) != null;
+};
+
+
+/**
+ * optional int64 offset_timestamp = 6;
+ * @return {number}
+ */
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.getOffsetTimestamp = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
+};
+
+
+/** @param {number} value */
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.setOffsetTimestamp = function(value) {
+  jspb.Message.setField(this, 6, value);
+};
+
+
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.clearOffsetTimestamp = function() {
+  jspb.Message.setField(this, 6, undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {!boolean}
+ */
+proto.swagchat.protobuf.RoomMessagesResponse.prototype.hasOffsetTimestamp = function() {
+  return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * repeated OrderInfo orders = 7;
  * @return {!Array.<!proto.swagchat.protobuf.OrderInfo>}
  */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.getOrdersList = function() {
   return /** @type{!Array.<!proto.swagchat.protobuf.OrderInfo>} */ (
-    jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 5));
+    jspb.Message.getRepeatedWrapperField(this, commonMessage_pb.OrderInfo, 7));
 };
 
 
 /** @param {!Array.<!proto.swagchat.protobuf.OrderInfo>} value */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.setOrdersList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 5, value);
+  jspb.Message.setRepeatedWrapperField(this, 7, value);
 };
 
 
@@ -4579,7 +4743,7 @@ proto.swagchat.protobuf.RoomMessagesResponse.prototype.setOrdersList = function(
  * @return {!proto.swagchat.protobuf.OrderInfo}
  */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.addOrders = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 5, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 7, opt_value, proto.swagchat.protobuf.OrderInfo, opt_index);
 };
 
 
@@ -4589,22 +4753,22 @@ proto.swagchat.protobuf.RoomMessagesResponse.prototype.clearOrdersList = functio
 
 
 /**
- * optional string room_id = 6;
+ * optional string room_id = 8;
  * @return {string}
  */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.getRoomId = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
 };
 
 
 /** @param {string} value */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.setRoomId = function(value) {
-  jspb.Message.setField(this, 6, value);
+  jspb.Message.setField(this, 8, value);
 };
 
 
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.clearRoomId = function() {
-  jspb.Message.setField(this, 6, undefined);
+  jspb.Message.setField(this, 8, undefined);
 };
 
 
@@ -4613,22 +4777,22 @@ proto.swagchat.protobuf.RoomMessagesResponse.prototype.clearRoomId = function() 
  * @return {!boolean}
  */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.hasRoomId = function() {
-  return jspb.Message.getField(this, 6) != null;
+  return jspb.Message.getField(this, 8) != null;
 };
 
 
 /**
- * repeated int32 role_ids = 7;
+ * repeated int32 role_ids = 9;
  * @return {!Array.<number>}
  */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.getRoleIdsList = function() {
-  return /** @type {!Array.<number>} */ (jspb.Message.getRepeatedField(this, 7));
+  return /** @type {!Array.<number>} */ (jspb.Message.getRepeatedField(this, 9));
 };
 
 
 /** @param {!Array.<number>} value */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.setRoleIdsList = function(value) {
-  jspb.Message.setField(this, 7, value || []);
+  jspb.Message.setField(this, 9, value || []);
 };
 
 
@@ -4637,7 +4801,7 @@ proto.swagchat.protobuf.RoomMessagesResponse.prototype.setRoleIdsList = function
  * @param {number=} opt_index
  */
 proto.swagchat.protobuf.RoomMessagesResponse.prototype.addRoleIds = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 7, value, opt_index);
+  jspb.Message.addToRepeatedField(this, 9, value, opt_index);
 };
 
 

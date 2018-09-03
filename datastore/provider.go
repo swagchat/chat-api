@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"context"
+	"os"
 
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/logger"
@@ -77,7 +78,7 @@ func Provider(ctx context.Context) provider {
 	err := p.Connect(dsCfg)
 	if err != nil {
 		logger.Error(err.Error())
-		return nil
+		os.Exit(1)
 	}
 
 	return p

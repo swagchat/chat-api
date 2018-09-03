@@ -41,7 +41,7 @@ export namespace EventData {
   }
 }
 
-export class UserJoinEventPayload extends jspb.Message {
+export class RoomEventPayload extends jspb.Message {
   hasRoomId(): boolean;
   clearRoomId(): void;
   getRoomId(): string | undefined;
@@ -53,16 +53,16 @@ export class UserJoinEventPayload extends jspb.Message {
   addUsers(value?: roomMessage_pb.MiniUser, index?: number): roomMessage_pb.MiniUser;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): UserJoinEventPayload.AsObject;
-  static toObject(includeInstance: boolean, msg: UserJoinEventPayload): UserJoinEventPayload.AsObject;
+  toObject(includeInstance?: boolean): RoomEventPayload.AsObject;
+  static toObject(includeInstance: boolean, msg: RoomEventPayload): RoomEventPayload.AsObject;
   static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
   static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
-  static serializeBinaryToWriter(message: UserJoinEventPayload, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): UserJoinEventPayload;
-  static deserializeBinaryFromReader(message: UserJoinEventPayload, reader: jspb.BinaryReader): UserJoinEventPayload;
+  static serializeBinaryToWriter(message: RoomEventPayload, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RoomEventPayload;
+  static deserializeBinaryFromReader(message: RoomEventPayload, reader: jspb.BinaryReader): RoomEventPayload;
 }
 
-export namespace UserJoinEventPayload {
+export namespace RoomEventPayload {
   export type AsObject = {
     roomId?: string,
     usersList: Array<roomMessage_pb.MiniUser.AsObject>,
@@ -72,6 +72,6 @@ export namespace UserJoinEventPayload {
 export enum EventType {
   EMPTYEVENT = 0,
   MESSAGEEVENT = 1,
-  USERJOINEVENT = 2,
+  ROOMEVENT = 2,
 }
 

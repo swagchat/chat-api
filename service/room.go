@@ -245,14 +245,22 @@ func RetrieveRoomMessages(ctx context.Context, req *model.RetrieveRoomMessagesRe
 
 	var roleIDs []int32
 	if req.RoleIDs == nil {
-		roleIDs = user.Roles
+		if len(user.Roles) > 0 {
+			roleIDs = user.Roles
+		}
 	} else {
-		roleIDs = req.RoleIDs
+		if len(req.RoleIDs) > 0 {
+			roleIDs = req.RoleIDs
+		}
 	}
+
+	req.SetDefaultPagingParamsIfParamsNotSet()
 
 	messages, err := datastore.Provider(ctx).SelectMessages(
 		req.Limit,
 		req.Offset,
+		datastore.SelectMessagesOptionLimitTimestamp(req.LimitTimestamp),
+		datastore.SelectMessagesOptionOffsetTimestamp(req.OffsetTimestamp),
 		datastore.SelectMessagesOptionOrders(req.Orders),
 		datastore.SelectMessagesOptionFilterByRoomID(req.RoomID),
 		datastore.SelectMessagesOptionFilterByRoleIDs(roleIDs),
@@ -261,6 +269,11 @@ func RetrieveRoomMessages(ctx context.Context, req *model.RetrieveRoomMessagesRe
 		return nil, model.NewErrorResponse("Failed to get messages.", http.StatusInternalServerError, model.WithError(err))
 	}
 	roomMessages := &model.RoomMessagesResponse{}
+	roomMessages.Limit = req.Limit
+	roomMessages.Offset = req.Offset
+	roomMessages.LimitTimestamp = req.LimitTimestamp
+	roomMessages.OffsetTimestamp = req.OffsetTimestamp
+	roomMessages.Orders = req.Orders
 	roomMessages.Messages = messages
 
 	count, err := datastore.Provider(ctx).SelectCountMessages(

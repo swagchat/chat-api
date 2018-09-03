@@ -45,7 +45,7 @@
 		DevicesResponse
 		DeleteDeviceRequest
 		EventData
-		UserJoinEventPayload
+		RoomEventPayload
 		Messages
 		Message
 		MessagePayload

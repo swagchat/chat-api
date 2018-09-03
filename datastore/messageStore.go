@@ -6,9 +6,11 @@ import (
 )
 
 type selectMessagesOptions struct {
-	roomID  string
-	roleIDs []int32
-	orders  []*scpb.OrderInfo
+	roomID          string
+	roleIDs         []int32
+	limitTimestamp  int64
+	offsetTimestamp int64
+	orders          []*scpb.OrderInfo
 }
 
 type SelectMessagesOption func(*selectMessagesOptions)
@@ -28,6 +30,18 @@ func SelectMessagesOptionFilterByRoleIDs(roleIDs []int32) SelectMessagesOption {
 func SelectMessagesOptionOrders(orders []*scpb.OrderInfo) SelectMessagesOption {
 	return func(ops *selectMessagesOptions) {
 		ops.orders = orders
+	}
+}
+
+func SelectMessagesOptionLimitTimestamp(limitTimestamp int64) SelectMessagesOption {
+	return func(ops *selectMessagesOptions) {
+		ops.limitTimestamp = limitTimestamp
+	}
+}
+
+func SelectMessagesOptionOffsetTimestamp(offsetTimestamp int64) SelectMessagesOption {
+	return func(ops *selectMessagesOptions) {
+		ops.offsetTimestamp = offsetTimestamp
 	}
 }
 

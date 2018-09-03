@@ -52,7 +52,7 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, orders, errRes := setPagingParams(params)
+	limit, offset, _, _, orders, errRes := setPagingParams(params)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -148,7 +148,7 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, orders, errRes := setPagingParams(params)
+	limit, offset, limitTimestamp, offsetTimestamp, orders, errRes := setPagingParams(params)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -157,6 +157,8 @@ func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	req.Limit = limit
 	req.Offset = offset
 	req.Orders = orders
+	req.LimitTimestamp = limitTimestamp
+	req.OffsetTimestamp = offsetTimestamp
 
 	messages, errRes := service.RetrieveRoomMessages(ctx, req)
 	if errRes != nil {

@@ -316,7 +316,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 			buffer := new(bytes.Buffer)
 			json.NewEncoder(buffer).Encode(miniRoom)
 			event := &scpb.EventData{
-				Type:    scpb.EventType_UserJoinEvent,
+				Type:    scpb.EventType_RoomEvent,
 				Data:    buffer.Bytes(),
 				UserIDs: []string{userID},
 			}

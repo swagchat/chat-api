@@ -8,7 +8,6 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
-	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"gopkg.in/gorp.v2"
 )
 
@@ -165,11 +164,11 @@ func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts .
 	return room, nil
 }
 
-func rdbSelectUsersForRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string) ([]*scpb.MiniUser, error) {
+func rdbSelectUsersForRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string) ([]*model.MiniUser, error) {
 	span := tracer.Provider(ctx).StartSpan("rdbSelectUsersForRoom", "datastore")
 	defer tracer.Provider(ctx).Finish(span)
 
-	var users []*scpb.MiniUser
+	var users []*model.MiniUser
 	query := fmt.Sprintf(`SELECT
 u.user_id,
 u.name,

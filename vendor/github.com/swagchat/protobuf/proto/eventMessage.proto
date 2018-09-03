@@ -10,7 +10,7 @@ option go_package = "github.com/swagchat/protobuf/protoc-gen-go";
 enum EventType {
   EmptyEvent = 0;
   MessageEvent = 1;
-  UserJoinEvent = 2;
+  RoomEvent = 2;
 }
 
 message EventData {
@@ -20,7 +20,7 @@ message EventData {
   repeated string user_ids = 3 [(gogoproto.customname) = "UserIDs", (gogoproto.jsontag) = "userIds"];
 }
 
-message UserJoinEventPayload {
+message RoomEventPayload {
   option (gogoproto.goproto_unrecognized) = false;
   optional string room_id = 1 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false];
   repeated MiniUser users = 2;

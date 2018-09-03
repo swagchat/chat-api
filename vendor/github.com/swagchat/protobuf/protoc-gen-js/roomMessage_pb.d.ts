@@ -561,6 +561,16 @@ export class RetrieveRoomMessagesRequest extends jspb.Message {
   getOffset(): number | undefined;
   setOffset(value: number): void;
 
+  hasLimitTimestamp(): boolean;
+  clearLimitTimestamp(): void;
+  getLimitTimestamp(): number | undefined;
+  setLimitTimestamp(value: number): void;
+
+  hasOffsetTimestamp(): boolean;
+  clearOffsetTimestamp(): void;
+  getOffsetTimestamp(): number | undefined;
+  setOffsetTimestamp(value: number): void;
+
   clearOrdersList(): void;
   getOrdersList(): Array<commonMessage_pb.OrderInfo>;
   setOrdersList(value: Array<commonMessage_pb.OrderInfo>): void;
@@ -590,6 +600,8 @@ export namespace RetrieveRoomMessagesRequest {
   export type AsObject = {
     limit?: number,
     offset?: number,
+    limitTimestamp?: number,
+    offsetTimestamp?: number,
     ordersList: Array<commonMessage_pb.OrderInfo.AsObject>,
     roomId?: string,
     roleIdsList: Array<number>,
@@ -616,6 +628,16 @@ export class RoomMessagesResponse extends jspb.Message {
   clearOffset(): void;
   getOffset(): number | undefined;
   setOffset(value: number): void;
+
+  hasLimitTimestamp(): boolean;
+  clearLimitTimestamp(): void;
+  getLimitTimestamp(): number | undefined;
+  setLimitTimestamp(value: number): void;
+
+  hasOffsetTimestamp(): boolean;
+  clearOffsetTimestamp(): void;
+  getOffsetTimestamp(): number | undefined;
+  setOffsetTimestamp(value: number): void;
 
   clearOrdersList(): void;
   getOrdersList(): Array<commonMessage_pb.OrderInfo>;
@@ -648,6 +670,8 @@ export namespace RoomMessagesResponse {
     allcount?: number,
     limit?: number,
     offset?: number,
+    limitTimestamp?: number,
+    offsetTimestamp?: number,
     ordersList: Array<commonMessage_pb.OrderInfo.AsObject>,
     roomId?: string,
     roleIdsList: Array<number>,

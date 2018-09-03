@@ -59,7 +59,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, orders, errRes := setPagingParams(params)
+	limit, offset, _, _, orders, errRes := setPagingParams(params)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -155,7 +155,7 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, orders, errRes := setPagingParams(params)
+	limit, offset, _, _, orders, errRes := setPagingParams(params)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return
@@ -212,7 +212,7 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	limit, offset, orders, errRes := setPagingParams(params)
+	limit, offset, _, _, orders, errRes := setPagingParams(params)
 	if errRes != nil {
 		respondError(w, r, errRes)
 		return

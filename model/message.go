@@ -29,23 +29,25 @@ type Message struct {
 func (m *Message) MarshalJSON() ([]byte, error) {
 	l, _ := time.LoadLocation("Etc/GMT")
 	return json.Marshal(&struct {
-		MessageID string   `json:"messageId"`
-		RoomID    string   `json:"roomId"`
-		UserID    string   `json:"userId"`
-		Type      string   `json:"type"`
-		Payload   JSONText `json:"payload"`
-		Role      int32    `json:"role"`
-		Created   string   `json:"created"`
-		Modified  string   `json:"modified"`
+		MessageID        string   `json:"messageId"`
+		RoomID           string   `json:"roomId"`
+		UserID           string   `json:"userId"`
+		Type             string   `json:"type"`
+		Payload          JSONText `json:"payload"`
+		Role             int32    `json:"role"`
+		CreatedTimestamp int64    `json:"createdTimestamp"`
+		Created          string   `json:"created"`
+		Modified         string   `json:"modified"`
 	}{
-		MessageID: m.MessageID,
-		RoomID:    m.RoomID,
-		UserID:    m.UserID,
-		Type:      m.Type,
-		Payload:   m.Payload,
-		Role:      m.Role,
-		Created:   time.Unix(m.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
-		Modified:  time.Unix(m.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
+		MessageID:        m.MessageID,
+		RoomID:           m.RoomID,
+		UserID:           m.UserID,
+		Type:             m.Type,
+		Payload:          m.Payload,
+		Role:             m.Role,
+		CreatedTimestamp: m.CreatedTimestamp,
+		Created:          time.Unix(m.CreatedTimestamp, 0).In(l).Format(time.RFC3339),
+		Modified:         time.Unix(m.ModifiedTimestamp, 0).In(l).Format(time.RFC3339),
 	})
 }
 

@@ -168,6 +168,16 @@ func rdbSelectMessages(ctx context.Context, dbMap *gorp.DbMap, limit, offset int
 		query = fmt.Sprintf("%s AND role IN (%s)", query, roleIDsQuery)
 	}
 
+	if opt.limitTimestamp != 0 {
+		params["limitTimestamp"] = opt.limitTimestamp
+		query = fmt.Sprintf("%s AND created >= :limitTimestamp", query)
+	}
+
+	if opt.offsetTimestamp != 0 {
+		params["offsetTimestamp"] = opt.offsetTimestamp
+		query = fmt.Sprintf("%s AND created <= :offsetTimestamp", query)
+	}
+
 	query = fmt.Sprintf("%s ORDER BY", query)
 	if opt.orders == nil {
 		query = fmt.Sprintf("%s created ASC", query)

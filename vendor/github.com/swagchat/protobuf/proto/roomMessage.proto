@@ -127,9 +127,11 @@ message RetrieveRoomMessagesRequest {
   option (gogoproto.goproto_unrecognized) = false;
   optional int32 limit = 11 [(gogoproto.nullable) = false];
   optional int32 offset = 12 [(gogoproto.nullable) = false];
-  repeated OrderInfo orders = 13;
-  optional string room_id = 14 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false];
-  repeated int32 role_ids = 15 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds"];
+  optional int64 limit_timestamp = 13 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "limitTimestamp"];
+  optional int64 offset_timestamp = 14 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "offsetTimestamp"];
+  repeated OrderInfo orders = 15;
+  optional string room_id = 16 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false];
+  repeated int32 role_ids = 17 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds"];
 }
 
 message RoomMessagesResponse {
@@ -138,7 +140,9 @@ message RoomMessagesResponse {
   optional int64 allCount = 2 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "allCount"];
   optional int32 limit = 3 [(gogoproto.nullable) = false];
   optional int32 offset = 4 [(gogoproto.nullable) = false];
-  repeated OrderInfo orders = 5;
-  optional string room_id = 6 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false];
-  repeated int32 role_ids = 7 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds"];
+  optional int64 limit_timestamp = 5 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "limitTimestamp"];
+  optional int64 offset_timestamp = 6 [(gogoproto.nullable) = false, (gogoproto.jsontag) = "offsetTimestamp"];
+  repeated OrderInfo orders = 7;
+  optional string room_id = 8 [(gogoproto.customname) = "RoomID", (gogoproto.nullable) = false, (gogoproto.jsontag) = "roomId,omitempty"];
+  repeated int32 role_ids = 9 [(gogoproto.customname) = "RoleIDs", (gogoproto.jsontag) = "roleIds,omitempty"];
 }
