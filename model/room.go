@@ -435,7 +435,7 @@ func (rrmr *RetrieveRoomMessagesRequest) SetDefaultPagingParamsIfParamsNotSet() 
 			Order: scpb.Order_Desc,
 		}
 		orderInfo2 := &scpb.OrderInfo{
-			Field: "message_id",
+			Field: "id",
 			Order: scpb.Order_Desc,
 		}
 		rrmr.Orders = []*scpb.OrderInfo{orderInfo1, orderInfo2}
