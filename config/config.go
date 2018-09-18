@@ -684,20 +684,10 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&mHostStr, "datastore.masterHost", mHostStr, "")
 	flags.StringVar(&mPortsStr, "datastore.masterPort", mPortsStr, "")
 	if mHostStr != "" && mPortsStr != "" {
-		c.Datastore.Master = &ServerInfo{
-			Host: mHostStr,
-			Port: mPortsStr,
-		}
 		flags.StringVar(&mServerNameStr, "datastore.masterServerName", mServerNameStr, "")
 		flags.StringVar(&mServerCaPathStr, "datastore.masterServerCaPath", mServerCaPathStr, "")
 		flags.StringVar(&mClientCertPathStr, "datastore.masterClientCertPath", mClientCertPathStr, "")
 		flags.StringVar(&mClientKeyPathStr, "datastore.masterClientKeyPath", mClientKeyPathStr, "")
-		if mServerNameStr != "" && mServerCaPathStr != "" && mClientCertPathStr != "" && mClientKeyPathStr != "" {
-			c.Datastore.Master.ServerName = mServerNameStr
-			c.Datastore.Master.ServerCaPath = mServerCaPathStr
-			c.Datastore.Master.ClientCertPath = mClientCertPathStr
-			c.Datastore.Master.ClientKeyPath = mClientKeyPathStr
-		}
 	}
 
 	var (
@@ -720,46 +710,6 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&rServerCaPathsStr, "datastore.replicaServerCaPaths", rServerCaPathsStr, "")
 	flags.StringVar(&rClientCertPathsStr, "datastore.replicaClientCertPaths", rClientCertPathsStr, "")
 	flags.StringVar(&rClientKeyPathsStr, "datastore.replicaClientKeyPaths", rClientKeyPathsStr, "")
-
-	if rHostsStr != "" {
-		rHosts = strings.Split(rHostsStr, ",")
-	}
-	if rPortsStr != "" {
-		rPorts = strings.Split(rPortsStr, ",")
-	}
-	if rServerNamesStr != "" {
-		rServerNames = strings.Split(rServerNamesStr, ",")
-	}
-	if rServerCaPathsStr != "" {
-		rServerCaPaths = strings.Split(rServerCaPathsStr, ",")
-	}
-	if rClientCertPathsStr != "" {
-		rClientCertPaths = strings.Split(rClientCertPathsStr, ",")
-	}
-	if rClientKeyPathsStr != "" {
-		rClientKeyPaths = strings.Split(rClientKeyPathsStr, ",")
-	}
-	if rHosts != nil && len(rHosts) != 0 && rPorts != nil && len(rPorts) != 0 && len(rHosts) == len(rPorts) {
-		replicas := []*ServerInfo{}
-		for i := 0; i < len(rHosts); i++ {
-			replica := &ServerInfo{
-				Host: rHosts[i],
-				Port: rPorts[i],
-			}
-			replicas = append(replicas, replica)
-		}
-		c.Datastore.Replicas = replicas
-
-		if rServerNames != nil && len(rServerNames) != 0 && rServerCaPaths != nil && len(rServerCaPaths) != 0 && rClientCertPaths != nil && len(rClientCertPaths) != 0 && rClientKeyPaths != nil && len(rClientKeyPaths) != 0 &&
-			(len(rHosts) == len(rServerNames) && len(rHosts) == len(rServerCaPaths) && len(rHosts) == len(rClientCertPaths) && len(rHosts) == len(rClientKeyPaths)) {
-			for i := 0; i < len(rHosts); i++ {
-				c.Datastore.Replicas[i].ServerName = rServerNames[i]
-				c.Datastore.Replicas[i].ServerCaPath = rServerCaPaths[i]
-				c.Datastore.Replicas[i].ClientCertPath = rClientCertPaths[i]
-				c.Datastore.Replicas[i].ClientKeyPath = rClientKeyPaths[i]
-			}
-		}
-	}
 
 	flags.BoolVar(&c.Datastore.EnableLogging, "datastore.enableLogging", c.Datastore.EnableLogging, "")
 
@@ -862,6 +812,59 @@ func (c *config) parseFlag(args []string) error {
 
 	if onMemory == "true" {
 		c.Datastore.SQLite.OnMemory = true
+	}
+
+	// datastore master
+	c.Datastore.Master = &ServerInfo{
+		Host: mHostStr,
+		Port: mPortsStr,
+	}
+	if mServerNameStr != "" && mServerCaPathStr != "" && mClientCertPathStr != "" && mClientKeyPathStr != "" {
+		c.Datastore.Master.ServerName = mServerNameStr
+		c.Datastore.Master.ServerCaPath = mServerCaPathStr
+		c.Datastore.Master.ClientCertPath = mClientCertPathStr
+		c.Datastore.Master.ClientKeyPath = mClientKeyPathStr
+	}
+
+	// datastore replica
+	if rHostsStr != "" {
+		rHosts = strings.Split(rHostsStr, ",")
+	}
+	if rPortsStr != "" {
+		rPorts = strings.Split(rPortsStr, ",")
+	}
+	if rServerNamesStr != "" {
+		rServerNames = strings.Split(rServerNamesStr, ",")
+	}
+	if rServerCaPathsStr != "" {
+		rServerCaPaths = strings.Split(rServerCaPathsStr, ",")
+	}
+	if rClientCertPathsStr != "" {
+		rClientCertPaths = strings.Split(rClientCertPathsStr, ",")
+	}
+	if rClientKeyPathsStr != "" {
+		rClientKeyPaths = strings.Split(rClientKeyPathsStr, ",")
+	}
+	if rHosts != nil && len(rHosts) != 0 && rPorts != nil && len(rPorts) != 0 && len(rHosts) == len(rPorts) {
+		replicas := []*ServerInfo{}
+		for i := 0; i < len(rHosts); i++ {
+			replica := &ServerInfo{
+				Host: rHosts[i],
+				Port: rPorts[i],
+			}
+			replicas = append(replicas, replica)
+		}
+		c.Datastore.Replicas = replicas
+
+		if rServerNames != nil && len(rServerNames) != 0 && rServerCaPaths != nil && len(rServerCaPaths) != 0 && rClientCertPaths != nil && len(rClientCertPaths) != 0 && rClientKeyPaths != nil && len(rClientKeyPaths) != 0 &&
+			(len(rHosts) == len(rServerNames) && len(rHosts) == len(rServerCaPaths) && len(rHosts) == len(rClientCertPaths) && len(rHosts) == len(rClientKeyPaths)) {
+			for i := 0; i < len(rHosts); i++ {
+				c.Datastore.Replicas[i].ServerName = rServerNames[i]
+				c.Datastore.Replicas[i].ServerCaPath = rServerCaPaths[i]
+				c.Datastore.Replicas[i].ClientCertPath = rClientCertPaths[i]
+				c.Datastore.Replicas[i].ClientKeyPath = rClientKeyPaths[i]
+			}
+		}
 	}
 
 	return nil
