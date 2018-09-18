@@ -62,10 +62,6 @@ func Run(ctx context.Context) {
 	setUserMux()
 	setUserRoleMux()
 
-	if cfg.Profiling {
-		setPprofMux()
-	}
-
 	if cfg.Storage.Provider == "awsS3" {
 		setAssetAwsSnsMux()
 	}
