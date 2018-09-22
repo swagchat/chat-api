@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -12,6 +13,7 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	jaeger "github.com/uber/jaeger-client-go"
 	jaegerConfig "github.com/uber/jaeger-client-go/config"
+	"github.com/uber/jaeger-client-go/transport/zipkin"
 )
 
 var (
@@ -21,22 +23,58 @@ var (
 
 type jaegerProvider struct {
 	ctx context.Context
+
+	// zipkin
+	endpoint  string
+	batchSize int
+	timeout   int
 }
 
 func (jp *jaegerProvider) NewTracer() error {
-	cfg := &jaegerConfig.Configuration{
-		Sampler: &jaegerConfig.SamplerConfig{
-			Type:  "const",
-			Param: 1,
-		},
-		Reporter: &jaegerConfig.ReporterConfig{
-			LogSpans: true,
-		},
-	}
-	tracer, closer, err := cfg.New(fmt.Sprintf("%s:%s", config.AppName, config.BuildVersion), jaegerConfig.Logger(jaeger.StdLogger))
-	if err != nil {
-		logger.Error(err.Error())
-		return err
+	var tracer opentracing.Tracer
+	var closer io.Closer
+	var err error
+
+	if jp.endpoint == "" {
+		// jaeger
+		cfg := &jaegerConfig.Configuration{
+			Sampler: &jaegerConfig.SamplerConfig{
+				Type:  "const",
+				Param: 1,
+			},
+			Reporter: &jaegerConfig.ReporterConfig{
+				LogSpans: true,
+			},
+		}
+		tracer, closer, err = cfg.New(
+			fmt.Sprintf("%s:%s", config.AppName, config.BuildVersion),
+			jaegerConfig.Logger(jaeger.StdLogger),
+		)
+		if err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+	} else {
+		// zipkin
+		transport, err := zipkin.NewHTTPTransport(
+			jp.endpoint,
+			zipkin.HTTPBatchSize(jp.batchSize),
+			zipkin.HTTPTimeout(time.Second*time.Duration(jp.timeout)),
+			zipkin.HTTPLogger(jaeger.StdLogger),
+		)
+		if err != nil {
+			logger.Error(err.Error())
+			return err
+		}
+		tracer, closer = jaeger.NewTracer(
+			fmt.Sprintf("%s:%s", config.AppName, config.BuildVersion),
+			jaeger.NewConstSampler(true),
+			jaeger.NewRemoteReporter(transport),
+		)
+		if err != nil {
+			logger.Error(err.Error())
+			return err
+		}
 	}
 
 	opentracing.SetGlobalTracer(tracer)

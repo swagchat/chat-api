@@ -41,6 +41,13 @@ func Provider(ctx context.Context) provider {
 		p = &jaegerProvider{
 			ctx: ctx,
 		}
+	case "zipkin":
+		p = &jaegerProvider{
+			ctx:       ctx,
+			endpoint:  cfg.Tracer.Zipkin.Endpoint,
+			batchSize: cfg.Tracer.Zipkin.BatchSize,
+			timeout:   cfg.Tracer.Zipkin.Timeout,
+		}
 	case "elasticapm":
 		p = &elasticapmProvider{
 			ctx: ctx,

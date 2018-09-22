@@ -61,8 +61,15 @@ type Logger struct {
 // Tracer is settings of tracer
 type Tracer struct {
 	Provider string
+
+	Zipkin struct {
+		Endpoint  string
+		BatchSize int
+		Timeout   int
+	}
 }
 
+// Storage is settings of storage
 type Storage struct {
 	Provider string
 
@@ -313,6 +320,21 @@ func (c *config) loadEnv() {
 	// Tracer
 	if v = os.Getenv("SWAG_TRACER_PROVIDER"); v != "" {
 		c.Tracer.Provider = v
+	}
+	if v = os.Getenv("SWAG_TRACER_ZIPKIN_ENDPOINT"); v != "" {
+		c.Tracer.Zipkin.Endpoint = v
+	}
+	if v = os.Getenv("SWAG_TRACER_ZIPKIN_BATCHSIZE"); v != "" {
+		batchSize, err := strconv.Atoi(v)
+		if err == nil {
+			c.Tracer.Zipkin.BatchSize = batchSize
+		}
+	}
+	if v = os.Getenv("SWAG_TRACER_ZIPKIN_TIMEOUT"); v != "" {
+		timeout, err := strconv.Atoi(v)
+		if err == nil {
+			c.Tracer.Zipkin.Timeout = timeout
+		}
 	}
 
 	// Storage
@@ -639,6 +661,9 @@ func (c *config) parseFlag(args []string) error {
 
 	// Tracer
 	flags.StringVar(&c.Tracer.Provider, "tracer.provider", c.Tracer.Provider, "")
+	flags.StringVar(&c.Tracer.Zipkin.Endpoint, "tracer.zipkin.endpoint", c.Tracer.Zipkin.Endpoint, "")
+	flags.IntVar(&c.Tracer.Zipkin.BatchSize, "tracer.zipkin.batchsize", c.Tracer.Zipkin.BatchSize, "")
+	flags.IntVar(&c.Tracer.Zipkin.Timeout, "tracer.zipkin.timeout", c.Tracer.Zipkin.Timeout, "")
 
 	// Storage
 	flags.StringVar(&c.Storage.Provider, "storage.provider", c.Storage.Provider, "")
@@ -901,6 +926,16 @@ func (c *config) validate() error {
 		}
 	}
 
+	// Tracer
+	if c.Tracer.Provider == "zipkin" {
+		if c.Tracer.Zipkin.BatchSize == 0 {
+			c.Tracer.Zipkin.BatchSize = 100
+		}
+		if c.Tracer.Zipkin.Timeout == 0 {
+			c.Tracer.Zipkin.Timeout = 5
+		}
+	}
+
 	return nil
 }
 
@@ -912,5 +947,13 @@ func (c *config) after() error {
 		}
 		c.Datastore.SQLite.DirPath = tmpDirPath
 	}
+
+	// Tracer
+	if c.Tracer.Provider == "zipkin" {
+		if c.Tracer.Zipkin.Endpoint == "" {
+			return errors.New("Please set tracer.zipkin.endpoint")
+		}
+	}
+
 	return nil
 }
