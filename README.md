@@ -86,7 +86,7 @@ To override the default configuration options, make a copy of `defaultConfig.yam
 You can overwrite it with environment variable.
 
 ```
-export HTTP_PORT=80 && ./swagchat-api
+export HTTP_PORT=80 && ./chat-api
 ```
 
 ### Specify runtime parameters
