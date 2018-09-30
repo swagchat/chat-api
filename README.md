@@ -6,6 +6,10 @@
 
 swagchat is an open source chat components for your webapps.
 
+chat-api is designed to be easy to introduce to your microservices as well.
+
+**Currently developing for version 1**
+
 ## Architecture
 
 ![Architecture](https://client.fairway.ne.jp/swagchat/img/swagchat-start-guide-20170920.png "Architecture")
@@ -20,9 +24,12 @@ swagchat is an open source chat components for your webapps.
 
 ## API Reference
 
-Currently writing in OAI 3
+[swagger (OpenAPI 2.0)](https://app.swaggerhub.com/apis/swagchat/swagchat-res_tful_api/0.3.2)
 
-## Datastore
+Sorry, maintenance is not keeping up.
+
+
+## Multiple datastore
 
 You can choose from the followings.
 
@@ -30,13 +37,21 @@ You can choose from the followings.
 * MySQL
 * Google Cloud SQL
 
-## Storage
+## Multiple storage
 
 You can choose from the followings.
 
 * Local Filesystem
 * Google Cloud Storage
 * Amazon S3
+
+## Multiple tracer
+
+You can choose from the followings.
+
+* jaeger
+* zipkin
+* elastic APM
 
 ## Quick start
 
@@ -56,60 +71,43 @@ docker run swagchat/chat-api
 ```
 [Docker repository](https://hub.docker.com/r/swagchat/chat-api/)
 
-### heroku
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-
-
 ## Configuration
 
-To override the default configuration options, make a copy of `config/example.swagchat.yaml` and name it `config/swagchat.yaml`.
+### Specify the setting file (yaml format)
 
-Or you can overwrite it with environment variable, runtime parameter.
+To override the default configuration options, make a copy of `defaultConfig.yaml` and then specify that file name in runtime parameter `config` and execute.
+
+```
+./chat-api -config myConfig.yaml
+```
+
+### Specify environment variables
+
+You can overwrite it with environment variable.
+
+```
+export HTTP_PORT=80 && ./swagchat-api
+```
+
+### Specify runtime parameters
+
+You can overwrite it with runtime parameters.
+
+```
+./chat-api -httpPort 80
+```
 
 You can check the variables that can be set with the help command of the executable binary.
 
-
 ```
-# In the case of macOS
-./swagchat-api_darwin_amd64 -h
+./chat-api -h
 ```
 
 ## Development
 
 ### go version
 
-1.7 or higher
-
-### go testing
-
-Only http client test, and not completed yet. Test run with datastore is sqlite3 and storage is local.
-
-```
-go test $(go list ./... | grep -v vendor)
-```
-
-## Profiling
-
-To display the profile by http request, please set as follows in the setting file.
-
-This is using pprof serves provided by golang.
-
-```
-profiling: on
-```
-
-### Pprof api list
-
-```
-/debug/pprof               pprof portal
-/debug/pprof/profile       CPU profile
-/debug/pprof/goroutine     goroutine profile
-/debug/pprof/heap          heap profile
-/debug/pprof/block         blocking profile
-/debug/pprof/threadcreate  OS thread profile
-```
-
+1.8 or higher
 
 ## License
 
