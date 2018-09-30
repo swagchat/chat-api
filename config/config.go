@@ -109,8 +109,8 @@ type Datastore struct {
 	MaxOpenConnection int    `yaml:"maxOpenConnection"`
 	Master            *ServerInfo
 	Replicas          []*ServerInfo
-	EnableLogging     bool `yaml:"enableLogging"`
-	SQLite            *SQLite
+	EnableLogging     bool    `yaml:"enableLogging"`
+	SQLite            *SQLite `yaml:"sqlite"`
 }
 
 type SQLite struct {
@@ -265,7 +265,10 @@ func defaultSetting() *config {
 }
 
 func (c *config) loadYaml(buf []byte) {
-	yaml.Unmarshal(buf, c)
+	err := yaml.Unmarshal(buf, c)
+	if err != nil {
+		log.Fatalf("Failed to load yaml file. %v", err)
+	}
 }
 
 func (c *config) loadEnv() {
@@ -815,14 +818,6 @@ func (c *config) parseFlag(args []string) error {
 		return nil
 	}
 
-	if configPath != "" {
-		if !isExists(configPath) {
-			return fmt.Errorf("File not found [%s]", configPath)
-		}
-		buf, _ := ioutil.ReadFile(configPath)
-		c.loadYaml(buf)
-	}
-
 	if profiling == "true" {
 		c.Profiling = true
 	}
@@ -890,6 +885,14 @@ func (c *config) parseFlag(args []string) error {
 				c.Datastore.Replicas[i].ClientKeyPath = rClientKeyPaths[i]
 			}
 		}
+	}
+
+	if configPath != "" {
+		if !isExists(configPath) {
+			return fmt.Errorf("File not found [%s]", configPath)
+		}
+		buf, _ := ioutil.ReadFile(configPath)
+		c.loadYaml(buf)
 	}
 
 	return nil

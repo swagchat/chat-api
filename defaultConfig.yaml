@@ -1,0 +1,30 @@
+#################################################
+#             Chat API settings                 #
+#################################################
+httpPort: 8101
+grpcPort: ""
+profiling: false
+demoPage: false
+enableDeveloperMessage: false
+firstClientID: admin
+
+logger:
+  enableConsole: true
+  consoleFormat: text # text or json
+  consoleLevel: debug # debug, info, warn, error
+  enableFile: false
+
+storage:
+  provider: local # local, gcs, awss3
+  local:
+    path: data/assets
+
+datastore:
+  dynamic: false
+  provider: sqlite # sqlite, mysql, gcSql
+  database: swagchat
+  maxIdleConnection: 100
+  maxOpenConnection: 100
+  enableLogging: false
+  sqlite:
+    onMemory: true
