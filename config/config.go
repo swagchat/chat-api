@@ -107,6 +107,7 @@ type Datastore struct {
 	TableNamePrefix   string `yaml:"tableNamePrefix"`
 	MaxIdleConnection int    `yaml:"maxIdleConnection"`
 	MaxOpenConnection int    `yaml:"maxOpenConnection"`
+	ConnMaxLifetime   int    `yaml:"connMaxLifetime"`
 	Master            *ServerInfo
 	Replicas          []*ServerInfo
 	EnableLogging     bool    `yaml:"enableLogging"`
@@ -255,6 +256,7 @@ func defaultSetting() *config {
 			Database:          "swagchat",
 			MaxIdleConnection: 10,
 			MaxOpenConnection: 10,
+			ConnMaxLifetime:   10,
 			EnableLogging:     false,
 			SQLite:            sqlite,
 		},
@@ -427,6 +429,12 @@ func (c *config) loadEnv() {
 		moc, err := strconv.Atoi(v)
 		if err == nil {
 			c.Datastore.MaxOpenConnection = moc
+		}
+	}
+	if v = os.Getenv("SWAG_DATASTORE_CONN_MAX_LIFETIME"); v != "" {
+		cml, err := strconv.Atoi(v)
+		if err == nil {
+			c.Datastore.ConnMaxLifetime = cml
 		}
 	}
 
@@ -700,6 +708,7 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.Datastore.Database, "datastore.database", c.Datastore.Database, "")
 	flags.IntVar(&c.Datastore.MaxIdleConnection, "datastore.maxIdleConnection", c.Datastore.MaxIdleConnection, "")
 	flags.IntVar(&c.Datastore.MaxOpenConnection, "datastore.maxOpenConnection", c.Datastore.MaxOpenConnection, "")
+	flags.IntVar(&c.Datastore.ConnMaxLifetime, "datastore.connMaxLifetime", c.Datastore.ConnMaxLifetime, "")
 
 	var (
 		mHostStr           string

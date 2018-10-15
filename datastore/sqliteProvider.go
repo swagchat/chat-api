@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
@@ -19,6 +20,7 @@ type sqliteProvider struct {
 	database          string
 	maxIdleConnection int
 	maxOpenConnection int
+	connMaxLifetime   int
 	enableLogging     bool
 }
 
@@ -48,6 +50,7 @@ func (p *sqliteProvider) Connect(dsCfg *config.Datastore) error {
 
 	db.SetMaxIdleConns(p.maxIdleConnection)
 	db.SetMaxOpenConns(p.maxOpenConnection)
+	db.SetConnMaxLifetime(time.Duration(p.connMaxLifetime) * time.Second)
 
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}

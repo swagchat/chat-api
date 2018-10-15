@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	gorp "gopkg.in/gorp.v2"
 
@@ -25,6 +26,7 @@ type mysqlProvider struct {
 	replicaSis        []*config.ServerInfo
 	maxIdleConnection int
 	maxOpenConnection int
+	connMaxLifetime   int
 	enableLogging     bool
 }
 
@@ -52,6 +54,7 @@ func (p *mysqlProvider) Connect(dsCfg *config.Datastore) error {
 
 		db.SetMaxIdleConns(p.maxIdleConnection)
 		db.SetMaxOpenConns(p.maxOpenConnection)
+		db.SetConnMaxLifetime(time.Duration(p.connMaxLifetime) * time.Second)
 
 		var master *gorp.DbMap
 		master = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
@@ -80,6 +83,7 @@ func (p *mysqlProvider) Connect(dsCfg *config.Datastore) error {
 
 			db.SetMaxIdleConns(p.maxIdleConnection)
 			db.SetMaxOpenConns(p.maxOpenConnection)
+			db.SetConnMaxLifetime(time.Duration(p.connMaxLifetime) * time.Second)
 
 			var replica *gorp.DbMap
 			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
