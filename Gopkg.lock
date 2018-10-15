@@ -396,25 +396,32 @@
   revision = "ff51dedfd34475d419ad96bcd7c86cb8d7b19c67"
 
 [[projects]]
-  digest = "1:acdc8a34ebf61772eed1f00cad6667f37b8f2618bf958eb59d3e28c690703ad8"
+  digest = "1:941ab4973b3218a9a6d02d31734f5c762239eb538c0d702fff62d4037af8ab0a"
   name = "github.com/uber/jaeger-client-go"
   packages = [
     ".",
+    "config",
     "internal/baggage",
+    "internal/baggage/remote",
     "internal/spanlog",
     "internal/throttler",
+    "internal/throttler/remote",
     "log",
+    "rpcmetrics",
     "thrift",
     "thrift-gen/agent",
+    "thrift-gen/baggage",
     "thrift-gen/jaeger",
     "thrift-gen/sampling",
     "thrift-gen/zipkincore",
+    "transport",
     "transport/zipkin",
     "utils",
+    "zipkin",
   ]
   pruneopts = ""
-  revision = "b043381d944715b469fd6b37addfd30145ca1758"
-  version = "v2.14.0"
+  revision = "1a782e2da844727691fef1757c72eb190c2909f0"
+  version = "v2.15.0"
 
 [[projects]]
   digest = "1:aa1598d34009b45ce74fdabdd25e4258d7923d1e1b418d4c98482e79607cb9b0"
@@ -656,7 +663,10 @@
     "github.com/shogo82148/go-gracedown",
     "github.com/swagchat/protobuf/protoc-gen-go",
     "github.com/uber/jaeger-client-go",
+    "github.com/uber/jaeger-client-go/config",
     "github.com/uber/jaeger-client-go/transport/zipkin",
+    "github.com/uber/jaeger-client-go/zipkin",
+    "github.com/uber/jaeger-lib/metrics",
     "golang.org/x/oauth2/google",
     "google.golang.org/api/storage/v1",
     "google.golang.org/grpc",
