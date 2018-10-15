@@ -1,4 +1,4 @@
-package pbroker
+package producer
 
 import (
 	"context"

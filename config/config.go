@@ -35,8 +35,8 @@ type config struct {
 	Tracer                 *Tracer
 	Storage                *Storage
 	Datastore              *Datastore
-	PBroker                *PBroker  `yaml:"pBroker"`
-	Consumer               *Consumer `yaml:"consumer"`
+	Producer               *Producer
+	Consumer               *Consumer
 	Notification           *Notification
 }
 
@@ -128,7 +128,7 @@ type ServerInfo struct {
 	ClientKeyPath  string `yaml:"clientKeyPath"`
 }
 
-type PBroker struct {
+type Producer struct {
 	Provider string
 
 	Direct struct {
@@ -260,7 +260,7 @@ func defaultSetting() *config {
 			EnableLogging:     false,
 			SQLite:            sqlite,
 		},
-		PBroker:      &PBroker{},
+		Producer:     &Producer{},
 		Consumer:     &Consumer{},
 		Notification: &Notification{},
 	}
@@ -517,51 +517,51 @@ func (c *config) loadEnv() {
 		c.Datastore.SQLite.DirPath = v
 	}
 
-	// PBroker
-	if v = os.Getenv("SWAG_PBROKER_PROVIDER"); v != "" {
-		c.PBroker.Provider = v
+	// Producer
+	if v = os.Getenv("SWAG_PRODUCER_PROVIDER"); v != "" {
+		c.Producer.Provider = v
 	}
 
-	// PBroker - Direct
-	if v = os.Getenv("SWAG_PBROKER_DIRECT_ENDPOINT"); v != "" {
-		c.PBroker.Direct.Endpoint = v
+	// Producer - Direct
+	if v = os.Getenv("SWAG_PRODUCER_DIRECT_ENDPOINT"); v != "" {
+		c.Producer.Direct.Endpoint = v
 	}
 
-	// PBroker - Kafka
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_HOST"); v != "" {
-		c.PBroker.Kafka.Host = v
+	// Producer - Kafka
+	if v = os.Getenv("SWAG_PRODUCER_KAFKA_HOST"); v != "" {
+		c.Producer.Kafka.Host = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_PORT"); v != "" {
-		c.PBroker.Kafka.Port = v
+	if v = os.Getenv("SWAG_PRODUCER_KAFKA_PORT"); v != "" {
+		c.Producer.Kafka.Port = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_GROUPID"); v != "" {
-		c.PBroker.Kafka.GroupID = v
+	if v = os.Getenv("SWAG_PRODUCER_KAFKA_GROUPID"); v != "" {
+		c.Producer.Kafka.GroupID = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_KAFKA_TOPIC"); v != "" {
-		c.PBroker.Kafka.Topic = v
+	if v = os.Getenv("SWAG_PRODUCER_KAFKA_TOPIC"); v != "" {
+		c.Producer.Kafka.Topic = v
 	}
 
-	// PBroker - NSQ
-	if v = os.Getenv("SWAG_PBROKER_NSQ_PORT"); v != "" {
-		c.PBroker.NSQ.Port = v
+	// Producer - NSQ
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_PORT"); v != "" {
+		c.Producer.NSQ.Port = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDHOST"); v != "" {
-		c.PBroker.NSQ.NsqlookupdHost = v
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_NSQLOOKUPDHOST"); v != "" {
+		c.Producer.NSQ.NsqlookupdHost = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQLOOKUPDPORT"); v != "" {
-		c.PBroker.NSQ.NsqlookupdPort = v
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_NSQLOOKUPDPORT"); v != "" {
+		c.Producer.NSQ.NsqlookupdPort = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDHOST"); v != "" {
-		c.PBroker.NSQ.NsqdHost = v
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_NSQDHOST"); v != "" {
+		c.Producer.NSQ.NsqdHost = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_NSQDPORT"); v != "" {
-		c.PBroker.NSQ.NsqdPort = v
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_NSQDPORT"); v != "" {
+		c.Producer.NSQ.NsqdPort = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_TOPIC"); v != "" {
-		c.PBroker.NSQ.Topic = v
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_TOPIC"); v != "" {
+		c.Producer.NSQ.Topic = v
 	}
-	if v = os.Getenv("SWAG_PBROKER_NSQ_CHANNEL"); v != "" {
-		c.PBroker.NSQ.Channel = v
+	if v = os.Getenv("SWAG_PRODUCER_NSQ_CHANNEL"); v != "" {
+		c.Producer.NSQ.Channel = v
 	}
 
 	// Consumer
@@ -755,25 +755,25 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&onMemory, "datastore.sqlite.onMemory", "", "false")
 	flags.StringVar(&c.Datastore.SQLite.DirPath, "datastore.sqlite.dirPath", c.Datastore.SQLite.DirPath, "")
 
-	// PBroker
-	flags.StringVar(&c.PBroker.Provider, "pbroker.provider", c.PBroker.Provider, "")
+	// Producer
+	flags.StringVar(&c.Producer.Provider, "producer.provider", c.Producer.Provider, "")
 
-	// PBroker - Direct
-	flags.StringVar(&c.PBroker.Direct.Endpoint, "pbroker.direct.endpoint", c.PBroker.Direct.Endpoint, "")
+	// Producer - Direct
+	flags.StringVar(&c.Producer.Direct.Endpoint, "producer.direct.endpoint", c.Producer.Direct.Endpoint, "")
 
-	// PBroker - kafka
-	flags.StringVar(&c.PBroker.Kafka.Host, "pbroker.kafka.host", c.PBroker.Kafka.Host, "")
-	flags.StringVar(&c.PBroker.Kafka.Port, "pbroker.kafka.port", c.PBroker.Kafka.Port, "")
-	flags.StringVar(&c.PBroker.Kafka.GroupID, "pbroker.kafka.groupId", c.PBroker.Kafka.GroupID, "")
-	flags.StringVar(&c.PBroker.Kafka.Topic, "pbroker.kafka.topic", c.PBroker.Kafka.Topic, "")
+	// Producer - kafka
+	flags.StringVar(&c.Producer.Kafka.Host, "producer.kafka.host", c.Producer.Kafka.Host, "")
+	flags.StringVar(&c.Producer.Kafka.Port, "producer.kafka.port", c.Producer.Kafka.Port, "")
+	flags.StringVar(&c.Producer.Kafka.GroupID, "producer.kafka.groupId", c.Producer.Kafka.GroupID, "")
+	flags.StringVar(&c.Producer.Kafka.Topic, "producer.kafka.topic", c.Producer.Kafka.Topic, "")
 
-	// PBroker - NSQ
-	flags.StringVar(&c.PBroker.NSQ.NsqlookupdHost, "pbroker.nsq.nsqlookupdHost", c.PBroker.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
-	flags.StringVar(&c.PBroker.NSQ.NsqlookupdPort, "pbroker.nsq.nsqlookupdPort", c.PBroker.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
-	flags.StringVar(&c.PBroker.NSQ.NsqdHost, "pbroker.nsq.nsqdHost", c.PBroker.NSQ.NsqdHost, "Host name of nsqd")
-	flags.StringVar(&c.PBroker.NSQ.NsqdPort, "pbroker.nsq.nsqdPort", c.PBroker.NSQ.NsqdPort, "Port no of nsqd")
-	flags.StringVar(&c.PBroker.NSQ.Topic, "pbroker.nsq.topic", c.PBroker.NSQ.Topic, "Topic name")
-	flags.StringVar(&c.PBroker.NSQ.Channel, "pbroker.nsq.channel", c.PBroker.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
+	// Producer - NSQ
+	flags.StringVar(&c.Producer.NSQ.NsqlookupdHost, "producer.nsq.nsqlookupdHost", c.Producer.NSQ.NsqlookupdHost, "Host name of nsqlookupd")
+	flags.StringVar(&c.Producer.NSQ.NsqlookupdPort, "producer.nsq.nsqlookupdPort", c.Producer.NSQ.NsqlookupdPort, "Port no of nsqlookupd")
+	flags.StringVar(&c.Producer.NSQ.NsqdHost, "producer.nsq.nsqdHost", c.Producer.NSQ.NsqdHost, "Host name of nsqd")
+	flags.StringVar(&c.Producer.NSQ.NsqdPort, "producer.nsq.nsqdPort", c.Producer.NSQ.NsqdPort, "Port no of nsqd")
+	flags.StringVar(&c.Producer.NSQ.Topic, "producer.nsq.topic", c.Producer.NSQ.Topic, "Topic name")
+	flags.StringVar(&c.Producer.NSQ.Channel, "producer.nsq.channel", c.Producer.NSQ.Channel, "Channel name. If it's not set, channel is hostname.")
 
 	// Consumer
 	flags.StringVar(&c.Consumer.Provider, "consumer.provider", c.Consumer.Provider, "")

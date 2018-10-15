@@ -13,7 +13,7 @@ import (
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/pbroker"
+	"github.com/swagchat/chat-api/producer"
 	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
@@ -320,7 +320,7 @@ func publishUserJoin(ctx context.Context, roomID string) {
 				Data:    buffer.Bytes(),
 				UserIDs: []string{userID},
 			}
-			err = pbroker.Provider(ctx).PublishMessage(event)
+			err = producer.Provider(ctx).PublishMessage(event)
 			if err != nil {
 				logger.Error(err.Error())
 				return

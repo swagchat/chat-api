@@ -1,4 +1,4 @@
-package pbroker
+package producer
 
 import (
 	"bytes"
@@ -31,15 +31,15 @@ func b2s(b []byte) string {
 }
 
 func (np nsqProvider) PublishMessage(rtmEvent *scpb.EventData) error {
-	span := tracer.Provider(np.ctx).StartSpan("PublishMessage", "pbroker")
+	span := tracer.Provider(np.ctx).StartSpan("PublishMessage", "producer")
 	defer tracer.Provider(np.ctx).Finish(span)
 
 	cfg := config.Config()
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
-	endpoint := cfg.PBroker.NSQ.NsqlookupdHost + ":" + cfg.PBroker.NSQ.NsqlookupdPort
-	url := fmt.Sprintf("%s/pub?topic=%s", endpoint, cfg.PBroker.NSQ.Topic)
+	endpoint := cfg.Producer.NSQ.NsqlookupdHost + ":" + cfg.Producer.NSQ.NsqlookupdPort
+	url := fmt.Sprintf("%s/pub?topic=%s", endpoint, cfg.Producer.NSQ.Topic)
 	resp, err := http.Post(url, "application/json", buffer)
 	if err != nil {
 		err = errors.Wrap(err, "NSQ post failure")

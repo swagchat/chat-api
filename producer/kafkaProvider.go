@@ -1,4 +1,4 @@
-package pbroker
+package producer
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ type kafkaProvider struct {
 }
 
 func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
-	span := tracer.Provider(kp.ctx).StartSpan("PublishMessage", "pbroker")
+	span := tracer.Provider(kp.ctx).StartSpan("PublishMessage", "producer")
 	defer tracer.Provider(kp.ctx).Finish(span)
 
 	cfg := config.Config()
@@ -29,7 +29,7 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
-		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.PBroker.Kafka.Host, cfg.PBroker.Kafka.Port),
+		"bootstrap.servers": fmt.Sprintf("%s:%s", cfg.Producer.Kafka.Host, cfg.Producer.Kafka.Port),
 	})
 	if err != nil {
 		err = errors.Wrap(err, "Kafka create producer failure")
@@ -54,7 +54,7 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	}()
 
 	// Produce messages to topic (asynchronously)
-	topic := cfg.PBroker.Kafka.Topic
+	topic := cfg.Producer.Kafka.Topic
 	// for _, word := range []string{"Welcome", "to", "the", "Confluent", "Kafka", "Golang", "client"} {
 	p.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},

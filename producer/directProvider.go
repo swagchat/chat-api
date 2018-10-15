@@ -1,4 +1,4 @@
-package pbroker
+package producer
 
 import (
 	"bytes"
@@ -19,13 +19,13 @@ type directProvider struct {
 }
 
 func (dp directProvider) PublishMessage(rtmEvent *scpb.EventData) error {
-	span := tracer.Provider(dp.ctx).StartSpan("PublishMessage", "pbroker")
+	span := tracer.Provider(dp.ctx).StartSpan("PublishMessage", "producer")
 	defer tracer.Provider(dp.ctx).Finish(span)
 
 	buffer := new(bytes.Buffer)
 	json.NewEncoder(buffer).Encode(rtmEvent)
 
-	endpoint := fmt.Sprintf("%s/message", config.Config().PBroker.Direct.Endpoint)
+	endpoint := fmt.Sprintf("%s/message", config.Config().Producer.Direct.Endpoint)
 
 	req, err := http.NewRequest("POST", endpoint, buffer)
 	if err != nil {
