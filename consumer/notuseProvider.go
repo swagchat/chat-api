@@ -1,4 +1,4 @@
-package sbroker
+package consumer
 
 import (
 	"context"

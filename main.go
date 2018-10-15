@@ -13,11 +13,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/swagchat/chat-api/config"
+	"github.com/swagchat/chat-api/consumer"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
 	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/rest"
-	"github.com/swagchat/chat-api/sbroker"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/tracer"
 )
@@ -50,7 +50,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	go sbroker.Provider(ctx).SubscribeMessage()
+	go consumer.Provider(ctx).SubscribeMessage()
 
 	if !cfg.Datastore.Dynamic {
 		datastore.Provider(ctx).CreateTables()

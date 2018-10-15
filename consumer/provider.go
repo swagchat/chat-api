@@ -1,4 +1,4 @@
-package sbroker
+package consumer
 
 import (
 	"context"
@@ -15,7 +15,7 @@ func Provider(ctx context.Context) provider {
 	cfg := config.Config()
 
 	var p provider
-	switch cfg.SBroker.Provider {
+	switch cfg.Consumer.Provider {
 	case "":
 		p = &notuseProvider{
 			ctx: ctx,

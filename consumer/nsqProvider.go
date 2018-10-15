@@ -1,4 +1,4 @@
-package sbroker
+package consumer
 
 import (
 	"context"
@@ -20,20 +20,20 @@ type nsqProvider struct {
 }
 
 func (np *nsqProvider) SubscribeMessage() error {
-	span := tracer.Provider(np.ctx).StartSpan("SubscribeMessage", "sbroker")
+	span := tracer.Provider(np.ctx).StartSpan("SubscribeMessage", "consumer")
 	defer tracer.Provider(np.ctx).Finish(span)
 
 	c := config.Config()
-	if c.SBroker.NSQ.NsqlookupdHost != "" {
+	if c.Consumer.NSQ.NsqlookupdHost != "" {
 		config := nsq.NewConfig()
-		channel := c.SBroker.NSQ.Channel
+		channel := c.Consumer.NSQ.Channel
 		hostname, err := os.Hostname()
 		if err == nil {
 			config.Hostname = hostname
 			channel = hostname
 		}
 
-		NSQConsumer, err = nsq.NewConsumer(c.SBroker.NSQ.Topic, channel, config)
+		NSQConsumer, err = nsq.NewConsumer(c.Consumer.NSQ.Topic, channel, config)
 		if err != nil {
 			logger.Error(err.Error())
 			tracer.Provider(np.ctx).SetError(span, err)
@@ -46,7 +46,7 @@ func (np *nsqProvider) SubscribeMessage() error {
 			// TODO
 			return nil
 		}))
-		err = NSQConsumer.ConnectToNSQLookupd(c.SBroker.NSQ.NsqlookupdHost + ":" + c.SBroker.NSQ.NsqlookupdPort)
+		err = NSQConsumer.ConnectToNSQLookupd(c.Consumer.NSQ.NsqlookupdHost + ":" + c.Consumer.NSQ.NsqlookupdPort)
 		if err != nil {
 			logger.Error(err.Error())
 			tracer.Provider(np.ctx).SetError(span, err)
@@ -58,7 +58,7 @@ func (np *nsqProvider) SubscribeMessage() error {
 }
 
 func (np *nsqProvider) UnsubscribeMessage() error {
-	span := tracer.Provider(np.ctx).StartSpan("UnsubscribeMessage", "sbroker")
+	span := tracer.Provider(np.ctx).StartSpan("UnsubscribeMessage", "consumer")
 	defer tracer.Provider(np.ctx).Finish(span)
 
 	if NSQConsumer == nil {
@@ -67,7 +67,7 @@ func (np *nsqProvider) UnsubscribeMessage() error {
 
 	c := config.Config()
 	hostname, err := os.Hostname()
-	_, err = http.Post("http://"+c.SBroker.NSQ.NsqdHost+":"+c.SBroker.NSQ.NsqdPort+"/channel/delete?topic="+c.SBroker.NSQ.Topic+"&channel="+hostname, "text/plain", nil)
+	_, err = http.Post("http://"+c.Consumer.NSQ.NsqdHost+":"+c.Consumer.NSQ.NsqdPort+"/channel/delete?topic="+c.Consumer.NSQ.Topic+"&channel="+hostname, "text/plain", nil)
 	if err != nil {
 		return errors.Wrap(err, "")
 	}
