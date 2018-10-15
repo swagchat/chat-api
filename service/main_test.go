@@ -22,7 +22,15 @@ func TestMain(m *testing.M) {
 
 	cfg := config.Config()
 	cfg.Logger.EnableConsole = false
-	logger.InitLogger(cfg.Logger)
+	logger.InitGlobalLogger(&logger.Config{
+		EnableConsole: cfg.Logger.EnableConsole,
+		ConsoleFormat: cfg.Logger.ConsoleFormat,
+		ConsoleLevel:  cfg.Logger.ConsoleLevel,
+		EnableFile:    cfg.Logger.EnableFile,
+		FileFormat:    cfg.Logger.FileFormat,
+		FileLevel:     cfg.Logger.FileLevel,
+		FilePath:      cfg.Logger.FilePath,
+	})
 	cfg.Datastore.SQLite.OnMemory = true
 	datastore.Provider(ctx).Connect(cfg.Datastore)
 	datastore.Provider(ctx).CreateTables()
