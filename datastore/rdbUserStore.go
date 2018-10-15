@@ -6,8 +6,8 @@ import (
 
 	"gopkg.in/gorp.v2"
 
+	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"

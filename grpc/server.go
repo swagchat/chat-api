@@ -10,7 +10,7 @@ import (
 	"github.com/swagchat/chat-api/tracer"
 
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
+	logger "github.com/betchi/zapper"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

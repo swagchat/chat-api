@@ -6,10 +6,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	logger "github.com/betchi/zapper"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )

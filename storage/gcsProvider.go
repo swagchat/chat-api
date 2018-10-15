@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/swagchat/chat-api/logger"
+	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/tracer"
 
 	"golang.org/x/oauth2/google"

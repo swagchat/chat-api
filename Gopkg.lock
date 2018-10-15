@@ -52,11 +52,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:53c8ffd02a108f967adad0a58103d12e5ce83f2dbe23c2c9292aa4c15b6598e2"
+  digest = "1:71b59d40394fe33a217fca19b185cd69e23d75197e9175d6078741064908552f"
   name = "github.com/betchi/zapper"
   packages = ["."]
   pruneopts = ""
-  revision = "882ad99315ee9b7dd242eb9e45916c597e8270e7"
+  revision = "6deff4141057cf88d54728c2fab9be3a842604e0"
 
 [[projects]]
   branch = "master"

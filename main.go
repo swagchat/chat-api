@@ -12,11 +12,11 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
+	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/consumer"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/rest"
 	"github.com/swagchat/chat-api/storage"
 	"github.com/swagchat/chat-api/tracer"
@@ -29,7 +29,15 @@ func main() {
 
 	cfg := config.Config()
 
-	logger.InitLogger(cfg.Logger)
+	logger.InitGlobalLogger(&logger.Config{
+		EnableConsole: cfg.Logger.EnableConsole,
+		ConsoleFormat: cfg.Logger.ConsoleFormat,
+		ConsoleLevel:  cfg.Logger.ConsoleLevel,
+		EnableFile:    cfg.Logger.EnableFile,
+		FileFormat:    cfg.Logger.FileFormat,
+		FileLevel:     cfg.Logger.FileLevel,
+		FilePath:      cfg.Logger.FilePath,
+	})
 
 	compact := &pretty.Config{
 		Compact: true,

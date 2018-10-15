@@ -82,7 +82,7 @@ func TestLogging(t *testing.T) {
 				defer os.Remove(tempDir)
 
 				filePath = filepath.Join(tempDir, "file.log")
-				testCase.LoggerConfiguration.Filepath = filePath
+				testCase.LoggerConfiguration.FilePath = filePath
 			}
 
 			logger := NewLogger(testCase.LoggerConfiguration)

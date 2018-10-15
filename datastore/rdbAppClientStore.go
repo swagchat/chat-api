@@ -9,9 +9,9 @@ import (
 
 	"time"
 
+	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
 )

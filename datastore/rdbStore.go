@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync/atomic"
 
+	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	gorp "gopkg.in/gorp.v2"
 )
 

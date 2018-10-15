@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
+	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	gorp "gopkg.in/gorp.v2"
 )
 
@@ -55,7 +55,7 @@ func (p *sqliteProvider) Connect(dsCfg *config.Datastore) error {
 	var master *gorp.DbMap
 	master = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	if p.enableLogging {
-		master.TraceOn("[master]", logger.Logger())
+		master.TraceOn("[master]", logger.GlobalLogger())
 	}
 	rs.setMaster(master)
 

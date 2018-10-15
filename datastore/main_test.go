@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/swagchat/chat-api/logger"
+	logger "github.com/betchi/zapper"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/swagchat/chat-api/config"

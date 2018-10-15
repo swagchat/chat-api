@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
+	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/producer"

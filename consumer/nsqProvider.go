@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"os"
 
+	logger "github.com/betchi/zapper"
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 )
 

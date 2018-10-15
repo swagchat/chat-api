@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/tracer"
 	gorp "gopkg.in/gorp.v2"

@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
+	logger "github.com/betchi/zapper"
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
 	"github.com/shogo82148/go-gracedown"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/tracer"

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/swagchat/chat-api/logger"
+	logger "github.com/betchi/zapper"
 )
 
 func isURL(checkURL string) error {

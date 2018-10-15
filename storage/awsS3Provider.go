@@ -10,8 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 )
 

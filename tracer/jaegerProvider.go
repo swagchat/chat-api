@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	logger "github.com/betchi/zapper"
 	opentracing "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	jaeger "github.com/uber/jaeger-client-go"
 	jaegerConfig "github.com/uber/jaeger-client-go/config"
 	transportZipkin "github.com/uber/jaeger-client-go/transport/zipkin"
@@ -109,10 +109,7 @@ func (jp *jaegerProvider) StartTransaction(name, transactionType string, opts ..
 	if opt.r == nil {
 		span = jaegerTracer.StartSpan(name)
 	} else {
-		spanCtx, err := jaegerTracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(opt.r.Header))
-		if err != nil {
-			logger.Error(err.Error())
-		}
+		spanCtx, _ := jaegerTracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(opt.r.Header))
 		span = jaegerTracer.StartSpan(name, ext.RPCServerOption(spanCtx))
 	}
 

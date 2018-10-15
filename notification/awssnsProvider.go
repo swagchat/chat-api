@@ -11,8 +11,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -147,8 +147,8 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 		client := ap.newSnsClient()
 		createPlatformEndpointInputParams := &sns.CreatePlatformEndpointInput{
 			PlatformApplicationArn: aws.String(platformApplicationArn),
-			Token:          aws.String(token),
-			CustomUserData: aws.String(userID),
+			Token:                  aws.String(token),
+			CustomUserData:         aws.String(userID),
 		}
 		createPlatformEndpointOutput, err := client.CreatePlatformEndpoint(createPlatformEndpointInputParams)
 		if err != nil {

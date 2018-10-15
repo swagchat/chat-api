@@ -8,10 +8,10 @@ import (
 	"os/signal"
 	"syscall"
 
+	logger "github.com/betchi/zapper"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
 	"github.com/swagchat/chat-api/tracer"

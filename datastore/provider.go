@@ -4,8 +4,8 @@ import (
 	"context"
 	"os"
 
+	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/logger"
 )
 
 type provider interface {

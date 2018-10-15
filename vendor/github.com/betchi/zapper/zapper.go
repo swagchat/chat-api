@@ -9,49 +9,35 @@ import (
 	lumberjack "gopkg.in/natefinch/lumberjack.v2"
 )
 
+// Field is an alias for zap.Field
+// type Field = zapcore.Field
+
 const (
 	levelDebug = "debug"
 	levelInfo  = "info"
 	levelWarn  = "warn"
 	levelError = "error"
+	levelFatal = "fatal"
 )
-
-// Field is an alias for zap.Field
-type Field = zapcore.Field
 
 var (
 	// Int constructs a field with the given key and value.
 	Int = zap.Int
 	// String constructs a field with the given key and value.
 	String = zap.String
+	logger *Logger
+
+	// Debug logs a message at DebugLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
+	Debug = logger.Debug
+	// Info logs a message at InfoLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
+	Info = logger.Info
+	// Warn logs a message at WarnLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
+	Warn = logger.Warn
+	// Error logs a message at ErrorLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
+	Error = logger.Error
 
 	encoderConfig = newEncoderConfig()
 )
-
-// Config is a logging configuration.
-type Config struct {
-	// EnableConsole is a flag for enable console log.
-	EnableConsole bool
-	// ConsoleFormat is a format for console log.
-	ConsoleFormat string
-	// ConsoleLevel is a level for console log.
-	ConsoleLevel string
-	// EnableFile is a flag for enable file log.
-	EnableFile bool
-	// FileFormat is a format for file log.
-	FileFormat string
-	// FileLevel is a log level for file log.
-	FileLevel string
-	// FilePath is a file path for file log.
-	Filepath string
-}
-
-// Logger is struct for logging.
-type Logger struct {
-	zap          *zap.Logger
-	consoleLevel zap.AtomicLevel
-	fileLevel    zap.AtomicLevel
-}
 
 func zapLevel(level string) zapcore.Level {
 	switch level {
@@ -63,6 +49,8 @@ func zapLevel(level string) zapcore.Level {
 		return zapcore.DebugLevel
 	case levelError:
 		return zapcore.ErrorLevel
+	case levelFatal:
+		return zapcore.FatalLevel
 	default:
 		return zapcore.InfoLevel
 	}
@@ -82,6 +70,28 @@ func newEncoderConfig() zapcore.EncoderConfig {
 		EncodeDuration: zapcore.SecondsDurationEncoder,
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
+}
+
+// InitGlobalLogger initialize global logger
+func InitGlobalLogger(config *Config) {
+	logger = NewLogger(&Config{
+		EnableConsole: config.EnableConsole,
+		ConsoleFormat: config.ConsoleFormat,
+		ConsoleLevel:  config.ConsoleLevel,
+		EnableFile:    config.EnableFile,
+		FileFormat:    config.FileFormat,
+		FileLevel:     config.FileLevel,
+		FilePath:      config.FilePath,
+	})
+	Debug = logger.Debug
+	Info = logger.Info
+	Warn = logger.Warn
+	Error = logger.Error
+}
+
+// GlobalLogger retrieve global logger
+func GlobalLogger() *Logger {
+	return logger
 }
 
 // NewLogger builds a Logger
@@ -109,7 +119,7 @@ func NewLogger(config *Config) *Logger {
 
 	if config.EnableFile {
 		writer := zapcore.AddSync(&lumberjack.Logger{
-			Filename: config.Filepath,
+			Filename: config.FilePath,
 			MaxSize:  100,
 			Compress: true,
 		})
@@ -145,8 +155,15 @@ func jsonEncoder() zapcore.Encoder {
 	return zapcore.NewJSONEncoder(encoderConfig)
 }
 
+// Logger is struct for logging.
+type Logger struct {
+	zap          *zap.Logger
+	consoleLevel zap.AtomicLevel
+	fileLevel    zap.AtomicLevel
+}
+
 // Debug logs a message at DebugLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
-func (l *Logger) Debug(message string, fields ...Field) {
+func (l *Logger) Debug(message string, fields ...zapcore.Field) {
 	if l == nil {
 		return
 	}
@@ -154,7 +171,7 @@ func (l *Logger) Debug(message string, fields ...Field) {
 }
 
 // Info logs a message at InfoLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
-func (l *Logger) Info(message string, fields ...Field) {
+func (l *Logger) Info(message string, fields ...zapcore.Field) {
 	if l == nil {
 		return
 	}
@@ -162,7 +179,7 @@ func (l *Logger) Info(message string, fields ...Field) {
 }
 
 // Warn logs a message at WarnLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
-func (l *Logger) Warn(message string, fields ...Field) {
+func (l *Logger) Warn(message string, fields ...zapcore.Field) {
 	if l == nil {
 		return
 	}
@@ -170,11 +187,19 @@ func (l *Logger) Warn(message string, fields ...Field) {
 }
 
 // Error logs a message at ErrorLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
-func (l *Logger) Error(message string, fields ...Field) {
+func (l *Logger) Error(message string, fields ...zapcore.Field) {
 	if l == nil {
 		return
 	}
 	l.zap.Error(message, fields...)
+}
+
+// Fatal logs a message at FatalLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
+func (l *Logger) Fatal(message string, fields ...zapcore.Field) {
+	if l == nil {
+		return
+	}
+	l.zap.Fatal(message, fields...)
 }
 
 // Debugf logs a message at DebugLevel.
@@ -182,7 +207,7 @@ func (l *Logger) Debugf(format string, args ...interface{}) {
 	if l == nil {
 		return
 	}
-	l.zap.Debug(fmt.Sprintf(format, args))
+	l.zap.Debug(fmt.Sprintf(format, args...))
 }
 
 // Infof logs a message at InfoLevel.
@@ -190,7 +215,7 @@ func (l *Logger) Infof(format string, args ...interface{}) {
 	if l == nil {
 		return
 	}
-	l.zap.Info(fmt.Sprintf(format, args))
+	l.zap.Info(fmt.Sprintf(format, args...))
 }
 
 // Warnf logs a message at WarnLevel.
@@ -198,7 +223,7 @@ func (l *Logger) Warnf(format string, args ...interface{}) {
 	if l == nil {
 		return
 	}
-	l.zap.Warn(fmt.Sprintf(format, args))
+	l.zap.Warn(fmt.Sprintf(format, args...))
 }
 
 // Errorf logs a message at ErrorLevel.
@@ -206,7 +231,15 @@ func (l *Logger) Errorf(format string, args ...interface{}) {
 	if l == nil {
 		return
 	}
-	l.zap.Error(fmt.Sprintf(format, args))
+	l.zap.Error(fmt.Sprintf(format, args...))
+}
+
+// Fatalf logs a message at FatalLevel.
+func (l *Logger) Fatalf(format string, args ...interface{}) {
+	if l == nil {
+		return
+	}
+	l.zap.Fatal(fmt.Sprintf(format, args...))
 }
 
 // Printf logs a message at DebugLevel. For gorp trace message
@@ -214,5 +247,5 @@ func (l *Logger) Printf(format string, args ...interface{}) {
 	if l == nil {
 		return
 	}
-	l.zap.Debug(fmt.Sprintf(format, args))
+	l.zap.Debug(fmt.Sprintf(format, args...))
 }
