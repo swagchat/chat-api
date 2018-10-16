@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	logger "github.com/betchi/zapper"
+	elasticapmLogger "github.com/betchi/zapper/elasticapm"
 	elasticapm "github.com/elastic/apm-agent-go"
 	"github.com/swagchat/chat-api/config"
 )
@@ -21,7 +22,7 @@ func (ep *elasticapmProvider) NewTracer() error {
 		logger.Error(err.Error())
 		return nil
 	}
-	tracer.SetLogger(logger.GlobalLogger())
+	tracer.SetLogger(elasticapmLogger.GlobalLogger())
 	tracer.SetCaptureBody(elasticapm.CaptureBodyAll)
 	elasticapmTracer = tracer
 	return nil

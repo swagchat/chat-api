@@ -12,6 +12,7 @@ import (
 	gorp "gopkg.in/gorp.v2"
 
 	logger "github.com/betchi/zapper"
+	gorpLogger "github.com/betchi/zapper/gorp"
 	"github.com/go-sql-driver/mysql"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
@@ -59,7 +60,7 @@ func (p *gcpSQLProvider) Connect(dsCfg *config.Datastore) error {
 		var master *gorp.DbMap
 		master = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
 		if p.enableLogging {
-			master.TraceOn("[master]", logger.GlobalLogger())
+			master.TraceOn("[master]", gorpLogger.GlobalLogger())
 
 		}
 		rs.setMaster(master)
@@ -89,7 +90,7 @@ func (p *gcpSQLProvider) Connect(dsCfg *config.Datastore) error {
 			var replica *gorp.DbMap
 			replica = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{Engine: "InnoDB", Encoding: "UTF8MB4"}}
 			if p.enableLogging {
-				replica.TraceOn("[replica]", logger.GlobalLogger())
+				replica.TraceOn("[replica]", gorpLogger.GlobalLogger())
 			}
 			rs.setReplica(replica)
 		}

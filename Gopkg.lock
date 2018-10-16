@@ -52,11 +52,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:71b59d40394fe33a217fca19b185cd69e23d75197e9175d6078741064908552f"
+  digest = "1:edb9ccb90967c3ef5f55fde8bcc7d45e8f5262a6a8fc6327d6d20306de751c35"
   name = "github.com/betchi/zapper"
-  packages = ["."]
+  packages = [
+    ".",
+    "elasticapm",
+    "gorp",
+  ]
   pruneopts = ""
-  revision = "6deff4141057cf88d54728c2fab9be3a842604e0"
+  revision = "120655694e30226d08065540c01c6aabad5c76ca"
 
 [[projects]]
   branch = "master"
@@ -647,6 +651,8 @@
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/sns",
     "github.com/betchi/zapper",
+    "github.com/betchi/zapper/elasticapm",
+    "github.com/betchi/zapper/gorp",
     "github.com/confluentinc/confluent-kafka-go/kafka",
     "github.com/elastic/apm-agent-go",
     "github.com/fukata/golang-stats-api-handler",
