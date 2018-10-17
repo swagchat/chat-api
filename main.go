@@ -32,13 +32,18 @@ func main() {
 	cfg := config.Config()
 
 	logger.InitGlobalLogger(&logger.Config{
-		EnableConsole: cfg.Logger.EnableConsole,
-		ConsoleFormat: cfg.Logger.ConsoleFormat,
-		ConsoleLevel:  cfg.Logger.ConsoleLevel,
-		EnableFile:    cfg.Logger.EnableFile,
-		FileFormat:    cfg.Logger.FileFormat,
-		FileLevel:     cfg.Logger.FileLevel,
-		FilePath:      cfg.Logger.FilePath,
+		EnableConsole:  cfg.Logger.EnableConsole,
+		ConsoleFormat:  cfg.Logger.ConsoleFormat,
+		ConsoleLevel:   cfg.Logger.ConsoleLevel,
+		EnableFile:     cfg.Logger.EnableFile,
+		FileFormat:     cfg.Logger.FileFormat,
+		FileLevel:      cfg.Logger.FileLevel,
+		FilePath:       cfg.Logger.FilePath,
+		FileMaxSize:    cfg.Logger.FileMaxSize,
+		FileMaxAge:     cfg.Logger.FileMaxAge,
+		FileMaxBackups: cfg.Logger.FileMaxBackups,
+		FileLocalTime:  cfg.Logger.FileLocalTime,
+		FileCompress:   cfg.Logger.FileCompress,
 	})
 
 	compact := &pretty.Config{
@@ -61,6 +66,8 @@ func main() {
 
 	go consumer.Provider(ctx).SubscribeMessage()
 
+	jaegerLogger.InitGlobalLogger(&jaegerLogger.Config{Noop: !cfg.Tracer.Logging})
+	elasticapmLogger.InitGlobalLogger(&elasticapmLogger.Config{Noop: !cfg.Tracer.Logging})
 	err := tracer.InitGlobalTracer(&tracer.Config{
 		Provider:       cfg.Tracer.Provider,
 		ServiceName:    config.AppName,

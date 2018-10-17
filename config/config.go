@@ -54,15 +54,26 @@ type Logger struct {
 	FileLevel string `yaml:"fileLevel"`
 	// FilePath is a file path for file log.
 	FilePath string `yaml:"filePath"`
+	// FileMaxSize is a max size(megabytes) for file log. The Default is 100 megabytes.
+	FileMaxSize int `yaml:"fileMaxSize"`
+	// FileMaxAge is a max age(days) for file log. The default is 1 days.
+	FileMaxAge int `yaml:"fileMaxAge"`
+	// FileMaxBackups is a max backup file number for file log. The default is 10 files.
+	FileMaxBackups int `yaml:"fileMaxBackups"`
+	// FileLocalTime is a formatting the timestamps for backup files. The default is to use UTC time.
+	FileLocalTime bool `yaml:"fileLocalTime"`
+	// FileCompress is a compressed flag for file log. The default is false.
+	FileCompress bool `yaml:"fileCompress"`
 }
 
 // Tracer is settings of tracer
 type Tracer struct {
 	Provider string
+	Logging  bool
 
 	Zipkin struct {
 		Endpoint  string
-		BatchSize int
+		BatchSize int `yaml:"batchSize"`
 		Timeout   int
 	}
 }
@@ -234,12 +245,19 @@ func defaultSetting() *config {
 		EnableDeveloperMessage: false,
 		FirstClientID:          "admin",
 		Logger: &Logger{
-			EnableConsole: true,
-			ConsoleFormat: "text",
-			ConsoleLevel:  "debug",
-			EnableFile:    false,
+			EnableConsole:  true,
+			ConsoleFormat:  "text",
+			ConsoleLevel:   "debug",
+			EnableFile:     false,
+			FileMaxSize:    100,
+			FileMaxAge:     1,
+			FileMaxBackups: 10,
+			FileLocalTime:  false,
+			FileCompress:   false,
 		},
-		Tracer: &Tracer{},
+		Tracer: &Tracer{
+			Logging: false,
+		},
 		Storage: &Storage{
 			Provider: "local",
 			Local: struct {
@@ -319,10 +337,37 @@ func (c *config) loadEnv() {
 	if v = os.Getenv("SWAG_LOGGER_FILE_PATH"); v != "" {
 		c.Logger.FilePath = v
 	}
+	if v = os.Getenv("SWAG_LOGGER_FILE_MAX_SIZE"); v != "" {
+		fileMaxSize, err := strconv.Atoi(v)
+		if err == nil {
+			c.Logger.FileMaxSize = fileMaxSize
+		}
+	}
+	if v = os.Getenv("SWAG_LOGGER_FILE_MAX_AGE"); v != "" {
+		fileMaxAge, err := strconv.Atoi(v)
+		if err == nil {
+			c.Logger.FileMaxAge = fileMaxAge
+		}
+	}
+	if v = os.Getenv("SWAG_LOGGER_FILE_MAX_BACKUPS"); v != "" {
+		fileMaxBackups, err := strconv.Atoi(v)
+		if err == nil {
+			c.Logger.FileMaxBackups = fileMaxBackups
+		}
+	}
+	if v = os.Getenv("SWAG_LOGGER_FILE_LOCAL_TIME"); v == "true" {
+		c.Logger.FileLocalTime = true
+	}
+	if v = os.Getenv("SWAG_LOGGER_FILE_COMPRESS"); v == "true" {
+		c.Logger.FileCompress = true
+	}
 
 	// Tracer
 	if v = os.Getenv("SWAG_TRACER_PROVIDER"); v != "" {
 		c.Tracer.Provider = v
+	}
+	if v = os.Getenv("SWAG_TRACER_LOGGING"); v == "true" {
+		c.Tracer.Logging = true
 	}
 	if v = os.Getenv("SWAG_TRACER_ZIPKIN_ENDPOINT"); v != "" {
 		c.Tracer.Zipkin.Endpoint = v
@@ -667,9 +712,15 @@ func (c *config) parseFlag(args []string) error {
 	flags.StringVar(&c.Logger.FileFormat, "logger.fileFormat", c.Logger.FileFormat, "")
 	flags.StringVar(&c.Logger.FileLevel, "logger.fileLevel", c.Logger.FileLevel, "")
 	flags.StringVar(&c.Logger.FilePath, "logger.filePath", c.Logger.FilePath, "")
+	flags.IntVar(&c.Logger.FileMaxSize, "logger.fileMaxSize", c.Logger.FileMaxSize, "")
+	flags.IntVar(&c.Logger.FileMaxAge, "logger.fileMaxAge", c.Logger.FileMaxAge, "")
+	flags.IntVar(&c.Logger.FileMaxBackups, "logger.fileMaxBackups", c.Logger.FileMaxBackups, "")
+	flags.BoolVar(&c.Logger.FileLocalTime, "logger.fileLocalTime", c.Logger.FileLocalTime, "")
+	flags.BoolVar(&c.Logger.FileCompress, "logger.fileCompress", c.Logger.FileCompress, "")
 
 	// Tracer
 	flags.StringVar(&c.Tracer.Provider, "tracer.provider", c.Tracer.Provider, "")
+	flags.BoolVar(&c.Tracer.Logging, "tracer.logging", c.Tracer.Logging, "")
 	flags.StringVar(&c.Tracer.Zipkin.Endpoint, "tracer.zipkin.endpoint", c.Tracer.Zipkin.Endpoint, "")
 	flags.IntVar(&c.Tracer.Zipkin.BatchSize, "tracer.zipkin.batchsize", c.Tracer.Zipkin.BatchSize, "")
 	flags.IntVar(&c.Tracer.Zipkin.Timeout, "tracer.zipkin.timeout", c.Tracer.Zipkin.Timeout, "")

@@ -52,15 +52,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d476071c760340ce758d53212dcc37d3f2ba6ff72b2b3d1edc188682cfbec131"
+  digest = "1:3bd8bab6cb1f49025962f17ce3e7a8090081360c990d6ee4e93ae4260a7a7438"
   name = "github.com/betchi/tracer"
   packages = ["."]
   pruneopts = ""
-  revision = "9ea822e276eeb2c065c420ca9d6c9b6cc97cc91a"
+  revision = "daadb01bb4a683b93ced1dee7f74cbba865871a5"
 
 [[projects]]
   branch = "master"
-  digest = "1:afdbe19c9ba7177f416e3fc6fbacdab97f55dffa7ecfd66f9b8e1d97fd45cbbf"
+  digest = "1:97bec508f31cd8d4c206db99876f8b991d5f128755b130f40ce5ed907118160f"
   name = "github.com/betchi/zapper"
   packages = [
     ".",
@@ -69,7 +69,7 @@
     "jaeger",
   ]
   pruneopts = ""
-  revision = "4dd2f51f1e18596c489b8f84604bdfaf39fb6989"
+  revision = "7bd0586d6a66069f9508fd9a25e48cf8e07f9d1b"
 
 [[projects]]
   branch = "master"
