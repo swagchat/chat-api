@@ -10,13 +10,13 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/storage"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 // PostAsset is post asset
 func PostAsset(ctx context.Context, contentType string, file io.Reader, size int64, width, height int) (*model.Asset, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("PostAsset", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "PostAsset", "service")
+	defer tracer.Finish(span)
 
 	asset := &model.Asset{
 		Mime:   contentType,
@@ -51,8 +51,8 @@ func PostAsset(ctx context.Context, contentType string, file io.Reader, size int
 
 // GetAsset gets asset
 func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *model.Asset, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetAsset", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "GetAsset", "service")
+	defer tracer.Finish(span)
 
 	if ifModifiedSince != "" {
 		_, err := time.Parse(http.TimeFormat, ifModifiedSince)
@@ -80,8 +80,8 @@ func GetAsset(ctx context.Context, assetID, ifModifiedSince string) ([]byte, *mo
 
 // GetAssetInfo gets asset info
 func GetAssetInfo(ctx context.Context, assetID, ifModifiedSince string) (*model.Asset, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("GetAssetInfo", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "GetAssetInfo", "service")
+	defer tracer.Finish(span)
 
 	asset, errRes := confirmAssetExist(ctx, assetID)
 	if errRes != nil {

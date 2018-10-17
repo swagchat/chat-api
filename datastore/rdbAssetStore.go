@@ -9,12 +9,12 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func rdbCreateAssetStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateAssetStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateAssetStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.Asset{}, tableNameAsset)
 	tableMap.SetKeys(true, "id")
@@ -27,19 +27,19 @@ func rdbCreateAssetStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating asset table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertAsset(ctx context.Context, dbMap *gorp.DbMap, asset *model.Asset) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertAsset", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertAsset", "datastore")
+	defer tracer.Finish(span)
 
 	if err := dbMap.Insert(asset); err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting asset")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -47,8 +47,8 @@ func rdbInsertAsset(ctx context.Context, dbMap *gorp.DbMap, asset *model.Asset) 
 }
 
 func rdbSelectAsset(ctx context.Context, dbMap *gorp.DbMap, assetID string) (*model.Asset, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectAsset", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectAsset", "datastore")
+	defer tracer.Finish(span)
 
 	var assets []*model.Asset
 	query := fmt.Sprintf("SELECT * FROM %s WHERE asset_id=:assetId AND deleted = 0;", tableNameAsset)
@@ -57,7 +57,7 @@ func rdbSelectAsset(ctx context.Context, dbMap *gorp.DbMap, assetID string) (*mo
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting asset")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 

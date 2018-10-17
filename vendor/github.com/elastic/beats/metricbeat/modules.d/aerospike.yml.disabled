@@ -1,2 +1,0 @@
-- module: aerospike
-  hosts: ["localhost:3000"]

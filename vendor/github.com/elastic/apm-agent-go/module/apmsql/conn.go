@@ -11,6 +11,7 @@ import (
 func newConn(in driver.Conn, d *tracingDriver, dsnInfo DSNInfo) driver.Conn {
 	conn := &conn{Conn: in, driver: d}
 	conn.dsnInfo = dsnInfo
+	conn.namedValueChecker, _ = in.(namedValueChecker)
 	conn.pinger, _ = in.(driver.Pinger)
 	conn.queryer, _ = in.(driver.Queryer)
 	conn.queryerContext, _ = in.(driver.QueryerContext)
@@ -31,6 +32,7 @@ type conn struct {
 	driver  *tracingDriver
 	dsnInfo DSNInfo
 
+	namedValueChecker  namedValueChecker
 	pinger             driver.Pinger
 	queryer            driver.Queryer
 	queryerContext     driver.QueryerContext
@@ -57,8 +59,8 @@ func (c *conn) startSpan(ctx context.Context, name, spanType, stmt string) (*ela
 	return span, ctx
 }
 
-func (c *conn) finishSpan(ctx context.Context, span *elasticapm.Span, resultError error) {
-	if resultError == driver.ErrSkip {
+func (c *conn) finishSpan(ctx context.Context, span *elasticapm.Span, resultError *error) {
+	if *resultError == driver.ErrSkip {
 		// TODO(axw) mark span as abandoned,
 		// so it's not sent and not counted
 		// in the span limit. Ideally remove
@@ -67,7 +69,7 @@ func (c *conn) finishSpan(ctx context.Context, span *elasticapm.Span, resultErro
 		return
 	}
 	span.End()
-	if e := elasticapm.CaptureError(ctx, resultError); e != nil {
+	if e := elasticapm.CaptureError(ctx, *resultError); e != nil {
 		e.Send()
 	}
 }
@@ -77,7 +79,7 @@ func (c *conn) Ping(ctx context.Context) (resultError error) {
 		return nil
 	}
 	span, ctx := c.startSpan(ctx, "ping", c.driver.pingSpanType, "")
-	defer c.finishSpan(ctx, span, resultError)
+	defer c.finishSpan(ctx, span, &resultError)
 	return c.pinger.Ping(ctx)
 }
 
@@ -86,7 +88,7 @@ func (c *conn) QueryContext(ctx context.Context, query string, args []driver.Nam
 		return nil, driver.ErrSkip
 	}
 	span, ctx := c.startStmtSpan(ctx, query, c.driver.querySpanType)
-	defer c.finishSpan(ctx, span, resultError)
+	defer c.finishSpan(ctx, span, &resultError)
 
 	if c.queryerContext != nil {
 		return c.queryerContext.QueryContext(ctx, query, args)
@@ -109,7 +111,7 @@ func (*conn) Query(query string, args []driver.Value) (driver.Rows, error) {
 
 func (c *conn) PrepareContext(ctx context.Context, query string) (_ driver.Stmt, resultError error) {
 	span, ctx := c.startStmtSpan(ctx, query, c.driver.prepareSpanType)
-	defer c.finishSpan(ctx, span, resultError)
+	defer c.finishSpan(ctx, span, &resultError)
 	var stmt driver.Stmt
 	var err error
 	if c.connPrepareContext != nil {
@@ -136,7 +138,7 @@ func (c *conn) ExecContext(ctx context.Context, query string, args []driver.Name
 		return nil, driver.ErrSkip
 	}
 	span, ctx := c.startStmtSpan(ctx, query, c.driver.execSpanType)
-	defer c.finishSpan(ctx, span, resultError)
+	defer c.finishSpan(ctx, span, &resultError)
 
 	if c.execerContext != nil {
 		return c.execerContext.ExecContext(ctx, query, args)
@@ -155,6 +157,10 @@ func (c *conn) ExecContext(ctx context.Context, query string, args []driver.Name
 
 func (*conn) Exec(query string, args []driver.Value) (driver.Result, error) {
 	return nil, errors.New("Exec should never be called")
+}
+
+func (c *conn) CheckNamedValue(nv *driver.NamedValue) error {
+	return checkNamedValue(nv, c.namedValueChecker)
 }
 
 type connBeginTx struct {

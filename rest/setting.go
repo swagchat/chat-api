@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func setSettingMux() {
@@ -13,8 +13,8 @@ func setSettingMux() {
 
 func getSetting(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getSetting", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getSetting", "rest")
+	defer tracer.Finish(span)
 
 	setting, errRes := service.GetSetting(ctx)
 	if errRes != nil {

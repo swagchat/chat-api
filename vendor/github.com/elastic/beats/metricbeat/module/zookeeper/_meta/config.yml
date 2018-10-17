@@ -1,3 +1,0 @@
-- module: zookeeper
-  period: 10s
-  hosts: ["localhost:2181"]

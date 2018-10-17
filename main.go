@@ -12,14 +12,16 @@ import (
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
+	tracer "github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
+	elasticapmLogger "github.com/betchi/zapper/elasticapm"
+	jaegerLogger "github.com/betchi/zapper/jaeger"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/consumer"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
 	"github.com/swagchat/chat-api/rest"
 	"github.com/swagchat/chat-api/storage"
-	"github.com/swagchat/chat-api/tracer"
 )
 
 func main() {
@@ -54,22 +56,36 @@ func main() {
 	defer cancel()
 
 	if err := storage.Provider(ctx).Init(); err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
+		logger.Fatal(err.Error())
 	}
 
 	go consumer.Provider(ctx).SubscribeMessage()
 
+	err := tracer.InitGlobalTracer(&tracer.Config{
+		Provider:       cfg.Tracer.Provider,
+		ServiceName:    config.AppName,
+		ServiceVersion: config.BuildVersion,
+		Jaeger: &tracer.Jaeger{
+			Logger: jaegerLogger.GlobalLogger(),
+		},
+		Zipkin: &tracer.Zipkin{
+			Logger:    jaegerLogger.GlobalLogger(),
+			Endpoint:  cfg.Tracer.Zipkin.Endpoint,
+			BatchSize: cfg.Tracer.Zipkin.BatchSize,
+			Timeout:   cfg.Tracer.Zipkin.Timeout,
+		},
+		ElasticAPM: &tracer.ElasticAPM{
+			Logger: elasticapmLogger.GlobalLogger(),
+		},
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	defer tracer.Close()
+
 	if !cfg.Datastore.Dynamic {
 		datastore.Provider(ctx).CreateTables()
 	}
-
-	err := tracer.Provider(ctx).NewTracer()
-	if err != nil {
-		logger.Error(err.Error())
-		os.Exit(1)
-	}
-	defer tracer.Provider(ctx).Close()
 
 	sigChan := make(chan os.Signal)
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGKILL, syscall.SIGSTOP)

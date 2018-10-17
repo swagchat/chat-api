@@ -5,7 +5,7 @@ import (
 
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func setMessageMux() {
@@ -15,8 +15,8 @@ func setMessageMux() {
 
 func postMessage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postMessage", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postMessage", "rest")
+	defer tracer.Finish(span)
 
 	var req model.SendMessageRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -35,8 +35,8 @@ func postMessage(w http.ResponseWriter, r *http.Request) {
 
 // func getMessage(w http.ResponseWriter, r *http.Request) {
 // 	ctx := r.Context()
-// 	span := tracer.Provider(ctx).StartSpan("getMessage", "rest")
-// 	defer tracer.Provider(ctx).Finish(span)
+// 	span := tracer.StartSpan(ctx, "getMessage", "rest")
+// 	defer tracer.Finish(span)
 
 // 	messageID := bone.GetValue(r, "messageId")
 

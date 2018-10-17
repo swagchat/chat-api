@@ -8,13 +8,13 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 // AddRoomUsers creates room users
 func AddRoomUsers(ctx context.Context, req *model.AddRoomUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("AddRoomUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "AddRoomUsers", "service")
+	defer tracer.Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {
@@ -64,8 +64,8 @@ func AddRoomUsers(ctx context.Context, req *model.AddRoomUsersRequest) *model.Er
 
 // RetrieveRoomUsers retrieves room users
 func RetrieveRoomUsers(ctx context.Context, req *model.RetrieveRoomUsersRequest) (*model.RoomUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveRoomUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveRoomUsers", "service")
+	defer tracer.Finish(span)
 
 	_, errRes := confirmRoomExist(ctx, req.RoomID)
 	if errRes != nil {
@@ -89,8 +89,8 @@ func RetrieveRoomUsers(ctx context.Context, req *model.RetrieveRoomUsersRequest)
 
 // RetrieveRoomUserIDs retrieves room userIds
 func RetrieveRoomUserIDs(ctx context.Context, req *model.RetrieveRoomUsersRequest) (*model.RoomUserIdsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveRoomUserIDs", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveRoomUserIDs", "service")
+	defer tracer.Finish(span)
 
 	_, errRes := confirmRoomExist(ctx, req.RoomID)
 	if errRes != nil {
@@ -114,8 +114,8 @@ func RetrieveRoomUserIDs(ctx context.Context, req *model.RetrieveRoomUsersReques
 
 // UpdateRoomUser updates room user
 func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("UpdateRoomUser", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "UpdateRoomUser", "service")
+	defer tracer.Finish(span)
 
 	ru, errRes := confirmRoomUserExist(ctx, req.RoomID, req.UserID)
 	if errRes != nil {
@@ -146,8 +146,8 @@ func UpdateRoomUser(ctx context.Context, req *model.UpdateRoomUserRequest) *mode
 
 // DeleteRoomUsers deletes room users
 func DeleteRoomUsers(ctx context.Context, req *model.DeleteRoomUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("DeleteRoomUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "DeleteRoomUsers", "service")
+	defer tracer.Finish(span)
 
 	room, errRes := confirmRoomExist(ctx, req.RoomID, datastore.SelectRoomOptionWithUsers(true))
 	if errRes != nil {

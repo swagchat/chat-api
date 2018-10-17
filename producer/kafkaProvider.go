@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -21,8 +21,8 @@ type kafkaProvider struct {
 }
 
 func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
-	span := tracer.Provider(kp.ctx).StartSpan("PublishMessage", "producer")
-	defer tracer.Provider(kp.ctx).Finish(span)
+	span := tracer.StartSpan(kp.ctx, "PublishMessage", "producer")
+	defer tracer.Finish(span)
 
 	cfg := config.Config()
 	buffer := new(bytes.Buffer)
@@ -34,7 +34,7 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	if err != nil {
 		err = errors.Wrap(err, "Kafka create producer failure")
 		logger.Error(err.Error())
-		tracer.Provider(kp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 	}
 
 	// Delivery report handler for produced messages
@@ -45,7 +45,7 @@ func (kp kafkaProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 				if ev.TopicPartition.Error != nil {
 					err = fmt.Errorf("Delivery failed: %v", ev.TopicPartition)
 					logger.Error(err.Error())
-					tracer.Provider(kp.ctx).SetError(span, err)
+					tracer.SetError(span, err)
 				} else {
 					logger.Info(fmt.Sprintf("Delivered message to %v\n", ev.TopicPartition))
 				}

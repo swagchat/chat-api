@@ -8,13 +8,13 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 // AddDevice create a device
 func AddDevice(ctx context.Context, req *model.AddDeviceRequest) (*model.Device, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("UpdateDevice", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "UpdateDevice", "service")
+	defer tracer.Finish(span)
 
 	device, err := datastore.Provider(ctx).SelectDevice(req.UserID, req.Platform)
 	if err != nil {
@@ -63,8 +63,8 @@ func AddDevice(ctx context.Context, req *model.AddDeviceRequest) (*model.Device,
 
 // RetrieveDevices retrieves devices
 func RetrieveDevices(ctx context.Context, req *model.RetrieveDevicesRequest) (*model.DevicesResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveDevices", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveDevices", "service")
+	defer tracer.Finish(span)
 
 	devices, err := datastore.Provider(ctx).SelectDevices(datastore.SelectDevicesOptionFilterByUserID(req.UserID))
 	if err != nil {
@@ -78,8 +78,8 @@ func RetrieveDevices(ctx context.Context, req *model.RetrieveDevicesRequest) (*m
 
 // DeleteDevice deletes device
 func DeleteDevice(ctx context.Context, req *model.DeleteDeviceRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("DeleteDevice", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "DeleteDevice", "service")
+	defer tracer.Finish(span)
 
 	device, errRes := confirmDeviceExist(ctx, req.UserID, req.Platform)
 	if errRes != nil {

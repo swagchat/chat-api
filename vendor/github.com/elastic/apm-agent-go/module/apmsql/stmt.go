@@ -17,20 +17,23 @@ func newStmt(in driver.Stmt, conn *conn, query string) driver.Stmt {
 	stmt.columnConverter, _ = in.(driver.ColumnConverter)
 	stmt.stmtExecContext, _ = in.(driver.StmtExecContext)
 	stmt.stmtQueryContext, _ = in.(driver.StmtQueryContext)
-	stmt.stmtGo19.init(in)
+	stmt.namedValueChecker, _ = in.(namedValueChecker)
+	if stmt.namedValueChecker == nil {
+		stmt.namedValueChecker = conn.namedValueChecker
+	}
 	return stmt
 }
 
 type stmt struct {
 	driver.Stmt
-	stmtGo19
 	conn      *conn
 	signature string
 	query     string
 
-	columnConverter  driver.ColumnConverter
-	stmtExecContext  driver.StmtExecContext
-	stmtQueryContext driver.StmtQueryContext
+	columnConverter   driver.ColumnConverter
+	namedValueChecker namedValueChecker
+	stmtExecContext   driver.StmtExecContext
+	stmtQueryContext  driver.StmtQueryContext
 }
 
 func (s *stmt) startSpan(ctx context.Context, spanType string) (*elasticapm.Span, context.Context) {
@@ -46,7 +49,7 @@ func (s *stmt) ColumnConverter(idx int) driver.ValueConverter {
 
 func (s *stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (_ driver.Result, resultError error) {
 	span, ctx := s.startSpan(ctx, s.conn.driver.execSpanType)
-	defer s.conn.finishSpan(ctx, span, resultError)
+	defer s.conn.finishSpan(ctx, span, &resultError)
 	if s.stmtExecContext != nil {
 		return s.stmtExecContext.ExecContext(ctx, args)
 	}
@@ -64,7 +67,7 @@ func (s *stmt) ExecContext(ctx context.Context, args []driver.NamedValue) (_ dri
 
 func (s *stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (_ driver.Rows, resultError error) {
 	span, ctx := s.startSpan(ctx, s.conn.driver.querySpanType)
-	defer s.conn.finishSpan(ctx, span, resultError)
+	defer s.conn.finishSpan(ctx, span, &resultError)
 	if s.stmtQueryContext != nil {
 		return s.stmtQueryContext.QueryContext(ctx, args)
 	}
@@ -78,4 +81,8 @@ func (s *stmt) QueryContext(ctx context.Context, args []driver.NamedValue) (_ dr
 		return nil, ctx.Err()
 	}
 	return s.Query(dargs)
+}
+
+func (s *stmt) CheckNamedValue(nv *driver.NamedValue) error {
+	return checkNamedValue(nv, s.namedValueChecker)
 }

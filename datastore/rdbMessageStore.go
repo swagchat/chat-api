@@ -14,13 +14,13 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
 func rdbCreateMessageStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateMessageStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateMessageStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.Message{}, tableNameMessage)
 	for _, columnMap := range tableMap.Columns {
@@ -32,7 +32,7 @@ func rdbCreateMessageStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating message table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 
@@ -47,7 +47,7 @@ func rdbCreateMessageStore(ctx context.Context, dbMap *gorp.DbMap) {
 			if strings.Index(errMessage, "Duplicate key name") < 0 {
 				err = errors.Wrap(err, "An error occurred while creating message table")
 				logger.Error(err.Error())
-				tracer.Provider(ctx).SetError(span, err)
+				tracer.SetError(span, err)
 				return
 			}
 		}
@@ -55,14 +55,14 @@ func rdbCreateMessageStore(ctx context.Context, dbMap *gorp.DbMap) {
 }
 
 func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, message *model.Message) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertMessage", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertMessage", "datastore")
+	defer tracer.Finish(span)
 
 	err := tx.Insert(message)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -72,13 +72,13 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 	if _, err = tx.Select(&rooms, query, params); err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 	if len(rooms) != 1 {
 		err := errors.New("An error occurred while inserting message. Room count is not 1")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -104,7 +104,7 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -113,7 +113,7 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -124,7 +124,7 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 	for _, user := range users {
@@ -136,7 +136,7 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting message")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -145,8 +145,8 @@ func rdbInsertMessage(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 }
 
 func rdbSelectMessages(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32, opts ...SelectMessagesOption) ([]*model.Message, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectMessages", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectMessages", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectMessagesOptions{}
 	for _, o := range opts {
@@ -200,7 +200,7 @@ func rdbSelectMessages(ctx context.Context, dbMap *gorp.DbMap, limit, offset int
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting messages")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -208,8 +208,8 @@ func rdbSelectMessages(ctx context.Context, dbMap *gorp.DbMap, limit, offset int
 }
 
 func rdbSelectMessage(ctx context.Context, dbMap *gorp.DbMap, messageID string) (*model.Message, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectMessage", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectMessage", "datastore")
+	defer tracer.Finish(span)
 
 	var messages []*model.Message
 	query := fmt.Sprintf("SELECT * FROM %s WHERE message_id=:messageId;", tableNameMessage)
@@ -218,7 +218,7 @@ func rdbSelectMessage(ctx context.Context, dbMap *gorp.DbMap, messageID string) 
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -230,8 +230,8 @@ func rdbSelectMessage(ctx context.Context, dbMap *gorp.DbMap, messageID string) 
 }
 
 func rdbSelectCountMessages(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectMessagesOption) (int64, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectCountMessages", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectCountMessages", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectMessagesOptions{}
 	for _, o := range opts {
@@ -256,7 +256,7 @@ func rdbSelectCountMessages(ctx context.Context, dbMap *gorp.DbMap, opts ...Sele
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting message count")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return 0, err
 	}
 
@@ -264,14 +264,14 @@ func rdbSelectCountMessages(ctx context.Context, dbMap *gorp.DbMap, opts ...Sele
 }
 
 func rdbUpdateMessage(ctx context.Context, dbMap *gorp.DbMap, message *model.Message) error {
-	span := tracer.Provider(ctx).StartSpan("rdbUpdateMessage", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbUpdateMessage", "datastore")
+	defer tracer.Finish(span)
 
 	_, err := dbMap.Update(message)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating message")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 

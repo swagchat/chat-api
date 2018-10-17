@@ -20,7 +20,8 @@ import (
 // WithRecovery.
 func Wrap(h httprouter.Handle, route string, o ...Option) httprouter.Handle {
 	opts := options{
-		tracer: elasticapm.DefaultTracer,
+		tracer:         elasticapm.DefaultTracer,
+		requestIgnorer: apmhttp.DefaultServerRequestIgnorer(),
 	}
 	for _, o := range o {
 		o(&opts)
@@ -29,13 +30,11 @@ func Wrap(h httprouter.Handle, route string, o ...Option) httprouter.Handle {
 		opts.recovery = apmhttp.NewTraceRecovery(opts.tracer)
 	}
 	return func(w http.ResponseWriter, req *http.Request, p httprouter.Params) {
-		if !opts.tracer.Active() {
+		if !opts.tracer.Active() || opts.requestIgnorer(req) {
 			h(w, req, p)
 			return
 		}
-		tx := opts.tracer.StartTransaction(req.Method+" "+route, "request")
-		ctx := elasticapm.ContextWithTransaction(req.Context(), tx)
-		req = apmhttp.RequestWithContext(ctx, req)
+		tx, req := apmhttp.StartTransaction(opts.tracer, req.Method+" "+route, req)
 		defer tx.End()
 
 		finished := false
@@ -54,8 +53,9 @@ func Wrap(h httprouter.Handle, route string, o ...Option) httprouter.Handle {
 }
 
 type options struct {
-	tracer   *elasticapm.Tracer
-	recovery apmhttp.RecoveryFunc
+	tracer         *elasticapm.Tracer
+	recovery       apmhttp.RecoveryFunc
+	requestIgnorer apmhttp.RequestIgnorerFunc
 }
 
 // Option sets options for tracing.
@@ -80,5 +80,17 @@ func WithRecovery(r apmhttp.RecoveryFunc) Option {
 	}
 	return func(o *options) {
 		o.recovery = r
+	}
+}
+
+// WithRequestIgnorer returns a Option which sets r as the
+// function to use to determine whether or not a request should
+// be ignored. If r is nil, all requests will be reported.
+func WithRequestIgnorer(r apmhttp.RequestIgnorerFunc) Option {
+	if r == nil {
+		r = apmhttp.IgnoreNone
+	}
+	return func(o *options) {
+		o.requestIgnorer = r
 	}
 }

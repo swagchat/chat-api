@@ -10,13 +10,13 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 // CreateUser creates a user
 func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("CreateUser", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "CreateUser", "service")
+	defer tracer.Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {
@@ -52,8 +52,8 @@ func CreateUser(ctx context.Context, req *model.CreateUserRequest) (*model.User,
 
 // RetrieveUsers retrieves users
 func RetrieveUsers(ctx context.Context, req *model.RetrieveUsersRequest) (*model.UsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveUsers", "service")
+	defer tracer.Finish(span)
 
 	users, err := datastore.Provider(ctx).SelectUsers(
 		req.Limit,
@@ -81,8 +81,8 @@ func RetrieveUsers(ctx context.Context, req *model.RetrieveUsersRequest) (*model
 
 // RetrieveUser retrieves a user
 func RetrieveUser(ctx context.Context, req *model.RetrieveUserRequest) (*model.User, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveUser", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveUser", "service")
+	defer tracer.Finish(span)
 
 	user, err := datastore.Provider(ctx).SelectUser(
 		req.UserID,
@@ -113,8 +113,8 @@ func RetrieveUser(ctx context.Context, req *model.RetrieveUserRequest) (*model.U
 
 // UpdateUser updates a user
 func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("UpdateUser", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "UpdateUser", "service")
+	defer tracer.Finish(span)
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -151,8 +151,8 @@ func UpdateUser(ctx context.Context, req *model.UpdateUserRequest) (*model.User,
 
 // DeleteUser deletes a user
 func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("DeleteUser", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "DeleteUser", "service")
+	defer tracer.Finish(span)
 
 	dsp := datastore.Provider(ctx)
 	user, errRes := confirmUserExist(ctx, req.UserID)
@@ -202,8 +202,8 @@ func DeleteUser(ctx context.Context, req *model.DeleteUserRequest) *model.ErrorR
 
 // RetrieveUserRooms retrieves user rooms
 func RetrieveUserRooms(ctx context.Context, req *model.RetrieveUserRoomsRequest) (*model.UserRoomsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveUserRooms", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveUserRooms", "service")
+	defer tracer.Finish(span)
 
 	miniRooms, err := datastore.Provider(ctx).SelectMiniRooms(
 		req.Limit,
@@ -237,8 +237,8 @@ func RetrieveUserRooms(ctx context.Context, req *model.RetrieveUserRoomsRequest)
 
 // RetrieveContacts retrieves contacts
 func RetrieveContacts(ctx context.Context, req *model.RetrieveContactsRequest) (*model.UsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveContacts", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveContacts", "service")
+	defer tracer.Finish(span)
 
 	contacts, err := datastore.Provider(ctx).SelectContacts(
 		req.UserID,
@@ -262,8 +262,8 @@ func RetrieveContacts(ctx context.Context, req *model.RetrieveContactsRequest) (
 
 // RetrieveProfile retrieves a profile
 func RetrieveProfile(ctx context.Context, req *model.RetrieveProfileRequest) (*model.User, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveProfile", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveProfile", "service")
+	defer tracer.Finish(span)
 
 	user, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -278,8 +278,8 @@ func RetrieveProfile(ctx context.Context, req *model.RetrieveProfileRequest) (*m
 
 // RetrieveRoleUsers retrieves users or userIds of user roles
 func RetrieveRoleUsers(ctx context.Context, req *model.RetrieveRoleUsersRequest) (*model.RoleUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveRoleUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveRoleUsers", "service")
+	defer tracer.Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {

@@ -6,7 +6,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func setBlockUserMux() {
@@ -18,8 +18,8 @@ func setBlockUserMux() {
 
 func postBlockUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postBlockUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postBlockUsers", "rest")
+	defer tracer.Finish(span)
 
 	var req model.AddBlockUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -40,8 +40,8 @@ func postBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getBlockUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getBlockUsers", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveBlockUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
@@ -66,8 +66,8 @@ func getBlockUsers(w http.ResponseWriter, r *http.Request) {
 
 func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getBlockedUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getBlockedUsers", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveBlockedUsersRequest{}
 	req.UserID = bone.GetValue(r, "userId")
@@ -92,8 +92,8 @@ func getBlockedUsers(w http.ResponseWriter, r *http.Request) {
 
 func deleteBlockUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("deleteBlockUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "deleteBlockUsers", "rest")
+	defer tracer.Finish(span)
 
 	var req model.DeleteBlockUsersRequest
 	if err := decodeBody(r, &req); err != nil {

@@ -10,9 +10,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
-	"github.com/swagchat/chat-api/tracer"
 )
 
 type awss3Provider struct {
@@ -28,13 +28,13 @@ type awss3Provider struct {
 }
 
 func (ap *awss3Provider) Init() error {
-	span := tracer.Provider(ap.ctx).StartSpan("Init", "storage")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "Init", "storage")
+	defer tracer.Finish(span)
 
 	awsS3Client, err := ap.getSession()
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -44,7 +44,7 @@ func (ap *awss3Provider) Init() error {
 	_, err = awsS3Client.CreateBucket(params)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -54,7 +54,7 @@ func (ap *awss3Provider) Init() error {
 	_, err = awsS3Client.CreateBucket(params)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -62,20 +62,20 @@ func (ap *awss3Provider) Init() error {
 }
 
 func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
-	span := tracer.Provider(ap.ctx).StartSpan("Post", "storage")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "Post", "storage")
+	defer tracer.Finish(span)
 
 	awsS3Client, err := ap.getSession()
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 
 	byteData, err := ioutil.ReadAll(assetInfo.Data)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 
@@ -89,7 +89,7 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 	})
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 
@@ -98,8 +98,8 @@ func (ap *awss3Provider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (ap *awss3Provider) Get(assetInfo *AssetInfo) ([]byte, error) {
-	span := tracer.Provider(ap.ctx).StartSpan("Get", "storage")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "Get", "storage")
+	defer tracer.Finish(span)
 
 	return nil, nil
 }

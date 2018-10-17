@@ -1,5 +1,7 @@
 package config
 
+type ctxKey int
+
 const (
 	// AppName is Application name
 	AppName = "chat-api"

@@ -28,7 +28,9 @@ func TestMarshalTransaction(t *testing.T) {
 	}
 
 	expect := map[string]interface{}{
-		"id":        "00010203-0405-0607-0809-0a0b0c0d0e0f",
+		"trace_id":  "0102030405060708090a0b0c0d0e0f10",
+		"id":        "0102030405060708",
+		"parent_id": "0001020304050607",
 		"name":      "GET /foo/bar",
 		"type":      "request",
 		"timestamp": "1970-01-01T00:02:03Z",
@@ -99,6 +101,46 @@ func TestMarshalTransaction(t *testing.T) {
 					},
 				},
 			},
+			map[string]interface{}{
+				"name":     "GET testing.invalid:8000",
+				"start":    float64(3),
+				"duration": float64(4),
+				"type":     "ext.http",
+				"context": map[string]interface{}{
+					"http": map[string]interface{}{
+						"url": "http://testing.invalid:8000/path?query#fragment",
+					},
+				},
+			},
+		},
+	}
+
+	assert.Equal(t, expect, in)
+}
+
+func TestMarshalMetrics(t *testing.T) {
+	metrics := fakeMetrics()
+
+	var w fastjson.Writer
+	metrics.MarshalFastJSON(&w)
+
+	var in map[string]interface{}
+	if err := json.Unmarshal(w.Bytes(), &in); err != nil {
+		t.Fatalf("unmarshalling result failed: %v", err)
+	}
+
+	expect := map[string]interface{}{
+		"timestamp": "1970-01-01T00:02:03Z",
+		"labels": map[string]interface{}{
+			"foo": "bar",
+		},
+		"samples": map[string]interface{}{
+			"metric_one": map[string]interface{}{
+				"value": float64(1024),
+			},
+			"metric_two": map[string]interface{}{
+				"value": float64(-66.6),
+			},
 		},
 	}
 
@@ -168,6 +210,23 @@ func TestMarshalPayloads(t *testing.T) {
 	delete(expect, "transactions")
 	expect["errors"] = []interface{}{}
 	assert.Equal(t, expect, in)
+
+	mp := &model.MetricsPayload{
+		Service: tp.Service,
+		Process: tp.Process,
+		System:  tp.System,
+		Metrics: []*model.Metrics{},
+	}
+	w.Reset()
+	mp.MarshalFastJSON(&w)
+
+	in = make(map[string]interface{})
+	if err := json.Unmarshal(w.Bytes(), &in); err != nil {
+		t.Fatalf("unmarshalling result failed: %v", err)
+	}
+	delete(expect, "errors")
+	expect["metrics"] = []interface{}{}
+	assert.Equal(t, expect, in)
 }
 
 func TestMarshalError(t *testing.T) {
@@ -180,10 +239,23 @@ func TestMarshalError(t *testing.T) {
 	e.MarshalFastJSON(&w)
 	assert.Equal(t, `{"timestamp":"1970-01-01T00:02:03Z"}`, string(w.Bytes()))
 
-	e.Transaction.ID = model.UUID{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+	e.Transaction.ID = model.UUID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 	w.Reset()
 	e.MarshalFastJSON(&w)
-	assert.Equal(t, `{"timestamp":"1970-01-01T00:02:03Z","transaction":{"id":"00010203-0405-0607-0809-0a0b0c0d0e0f"}}`, string(w.Bytes()))
+	assert.Equal(t,
+		`{"timestamp":"1970-01-01T00:02:03Z","transaction":{"id":"01020304-0506-0708-090a-0b0c0d0e0f10"}}`,
+		string(w.Bytes()),
+	)
+
+	e.Transaction.ID = model.UUID{}
+	e.TraceID = model.TraceID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+	e.ParentID = model.SpanID{1, 2, 3, 4, 5, 6, 7, 8}
+	w.Reset()
+	e.MarshalFastJSON(&w)
+	assert.Equal(t,
+		`{"timestamp":"1970-01-01T00:02:03Z","parent_id":"0102030405060708","trace_id":"0102030405060708090a0b0c0d0e0f10"}`,
+		string(w.Bytes()),
+	)
 }
 
 func TestMarshalCookies(t *testing.T) {
@@ -285,12 +357,12 @@ func TestMarshalExceptionCode(t *testing.T) {
 func TestMarshalUser(t *testing.T) {
 	user := model.User{
 		Email:    "foo@example.com",
-		ID:       model.UserID{Number: 123},
+		ID:       "123",
 		Username: "bar",
 	}
 	var w fastjson.Writer
 	user.MarshalFastJSON(&w)
-	assert.Equal(t, `{"email":"foo@example.com","id":123,"username":"bar"}`, string(w.Bytes()))
+	assert.Equal(t, `{"email":"foo@example.com","id":"123","username":"bar"}`, string(w.Bytes()))
 }
 
 func TestMarshalStacktraceFrame(t *testing.T) {
@@ -432,7 +504,9 @@ func TestMarshalURL(t *testing.T) {
 }
 
 func TestUnmarshalJSON(t *testing.T) {
-	tp := fakeTransactionsPayload(1)
+	tp := fakeTransactionsPayload(2)
+	tp.Transactions[1].ID.SpanID = model.SpanID{}
+	tp.Transactions[1].ID.UUID = model.UUID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
 	var w fastjson.Writer
 	tp.MarshalFastJSON(&w)
 
@@ -444,7 +518,11 @@ func TestUnmarshalJSON(t *testing.T) {
 
 func fakeTransaction() model.Transaction {
 	return model.Transaction{
-		ID:        model.UUID{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+		TraceID: model.TraceID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16},
+		ID: model.TransactionID{
+			SpanID: model.SpanID{1, 2, 3, 4, 5, 6, 7, 8},
+		},
+		ParentID:  model.SpanID{0, 1, 2, 3, 4, 5, 6, 7},
 		Name:      "GET /foo/bar",
 		Type:      "request",
 		Timestamp: model.Time(time.Unix(123, 0).UTC()),
@@ -516,7 +594,28 @@ func fakeTransaction() model.Transaction {
 					User:      "barb",
 				},
 			},
+		}, {
+			Name:     "GET testing.invalid:8000",
+			Start:    3,
+			Duration: 4,
+			Type:     "ext.http",
+			Context: &model.SpanContext{
+				HTTP: &model.HTTPSpanContext{
+					URL: mustParseURL("http://testing.invalid:8000/path?query#fragment"),
+				},
+			},
 		}},
+	}
+}
+
+func fakeMetrics() *model.Metrics {
+	return &model.Metrics{
+		Timestamp: model.Time(time.Unix(123, 0).UTC()),
+		Labels:    model.StringMap{{Key: "foo", Value: "bar"}},
+		Samples: map[string]model.Metric{
+			"metric_one": {Value: 1024},
+			"metric_two": {Value: -66.6},
+		},
 	}
 }
 
@@ -582,4 +681,12 @@ func mustParseURL(s string) *url.URL {
 		panic(err)
 	}
 	return u
+}
+
+func newUint64(v uint64) *uint64 {
+	return &v
+}
+
+func newFloat64(v float64) *float64 {
+	return &v
 }

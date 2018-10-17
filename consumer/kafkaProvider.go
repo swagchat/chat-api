@@ -8,13 +8,13 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -26,8 +26,8 @@ type kafkaProvider struct {
 }
 
 func (kp *kafkaProvider) SubscribeMessage() error {
-	span := tracer.Provider(kp.ctx).StartSpan("SubscribeMessage", "consumer")
-	defer tracer.Provider(kp.ctx).Finish(span)
+	span := tracer.StartSpan(kp.ctx, "SubscribeMessage", "consumer")
+	defer tracer.Finish(span)
 
 	cfg := config.Config()
 
@@ -35,7 +35,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	if host == "" {
 		err := errors.New("consumer.kafka.host is empty")
 		logger.Error(err.Error())
-		tracer.Provider(kp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -43,7 +43,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	if port == "" {
 		err := errors.New("consumer.kafka.port is empty")
 		logger.Error(err.Error())
-		tracer.Provider(kp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -63,7 +63,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	})
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(kp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 	err = client.SubscribeTopics([]string{topic}, nil)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(kp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 	logger.Info(fmt.Sprintf("%s group.id[%s] topic[%s]", client.String(), hostname, topic))
@@ -95,7 +95,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				kafkaMsg := e
 				if err != nil {
 					logger.Error(err.Error())
-					tracer.Provider(kp.ctx).SetError(span, err)
+					tracer.SetError(span, err)
 					break
 				}
 
@@ -103,14 +103,14 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				err = json.Unmarshal(kafkaMsg.Value, &pbMsg)
 				if err != nil {
 					logger.Error(err.Error())
-					tracer.Provider(kp.ctx).SetError(span, err)
+					tracer.SetError(span, err)
 					break
 				}
 				payload := model.JSONText{}
 				err := payload.UnmarshalJSON(pbMsg.Payload)
 				if err != nil {
 					logger.Error(err.Error())
-					tracer.Provider(kp.ctx).SetError(span, err)
+					tracer.SetError(span, err)
 					break
 				}
 
@@ -137,7 +137,7 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 				run = false
 				err = fmt.Errorf(e.String())
 				logger.Error(err.Error())
-				tracer.Provider(kp.ctx).SetError(span, err)
+				tracer.SetError(span, err)
 			default:
 				logger.Info(e.String())
 			}
@@ -151,8 +151,8 @@ func (kp *kafkaProvider) SubscribeMessage() error {
 }
 
 func (kp *kafkaProvider) UnsubscribeMessage() error {
-	span := tracer.Provider(kp.ctx).StartSpan("UnsubscribeMessage", "consumer")
-	defer tracer.Provider(kp.ctx).Finish(span)
+	span := tracer.StartSpan(kp.ctx, "UnsubscribeMessage", "consumer")
+	defer tracer.Finish(span)
 
 	if client == nil {
 		return nil

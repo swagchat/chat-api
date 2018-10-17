@@ -6,11 +6,11 @@ import (
 	"net"
 	"strings"
 
+	"github.com/betchi/tracer"
 	"github.com/swagchat/chat-api/datastore"
-	"github.com/swagchat/chat-api/tracer"
 
-	"github.com/swagchat/chat-api/config"
 	logger "github.com/betchi/zapper"
+	"github.com/swagchat/chat-api/config"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
@@ -36,8 +36,8 @@ func unaryServerInterceptor() grpc.UnaryServerInterceptor {
 
 		ctx = context.WithValue(ctx, config.CtxWorkspace, workspace)
 
-		ctx, _ = tracer.Provider(ctx).StartTransaction(fmt.Sprintf("%s:%v", info.FullMethod, info.Server), "GRPC")
-		defer tracer.Provider(ctx).CloseTransaction()
+		ctx, _ = tracer.StartTransaction(ctx, fmt.Sprintf("%s:%v", info.FullMethod, info.Server), "GRPC")
+		defer tracer.CloseTransaction(ctx)
 
 		reply, err := handler(ctx, req)
 		if err != nil {

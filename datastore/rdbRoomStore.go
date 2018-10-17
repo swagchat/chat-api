@@ -7,13 +7,13 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	"gopkg.in/gorp.v2"
 )
 
 func rdbCreateRoomStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateRoomStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateRoomStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.Room{}, tableNameRoom)
 	for _, columnMap := range tableMap.Columns {
@@ -25,14 +25,14 @@ func rdbCreateRoomStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating room table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, room *model.Room, opts ...InsertRoomOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertRoom", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertRoom", "datastore")
+	defer tracer.Finish(span)
 
 	opt := insertRoomOptions{}
 	for _, o := range opts {
@@ -43,7 +43,7 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting room")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -53,7 +53,7 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 
@@ -61,7 +61,7 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -70,8 +70,8 @@ func rdbInsertRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 }
 
 func rdbSelectRooms(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32, opts ...SelectRoomsOption) ([]*model.Room, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectRooms", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectRooms", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectRoomsOptions{}
 	for _, o := range opts {
@@ -116,7 +116,7 @@ func rdbSelectRooms(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting rooms")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -124,8 +124,8 @@ func rdbSelectRooms(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 }
 
 func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts ...SelectRoomOption) (*model.Room, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectRoom", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectRoom", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectRoomOptions{}
 	for _, o := range opts {
@@ -139,7 +139,7 @@ func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts .
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting room")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -155,7 +155,7 @@ func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts .
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting room")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return nil, err
 		}
 		room.Users = users
@@ -165,8 +165,8 @@ func rdbSelectRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string, opts .
 }
 
 func rdbSelectUsersForRoom(ctx context.Context, dbMap *gorp.DbMap, roomID string) ([]*model.MiniUser, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUsersForRoom", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectUsersForRoom", "datastore")
+	defer tracer.Finish(span)
 
 	var users []*model.MiniUser
 	query := fmt.Sprintf(`SELECT
@@ -189,7 +189,7 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting users for room")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -197,15 +197,15 @@ ORDER BY u.created;`, tableNameRoomUser, tableNameUser)
 }
 
 func rdbSelectCountRooms(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectRoomsOption) (int64, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectCountRooms", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectCountRooms", "datastore")
+	defer tracer.Finish(span)
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0;", tableNameRoom)
 	count, err := dbMap.SelectInt(query)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting room count")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return 0, err
 	}
 
@@ -213,8 +213,8 @@ func rdbSelectCountRooms(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectR
 }
 
 func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, room *model.Room, opts ...UpdateRoomOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoom", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbUpdateRoom", "datastore")
+	defer tracer.Finish(span)
 
 	opt := updateRoomOptions{}
 	for _, o := range opts {
@@ -229,7 +229,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating room")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -239,7 +239,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err := errors.Wrap(err, "An error occurred while inserting room")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 
@@ -247,7 +247,7 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while updating room")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -256,8 +256,8 @@ func rdbUpdateRoom(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 }
 
 func rdbUpdateRoomDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, room *model.Room) error {
-	span := tracer.Provider(ctx).StartSpan("rdbUpdateRoomDeleted", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbUpdateRoomDeleted", "datastore")
+	defer tracer.Finish(span)
 
 	err := rdbDeleteRoomUsers(
 		ctx,
@@ -285,7 +285,7 @@ func rdbUpdateRoomDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting room")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 

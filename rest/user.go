@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/betchi/tracer"
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -28,8 +28,8 @@ func setUserMux() {
 
 func postUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postUser", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postUser", "rest")
+	defer tracer.Finish(span)
 
 	var req model.CreateUserRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -48,8 +48,8 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getUsers", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveUsersRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
@@ -80,8 +80,8 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 
 func getUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getUser", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getUser", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveUserRequest{}
 
@@ -99,8 +99,8 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 func putUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("putUser", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "putUser", "rest")
+	defer tracer.Finish(span)
 
 	var req model.UpdateUserRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -121,8 +121,8 @@ func putUser(w http.ResponseWriter, r *http.Request) {
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("deleteUser", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "deleteUser", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.DeleteUserRequest{}
 
@@ -140,8 +140,8 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 
 func getUserRooms(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getUserRooms", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getUserRooms", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveUserRoomsRequest{}
 
@@ -197,8 +197,8 @@ func getUserRooms(w http.ResponseWriter, r *http.Request) {
 
 func getContacts(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getContacts", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getContacts", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveContactsRequest{}
 
@@ -233,8 +233,8 @@ func getContacts(w http.ResponseWriter, r *http.Request) {
 
 func getProfile(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getProfile", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getProfile", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveProfileRequest{}
 
@@ -252,8 +252,8 @@ func getProfile(w http.ResponseWriter, r *http.Request) {
 
 func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getRoleUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getRoleUsers", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveRoleUsersRequest{}
 
@@ -285,7 +285,7 @@ func getRoleUsers(w http.ResponseWriter, r *http.Request) {
 // func getUserUnreadCount(w http.ResponseWriter, r *http.Request) {
 // 	userID := bone.GetValue(r, "userId")
 
-// 	userUnreadCount, pd := service.RetrieveUserUnreadCount(r.Context(), userID)
+// 	userUnreadCount, pd := service.RetrieveUserUnreadCount(ctx, userID)
 // 	if pd != nil {
 // 		respondErr(w, r, pd.Status, pd)
 // 		return

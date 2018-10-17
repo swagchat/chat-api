@@ -7,7 +7,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
@@ -20,8 +20,8 @@ func setAssetMux() {
 
 func postAsset(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postAsset", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postAsset", "rest")
+	defer tracer.Finish(span)
 
 	err := r.ParseMultipartForm(32 << 20)
 	if err != nil {
@@ -63,8 +63,8 @@ func postAsset(w http.ResponseWriter, r *http.Request) {
 
 func getAsset(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getAsset", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getAsset", "rest")
+	defer tracer.Finish(span)
 
 	filename := bone.GetValue(r, "filename")
 	assetID := utils.GetFileNameWithoutExt(filename)
@@ -86,8 +86,8 @@ func getAsset(w http.ResponseWriter, r *http.Request) {
 
 func getAssetInfo(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getAssetInfo", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getAssetInfo", "rest")
+	defer tracer.Finish(span)
 
 	filename := bone.GetValue(r, "filename")
 	assetID := utils.GetFileNameWithoutExt(filename)

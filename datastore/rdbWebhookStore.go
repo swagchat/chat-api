@@ -9,12 +9,12 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func rdbCreateWebhookStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateWebhookStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateWebhookStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.Webhook{}, tableNameWebhook)
 	for _, columnMap := range tableMap.Columns {
@@ -26,14 +26,14 @@ func rdbCreateWebhookStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating webhook table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbSelectWebhooks(ctx context.Context, dbMap *gorp.DbMap, event model.WebhookEventType, opts ...SelectWebhooksOption) ([]*model.Webhook, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectWebhooks", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectWebhooks", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectWebhooksOptions{}
 	for _, o := range opts {
@@ -61,7 +61,7 @@ func rdbSelectWebhooks(ctx context.Context, dbMap *gorp.DbMap, event model.Webho
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting webhook")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 

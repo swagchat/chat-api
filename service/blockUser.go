@@ -6,13 +6,13 @@ import (
 
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 // AddBlockUsers creates block users
 func AddBlockUsers(ctx context.Context, req *model.AddBlockUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("AddBlockUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "AddBlockUsers", "service")
+	defer tracer.Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {
@@ -42,8 +42,8 @@ func AddBlockUsers(ctx context.Context, req *model.AddBlockUsersRequest) *model.
 
 // RetrieveBlockUsers retrieves block users
 func RetrieveBlockUsers(ctx context.Context, req *model.RetrieveBlockUsersRequest) (*model.BlockUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveBlockUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveBlockUsers", "service")
+	defer tracer.Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -64,8 +64,8 @@ func RetrieveBlockUsers(ctx context.Context, req *model.RetrieveBlockUsersReques
 
 // RetrieveBlockUserIDs retrieves block userIds
 func RetrieveBlockUserIDs(ctx context.Context, req *model.RetrieveBlockUsersRequest) (*model.BlockUserIdsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveBlockUserIDs", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveBlockUserIDs", "service")
+	defer tracer.Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -86,8 +86,8 @@ func RetrieveBlockUserIDs(ctx context.Context, req *model.RetrieveBlockUsersRequ
 
 // RetrieveBlockedUsers retrieves blocked users
 func RetrieveBlockedUsers(ctx context.Context, req *model.RetrieveBlockedUsersRequest) (*model.BlockedUsersResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveBlockedUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveBlockedUsers", "service")
+	defer tracer.Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -108,8 +108,8 @@ func RetrieveBlockedUsers(ctx context.Context, req *model.RetrieveBlockedUsersRe
 
 // RetrieveBlockedUserIDs retrieves blocked userIds
 func RetrieveBlockedUserIDs(ctx context.Context, req *model.RetrieveBlockedUsersRequest) (*model.BlockedUserIdsResponse, *model.ErrorResponse) {
-	span := tracer.Provider(ctx).StartSpan("RetrieveBlockedUserIDs", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "RetrieveBlockedUserIDs", "service")
+	defer tracer.Finish(span)
 
 	_, errRes := confirmUserExist(ctx, req.UserID)
 	if errRes != nil {
@@ -130,8 +130,8 @@ func RetrieveBlockedUserIDs(ctx context.Context, req *model.RetrieveBlockedUsers
 
 // DeleteBlockUsers deletes block users
 func DeleteBlockUsers(ctx context.Context, req *model.DeleteBlockUsersRequest) *model.ErrorResponse {
-	span := tracer.Provider(ctx).StartSpan("DeleteBlockUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "DeleteBlockUsers", "service")
+	defer tracer.Finish(span)
 
 	errRes := req.Validate()
 	if errRes != nil {

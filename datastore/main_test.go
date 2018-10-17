@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -30,6 +31,9 @@ func TestMain(m *testing.M) {
 		FileLevel:     cfg.Logger.FileLevel,
 		FilePath:      cfg.Logger.FilePath,
 	})
+
+	tracer.InitGlobalTracer(&tracer.Config{})
+
 	cfg.Datastore.SQLite.OnMemory = true
 	// cfg.Datastore.SQLite.OnMemory = false
 	// cfg.Datastore.SQLite.DirPath = "/Users/minobe/Desktop"

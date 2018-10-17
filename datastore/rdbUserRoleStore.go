@@ -7,13 +7,13 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	gorp "gopkg.in/gorp.v2"
 )
 
 func rdbCreateUserRoleStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateUserRoleStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateUserRoleStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.UserRole{}, tableNameUserRole)
 	tableMap.SetUniqueTogether("user_id", "role")
@@ -21,14 +21,14 @@ func rdbCreateUserRoleStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating user role table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, urs []*model.UserRole, opts ...InsertUserRolesOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertUserRoles", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertUserRoles", "datastore")
+	defer tracer.Finish(span)
 
 	if len(urs) == 0 {
 		return nil
@@ -60,7 +60,7 @@ func rdbInsertUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting user roles")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -69,8 +69,8 @@ func rdbInsertUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 }
 
 func rdbSelectUserRole(ctx context.Context, dbMap *gorp.DbMap, userID string, role int32) (*model.UserRole, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUserRole", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectUserRole", "datastore")
+	defer tracer.Finish(span)
 
 	var userRoles []*model.UserRole
 	query := fmt.Sprintf("SELECT ur.user_id, ur.role FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND ur.role=:role AND u.deleted=0;", tableNameUserRole, tableNameUser)
@@ -82,7 +82,7 @@ func rdbSelectUserRole(ctx context.Context, dbMap *gorp.DbMap, userID string, ro
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting user role")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -94,8 +94,8 @@ func rdbSelectUserRole(ctx context.Context, dbMap *gorp.DbMap, userID string, ro
 }
 
 func rdbSelectRolesOfUserRole(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]int32, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectRolesOfUserRole", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectRolesOfUserRole", "datastore")
+	defer tracer.Finish(span)
 
 	var roleIDs []int32
 	query := fmt.Sprintf("SELECT ur.role FROM %s AS ur LEFT JOIN %s AS u ON ur.user_id = u.user_id WHERE ur.user_id=:userId AND u.deleted=0;", tableNameUserRole, tableNameUser)
@@ -106,7 +106,7 @@ func rdbSelectRolesOfUserRole(ctx context.Context, dbMap *gorp.DbMap, userID str
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting roleIds")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -114,8 +114,8 @@ func rdbSelectRolesOfUserRole(ctx context.Context, dbMap *gorp.DbMap, userID str
 }
 
 func rdbSelectUserIDsOfUserRole(ctx context.Context, dbMap *gorp.DbMap, role int32) ([]string, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUserIDsOfUserRole", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectUserIDsOfUserRole", "datastore")
+	defer tracer.Finish(span)
 
 	var userIDs []string
 
@@ -128,7 +128,7 @@ func rdbSelectUserIDsOfUserRole(ctx context.Context, dbMap *gorp.DbMap, role int
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting userIds")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -136,8 +136,8 @@ func rdbSelectUserIDsOfUserRole(ctx context.Context, dbMap *gorp.DbMap, role int
 }
 
 func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteUserRolesOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbDeleteUserRoles", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbDeleteUserRoles", "datastore")
+	defer tracer.Finish(span)
 
 	opt := deleteUserRolesOptions{}
 	for _, o := range opts {
@@ -147,7 +147,7 @@ func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 	if (opt.userIDs == nil || len(opt.userIDs) == 0) && (opt.roles == nil || len(opt.roles) == 0) {
 		err := errors.New("An error occurred while deleting user roles. Be sure to specify either userIds or roles")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -181,7 +181,7 @@ func rdbDeleteUserRoles(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transac
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting user roles")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 

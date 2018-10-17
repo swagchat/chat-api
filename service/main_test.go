@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/datastore"
 
@@ -31,6 +32,9 @@ func TestMain(m *testing.M) {
 		FileLevel:     cfg.Logger.FileLevel,
 		FilePath:      cfg.Logger.FilePath,
 	})
+
+	tracer.InitGlobalTracer(&tracer.Config{})
+
 	cfg.Datastore.SQLite.OnMemory = true
 	datastore.Provider(ctx).Connect(cfg.Datastore)
 	datastore.Provider(ctx).CreateTables()

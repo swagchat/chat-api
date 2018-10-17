@@ -13,12 +13,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateAppClientStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateAppClientStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.AppClient{}, tableNameAppClient)
 	tableMap.SetKeys(true, "id")
@@ -31,7 +31,7 @@ func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating app client table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 
@@ -63,14 +63,14 @@ func rdbCreateAppClientStore(ctx context.Context, dbMap *gorp.DbMap) {
 }
 
 func rdbInsertAppClient(ctx context.Context, dbMap *gorp.DbMap, appClient *model.AppClient) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertAppClient", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertAppClient", "datastore")
+	defer tracer.Finish(span)
 
 	err := dbMap.Insert(appClient)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting appClient")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -78,8 +78,8 @@ func rdbInsertAppClient(ctx context.Context, dbMap *gorp.DbMap, appClient *model
 }
 
 func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectAppClientOption) (*model.AppClient, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectLatestAppClient", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectLatestAppClient", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectAppClientOptions{}
 	for _, o := range opts {
@@ -89,7 +89,7 @@ func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...Se
 	if (opt.name == "" && opt.clientID == "") || (opt.name != "" && opt.clientID != "") {
 		err := errors.New("An error occurred while getting appClient. Be sure to specify either name or clientID")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -116,7 +116,7 @@ func rdbSelectLatestAppClient(ctx context.Context, dbMap *gorp.DbMap, opts ...Se
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting appClient")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 

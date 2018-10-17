@@ -7,7 +7,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -19,8 +19,8 @@ func setDeviceMux() {
 
 func postDevice(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postDevice", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postDevice", "rest")
+	defer tracer.Finish(span)
 
 	var req model.AddDeviceRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -43,8 +43,8 @@ func postDevice(w http.ResponseWriter, r *http.Request) {
 
 func getDevices(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getDevices", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getDevices", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveDevicesRequest{}
 	req.UserID = bone.GetValue(r, "userId")
@@ -60,8 +60,8 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 
 func deleteDevice(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("deleteDevice", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "deleteDevice", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.DeleteDeviceRequest{}
 	req.UserID = bone.GetValue(r, "userId")

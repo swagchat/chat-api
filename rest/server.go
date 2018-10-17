@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/fukata/golang-stats-api-handler"
 	"github.com/go-zoo/bone"
@@ -20,7 +21,6 @@ import (
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -190,27 +190,28 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 
 func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := tracer.Provider(r.Context()).StartTransaction(
+		ctx, span := tracer.StartTransaction(
+			r.Context(),
 			fmt.Sprintf("%s:%s", r.Method, r.RequestURI), "REST",
 			tracer.StartTransactionOptionWithHTTPRequest(r),
 		)
-		defer tracer.Provider(ctx).CloseTransaction()
+		defer tracer.CloseTransaction(ctx)
 
 		sw := &customResponseWriter{ResponseWriter: w}
 		fn(sw, r.WithContext(ctx))
 
 		userID := ctx.Value(config.CtxUserID)
 		if userID != nil {
-			tracer.Provider(ctx).SetTag(span, "userId", userID)
+			tracer.SetTag(span, "userId", userID)
 		}
 		clientID := ctx.Value(config.CtxClientID)
 		if clientID != nil {
-			tracer.Provider(ctx).SetTag(span, "clientId", clientID)
+			tracer.SetTag(span, "clientId", clientID)
 		}
-		tracer.Provider(ctx).SetHTTPStatusCode(span, sw.status)
-		tracer.Provider(ctx).SetTag(span, "http.method", r.Method)
-		tracer.Provider(ctx).SetTag(span, "http.content_length", sw.length)
-		tracer.Provider(ctx).SetTag(span, "http.referer", r.Referer())
+		tracer.SetHTTPStatusCode(span, sw.status)
+		tracer.SetTag(span, "http.method", r.Method)
+		tracer.SetTag(span, "http.content_length", sw.length)
+		tracer.SetTag(span, "http.referer", r.Referer())
 	}
 }
 

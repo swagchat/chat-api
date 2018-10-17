@@ -7,7 +7,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func setRoomMux() {
@@ -21,8 +21,8 @@ func setRoomMux() {
 
 func postRoom(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postRoom", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postRoom", "rest")
+	defer tracer.Finish(span)
 
 	var req model.CreateRoomRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -41,8 +41,8 @@ func postRoom(w http.ResponseWriter, r *http.Request) {
 
 func getRooms(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getRooms", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getRooms", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveRoomsRequest{}
 	params, err := url.ParseQuery(r.URL.RawQuery)
@@ -73,8 +73,8 @@ func getRooms(w http.ResponseWriter, r *http.Request) {
 
 func getRoom(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getRoom", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getRoom", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveRoomRequest{}
 
@@ -92,8 +92,8 @@ func getRoom(w http.ResponseWriter, r *http.Request) {
 
 func putRoom(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("putRoom", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "putRoom", "rest")
+	defer tracer.Finish(span)
 
 	var req model.UpdateRoomRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -114,8 +114,8 @@ func putRoom(w http.ResponseWriter, r *http.Request) {
 
 func deleteRoom(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("deleteRoom", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "deleteRoom", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.DeleteRoomRequest{}
 
@@ -133,8 +133,8 @@ func deleteRoom(w http.ResponseWriter, r *http.Request) {
 
 func getRoomMessages(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getRoomMessages", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getRoomMessages", "rest")
+	defer tracer.Finish(span)
 
 	req := &model.RetrieveRoomMessagesRequest{}
 

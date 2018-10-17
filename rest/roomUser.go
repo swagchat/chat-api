@@ -7,7 +7,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	"github.com/swagchat/chat-api/utils"
 )
 
@@ -20,8 +20,8 @@ func setRoomUserMux() {
 
 func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postRoomUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postRoomUsers", "rest")
+	defer tracer.Finish(span)
 
 	var req model.AddRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -42,8 +42,8 @@ func postRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("getRoomUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "getRoomUsers", "rest")
+	defer tracer.Finish(span)
 
 	params, _ := url.ParseQuery(r.URL.RawQuery)
 
@@ -83,8 +83,8 @@ func getRoomUsers(w http.ResponseWriter, r *http.Request) {
 
 func putRoomUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("putRoomUser", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "putRoomUser", "rest")
+	defer tracer.Finish(span)
 
 	var req model.UpdateRoomUserRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -106,8 +106,8 @@ func putRoomUser(w http.ResponseWriter, r *http.Request) {
 
 func deleteRoomUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("deleteRoomUsers", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "deleteRoomUsers", "rest")
+	defer tracer.Finish(span)
 
 	var req model.DeleteRoomUsersRequest
 	if err := decodeBody(r, &req); err != nil {

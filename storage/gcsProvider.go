@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
-	"github.com/swagchat/chat-api/tracer"
 
 	"golang.org/x/oauth2/google"
 
@@ -27,21 +27,21 @@ type gcsProvider struct {
 var gcsService *storage.Service
 
 func (gp *gcsProvider) Init() error {
-	span := tracer.Provider(gp.ctx).StartSpan("Init", "storage")
-	defer tracer.Provider(gp.ctx).Finish(span)
+	span := tracer.StartSpan(gp.ctx, "Init", "storage")
+	defer tracer.Finish(span)
 
 	if gcsService == nil {
 		data, err := ioutil.ReadFile(gp.jwtPath)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(gp.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 
 		conf, err := google.JWTConfigFromJSON(data, gp.scope)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(gp.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 
@@ -51,7 +51,7 @@ func (gp *gcsProvider) Init() error {
 		service, err := storage.New(client)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(gp.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 		gcsService = service
@@ -60,8 +60,8 @@ func (gp *gcsProvider) Init() error {
 }
 
 func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
-	span := tracer.Provider(gp.ctx).StartSpan("Post", "storage")
-	defer tracer.Provider(gp.ctx).Finish(span)
+	span := tracer.StartSpan(gp.ctx, "Post", "storage")
+	defer tracer.Finish(span)
 
 	filePath := fmt.Sprintf("%s/%s", gp.uploadDirectory, assetInfo.Filename)
 	object := &storage.Object{
@@ -71,7 +71,7 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 	res, err := gcsService.Objects.Insert(gp.uploadBucket, object).Media(assetInfo.Data).Do()
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(gp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 	logger.Debug(fmt.Sprintf("name:%s\tselfLink:%s", res.Name, res.SelfLink))
@@ -79,7 +79,7 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 	res, err = gcsService.Objects.Get(gp.uploadBucket, filePath).Do()
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(gp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 	logger.Debug(fmt.Sprintf("bucketName:%s\name:%s\tmediaLink:%s", gp.uploadBucket, res.Name, res.MediaLink))
@@ -88,8 +88,8 @@ func (gp *gcsProvider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (gp *gcsProvider) Get(assetInfo *AssetInfo) ([]byte, error) {
-	span := tracer.Provider(gp.ctx).StartSpan("Get", "storage")
-	defer tracer.Provider(gp.ctx).Finish(span)
+	span := tracer.StartSpan(gp.ctx, "Get", "storage")
+	defer tracer.Finish(span)
 
 	return nil, nil
 }

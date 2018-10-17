@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sns"
 	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func setAssetAwsSnsMux() {
@@ -58,8 +58,8 @@ type Object struct {
 
 func postAssetAwsSns(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postAssetAwsSns", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postAssetAwsSns", "rest")
+	defer tracer.Finish(span)
 
 	decoder := json.NewDecoder(r.Body)
 	var input AwsSNSSubscribeInput

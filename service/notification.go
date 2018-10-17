@@ -14,14 +14,14 @@ import (
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/notification"
 	"github.com/swagchat/chat-api/producer"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	"github.com/swagchat/chat-api/utils"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func subscribe(ctx context.Context, roomUsers []*model.RoomUser, device *model.Device) chan bool {
-	span := tracer.Provider(ctx).StartSpan("subscribe", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "subscribe", "service")
+	defer tracer.Finish(span)
 
 	np := notification.Provider(ctx)
 	dp := datastore.Provider(ctx)
@@ -106,8 +106,8 @@ func subscribeByDevice(ctx context.Context, device *model.Device, wg *sync.WaitG
 }
 
 func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
-	span := tracer.Provider(ctx).StartSpan("subscribeByRoomUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "subscribeByRoomUsers", "service")
+	defer tracer.Finish(span)
 
 	doneChan := make(chan bool, 1)
 	errChan := make(chan error, 1)
@@ -159,8 +159,8 @@ func subscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
 }
 
 func unsubscribe(ctx context.Context, subscriptions []*model.Subscription) chan bool {
-	span := tracer.Provider(ctx).StartSpan("unsubscribe", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "unsubscribe", "service")
+	defer tracer.Finish(span)
 
 	np := notification.Provider(ctx)
 	dp := datastore.Provider(ctx)
@@ -245,8 +245,8 @@ func unsubscribeByRoomID(ctx context.Context, roomID string, wg *sync.WaitGroup)
 }
 
 func unsubscribeByRoomUsers(ctx context.Context, roomUsers []*model.RoomUser) {
-	span := tracer.Provider(ctx).StartSpan("unsubscribeByRoomUsers", "service")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "unsubscribeByRoomUsers", "service")
+	defer tracer.Finish(span)
 
 	doneChan := make(chan bool, 1)
 	errResChan := make(chan *model.ErrorResponse, 1)

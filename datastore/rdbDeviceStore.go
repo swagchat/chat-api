@@ -10,27 +10,27 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateDeviceStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateDeviceStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateDeviceStore", "datastore")
+	defer tracer.Finish(span)
 
 	_ = dbMap.AddTableWithName(model.Device{}, tableNameDevice)
 	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating device table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, device *model.Device, opts ...InsertDeviceOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertDevice", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertDevice", "datastore")
+	defer tracer.Finish(span)
 
 	opt := insertDeviceOptions{}
 	for _, o := range opts {
@@ -54,7 +54,7 @@ func rdbInsertDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 	if err := tx.Insert(device); err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting device")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -62,8 +62,8 @@ func rdbInsertDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 }
 
 func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevicesOption) ([]*model.Device, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDevices", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectDevices", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectDevicesOptions{}
 	for _, o := range opts {
@@ -73,7 +73,7 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone && opt.token == "" {
 		err := errors.New("An error occurred while getting devices. Be sure to specify either userId or platform or token")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -108,7 +108,7 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting devices")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -116,8 +116,8 @@ func rdbSelectDevices(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDevi
 }
 
 func rdbSelectDevice(ctx context.Context, dbMap *gorp.DbMap, userID string, platform scpb.Platform) (*model.Device, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDevice", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectDevice", "datastore")
+	defer tracer.Finish(span)
 
 	var devices []*model.Device
 	query := fmt.Sprintf("SELECT * FROM %s WHERE deleted=0 AND user_id=:userId AND platform=:platform;", tableNameDevice)
@@ -129,7 +129,7 @@ func rdbSelectDevice(ctx context.Context, dbMap *gorp.DbMap, userID string, plat
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting device")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -141,8 +141,8 @@ func rdbSelectDevice(ctx context.Context, dbMap *gorp.DbMap, userID string, plat
 }
 
 func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, device *model.Device) error {
-	span := tracer.Provider(ctx).StartSpan("rdbUpdateDevice", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbUpdateDevice", "datastore")
+	defer tracer.Finish(span)
 
 	deleted := time.Now().Unix()
 	err := rdbDeleteSubscriptions(
@@ -162,7 +162,7 @@ func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating device")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -170,8 +170,8 @@ func rdbUpdateDevice(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transactio
 }
 
 func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteDevicesOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbDeleteDevices", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbDeleteDevices", "datastore")
+	defer tracer.Finish(span)
 
 	opt := deleteDevicesOptions{}
 	for _, o := range opts {
@@ -181,7 +181,7 @@ func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 	if opt.userID == "" && opt.platform == scpb.Platform_PlatformNone {
 		err := errors.New("An error occurred while deleting devices. Be sure to specify either userID or platform")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -210,7 +210,7 @@ func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting devices")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -221,7 +221,7 @@ func rdbDeleteDevices(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transacti
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting devices")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}

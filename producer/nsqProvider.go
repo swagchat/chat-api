@@ -10,11 +10,11 @@ import (
 	"reflect"
 	"unsafe"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	nsq "github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -31,8 +31,8 @@ func b2s(b []byte) string {
 }
 
 func (np nsqProvider) PublishMessage(rtmEvent *scpb.EventData) error {
-	span := tracer.Provider(np.ctx).StartSpan("PublishMessage", "producer")
-	defer tracer.Provider(np.ctx).Finish(span)
+	span := tracer.StartSpan(np.ctx, "PublishMessage", "producer")
+	defer tracer.Finish(span)
 
 	cfg := config.Config()
 	buffer := new(bytes.Buffer)
@@ -44,20 +44,20 @@ func (np nsqProvider) PublishMessage(rtmEvent *scpb.EventData) error {
 	if err != nil {
 		err = errors.Wrap(err, "NSQ post failure")
 		logger.Error(err.Error())
-		tracer.Provider(np.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		err = errors.Wrap(err, "NSQ response body read failure")
 		logger.Error(err.Error())
-		tracer.Provider(np.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
 		err = fmt.Errorf("http status code[%d]", resp.StatusCode)
 		logger.Error(err.Error())
-		tracer.Provider(np.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 	}
 
 	return nil

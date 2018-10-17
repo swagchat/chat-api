@@ -9,33 +9,33 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateSubscriptionStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateSubscriptionStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateSubscriptionStore", "datastore")
+	defer tracer.Finish(span)
 
 	_ = dbMap.AddTableWithName(model.Subscription{}, tableNameSubscription)
 	err := dbMap.CreateTablesIfNotExists()
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating subscription table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertSubscription(ctx context.Context, dbMap *gorp.DbMap, subscription *model.Subscription) (*model.Subscription, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertSubscription", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertSubscription", "datastore")
+	defer tracer.Finish(span)
 
 	err := dbMap.Insert(subscription)
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating subscription")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -43,8 +43,8 @@ func rdbInsertSubscription(ctx context.Context, dbMap *gorp.DbMap, subscription 
 }
 
 func rdbSelectSubscription(ctx context.Context, dbMap *gorp.DbMap, roomID, userID string, platform scpb.Platform) (*model.Subscription, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectSubscription", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectSubscription", "datastore")
+	defer tracer.Finish(span)
 
 	var subscriptions []*model.Subscription
 	query := fmt.Sprintf("SELECT * FROM %s WHERE room_id=:roomId AND user_id=:userId AND platform=:platform AND deleted=0;", tableNameSubscription)
@@ -57,7 +57,7 @@ func rdbSelectSubscription(ctx context.Context, dbMap *gorp.DbMap, roomID, userI
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting subscription")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -69,8 +69,8 @@ func rdbSelectSubscription(ctx context.Context, dbMap *gorp.DbMap, roomID, userI
 }
 
 func rdbSelectDeletedSubscriptions(ctx context.Context, dbMap *gorp.DbMap, opts ...SelectDeletedSubscriptionsOption) ([]*model.Subscription, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectDeletedSubscriptions", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectDeletedSubscriptions", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectDeletedSubscriptionsOptions{}
 	for _, o := range opts {
@@ -80,14 +80,14 @@ func rdbSelectDeletedSubscriptions(ctx context.Context, dbMap *gorp.DbMap, opts 
 	if opt.userID != "" && opt.roomID != "" {
 		err := errors.New("An error occurred while getting deleted subscriptions. Be sure to specify either roomID or userID")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
 	if opt.roomID != "" && opt.platform != scpb.Platform_PlatformNone {
 		err := errors.New("If roomID is specified, platform can not be specified")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -102,7 +102,7 @@ func rdbSelectDeletedSubscriptions(ctx context.Context, dbMap *gorp.DbMap, opts 
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return nil, err
 		}
 	}
@@ -120,7 +120,7 @@ func rdbSelectDeletedSubscriptions(ctx context.Context, dbMap *gorp.DbMap, opts 
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return nil, err
 		}
 	}
@@ -129,8 +129,8 @@ func rdbSelectDeletedSubscriptions(ctx context.Context, dbMap *gorp.DbMap, opts 
 }
 
 func rdbDeleteSubscriptions(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteSubscriptionsOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbDeleteSubscriptions", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbDeleteSubscriptions", "datastore")
+	defer tracer.Finish(span)
 
 	opt := deleteSubscriptionsOptions{}
 	for _, o := range opts {
@@ -140,14 +140,14 @@ func rdbDeleteSubscriptions(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Tra
 	if opt.userID == "" && opt.roomID == "" {
 		err := errors.New("An error occurred while deleting subscriptions. Be sure to specify either roomID or userID")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
 	if opt.roomID != "" && opt.platform != scpb.Platform_PlatformNone {
 		err := errors.New("An error occurred while deleting subscriptions. If roomID is specified, platform can not be specified")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -164,7 +164,7 @@ func rdbDeleteSubscriptions(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Tra
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting subscriptions")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 		return nil
@@ -176,7 +176,7 @@ func rdbDeleteSubscriptions(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Tra
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 		return nil
@@ -188,7 +188,7 @@ func rdbDeleteSubscriptions(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Tra
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while getting deleted subscriptions")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 		return nil

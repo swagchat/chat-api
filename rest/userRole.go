@@ -6,7 +6,7 @@ import (
 	"github.com/go-zoo/bone"
 	"github.com/swagchat/chat-api/model"
 	"github.com/swagchat/chat-api/service"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 )
 
 func setUserRoleMux() {
@@ -16,8 +16,8 @@ func setUserRoleMux() {
 
 func postUserRole(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("postUserRole", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "postUserRole", "rest")
+	defer tracer.Finish(span)
 
 	var req model.AddUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {
@@ -39,8 +39,8 @@ func postUserRole(w http.ResponseWriter, r *http.Request) {
 
 func deleteUserRole(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	span := tracer.Provider(ctx).StartSpan("deleteUserRole", "rest")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "deleteUserRole", "rest")
+	defer tracer.Finish(span)
 
 	var req model.DeleteUserRolesRequest
 	if err := decodeBody(r, &req); err != nil {

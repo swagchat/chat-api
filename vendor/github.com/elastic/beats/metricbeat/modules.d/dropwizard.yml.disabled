@@ -1,6 +1,0 @@
-- module: dropwizard
-  hosts: ["localhost:8080"]
-  metrics_path: /metrics/metrics
-  namespace: example
-  #username: "user"
-  #password: "secret"

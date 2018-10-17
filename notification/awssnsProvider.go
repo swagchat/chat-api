@@ -11,9 +11,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
@@ -71,8 +71,8 @@ func (ap *awssnsProvider) newSnsClient() *sns.SNS {
 }
 
 func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("CreateTopic", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "CreateTopic", "notification")
+	defer tracer.Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -86,7 +86,7 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 		createTopicOutput, err := client.CreateTopic(params)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(ap.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			result.Error = err
 		} else {
 			result.Data = createTopicOutput.TopicArn
@@ -98,8 +98,8 @@ func (ap *awssnsProvider) CreateTopic(roomId string) NotificationChannel {
 }
 
 func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("DeleteTopic", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "DeleteTopic", "notification")
+	defer tracer.Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -113,7 +113,7 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 		_, err := client.DeleteTopic(params)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(ap.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			result.Error = err
 		}
 
@@ -123,8 +123,8 @@ func (ap *awssnsProvider) DeleteTopic(notificationTopicId string) NotificationCh
 }
 
 func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("CreateEndpoint", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "CreateEndpoint", "notification")
+	defer tracer.Finish(span)
 
 	cfg := config.Config()
 
@@ -153,7 +153,7 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 		createPlatformEndpointOutput, err := client.CreatePlatformEndpoint(createPlatformEndpointInputParams)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(ap.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			result.Error = err
 		} else {
 			result.Data = createPlatformEndpointOutput.EndpointArn
@@ -165,8 +165,8 @@ func (ap *awssnsProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 }
 
 func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceID string) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("DeleteEndpoint", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "DeleteEndpoint", "notification")
+	defer tracer.Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -180,7 +180,7 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceID string) Notificati
 		_, err := client.DeleteEndpoint(deleteEndpointInputParams)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(ap.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			result.Error = err
 		}
 
@@ -190,8 +190,8 @@ func (ap *awssnsProvider) DeleteEndpoint(notificationDeviceID string) Notificati
 }
 
 func (ap *awssnsProvider) Subscribe(notificationTopicID string, notificationDeviceID string) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("Subscribe", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "Subscribe", "notification")
+	defer tracer.Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -207,7 +207,7 @@ func (ap *awssnsProvider) Subscribe(notificationTopicID string, notificationDevi
 		subscribeOutput, err := client.Subscribe(subscribeInputParams)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(ap.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			result.Error = err
 		} else {
 			result.Data = subscribeOutput.SubscriptionArn
@@ -219,8 +219,8 @@ func (ap *awssnsProvider) Subscribe(notificationTopicID string, notificationDevi
 }
 
 func (ap *awssnsProvider) Unsubscribe(notificationSubscribeID string) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("Unsubscribe", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "Unsubscribe", "notification")
+	defer tracer.Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	go func() {
@@ -234,7 +234,7 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeID string) Notificati
 		_, err := client.Unsubscribe(params)
 		if err != nil {
 			logger.Error(err.Error())
-			tracer.Provider(ap.ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			result.Error = err
 		}
 
@@ -244,8 +244,8 @@ func (ap *awssnsProvider) Unsubscribe(notificationSubscribeID string) Notificati
 }
 
 func (ap *awssnsProvider) Publish(notificationTopicID, roomID string, messageInfo *MessageInfo) NotificationChannel {
-	span := tracer.Provider(ap.ctx).StartSpan("Publish", "notification")
-	defer tracer.Provider(ap.ctx).Finish(span)
+	span := tracer.StartSpan(ap.ctx, "Publish", "notification")
+	defer tracer.Finish(span)
 
 	nc := make(NotificationChannel, 1)
 	defer close(nc)
@@ -270,7 +270,7 @@ func (ap *awssnsProvider) Publish(notificationTopicID, roomID string, messageInf
 	b, err := json.Marshal(ios)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		result.Error = err
 		nc <- result
 	}
@@ -286,7 +286,7 @@ func (ap *awssnsProvider) Publish(notificationTopicID, roomID string, messageInf
 	b, err = json.Marshal(gcm)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		result.Error = err
 		nc <- result
 	}
@@ -294,7 +294,7 @@ func (ap *awssnsProvider) Publish(notificationTopicID, roomID string, messageInf
 	pushData, err := json.Marshal(wrapper)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		result.Error = err
 		nc <- result
 	}
@@ -309,7 +309,7 @@ func (ap *awssnsProvider) Publish(notificationTopicID, roomID string, messageInf
 	res, err := client.Publish(params)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(ap.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil
 	}
 	logger.Info(fmt.Sprintf("[Amazon SNS]Publish message topicArn:%s message:%s response:%s", notificationTopicID, message, res.String()))

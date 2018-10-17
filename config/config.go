@@ -22,8 +22,6 @@ var (
 	StopRun = false
 )
 
-type ctxKey int
-
 type config struct {
 	HTTPPort               string `yaml:"httpPort"`
 	GRPCPort               string `yaml:"gRPCPort"`

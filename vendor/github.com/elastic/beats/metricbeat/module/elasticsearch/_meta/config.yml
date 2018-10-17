@@ -1,4 +1,0 @@
-- module: elasticsearch
-  hosts: ["localhost:9200"]
-  #username: "user"
-  #password: "secret"

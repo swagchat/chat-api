@@ -37,6 +37,17 @@ var (
 	// Fatal logs a message at FatalLevel. The message includes any fields passed at the log site, as well as any fields accumulated on the logger.
 	Fatal = logger.Fatal
 
+	// Debugf logs a message at DebugLevel. This message corresponds to the format string.
+	Debugf = logger.Debugw
+	// Infof logs a message at InfoLevel. This message corresponds to the format string.
+	Infof = logger.Infow
+	// Warnf logs a message at WarnLevel. This message corresponds to the format string.
+	Warnf = logger.Warnw
+	// Errorf logs a message at ErrorLevel. This message corresponds to the format string.
+	Errorf = logger.Errorw
+	// Fatalf logs a message at FatalLevel. This message corresponds to the format string.
+	Fatalf = logger.Fatalw
+
 	encoderConfig = newEncoderConfig()
 )
 

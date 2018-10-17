@@ -7,13 +7,13 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	gorp "gopkg.in/gorp.v2"
 )
 
 func rdbCreateBlockUserStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateBlockUserStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateBlockUserStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.BlockUser{}, tableNameBlockUser)
 	tableMap.SetUniqueTogether("user_id", "block_user_id")
@@ -21,14 +21,14 @@ func rdbCreateBlockUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating block user table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, bus []*model.BlockUser, opts ...InsertBlockUsersOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertBlockUsers", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertBlockUsers", "datastore")
+	defer tracer.Finish(span)
 
 	if len(bus) == 0 {
 		return nil
@@ -61,7 +61,7 @@ func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while inserting block users")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -70,8 +70,8 @@ func rdbInsertBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 }
 
 func rdbSelectBlockUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]*model.MiniUser, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUsers", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectBlockUsers", "datastore")
+	defer tracer.Finish(span)
 
 	var blockUsers []*model.MiniUser
 	query := fmt.Sprintf(`SELECT
@@ -94,7 +94,7 @@ func rdbSelectBlockUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) 
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting block users")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -102,8 +102,8 @@ func rdbSelectBlockUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) 
 }
 
 func rdbSelectBlockUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]string, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUserIDs", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectBlockUserIDs", "datastore")
+	defer tracer.Finish(span)
 
 	var blockUserIDs []string
 	query := fmt.Sprintf("SELECT block_user_id FROM %s WHERE user_id=:userId;", tableNameBlockUser)
@@ -114,7 +114,7 @@ func rdbSelectBlockUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting block userIds")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -122,8 +122,8 @@ func rdbSelectBlockUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string
 }
 
 func rdbSelectBlockedUsers(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]*model.MiniUser, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockedUsers", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectBlockedUsers", "datastore")
+	defer tracer.Finish(span)
 
 	var blockedUsers []*model.MiniUser
 	query := fmt.Sprintf(`SELECT
@@ -146,7 +146,7 @@ func rdbSelectBlockedUsers(ctx context.Context, dbMap *gorp.DbMap, userID string
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting blocked users")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -154,8 +154,8 @@ func rdbSelectBlockedUsers(ctx context.Context, dbMap *gorp.DbMap, userID string
 }
 
 func rdbSelectBlockedUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID string) ([]string, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockedUserIDs", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectBlockedUserIDs", "datastore")
+	defer tracer.Finish(span)
 
 	var blockUserIDs []string
 	query := fmt.Sprintf("SELECT user_id FROM %s WHERE block_user_id=:userId;", tableNameBlockUser)
@@ -166,7 +166,7 @@ func rdbSelectBlockedUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID stri
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting blocked userIds")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -174,8 +174,8 @@ func rdbSelectBlockedUserIDs(ctx context.Context, dbMap *gorp.DbMap, userID stri
 }
 
 func rdbSelectBlockUser(ctx context.Context, dbMap *gorp.DbMap, userID, blockUserID string) (*model.BlockUser, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectBlockUser", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectBlockUser", "datastore")
+	defer tracer.Finish(span)
 
 	var blockUsers []*model.BlockUser
 	query := fmt.Sprintf("SELECT * FROM %s WHERE user_id=:userId AND block_user_id=:blockUserId;", tableNameBlockUser)
@@ -187,7 +187,7 @@ func rdbSelectBlockUser(ctx context.Context, dbMap *gorp.DbMap, userID, blockUse
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting block user")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -199,8 +199,8 @@ func rdbSelectBlockUser(ctx context.Context, dbMap *gorp.DbMap, userID, blockUse
 }
 
 func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, opts ...DeleteBlockUsersOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbDeleteBlockUsers", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbDeleteBlockUsers", "datastore")
+	defer tracer.Finish(span)
 
 	opt := deleteBlockUsersOptions{}
 	for _, o := range opts {
@@ -210,7 +210,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 	if len(opt.userIDs) == 0 && len(opt.blockUserIDs) == 0 {
 		err := errors.New("An error occurred while deleting block users. Be sure to specify either userIDs or blockUserIDs")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -221,7 +221,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting block users")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -233,7 +233,7 @@ func rdbDeleteBlockUsers(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transa
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while deleting block users")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}

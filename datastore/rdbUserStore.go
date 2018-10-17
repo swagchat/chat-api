@@ -9,13 +9,13 @@ import (
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/model"
-	"github.com/swagchat/chat-api/tracer"
+	"github.com/betchi/tracer"
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
 func rdbCreateUserStore(ctx context.Context, dbMap *gorp.DbMap) {
-	span := tracer.Provider(ctx).StartSpan("rdbCreateUserStore", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbCreateUserStore", "datastore")
+	defer tracer.Finish(span)
 
 	tableMap := dbMap.AddTableWithName(model.User{}, tableNameUser)
 	for _, columnMap := range tableMap.Columns {
@@ -27,14 +27,14 @@ func rdbCreateUserStore(ctx context.Context, dbMap *gorp.DbMap) {
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while creating user table")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return
 	}
 }
 
 func rdbInsertUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, user *model.User, opts ...InsertUserOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbInsertUser", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbInsertUser", "datastore")
+	defer tracer.Finish(span)
 
 	opt := insertUserOptions{}
 	for _, o := range opts {
@@ -45,7 +45,7 @@ func rdbInsertUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while inserting user")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -67,8 +67,8 @@ func rdbInsertUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 }
 
 func rdbSelectUsers(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32, opts ...SelectUsersOption) ([]*model.User, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUsers", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectUsers", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectUsersOptions{}
 	for _, o := range opts {
@@ -101,7 +101,7 @@ func rdbSelectUsers(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting users")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -109,8 +109,8 @@ func rdbSelectUsers(ctx context.Context, dbMap *gorp.DbMap, limit, offset int32,
 }
 
 func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts ...SelectUserOption) (*model.User, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUser", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectUser", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectUserOptions{}
 	for _, o := range opts {
@@ -123,7 +123,7 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 	if _, err := dbMap.Select(&users, query, params); err != nil {
 		err = errors.Wrap(err, "An error occurred while getting user")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 	var user *model.User
@@ -163,8 +163,8 @@ func rdbSelectUser(ctx context.Context, dbMap *gorp.DbMap, userID string, opts .
 }
 
 func rdbSelectCountUsers(ctx context.Context, dbMap *gorp.DbMap) (int64, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectCountUsers", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectCountUsers", "datastore")
+	defer tracer.Finish(span)
 
 	query := fmt.Sprintf("SELECT count(id) FROM %s WHERE deleted = 0", tableNameUser)
 	params := make(map[string]interface{})
@@ -173,7 +173,7 @@ func rdbSelectCountUsers(ctx context.Context, dbMap *gorp.DbMap) (int64, error) 
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting user count")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return 0, err
 	}
 
@@ -181,8 +181,8 @@ func rdbSelectCountUsers(ctx context.Context, dbMap *gorp.DbMap) (int64, error) 
 }
 
 func rdbSelectUserIDsOfUser(ctx context.Context, dbMap *gorp.DbMap, userIDs []string) ([]string, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectUserIDsOfUser", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectUserIDsOfUser", "datastore")
+	defer tracer.Finish(span)
 
 	var users []*model.User
 	userIdsQuery, params := makePrepareExpressionParamsForInOperand(userIDs)
@@ -191,7 +191,7 @@ func rdbSelectUserIDsOfUser(ctx context.Context, dbMap *gorp.DbMap, userIDs []st
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting userIds")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
@@ -204,8 +204,8 @@ func rdbSelectUserIDsOfUser(ctx context.Context, dbMap *gorp.DbMap, userIDs []st
 }
 
 func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, user *model.User, opts ...UpdateUserOption) error {
-	span := tracer.Provider(ctx).StartSpan("rdbUpdateUser", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbUpdateUser", "datastore")
+	defer tracer.Finish(span)
 
 	opt := updateUserOptions{}
 	for _, o := range opts {
@@ -218,7 +218,7 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 		if err != nil {
 			err = errors.Wrap(err, "An error occurred while updating user")
 			logger.Error(err.Error())
-			tracer.Provider(ctx).SetError(span, err)
+			tracer.SetError(span, err)
 			return err
 		}
 	}
@@ -231,7 +231,7 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while updating user")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -253,8 +253,8 @@ func rdbUpdateUser(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction,
 }
 
 func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Transaction, user *model.User) error {
-	span := tracer.Provider(ctx).StartSpan("rdbUpdateUserDeleted", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbUpdateUserDeleted", "datastore")
+	defer tracer.Finish(span)
 
 	err := rdbDeleteBlockUsers(ctx, dbMap, tx, DeleteBlockUsersOptionFilterByUserIDs([]string{user.UserID}))
 	if err != nil {
@@ -308,7 +308,7 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while deleting user")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return err
 	}
 
@@ -316,8 +316,8 @@ func rdbUpdateUserDeleted(ctx context.Context, dbMap *gorp.DbMap, tx *gorp.Trans
 }
 
 func rdbSelectContacts(ctx context.Context, dbMap *gorp.DbMap, userID string, limit, offset int32, opts ...SelectContactsOption) ([]*model.User, error) {
-	span := tracer.Provider(ctx).StartSpan("rdbSelectContacts", "datastore")
-	defer tracer.Provider(ctx).Finish(span)
+	span := tracer.StartSpan(ctx, "rdbSelectContacts", "datastore")
+	defer tracer.Finish(span)
 
 	opt := selectContactsOptions{}
 	for _, o := range opts {
@@ -381,7 +381,7 @@ GROUP BY u.user_id`, tableNameUser, tableNameRoomUser, tableNameRoomUser, tableN
 	if err != nil {
 		err = errors.Wrap(err, "An error occurred while getting contacts")
 		logger.Error(err.Error())
-		tracer.Provider(ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 

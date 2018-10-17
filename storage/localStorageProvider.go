@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	"github.com/pkg/errors"
 	"github.com/swagchat/chat-api/config"
-	"github.com/swagchat/chat-api/tracer"
 )
 
 type localStorageProvider struct {
@@ -22,21 +22,21 @@ func (lp *localStorageProvider) Init() error {
 }
 
 func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
-	span := tracer.Provider(lp.ctx).StartSpan("Post", "storage")
-	defer tracer.Provider(lp.ctx).Finish(span)
+	span := tracer.StartSpan(lp.ctx, "Post", "storage")
+	defer tracer.Finish(span)
 
 	err := os.MkdirAll(lp.localPath, 0775)
 	if err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("Failed to make directory. path=%s", lp.localPath))
 		logger.Error(err.Error())
-		tracer.Provider(lp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 
 	data, err := ioutil.ReadAll(assetInfo.Data)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(lp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 
@@ -45,7 +45,7 @@ func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
 	if err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("Failed to write file. path=%s/%s", lp.localPath, assetInfo.Filename))
 		logger.Error(err.Error())
-		tracer.Provider(lp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return "", err
 	}
 
@@ -53,22 +53,22 @@ func (lp *localStorageProvider) Post(assetInfo *AssetInfo) (string, error) {
 }
 
 func (lp *localStorageProvider) Get(assetInfo *AssetInfo) ([]byte, error) {
-	span := tracer.Provider(lp.ctx).StartSpan("Get", "storage")
-	defer tracer.Provider(lp.ctx).Finish(span)
+	span := tracer.StartSpan(lp.ctx, "Get", "storage")
+	defer tracer.Finish(span)
 
 	file, err := os.Open(fmt.Sprintf("%s/%s", lp.localPath, assetInfo.Filename))
 	defer file.Close()
 	if err != nil {
 		err = errors.Wrap(err, fmt.Sprintf("Failed to open file. path=%s/%s", lp.localPath, assetInfo.Filename))
 		logger.Error(err.Error())
-		tracer.Provider(lp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 
 	bytes, err := ioutil.ReadAll(file)
 	if err != nil {
 		logger.Error(err.Error())
-		tracer.Provider(lp.ctx).SetError(span, err)
+		tracer.SetError(span, err)
 		return nil, err
 	}
 

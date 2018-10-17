@@ -1,2 +1,0 @@
-- module: mongodb
-  hosts: ["localhost:27017"]
