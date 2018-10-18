@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	elasticapm "github.com/elastic/apm-agent-go"
+	"github.com/elastic/apm-agent-go/transport"
 )
 
 var elasticapmTracer *elasticapm.Tracer
@@ -14,11 +15,8 @@ type elasticapmProvider struct {
 }
 
 func (ep *elasticapmProvider) NewTracer(config *Config) error {
-	if ep.logger != nil {
-		elasticapmTracer.SetLogger(ep.logger)
-	}
-
-	elasticapmTracer, err := elasticapm.NewTracer(config.ServiceName, config.ServiceVersion)
+	transport.InitDefault()
+	tracer, err := elasticapm.NewTracer(config.ServiceName, config.ServiceVersion)
 	if err != nil {
 		if ep.logger != nil {
 			ep.logger.Errorf(err.Error())
@@ -26,7 +24,12 @@ func (ep *elasticapmProvider) NewTracer(config *Config) error {
 		return err
 	}
 
-	elasticapmTracer.SetCaptureBody(elasticapm.CaptureBodyAll)
+	tracer.SetCaptureBody(elasticapm.CaptureBodyAll)
+	if ep.logger != nil {
+		tracer.SetLogger(ep.logger)
+	}
+
+	elasticapmTracer = tracer
 	return nil
 }
 
@@ -57,20 +60,17 @@ func (ep *elasticapmProvider) InjectHTTPRequest(span interface{}, req *http.Requ
 }
 
 func (ep *elasticapmProvider) SetTag(span interface{}, key string, value interface{}) {
-	// transaction := ep.ctx.Value(CtxTracerSpan)
-	// if transaction != nil {
-	// 	txCtx := transaction.(*elasticapm.Transaction).Context
-	// 	// txCtx.SetTag(key, fmt.Sprintf("%v", value))
-	// 	txCtx.SetCustom(key, value)
-	// }
+	if span != nil {
+		txCtx := span.(*elasticapm.Transaction).Context
+		txCtx.SetCustom(key, value)
+	}
 }
 
 func (ep *elasticapmProvider) SetHTTPStatusCode(span interface{}, statusCode int) {
-	// transaction := ep.ctx.Value(CtxTracerSpan)
-	// if transaction != nil {
-	// 	txCtx := transaction.(*elasticapm.Transaction).Context
-	// 	txCtx.SetHTTPStatusCode(statusCode)
-	// }
+	if span != nil {
+		txCtx := span.(*elasticapm.Transaction).Context
+		txCtx.SetHTTPStatusCode(statusCode)
+	}
 }
 
 func (ep *elasticapmProvider) SetError(span interface{}, err error) {

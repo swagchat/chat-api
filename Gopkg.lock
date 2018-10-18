@@ -52,11 +52,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3bd8bab6cb1f49025962f17ce3e7a8090081360c990d6ee4e93ae4260a7a7438"
+  digest = "1:68046ec676d2d09d7654a3172d7e8438b737bd0261b65aaf9c969c6f3a68b30e"
   name = "github.com/betchi/tracer"
   packages = ["."]
   pruneopts = ""
-  revision = "daadb01bb4a683b93ced1dee7f74cbba865871a5"
+  revision = "5f977d00d45bc1d313161c66d94cd22060a01ac6"
 
 [[projects]]
   branch = "master"
