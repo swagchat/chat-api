@@ -21,7 +21,7 @@ type Tracer interface {
 	Close()
 }
 
-var tracer Tracer
+var globalTracer Tracer
 
 type startTransactionOptions struct {
 	r *http.Request
@@ -42,75 +42,75 @@ func InitGlobalTracer(config *Config) error {
 		if config.Jaeger.Logger == nil {
 			config.Jaeger.Logger = jaeger.StdLogger
 		}
-		tracer = &jaegerProvider{
+		globalTracer = &jaegerProvider{
 			logger: config.Jaeger.Logger,
 		}
 	case "zipkin":
 		if config.Zipkin.Logger == nil {
 			config.Zipkin.Logger = jaeger.StdLogger
 		}
-		tracer = &zipkinProvider{
+		globalTracer = &zipkinProvider{
 			logger:    config.Zipkin.Logger,
 			endpoint:  config.Zipkin.Endpoint,
 			batchSize: config.Zipkin.BatchSize,
 			timeout:   config.Zipkin.Timeout,
 		}
 	case "elasticapm":
-		tracer = &elasticapmProvider{
+		globalTracer = &elasticapmProvider{
 			logger: config.ElasticAPM.Logger,
 		}
 	default:
-		tracer = &noopProvider{}
+		globalTracer = &noopProvider{}
 	}
-	return tracer.NewTracer(config)
+	return globalTracer.NewTracer(config)
 }
 
 // GlobalTracer retrieve global tracer
 func GlobalTracer() Tracer {
-	return tracer
+	return globalTracer
 }
 
 // StartTransaction sets a transaction
 func StartTransaction(ctx context.Context, name, transactionType string, opts ...StartTransactionOption) (context.Context, interface{}) {
-	return tracer.StartTransaction(ctx, name, transactionType, opts...)
+	return globalTracer.StartTransaction(ctx, name, transactionType, opts...)
 }
 
 // StartSpan sets a span
 func StartSpan(ctx context.Context, name, spanType string) interface{} {
-	return tracer.StartSpan(ctx, name, spanType)
+	return globalTracer.StartSpan(ctx, name, spanType)
 }
 
 // InjectHTTPRequest injects http request
 func InjectHTTPRequest(span interface{}, req *http.Request) {
-	tracer.InjectHTTPRequest(span, req)
+	globalTracer.InjectHTTPRequest(span, req)
 }
 
 // SetTag sets a tag
 func SetTag(span interface{}, key string, value interface{}) {
-	tracer.SetTag(span, key, value)
+	globalTracer.SetTag(span, key, value)
 }
 
 // SetHTTPStatusCode sets a http status code
 func SetHTTPStatusCode(span interface{}, statusCode int) {
-	tracer.SetHTTPStatusCode(span, statusCode)
+	globalTracer.SetHTTPStatusCode(span, statusCode)
 }
 
 // SetError sets a error
 func SetError(span interface{}, err error) {
-	tracer.SetError(span, err)
+	globalTracer.SetError(span, err)
 }
 
 // Finish makes it finish transaction
 func Finish(span interface{}) {
-	tracer.Finish(span)
+	globalTracer.Finish(span)
 }
 
 // CloseTransaction closes transaction
 func CloseTransaction(ctx context.Context) {
-	tracer.CloseTransaction(ctx)
+	globalTracer.CloseTransaction(ctx)
 }
 
 // Close closes tracer
 func Close() {
-	tracer.Close()
+	globalTracer.Close()
 }

@@ -171,6 +171,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/elastic/apm-agent-go",
+    "github.com/elastic/apm-agent-go/transport",
     "github.com/opentracing/opentracing-go",
     "github.com/opentracing/opentracing-go/ext",
     "github.com/uber/jaeger-client-go",

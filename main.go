@@ -53,15 +53,15 @@ func main() {
 	}
 	logger.Info(fmt.Sprintf("Config: %s", compact.Sprint(cfg)))
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	if cfg.Profiling {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)
 		}()
 		metrics.Run(ctx)
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	if err := storage.Provider(ctx).Init(); err != nil {
 		logger.Fatal(err.Error())

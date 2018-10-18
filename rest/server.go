@@ -86,26 +86,6 @@ func Run(ctx context.Context) {
 	}
 }
 
-type customResponseWriter struct {
-	http.ResponseWriter
-	status int
-	length int
-}
-
-func (w *customResponseWriter) WriteHeader(status int) {
-	w.status = status
-	w.ResponseWriter.WriteHeader(status)
-}
-
-func (w *customResponseWriter) Write(b []byte) (int, error) {
-	if w.status == 0 {
-		w.status = 200
-	}
-	n, err := w.ResponseWriter.Write(b)
-	w.length += n
-	return n, err
-}
-
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	respond(w, r, http.StatusOK, "text/plain", fmt.Sprintf("%s [API Version]%s [Build Version]%s", config.AppName, config.APIVersion, config.BuildVersion))
 }
@@ -130,24 +110,10 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 func commonHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return (colsHandler(
-		traceHandler(
+		tracer.HandlerFunc(
 			jwtHandler(
 				judgeAppClientHandler(
 					func(w http.ResponseWriter, r *http.Request) {
-						// log.Printf("url=%s\n", r.RequestURI)
-						// domain := r.Host
-						// referer := r.Header.Get("Referer")
-						// if referer != "" {
-						// 	url, err := url.Parse(referer)
-						// 	if err != nil {
-						// 		panic(err)
-						// 	}
-						// 	domain = url.Hostname()
-						// }
-						// log.Printf("domain=%s", domain)
-						// for i, v := range r.Header {
-						// 	log.Printf("%s=%s\n", i, v)
-						// }
 						defer r.Body.Close()
 						fn(w, r)
 					})))))
@@ -157,33 +123,6 @@ func colsHandler(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		optionsHandler(w, r)
 		fn(w, r)
-	}
-}
-
-func traceHandler(fn http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		ctx, span := tracer.StartTransaction(
-			r.Context(),
-			fmt.Sprintf("%s:%s", r.Method, r.RequestURI), "REST",
-			tracer.StartTransactionOptionWithHTTPRequest(r),
-		)
-		defer tracer.CloseTransaction(ctx)
-
-		sw := &customResponseWriter{ResponseWriter: w}
-		fn(sw, r.WithContext(ctx))
-
-		userID := ctx.Value(config.CtxUserID)
-		if userID != nil {
-			tracer.SetTag(span, "userId", userID)
-		}
-		clientID := ctx.Value(config.CtxClientID)
-		if clientID != nil {
-			tracer.SetTag(span, "clientId", clientID)
-		}
-		tracer.SetHTTPStatusCode(span, sw.status)
-		tracer.SetTag(span, "http.method", r.Method)
-		tracer.SetTag(span, "http.content_length", sw.length)
-		tracer.SetTag(span, "http.referer", r.Referer())
 	}
 }
 
