@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "expvar"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -20,6 +21,7 @@ import (
 	"github.com/swagchat/chat-api/consumer"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
+	"github.com/swagchat/chat-api/metrics"
 	"github.com/swagchat/chat-api/rest"
 	"github.com/swagchat/chat-api/storage"
 )
@@ -55,6 +57,7 @@ func main() {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)
 		}()
+		metrics.Run(ctx)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
