@@ -48,7 +48,7 @@ func Provider(ctx context.Context) provider {
 			applicationArnAndroid: cfg.Notification.AmazonSNS.ApplicationArnAndroid,
 		}
 	default:
-		p = &notuseProvider{
+		p = &noopProvider{
 			ctx: ctx,
 		}
 	}

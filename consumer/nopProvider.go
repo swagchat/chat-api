@@ -4,16 +4,16 @@ import (
 	"context"
 )
 
-type notuseProvider struct {
+type noopProvider struct {
 	ctx context.Context
 }
 
-func (np notuseProvider) SubscribeMessage() error {
+func (np noopProvider) SubscribeMessage() error {
 	// Do not process anything
 	return nil
 }
 
-func (np notuseProvider) UnsubscribeMessage() error {
+func (np noopProvider) UnsubscribeMessage() error {
 	// Do not process anything
 	return nil
 }

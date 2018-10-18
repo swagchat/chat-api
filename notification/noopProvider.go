@@ -6,11 +6,11 @@ import (
 	scpb "github.com/swagchat/protobuf/protoc-gen-go"
 )
 
-type notuseProvider struct {
+type noopProvider struct {
 	ctx context.Context
 }
 
-func (np *notuseProvider) CreateTopic(roomId string) NotificationChannel {
+func (np *noopProvider) CreateTopic(roomId string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	notificationTopicID := ""
@@ -21,7 +21,7 @@ func (np *notuseProvider) CreateTopic(roomId string) NotificationChannel {
 	return notificationChannel
 }
 
-func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
+func (np *noopProvider) DeleteTopic(notificationTopicId string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -29,7 +29,7 @@ func (np *notuseProvider) DeleteTopic(notificationTopicId string) NotificationCh
 	return notificationChannel
 }
 
-func (np *notuseProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
+func (np *noopProvider) CreateEndpoint(userID string, platform scpb.Platform, token string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	notificationDeviceID := ""
@@ -40,7 +40,7 @@ func (np *notuseProvider) CreateEndpoint(userID string, platform scpb.Platform, 
 	return notificationChannel
 }
 
-func (np *notuseProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
+func (np *noopProvider) DeleteEndpoint(notificationDeviceId string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -48,7 +48,7 @@ func (np *notuseProvider) DeleteEndpoint(notificationDeviceId string) Notificati
 	return notificationChannel
 }
 
-func (np *notuseProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
+func (np *noopProvider) Subscribe(notificationTopicId string, notificationDeviceId string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -56,7 +56,7 @@ func (np *notuseProvider) Subscribe(notificationTopicId string, notificationDevi
 	return notificationChannel
 }
 
-func (np *notuseProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
+func (np *noopProvider) Unsubscribe(notificationSubscribeId string) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}
@@ -64,7 +64,7 @@ func (np *notuseProvider) Unsubscribe(notificationSubscribeId string) Notificati
 	return notificationChannel
 }
 
-func (np *notuseProvider) Publish(notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
+func (np *noopProvider) Publish(notificationTopicId, roomId string, messageInfo *MessageInfo) NotificationChannel {
 	notificationChannel := make(NotificationChannel, 1)
 	defer close(notificationChannel)
 	result := NotificationResult{}

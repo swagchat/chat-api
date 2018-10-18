@@ -16,10 +16,6 @@ func Provider(ctx context.Context) provider {
 
 	var p provider
 	switch cfg.Producer.Provider {
-	case "":
-		p = &notuseProvider{
-			ctx: ctx,
-		}
 	case "direct":
 		p = &directProvider{
 			ctx: ctx,
@@ -30,6 +26,10 @@ func Provider(ctx context.Context) provider {
 		}
 	case "kafka":
 		p = &kafkaProvider{
+			ctx: ctx,
+		}
+	default:
+		p = &noopProvider{
 			ctx: ctx,
 		}
 	}
