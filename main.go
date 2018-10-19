@@ -9,10 +9,12 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/kylelemons/godebug/pretty"
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/betchi/metrictor"
 	tracer "github.com/betchi/tracer"
 	logger "github.com/betchi/zapper"
 	elasticapmLogger "github.com/betchi/zapper/elasticapm"
@@ -21,7 +23,6 @@ import (
 	"github.com/swagchat/chat-api/consumer"
 	"github.com/swagchat/chat-api/datastore"
 	"github.com/swagchat/chat-api/grpc"
-	"github.com/swagchat/chat-api/metrics"
 	"github.com/swagchat/chat-api/rest"
 	"github.com/swagchat/chat-api/storage"
 )
@@ -60,7 +61,7 @@ func main() {
 		go func() {
 			http.ListenAndServe("0.0.0.0:6060", nil)
 		}()
-		metrics.Run(ctx)
+		metrictor.Run(ctx, time.Second*5)
 	}
 
 	if err := storage.Provider(ctx).Init(); err != nil {

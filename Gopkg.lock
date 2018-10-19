@@ -52,6 +52,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:c68a37016cf29832baffe4c2ac64e4ad5f3aff987b6595374966486b791baad5"
+  name = "github.com/betchi/metrictor"
+  packages = ["."]
+  pruneopts = ""
+  revision = "e86584d88eb840a5be44d853302a7b547b630c12"
+
+[[projects]]
+  branch = "master"
   digest = "1:11319f092cf2815e99cc11739fc1f1bf09994dc5f4bd402df8d0de27b7fb856f"
   name = "github.com/betchi/tracer"
   packages = ["."]
@@ -583,6 +591,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/s3",
     "github.com/aws/aws-sdk-go/service/sns",
+    "github.com/betchi/metrictor",
     "github.com/betchi/tracer",
     "github.com/betchi/zapper",
     "github.com/betchi/zapper/elasticapm",
