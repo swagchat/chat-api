@@ -13,7 +13,7 @@ jobs:
       - restore_cache:
           key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
       - restore_cache:
-          key: librdkafka-{{ .Branch }}-{{ LIBRDKAFKA_VERSION }}
+          key: librdkafka-{{ .Branch }}-{{ checksum "/usr/local/lib/pkgconfig/rdkafka.pc" }}
       - run:
           name: install librdkafka
           command: |
@@ -27,7 +27,7 @@ jobs:
               make install
             fi
       - save_cache:
-          key: librdkafka-{{ .Branch }}-{{ LIBRDKAFKA_VERSION }}
+          key: librdkafka-{{ .Branch }}-{{ checksum "/usr/local/lib/pkgconfig/rdkafka.pc" }}
           paths:
             - /usr/local/lib
       - save_cache:
@@ -98,7 +98,7 @@ workflows:
   build-deploy:
     jobs:
       - build
-      - test
+      # - test
       - deploy-dev:
           requires:
             - build
