@@ -1,36 +1,119 @@
-version: 2
+version: 2.0
 jobs:
   build:
     docker:
-      - image: docker:18.06.0-ce-git
+      # - image: circleci/golang:1.11.2
+      - image: golang:1.11.2-alpine
     working_directory: /go/src/github.com/swagchat/chat-api
+    environment:
+      - LIBRDKAFKA_VERSION: 0.11.4
+      - PKG_CONFIG_PATH: /usr/local/lib/pkgconfig
     steps:
       - checkout
-      - setup_remote_docker
       - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/chat-api
+          key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
+      - restore_cache:
+          key: librdkafka-{{ .Branch }}-{{ LIBRDKAFKA_VERSION }}
       - run:
-          name: Load Docker image layer cache
+          name: install librdkafka
           command: |
-            set +o pipefail
-            docker load -i /caches/chat-api | true
-      - run:
-          name: Build application Docker image
-          command: |
-            docker build --cache-from=chat-api -t chat-api .
-      - run:
-          name: Save Docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/chat-api chat-api
+            apk add --update --no-cache alpine-sdk bash python
+            if [ -z `which pkg-config` -o -z `pkg-config --list-all | grep librdkafka | wc -l` -o "`pkg-config --modversion rdkafka`" != "$LIBRDKAFKA_VERSION" ]; then
+              git clone https://github.com/edenhill/librdkafka.git /root/librdkafka
+              cd /root/librdkafka
+              git checkout -b v${LIBRDKAFKA_VERSION} refs/tags/v${LIBRDKAFKA_VERSION}
+              ./configure
+              make
+              make install
+            fi
       - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
+          key: librdkafka-{{ .Branch }}-{{ LIBRDKAFKA_VERSION }}
           paths:
-            - /caches/chat-api
+            - /usr/local/lib
+      - save_cache:
+          key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
       - run:
-          name: "run docker build"
+          name: go build
           command: |
-            docker build -t swagchat/chat-api .
+            go build
+  test:
+    docker:
+      - image: circleci/golang:1.11.2
+    working_directory: /go/src/github.com/swagchat/chat-api
+    environment: 
+      - CC_TEST_REPORTER_ID: YOUR_REPO_CC_TEST_REPORTER_ID
+    steps:
+      - checkout
+      - run:
+          name: "testing golang"
+          command: |
+            go test -race -covermode=atomic -coverprofile=coverage.out ./...
+  # detect:
+  # docker-build:
+  #   docker:
+  #     - image: docker:18.06.0-ce-git
+  #   working_directory: /go/src/github.com/swagchat/chat-api
+  #   steps:
+  #     - checkout
+  #     - setup_remote_docker
+  #     - restore_cache:
+  #         keys:
+  #           - v1-{{ .Branch }}
+  #         paths:
+  #           - /caches/chat-api
+  #     - run:
+  #         name: Load Docker image layer cache
+  #         command: |
+  #           set +o pipefail
+  #           docker load -i /caches/chat-api | true
+  #     - run:
+  #         name: Build application Docker image
+  #         command: |
+  #           docker build --cache-from=chat-api -t chat-api .
+  #     - run:
+  #         name: Save Docker image layer cache
+  #         command: |
+  #           mkdir -p /caches
+  #           docker save -o /caches/chat-api chat-api
+  #     - save_cache:
+  #         key: v1-{{ .Branch }}-{{ epoch }}
+  #         paths:
+  #           - /caches/chat-api
+  #     - run:
+  #         name: "run docker build"
+  #         command: |
+  #           docker build -t swagchat/chat-api .
+  # deploy-prod:
+  #   docker:
+  #     - image: ubuntu:14.04
+  #   working_directory: /tmp/my-project
+  #   steps:
+  #     - run:
+  #         name: Deploy if tests pass and branch is Master
+  #         command: ansible-playbook site.yml -i production
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - test
+      - deploy-dev:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+      - deploy-stage:
+          requires:
+            - build
+          filters:
+            branches:
+              only: staging
+      - deploy-prod:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
