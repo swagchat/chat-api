@@ -1,8 +1,10 @@
 FROM swagchat/build-base:1.0.0 AS build
 LABEL maintainer betchi
 
-COPY . /go/src/github.com/swagchat/chat-api
 WORKDIR /go/src/github.com/swagchat/chat-api/
+COPY Gopkg.toml Gopkg.lock ./
+RUN go get -u github.com/golang/dep/cmd/dep && dep ensure -v -vendor-only=true
+COPY . .
 RUN go build -o chat-api
 
 FROM swagchat/deploy-base:1.0.0
