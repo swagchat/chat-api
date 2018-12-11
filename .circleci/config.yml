@@ -78,7 +78,7 @@ jobs:
           name: CodeClimate upload coverage
           command: |
             # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
-            ./cc-test-reporter upload-coverage || true
+            ./cc-test-reporter upload-coverage
   # detect:
   # docker-build:
   #   docker:
