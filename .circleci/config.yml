@@ -11,8 +11,10 @@ jobs:
     steps:
       - checkout
       - restore_cache:
+          name: Restoring Cache (vendor)
           key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
       - restore_cache:
+          name: Restoring Cache (/usr/local/lib)
           key: librdkafka-{{ .Branch }}-{{ checksum "/usr/local/lib/pkgconfig/rdkafka.pc" }}
       - run:
           name: install librdkafka
@@ -27,10 +29,12 @@ jobs:
               make install
             fi
       - save_cache:
+          name: Saving Cache (/usr/local/lib)
           key: librdkafka-{{ .Branch }}-{{ checksum "/usr/local/lib/pkgconfig/rdkafka.pc" }}
           paths:
             - /usr/local/lib
       - save_cache:
+          name: Saving Cache (vendor)
           key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
           paths:
             - vendor
@@ -42,10 +46,23 @@ jobs:
     docker:
       - image: circleci/golang:1.11.2
     working_directory: /go/src/github.com/swagchat/chat-api
-    environment: 
-      - CC_TEST_REPORTER_ID: YOUR_REPO_CC_TEST_REPORTER_ID
+    environment:
+      - LIBRDKAFKA_VERSION: 0.11.4
+      - PKG_CONFIG_PATH: /usr/local/lib/pkgconfig
     steps:
       - checkout
+      - run:
+          name: install librdkafka
+          command: |
+            apk add --update --no-cache alpine-sdk bash python
+            if [ -z `which pkg-config` -o -z `pkg-config --list-all | grep librdkafka | wc -l` -o "`pkg-config --modversion rdkafka`" != "$LIBRDKAFKA_VERSION" ]; then
+              git clone https://github.com/edenhill/librdkafka.git /root/librdkafka
+              cd /root/librdkafka
+              git checkout -b v${LIBRDKAFKA_VERSION} refs/tags/v${LIBRDKAFKA_VERSION}
+              ./configure
+              make
+              make install
+            fi
       - run:
           name: "testing golang"
           command: |
@@ -98,7 +115,7 @@ workflows:
   build-deploy:
     jobs:
       - build
-      # - test
+      - test
       - deploy-dev:
           requires:
             - build
