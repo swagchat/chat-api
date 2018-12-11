@@ -55,6 +55,12 @@ jobs:
       - GOCACHE: "/tmp/go/cache"
     steps:
       - checkout
+      - run:
+          name: CodeClimate before-build
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
       - restore_cache:
           keys:
             - vendor-{{ checksum "Gopkg.lock" }}
@@ -68,6 +74,11 @@ jobs:
           paths:
               - /tmp/go/cache
           when: always
+      - run:
+          name: CodeClimate upload coverage
+          command: |
+            # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
+            ./cc-test-reporter upload-coverage || true
   # detect:
   # docker-build:
   #   docker:
