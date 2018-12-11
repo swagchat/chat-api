@@ -2,71 +2,72 @@ version: 2.0
 jobs:
   build:
     docker:
-      # - image: circleci/golang:1.11.2
-      - image: golang:1.11.2-alpine
+      - image: swagchat/build-base:1.0.0
     working_directory: /go/src/github.com/swagchat/chat-api
     environment:
-      - LIBRDKAFKA_VERSION: 0.11.4
-      - PKG_CONFIG_PATH: /usr/local/lib/pkgconfig
+      - GOCACHE: "/tmp/go/cache"
     steps:
       - checkout
       - restore_cache:
-          name: Restoring Cache (vendor)
-          key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
-      - restore_cache:
-          name: Restoring Cache (/usr/local/lib)
-          key: librdkafka-{{ .Branch }}-{{ checksum "/usr/local/lib/pkgconfig/rdkafka.pc" }}
+          keys:
+            - vendor-{{ checksum "Gopkg.lock" }}
+            - dep
       - run:
-          name: install librdkafka
+          name: ensure
           command: |
-            apk add --update --no-cache alpine-sdk bash python
-            if [ -z `which pkg-config` -o -z `pkg-config --list-all | grep librdkafka | wc -l` -o "`pkg-config --modversion rdkafka`" != "$LIBRDKAFKA_VERSION" ]; then
-              git clone https://github.com/edenhill/librdkafka.git /root/librdkafka
-              cd /root/librdkafka
-              git checkout -b v${LIBRDKAFKA_VERSION} refs/tags/v${LIBRDKAFKA_VERSION}
-              ./configure
-              make
-              make install
+            if [ ! -d vendor ]; then
+              if ! type dep >/dev/null 2>&1; then
+                go get github.com/golang/dep/cmd/dep
+              fi
+              dep ensure
             fi
       - save_cache:
-          name: Saving Cache (/usr/local/lib)
-          key: librdkafka-{{ .Branch }}-{{ checksum "/usr/local/lib/pkgconfig/rdkafka.pc" }}
-          paths:
-            - /usr/local/lib
-      - save_cache:
-          name: Saving Cache (vendor)
-          key: vendor-{{ .Branch }}-{{ checksum "Gopkg.lock" }}
+          key: vendor-{{ checksum "Gopkg.lock" }}
           paths:
             - vendor
+      - save_cache:
+          key: dep
+          paths:
+            - /go/bin/dep
+      - restore_cache:
+          keys:
+            - build-cache-{{ .Branch }}--
+            - build-cache-master--
+            - build-cache-
       - run:
-          name: go build
-          command: |
-            go build
+          name: build
+          command: go build
+      - save_cache:
+          key: build-cache-{{ .Branch }}--{{ .Revision }}
+          paths:
+              - /tmp/go/cache
+          when: on_fail
+      - persist_to_workspace:
+          root: /
+          paths:
+            - tmp/go/cache
+
   test:
     docker:
-      - image: circleci/golang:1.11.2
+      - image: swagchat/build-base:1.0.0
     working_directory: /go/src/github.com/swagchat/chat-api
     environment:
-      - LIBRDKAFKA_VERSION: 0.11.4
-      - PKG_CONFIG_PATH: /usr/local/lib/pkgconfig
+      - GOCACHE: "/tmp/go/cache"
     steps:
       - checkout
-      - run:
-          name: install librdkafka
-          command: |
-            apk add --update --no-cache alpine-sdk bash python
-            if [ -z `which pkg-config` -o -z `pkg-config --list-all | grep librdkafka | wc -l` -o "`pkg-config --modversion rdkafka`" != "$LIBRDKAFKA_VERSION" ]; then
-              git clone https://github.com/edenhill/librdkafka.git /root/librdkafka
-              cd /root/librdkafka
-              git checkout -b v${LIBRDKAFKA_VERSION} refs/tags/v${LIBRDKAFKA_VERSION}
-              ./configure
-              make
-              make install
-            fi
+      - restore_cache:
+          keys:
+            - vendor-{{ checksum "Gopkg.lock" }}
+      - attach_workspace:
+          at: /
       - run:
           name: "testing golang"
-          command: |
-            go test -race -covermode=atomic -coverprofile=coverage.out ./...
+          command: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+      - save_cache:
+          key: build-cache-{{ .Branch }}--{{ .Revision }}
+          paths:
+              - /tmp/go/cache
+          when: always
   # detect:
   # docker-build:
   #   docker:
@@ -112,7 +113,7 @@ jobs:
   #         command: ansible-playbook site.yml -i production
 workflows:
   version: 2
-  build-deploy:
+  build-test:
     jobs:
       - build
       - test
