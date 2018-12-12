@@ -2,10 +2,10 @@ version: 2.0
 jobs:
   build:
     docker:
-      - image: swagchat/build-base:1.0.0
+      - image: swagchat/build-base:1.1.0
     working_directory: /go/src/github.com/swagchat/chat-api
     environment:
-      - GOCACHE: "/tmp/go/cache"
+      - GOCACHE: /tmp/go/cache
     steps:
       - checkout
       - restore_cache:
@@ -13,7 +13,7 @@ jobs:
             - vendor-{{ checksum "Gopkg.lock" }}
             - dep
       - run:
-          name: ensure
+          name: Resolving dependencies
           command: |
             if [ ! -d vendor ]; then
               if ! type dep >/dev/null 2>&1; then
@@ -35,7 +35,7 @@ jobs:
             - build-cache-master--
             - build-cache-
       - run:
-          name: build
+          name: Building
           command: go build
       - save_cache:
           key: build-cache-{{ .Branch }}--{{ .Revision }}
@@ -49,100 +49,96 @@ jobs:
 
   test:
     docker:
-      - image: swagchat/build-base:1.0.0
+      - image: swagchat/build-base:1.1.0
     working_directory: /go/src/github.com/swagchat/chat-api
     environment:
-      - GOCACHE: "/tmp/go/cache"
+      - TEST_RESULTS: /tmp/test-results
     steps:
       - checkout
+      - run: mkdir -p $TEST_RESULTS
       - run:
-          name: CodeClimate before-build
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build
+          name: Preparing a test report to CodeClimate
+          command: cc-test-reporter before-build
       - restore_cache:
           keys:
             - vendor-{{ checksum "Gopkg.lock" }}
       - attach_workspace:
           at: /
       - run:
-          name: "testing golang"
-          command: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+          name: Testing
+          command: |
+            go test -v ./... | tee ${TEST_RESULTS}/go-test.out
+            # go test --race -v ./... | tee ${TEST_RESULTS}/go-test.out
+            go-junit-report <${TEST_RESULTS}/go-test.out > $TEST_RESULTS/go-test-report.xml
       - save_cache:
           key: build-cache-{{ .Branch }}--{{ .Revision }}
           paths:
               - /tmp/go/cache
           when: always
+      - store_artifacts:
+          path: /tmp/test-results
+      - store_test_results:
+          path: /tmp/test-results
       - run:
-          name: CodeClimate upload coverage
+          name: Analyzing test coverage
           command: |
-            # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
-            ./cc-test-reporter upload-coverage
-  # detect:
-  # docker-build:
-  #   docker:
-  #     - image: docker:18.06.0-ce-git
-  #   working_directory: /go/src/github.com/swagchat/chat-api
-  #   steps:
-  #     - checkout
-  #     - setup_remote_docker
-  #     - restore_cache:
-  #         keys:
-  #           - v1-{{ .Branch }}
-  #         paths:
-  #           - /caches/chat-api
-  #     - run:
-  #         name: Load Docker image layer cache
-  #         command: |
-  #           set +o pipefail
-  #           docker load -i /caches/chat-api | true
-  #     - run:
-  #         name: Build application Docker image
-  #         command: |
-  #           docker build --cache-from=chat-api -t chat-api .
-  #     - run:
-  #         name: Save Docker image layer cache
-  #         command: |
-  #           mkdir -p /caches
-  #           docker save -o /caches/chat-api chat-api
-  #     - save_cache:
-  #         key: v1-{{ .Branch }}-{{ epoch }}
-  #         paths:
-  #           - /caches/chat-api
-  #     - run:
-  #         name: "run docker build"
-  #         command: |
-  #           docker build -t swagchat/chat-api .
-  # deploy-prod:
-  #   docker:
-  #     - image: ubuntu:14.04
-  #   working_directory: /tmp/my-project
-  #   steps:
-  #     - run:
-  #         name: Deploy if tests pass and branch is Master
-  #         command: ansible-playbook site.yml -i production
+            go test -coverprofile c.out ./...
+            cp c.out $TEST_RESULTS/go-cover.out
+      - run:
+          name: Uploading a test report to CodeClimate
+          command: cc-test-reporter after-build
+
+  deploy:
+    docker:
+      - image: docker:18.06.0-ce-git
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true # Paid members only
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/chat-api
+      - run:
+          name: Loading docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/chat-api | true
+      - run:
+          name: Building docker image
+          command: |
+            docker build --cache-from=chat-api -t swagchat/chat-api:$CIRCLE_TAG .
+      - run:
+          name: Saving docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/chat-api chat-api
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/chat-api
+      - run:
+          name: Uploading docker image to docker hub
+          command: |
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+            docker push swagchat/chat-api:$CIRCLE_TAG
+
 workflows:
   version: 2
   build-test:
     jobs:
       - build
-      - test
-      - deploy-dev:
+      - test:
           requires:
             - build
-          filters:
-            branches:
-              only: develop
-      - deploy-stage:
+      - deploy:
+          type: approval
           requires:
-            - build
-          filters:
+            - test
+          filters: # tags only
+            tags:
+              only: /.*/
             branches:
-              only: staging
-      - deploy-prod:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
+              ignore: /.*/
