@@ -1,6 +1,8 @@
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/swagchat/chat-api)](https://goreportcard.com/report/github.com/swagchat/chat-api)
 [![CircleCI](https://circleci.com/gh/swagchat/chat-api/tree/master.svg?style=svg)](https://circleci.com/gh/swagchat/chat-api/tree/master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/5c3261e99582f147950c/maintainability)](https://codeclimate.com/github/swagchat/chat-api/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/5c3261e99582f147950c/test_coverage)](https://codeclimate.com/github/swagchat/chat-api/test_coverage)
 
 # swaghat Chat API
 
@@ -15,7 +17,7 @@ chat-api is designed to be easy to introduce to your microservices as well.
 ![Architecture](https://client.fairway.ne.jp/swagchat/img/swagchat-start-guide-20170920.png "Architecture")
 
 
-##### Related repositories
+##### Repository structure
 
 * [RTM API (Real Time Messaging API)](https://github.com/swagchat/rtm-api)
 * [SDK (TypeScript & JavaScript)](https://github.com/swagchat/swagchat-sdk-js)
@@ -72,6 +74,14 @@ docker run swagchat/chat-api
 [Docker repository](https://hub.docker.com/r/swagchat/chat-api/)
 
 ## Configuration
+
+The agent has various configuration options that can be specified via the command-line or via configuration files. All of the configuration options are completely optional. Defaults are specified with their descriptions.
+
+Configuration precedence is evaluated in the following order:
+
+1. Command line arguments
+1. Environment Variables
+1. Configuration files
 
 ### Specify the setting file (yaml format)
 

@@ -1,21 +1,13 @@
-FROM golang:1.10-alpine AS build
+FROM swagchat/build-base:1.0.0 AS build
 LABEL maintainer betchi
 
-RUN apk add --update --no-cache alpine-sdk bash python
-WORKDIR /root
-RUN git clone https://github.com/edenhill/librdkafka.git
-WORKDIR /root/librdkafka
-RUN git checkout -b v0.11.4 refs/tags/v0.11.4
-RUN ./configure
-RUN make
-RUN make install
-
-COPY . /go/src/github.com/swagchat/chat-api
 WORKDIR /go/src/github.com/swagchat/chat-api/
-RUN go test -covermode=atomic -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+COPY Gopkg.toml Gopkg.lock ./
+RUN go get -u github.com/golang/dep/cmd/dep && dep ensure -v -vendor-only=true
+COPY . .
 RUN go build -o chat-api
 
-FROM alpine:3.7
+FROM swagchat/deploy-base:1.0.0
 LABEL maintainer betchi
 
 RUN apk --no-cache --update upgrade \
@@ -24,10 +16,6 @@ RUN apk --no-cache --update upgrade \
 
 RUN mkdir -p /app
 COPY --from=build /go/src/github.com/swagchat/chat-api/chat-api /app/chat-api
-COPY --from=build /usr/local/lib/librdkafka.a /usr/local/lib/librdkafka.a
-COPY --from=build /usr/local/lib/librdkafka.so /usr/local/lib/librdkafka.so
-COPY --from=build /usr/local/lib/librdkafka.so.1 /usr/local/lib/librdkafka.so.1
-COPY --from=build /usr/local/include/librdkafka /usr/local/include/librdkafka
 
 STOPSIGNAL SIGTERM
 

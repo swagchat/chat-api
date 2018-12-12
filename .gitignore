@@ -9,3 +9,4 @@ debug
 config/app.yaml
 .vscode
 trash
+vendor
