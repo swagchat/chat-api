@@ -198,19 +198,19 @@ workflows:
       - build:
           filters:
             tags:
-              ignore: /.*/
+              only: /.*/
       - test:
           requires:
             - build
           filters:
             tags:
-              ignore: /.*/
+              only: /.*/
       - deploy-heroku-develop:
           requires:
             - test
           filters:
             tags:
-              ignore: /.*/
+              only: /.*/
             branches:
               ignore: master
       - deploy-heroku-master:
@@ -218,16 +218,21 @@ workflows:
             - test
           filters:
             tags:
-              ignore: /.*/
+              only: /.*/
             branches:
               only: master
       - deploy-heroku-tag:
+          requires:
+            - test
           filters:
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              # only: /^\d+\.\d+\.\d+$/
+              only: /^v[0-9]+(\.[0-9]+){2}.*/
             branches:
               ignore: /.*/
       - docker-build-push:
+          requires:
+            - test
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
