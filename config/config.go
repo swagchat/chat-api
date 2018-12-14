@@ -292,6 +292,9 @@ func (c *config) loadYaml(buf []byte) {
 func (c *config) loadEnv() {
 	var v string
 
+	if v = os.Getenv("PORT"); v != "" {
+		c.HTTPPort = v
+	}
 	if v = os.Getenv("HTTP_PORT"); v != "" {
 		c.HTTPPort = v
 	}

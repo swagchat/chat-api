@@ -88,43 +88,6 @@ jobs:
           name: Uploading a test report to CodeClimate
           command: cc-test-reporter after-build
 
-  docker-build-push:
-    docker:
-      - image: docker:18.06.0-ce-git
-    working_directory: /go/src/github.com/swagchat/chat-api
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true # Paid members only
-      - restore_cache:
-          keys:
-            - v1-{{ .Branch }}
-          paths:
-            - /caches/chat-api
-      - run:
-          name: Loading docker image layer cache
-          command: |
-            set +o pipefail
-            docker load -i /caches/chat-api | true
-      - run:
-          name: Building docker image
-          command: |
-            docker build --cache-from=chat-api -t swagchat/chat-api:$CIRCLE_TAG .
-      - run:
-          name: Saving docker image layer cache
-          command: |
-            mkdir -p /caches
-            docker save -o /caches/chat-api chat-api
-      - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
-          paths:
-            - /caches/chat-api
-      - run:
-          name: Uploading docker image to docker hub
-          command: |
-            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
-            docker push swagchat/chat-api:$CIRCLE_TAG
-
   deploy-heroku-master:
     docker:
       - image: swagchat/heroku-docker-deploy
@@ -143,7 +106,7 @@ jobs:
             heroku container:login
             if [ `heroku apps | grep chat-api-mainline | wc -l` == 0 ]; then
               heroku apps:create chat-api-mainline
-            fi 
+            fi
             heroku container:push web --app chat-api-mainline
             heroku container:release web --app chat-api-mainline
 
@@ -191,6 +154,43 @@ jobs:
             heroku container:push web --app chat-api-$CIRCLE_TAG
             heroku container:release web --app chat-api-$CIRCLE_TAG
 
+  docker-build-push:
+    docker:
+      - image: docker:18.06.0-ce-git
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true # Paid members only
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/chat-api
+      - run:
+          name: Loading docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/chat-api | true
+      - run:
+          name: Building docker image
+          command: |
+            docker build --cache-from=chat-api -t swagchat/chat-api:$CIRCLE_TAG .
+      - run:
+          name: Saving docker image layer cache
+          command: |
+            mkdir -p /caches
+            docker save -o /caches/chat-api chat-api
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/chat-api
+      - run:
+          name: Uploading docker image to docker hub
+          command: |
+            echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+            docker push swagchat/chat-api:$CIRCLE_TAG
+
 workflows:
   version: 2
   chat-api:
@@ -205,14 +205,6 @@ workflows:
           filters:
             tags:
               ignore: /.*/
-      - docker-build-push:
-          requires:
-            - test
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              only: master
       - deploy-heroku-master:
           requires:
             - test
@@ -223,8 +215,6 @@ workflows:
           requires:
             - test
           filters:
-            tags:
-              ignore: /.*/
             branches:
               ignore: master
       - deploy-heroku-tag:
@@ -232,6 +222,14 @@ workflows:
             - test
           filters:
             tags:
-              only: /.*/
+              only: /^\d+\.\d+\.\d+$/
+            branches:
+              only: master
+      - docker-build-push:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
             branches:
               only: master
