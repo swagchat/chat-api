@@ -88,28 +88,6 @@ jobs:
           name: Uploading a test report to CodeClimate
           command: cc-test-reporter after-build
 
-  deploy-heroku-master:
-    docker:
-      - image: swagchat/heroku-docker-deploy
-    working_directory: /go/src/github.com/swagchat/chat-api
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true # Paid members only
-      - run: .circleci/setup-heroku-auth.sh
-      - add_ssh_keys:
-          fingerprints:
-          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
-      - run:
-          name: Deploy main branch to heroku
-          command: |
-            heroku container:login
-            if [ `heroku apps | grep chat-api-mainline | wc -l` == 0 ]; then
-              heroku apps:create chat-api-mainline
-            fi
-            heroku container:push web --app chat-api-mainline
-            heroku container:release web --app chat-api-mainline
-
   deploy-heroku-develop:
     docker:
       - image: swagchat/heroku-docker-deploy
@@ -131,6 +109,28 @@ jobs:
             fi
             heroku container:push web --app chat-api-$CIRCLE_BRANCH
             heroku container:release web --app chat-api-$CIRCLE_BRANCH
+
+  deploy-heroku-master:
+    docker:
+      - image: swagchat/heroku-docker-deploy
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true # Paid members only
+      - run: .circleci/setup-heroku-auth.sh
+      - add_ssh_keys:
+          fingerprints:
+          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
+      - run:
+          name: Deploy main branch to heroku
+          command: |
+            heroku container:login
+            if [ `heroku apps | grep chat-api-mainline | wc -l` == 0 ]; then
+              heroku apps:create chat-api-mainline
+            fi
+            heroku container:push web --app chat-api-mainline
+            heroku container:release web --app chat-api-mainline
 
   deploy-heroku-tag:
     docker:
@@ -198,34 +198,42 @@ workflows:
       - build:
           filters:
             tags:
+              ignore: /^\d+\.\d+\.\d+$/
+            branches:
               ignore: /.*/
       - test:
           requires:
             - build
           filters:
             tags:
-              ignore: /.*/
-      - deploy-heroku-master:
-          requires:
-            - test
-          filters:
+              ignore: /^\d+\.\d+\.\d+$/
             branches:
-              only: master
+              ignore: /.*/
       - deploy-heroku-develop:
           requires:
             - test
           filters:
+            tags:
+              ignore: /.*/
             branches:
               ignore: master
+      - deploy-heroku-master:
+          requires:
+            - test
+          filters:
+            tags:
+              ignore: /.*/
+            branches:
+              only: master
       - deploy-heroku-tag:
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              only: master
+              ignore: /.*/
       - docker-build-push:
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              only: master
+              ignore: /.*/
