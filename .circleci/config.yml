@@ -198,16 +198,12 @@ workflows:
       - build:
           filters:
             tags:
-              ignore: /^\d+\.\d+\.\d+$/
-            branches:
               ignore: /.*/
       - test:
           requires:
             - build
           filters:
             tags:
-              ignore: /^\d+\.\d+\.\d+$/
-            branches:
               ignore: /.*/
       - deploy-heroku-develop:
           requires:
