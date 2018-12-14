@@ -198,13 +198,17 @@ workflows:
       - build:
           filters:
             tags:
-              ignore: /.*/
+              ignore: /^\d+\.\d+\.\d+$/
+            branches:
+              ignore: master
       - test:
           requires:
             - build
           filters:
             tags:
-              ignore: /.*/
+              ignore: /^\d+\.\d+\.\d+$/
+            branches:
+              ignore: master
       - deploy-heroku-master:
           requires:
             - test
@@ -218,16 +222,12 @@ workflows:
             branches:
               ignore: master
       - deploy-heroku-tag:
-          requires:
-            - test
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
       - docker-build-push:
-          requires:
-            - test
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
