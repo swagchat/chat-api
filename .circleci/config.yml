@@ -88,7 +88,7 @@ jobs:
           name: Uploading a test report to CodeClimate
           command: cc-test-reporter after-build
 
-  deploy:
+  docker-build-push:
     docker:
       - image: docker:18.06.0-ce-git
     working_directory: /go/src/github.com/swagchat/chat-api
@@ -125,20 +125,107 @@ jobs:
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
             docker push swagchat/chat-api:$CIRCLE_TAG
 
+  deploy-heroku-master:
+    docker:
+      - image: swagchat/heroku-docker-deploy
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true # Paid members only
+      - run: .circleci/setup-heroku-auth.sh
+      - add_ssh_keys:
+          fingerprints:
+          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
+      - run:
+          name: Deploy main branch to heroku
+          command: |
+            heroku container:login
+            heroku apps:create chat-api-mainline
+            heroku container:push web --app chat-api-mainline
+            heroku container:release web --app chat-api-mainline
+
+  deploy-heroku-develop:
+    docker:
+      - image: swagchat/heroku-docker-deploy
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true # Paid members only
+      - run: .circleci/setup-heroku-auth.sh
+      - add_ssh_keys:
+          fingerprints:
+          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
+      - run:
+          name: Deploy current branch to heroku
+          command: |
+            heroku container:login
+            heroku apps:create chat-api-$CIRCLE_BRANCH
+            heroku container:push web --app chat-api-$CIRCLE_BRANCH
+            heroku container:release web --app chat-api-$CIRCLE_BRANCH
+
+  deploy-heroku-tag:
+    docker:
+      - image: swagchat/heroku-docker-deploy
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true # Paid members only
+      - run: .circleci/setup-heroku-auth.sh
+      - add_ssh_keys:
+          fingerprints:
+          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
+      - run:
+          name: Deploy current tag to heroku
+          command: |
+            heroku container:login
+            heroku apps:create chat-api-$CIRCLE_TAG
+            heroku container:push web --app chat-api-$CIRCLE_TAG
+            heroku container:release web --app chat-api-$CIRCLE_TAG
+
 workflows:
   version: 2
-  build-test:
+  chat-api:
     jobs:
-      - build
+      - build:
+          filters:
+            tags:
+              ignore: /.*/
       - test:
           requires:
             - build
-      - deploy:
-          type: approval
+          filters:
+            tags:
+              ignore: /.*/
+      - docker-build-push:
           requires:
             - test
-          filters: # tags only
+          filters:
             tags:
               only: /.*/
             branches:
+              only: master
+      - deploy-heroku-master:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-heroku-develop:
+          requires:
+            - test
+          filters:
+            tags:
               ignore: /.*/
+            branches:
+              ignore: master
+      - deploy-heroku-tag:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: master
