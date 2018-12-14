@@ -226,10 +226,10 @@ workflows:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              ignore: /.*/
+              only: master
       - docker-build-push:
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              ignore: /.*/
+              only: master
