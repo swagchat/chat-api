@@ -218,18 +218,14 @@ workflows:
             branches:
               ignore: master
       - deploy-heroku-tag:
-          requires:
-            - test
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              ignore: /.*/
+              only: master
       - docker-build-push:
-          requires:
-            - test
           filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              ignore: /.*/
+              only: master
