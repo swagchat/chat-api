@@ -211,16 +211,12 @@ workflows:
           filters:
             branches:
               ignore: master
-            tags:
-              only: /.*/
       - deploy-heroku-master:
           requires:
             - test
           filters:
             branches:
               only: master
-            tags:
-              only: /.*/
       - deploy-heroku-tag:
           requires:
             - test
