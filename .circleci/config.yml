@@ -175,7 +175,7 @@ jobs:
       - run:
           name: Building docker image
           command: |
-            docker build --cache-from=chat-api -t swagchat/chat-api:$CIRCLE_TAG .
+            docker build --cache-from=chat-api -t swagchat/chat-api:latest .
       - run:
           name: Saving docker image layer cache
           command: |
@@ -189,6 +189,8 @@ jobs:
           name: Uploading docker image to docker hub
           command: |
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+            docker push swagchat/chat-api:latest
+            docker tag swagchat/chat-api:latest swagchat/chat-api:$CIRCLE_TAG
             docker push swagchat/chat-api:$CIRCLE_TAG
 
 workflows:
