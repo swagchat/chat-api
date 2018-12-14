@@ -141,7 +141,9 @@ jobs:
           name: Deploy main branch to heroku
           command: |
             heroku container:login
-            heroku apps:create chat-api-mainline
+            if [ `heroku apps | grep chat-api-mainline | wc -l` == 0 ]; then
+              heroku apps:create chat-api-mainline
+            fi 
             heroku container:push web --app chat-api-mainline
             heroku container:release web --app chat-api-mainline
 
@@ -161,7 +163,9 @@ jobs:
           name: Deploy current branch to heroku
           command: |
             heroku container:login
-            heroku apps:create chat-api-$CIRCLE_BRANCH
+            if [ `heroku apps | grep chat-api-$CIRCLE_BRANCH | wc -l` == 0 ]; then
+              heroku apps:create chat-api-$CIRCLE_BRANCH
+            fi
             heroku container:push web --app chat-api-$CIRCLE_BRANCH
             heroku container:release web --app chat-api-$CIRCLE_BRANCH
 
@@ -181,7 +185,9 @@ jobs:
           name: Deploy current tag to heroku
           command: |
             heroku container:login
-            heroku apps:create chat-api-$CIRCLE_TAG
+            if [ `heroku apps | grep chat-api-$CIRCLE_TAG | wc -l` == 0 ]; then
+              heroku apps:create chat-api-$CIRCLE_TAG
+            fi
             heroku container:push web --app chat-api-$CIRCLE_TAG
             heroku container:release web --app chat-api-$CIRCLE_TAG
 
