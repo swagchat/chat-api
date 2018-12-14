@@ -224,7 +224,7 @@ workflows:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              only: master
+              ignore: /.*/
       - docker-build-push:
           requires:
             - test
@@ -232,4 +232,4 @@ workflows:
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
-              only: master
+              ignore: /.*/
