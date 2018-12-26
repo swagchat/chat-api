@@ -15,6 +15,7 @@ chat-api is designed to be easy to introduce to your microservices as well.
 ## Architecture
 
 ![Architecture](https://client.fairway.ne.jp/swagchat/img/swagchat-start-guide-20170920.png "Architecture")
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fswagchat%2Fchat-api.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fswagchat%2Fchat-api?ref=badge_shield)
 
 
 ##### Repository structure
@@ -122,3 +123,6 @@ You can check the variables that can be set with the help command of the executa
 ## License
 
 MIT License.
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fswagchat%2Fchat-api.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fswagchat%2Fchat-api?ref=badge_large)
