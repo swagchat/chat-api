@@ -60,7 +60,7 @@ jobs:
       - restore_cache:
           keys:
             - v1-vendor-{{ checksum "Gopkg.lock" }}
-            - v1-dep
+            - v1-go-bin
       - run:
           name: Resolving dependencies
           command: |
@@ -71,20 +71,15 @@ jobs:
               fi
               dep ensure
             fi
-      - save_cache:
-          key: v1-vendor-{{ checksum "Gopkg.lock" }}
-          paths:
-            - vendor
-      - save_cache:
-          key: v1-dep
-          paths:
-            - /go/bin/dep
       - run:
           name: golint
           command: |
-            go get -u github.com/alecthomas/gometalinter
-            gometalinter --install
+            if ! type dep >/dev/null 2>&1; then
+              go get -u github.com/alecthomas/gometalinter
+              gometalinter --install
+            fi
             gometalinter --cyclo-over=25 --deadline=500s .
+
             # test -z "$(golint ./... | tee /dev/stderr)"
       - run:
           name: gofmt
@@ -94,6 +89,14 @@ jobs:
           name: go vet
           command: |
             go vet ./...
+      - save_cache:
+          key: v1-vendor-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - save_cache:
+          key: v1-go-bin
+          paths:
+            - /go/bin
 
   test:
     docker:
