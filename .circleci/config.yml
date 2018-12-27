@@ -74,10 +74,11 @@ jobs:
       - run:
           name: Installing gometalinter
           command: |
-            if ! type dep >/dev/null 2>&1; then
+            if ! type gometalinter >/dev/null 2>&1; then
               go get -u github.com/alecthomas/gometalinter
               gometalinter --install
             fi
+            ls -l /go/bin
       - save_cache:
           key: v1-vendor-{{ checksum "Gopkg.lock" }}
           paths:
