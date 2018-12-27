@@ -78,7 +78,6 @@ jobs:
               go get -u github.com/alecthomas/gometalinter
               gometalinter --install
             fi
-            ls -l /go/bin
       - save_cache:
           key: v1-vendor-{{ checksum "Gopkg.lock" }}
           paths:
@@ -90,7 +89,7 @@ jobs:
       - run:
           name: gometalinter
           command: |
-            gometalinter --cyclo-over=25 --deadline=500s .
+            # gometalinter --cyclo-over=25 --deadline=500s .
             # test -z "$(golint ./... | tee /dev/stderr)"
       - run:
           name: gofmt
