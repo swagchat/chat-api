@@ -80,14 +80,17 @@ jobs:
               gometalinter --install
             fi
       - save_cache:
+          name: Saving cache(vendor)
           key: v1-vendor-{{ checksum "Gopkg.lock" }}
           paths:
             - vendor
       - save_cache:
+          name: Saving cache(dep)
           key: v1-dep
           paths:
             - /go/bin/dep
       - save_cache:
+          name: Saving cache(gometalinter)
           key: v1-gometalinter
           paths:
             - /go/bin/gometalinter
@@ -103,7 +106,7 @@ jobs:
       - run:
           name: go vet
           command: |
-            go vet ./...
+            # go vet ./...
 
   test:
     docker:
