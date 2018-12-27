@@ -72,14 +72,24 @@ jobs:
               dep ensure
             fi
       - run:
-          name: golint
+          name: Installing gometalinter
           command: |
             if ! type dep >/dev/null 2>&1; then
               go get -u github.com/alecthomas/gometalinter
               gometalinter --install
             fi
+      - save_cache:
+          key: v1-vendor-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - save_cache:
+          key: v1-go-bin
+          paths:
+            - /go/bin
+      - run:
+          name: gometalinter
+          command: |
             gometalinter --cyclo-over=25 --deadline=500s .
-
             # test -z "$(golint ./... | tee /dev/stderr)"
       - run:
           name: gofmt
@@ -89,14 +99,6 @@ jobs:
           name: go vet
           command: |
             go vet ./...
-      - save_cache:
-          key: v1-vendor-{{ checksum "Gopkg.lock" }}
-          paths:
-            - vendor
-      - save_cache:
-          key: v1-go-bin
-          paths:
-            - /go/bin
 
   test:
     docker:
