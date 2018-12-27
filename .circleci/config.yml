@@ -60,7 +60,8 @@ jobs:
       - restore_cache:
           keys:
             - v1-vendor-{{ checksum "Gopkg.lock" }}
-            - v1-go-bin
+            - v1-dep
+            - v1-gometalinter
       - run:
           name: Resolving dependencies
           command: |
@@ -78,15 +79,18 @@ jobs:
               go get -u github.com/alecthomas/gometalinter
               gometalinter --install
             fi
-            which gometalinter
       - save_cache:
           key: v1-vendor-{{ checksum "Gopkg.lock" }}
           paths:
             - vendor
       - save_cache:
-          key: v1-go-bin
+          key: v1-dep
           paths:
-            - /go/bin
+            - /go/bin/dep
+      - save_cache:
+          key: v1-gometalinter
+          paths:
+            - /go/bin/gometalinter
       - run:
           name: gometalinter
           command: |
