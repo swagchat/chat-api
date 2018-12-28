@@ -165,6 +165,7 @@ jobs:
           command: |
             go test -coverprofile c.out -covermode=count ./...
             cp c.out $TEST_RESULTS/go-cover.out
+            go tool cover -html=c.out -o $TEST_RESULTS/go-cover.html
       - run:
           name: Uploading a test report to CodeClimate
           command: cc-test-reporter after-build
