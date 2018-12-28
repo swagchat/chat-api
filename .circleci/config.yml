@@ -222,8 +222,7 @@ jobs:
             heroku container:push web --app chat-api-$APP_SUFFIX
             heroku container:release web --app chat-api-$APP_SUFFIX
 
-            mkdir -p /caches
-            docker save -o /caches/heroku-chat-api.tar registry.heroku.com/chat-api-$APP_SUFFIX/web:latest
+            mkdir -p /caches && docker save -o /caches/heroku-chat-api.tar registry.heroku.com/chat-api-$APP_SUFFIX/web $(docker history -q registry.heroku.com/chat-api-$APP_SUFFIX/web | tail -n +2 | grep -v \<missing\> | tr '\n' ' ')
       - save_cache:
           name: Saving cache(docker layer)
           key: v1-heroku-docker-layer
@@ -252,9 +251,7 @@ jobs:
           name: Building docker image
           command: |
             docker build -t swagchat/chat-api:latest .
-
-            mkdir -p /caches
-            docker save -o /caches/chat-api.tar swagchat/chat-api:latest
+            mkdir -p /caches && docker save -o /caches/chat-api.tar swagchat/chat-api $(docker history -q swagchat/chat-api | tail -n +2 | grep -v \<missing\> | tr '\n' ' ')
       - save_cache:
           name: Saving cache(docker layer)
           key: v1-docker-layer
