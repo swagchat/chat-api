@@ -3,42 +3,45 @@ jobs:
   build:
     docker:
       - image: swagchat/build-base:1.1.0
-    working_directory: /go/src/github.com/swagchat/chat-api
     environment:
       - GOCACHE: /tmp/go/cache
+      - DEP_VERSION: 0.5.0
+    working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
       - restore_cache:
           keys:
-            - vendor-{{ checksum "Gopkg.lock" }}
-            - dep
+            - v1-vendor-{{ checksum "Gopkg.lock" }}
+            - v1-dep
+            - v1-build-cache-{{ .Branch }}-{{ .Revision }}
+            - v1-build-cache-{{ .Branch }}-
+            - v1-build-cache-
       - run:
           name: Resolving dependencies
           command: |
             if [ ! -d vendor ]; then
               if ! type dep >/dev/null 2>&1; then
-                go get github.com/golang/dep/cmd/dep
+                curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o /go/bin/dep
+                chmod +x /go/bin/dep
               fi
               dep ensure
             fi
       - save_cache:
-          key: vendor-{{ checksum "Gopkg.lock" }}
+          name: Saving cache(vendor)
+          key: v1-vendor-{{ checksum "Gopkg.lock" }}
           paths:
             - vendor
       - save_cache:
-          key: dep
+          name: Saving cache(dep)
+          key: v1-dep
           paths:
             - /go/bin/dep
-      - restore_cache:
-          keys:
-            - build-cache-{{ .Branch }}--
-            - build-cache-master--
-            - build-cache-
       - run:
           name: Building
           command: go build
       - save_cache:
-          key: build-cache-{{ .Branch }}--{{ .Revision }}
+          name: Saving cache(go build)
+          key: v1-build-cache-{{ .Branch }}-{{ .Revision }}
           paths:
               - /tmp/go/cache
           when: on_fail
@@ -47,12 +50,72 @@ jobs:
           paths:
             - tmp/go/cache
 
+  lint:
+    docker:
+      - image: swagchat/build-base:1.1.0
+    environment:
+      - DEP_VERSION: 0.5.0
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-vendor-{{ checksum "Gopkg.lock" }}
+            - v1-dep
+            - v1-gometalinter
+      - run:
+          name: Resolving dependencies
+          command: |
+            if [ ! -d vendor ]; then
+              if ! type dep >/dev/null 2>&1; then
+                curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o /go/bin/dep
+                chmod +x /go/bin/dep
+              fi
+              dep ensure
+            fi
+      - run:
+          name: Installing gometalinter
+          command: |
+            if ! type gometalinter >/dev/null 2>&1; then
+              go get -u github.com/alecthomas/gometalinter
+              gometalinter --install
+            fi
+      - save_cache:
+          name: Saving cache(vendor)
+          key: v1-vendor-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - save_cache:
+          name: Saving cache(dep)
+          key: v1-dep
+          paths:
+            - /go/bin/dep
+      - save_cache:
+          name: Saving cache(gometalinter)
+          key: v1-gometalinter
+          paths:
+            - /go/bin/gometalinter
+      - run:
+          name: gometalinter
+          command: |
+            # gometalinter --cyclo-over=25 --deadline=500s .
+            # test -z "$(golint ./... | tee /dev/stderr)"
+      - run:
+          name: gofmt
+          command: |
+            # test -z "$(gofmt -s -l . | tee /dev/stderr)"
+      - run:
+          name: go vet
+          command: |
+            # go vet ./...
+
   test:
     docker:
       - image: swagchat/build-base:1.1.0
     working_directory: /go/src/github.com/swagchat/chat-api
     environment:
       - TEST_RESULTS: /tmp/test-results
+      - DEP_VERSION: 0.5.0
     steps:
       - checkout
       - run: mkdir -p $TEST_RESULTS
@@ -61,7 +124,31 @@ jobs:
           command: cc-test-reporter before-build
       - restore_cache:
           keys:
-            - vendor-{{ checksum "Gopkg.lock" }}
+            - v1-vendor-{{ checksum "Gopkg.lock" }}
+            - v1-dep
+            - v1-build-cache-{{ .Branch }}-{{ .Revision }}
+            - v1-build-cache-{{ .Branch }}-
+            - v1-build-cache-
+      - run:
+          name: Resolving dependencies
+          command: |
+            if [ ! -d vendor ]; then
+              if ! type dep >/dev/null 2>&1; then
+                curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o /go/bin/dep
+                chmod +x /go/bin/dep
+              fi
+              dep ensure
+            fi
+      - save_cache:
+          name: Saving cache(vendor)
+          key: v1-vendor-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+      - save_cache:
+          name: Saving cache(dep)
+          key: v1-dep
+          paths:
+            - /go/bin/dep
       - attach_workspace:
           at: /
       - run:
@@ -71,24 +158,26 @@ jobs:
             # go test --race -v ./... | tee ${TEST_RESULTS}/go-test.out
             go-junit-report <${TEST_RESULTS}/go-test.out > $TEST_RESULTS/go-test-report.xml
       - save_cache:
+          name: Saving cache(go build)
           key: build-cache-{{ .Branch }}--{{ .Revision }}
           paths:
               - /tmp/go/cache
           when: always
+      - run:
+          name: Analyzing test coverage
+          command: |
+            go test -coverprofile c.out -covermode=count ./...
+            cp c.out $TEST_RESULTS/go-cover.out
+            go tool cover -html=c.out -o $TEST_RESULTS/go-cover.html
+      - run:
+          name: Uploading a test report to CodeClimate
+          command: cc-test-reporter after-build
       - store_artifacts:
           path: /tmp/test-results
       - store_test_results:
           path: /tmp/test-results
-      - run:
-          name: Analyzing test coverage
-          command: |
-            go test -coverprofile c.out ./...
-            cp c.out $TEST_RESULTS/go-cover.out
-      - run:
-          name: Uploading a test report to CodeClimate
-          command: cc-test-reporter after-build
 
-  deploy-heroku-develop:
+  deploy-heroku:
     docker:
       - image: swagchat/heroku-docker-deploy
     working_directory: /go/src/github.com/swagchat/chat-api
@@ -96,63 +185,50 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true # Paid members only
-      - run: .circleci/setup-heroku-auth.sh
+      - restore_cache:
+          keys:
+            - v1-heroku-docker-layer
+          paths:
+            - /caches/heroku-chat-api.tar
+      - run:
+          name: Loading docker image layer cache
+          command: |
+            set +o pipefail
+            docker load -i /caches/heroku-chat-api.tar | true
+      - run:
+          name: Setting heroku auth
+          command: .circleci/setup-heroku-auth.sh
       - add_ssh_keys:
           fingerprints:
           - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
       - run:
-          name: Deploy current branch to heroku
+          name: Deploy to heroku
           command: |
             heroku container:login
-            if [ `heroku apps | grep chat-api-$CIRCLE_BRANCH | wc -l` == 0 ]; then
-              heroku apps:create chat-api-$CIRCLE_BRANCH
-            fi
-            heroku container:push web --app chat-api-$CIRCLE_BRANCH
-            heroku container:release web --app chat-api-$CIRCLE_BRANCH
 
-  deploy-heroku-master:
-    docker:
-      - image: swagchat/heroku-docker-deploy
-    working_directory: /go/src/github.com/swagchat/chat-api
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true # Paid members only
-      - run: .circleci/setup-heroku-auth.sh
-      - add_ssh_keys:
-          fingerprints:
-          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
-      - run:
-          name: Deploy main branch to heroku
-          command: |
-            heroku container:login
-            if [ `heroku apps | grep chat-api-mainline | wc -l` == 0 ]; then
-              heroku apps:create chat-api-mainline
+            if [ -z "$CIRCLE_TAG" ]; then
+              if [ $CIRCLE_BRANCH == "master" ]; then
+                export APP_SUFFIX=mainline
+              else
+                export APP_SUFFIX=$CIRCLE_BRANCH
+              fi
+            else
+              export APP_SUFFIX=${CIRCLE_TAG//./-}
             fi
-            heroku container:push web --app chat-api-mainline
-            heroku container:release web --app chat-api-mainline
 
-  deploy-heroku-tag:
-    docker:
-      - image: swagchat/heroku-docker-deploy
-    working_directory: /go/src/github.com/swagchat/chat-api
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true # Paid members only
-      - run: .circleci/setup-heroku-auth.sh
-      - add_ssh_keys:
-          fingerprints:
-          - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
-      - run:
-          name: Deploy current tag to heroku
-          command: |
-            heroku container:login
-            if [ `heroku apps | grep chat-api-$CIRCLE_TAG | wc -l` == 0 ]; then
-              heroku apps:create chat-api-${CIRCLE_TAG//./-}
+            if [ `heroku apps | grep chat-api-$APP_SUFFIX | wc -l` == 0 ]; then
+              heroku apps:create chat-api-$APP_SUFFIX
             fi
-            heroku container:push web --app chat-api-${CIRCLE_TAG//./-}
-            heroku container:release web --app chat-api-${CIRCLE_TAG//./-}
+            heroku container:push web --app chat-api-$APP_SUFFIX
+            heroku container:release web --app chat-api-$APP_SUFFIX
+
+            mkdir -p /caches
+            docker save -o /caches/heroku-chat-api.tar registry.heroku.com/chat-api-$APP_SUFFIX/web:latest
+      - save_cache:
+          name: Saving cache(docker layer)
+          key: v1-heroku-docker-layer
+          paths:
+            - /caches/heroku-chat-api.tar
 
   docker-build-push:
     docker:
@@ -164,31 +240,32 @@ jobs:
           docker_layer_caching: true # Paid members only
       - restore_cache:
           keys:
-            - v1-{{ .Branch }}
+            - v1-docker-layer
           paths:
-            - /caches/chat-api
+            - /caches/chat-api.tar
       - run:
           name: Loading docker image layer cache
           command: |
             set +o pipefail
-            docker load -i /caches/chat-api | true
+            docker load -i /caches/chat-api.tar | true
       - run:
           name: Building docker image
           command: |
-            docker build --cache-from=chat-api -t swagchat/chat-api:$CIRCLE_TAG .
-      - run:
-          name: Saving docker image layer cache
-          command: |
+            docker build -t swagchat/chat-api:latest .
+
             mkdir -p /caches
-            docker save -o /caches/chat-api chat-api
+            docker save -o /caches/chat-api.tar swagchat/chat-api:latest
       - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
+          name: Saving cache(docker layer)
+          key: v1-docker-layer
           paths:
-            - /caches/chat-api
+            - /caches/chat-api.tar
       - run:
           name: Uploading docker image to docker hub
           command: |
             echo $DOCKER_PASSWORD | docker login -u $DOCKER_USER --password-stdin
+            docker push swagchat/chat-api:latest
+            docker tag swagchat/chat-api:latest swagchat/chat-api:$CIRCLE_TAG
             docker push swagchat/chat-api:$CIRCLE_TAG
 
 workflows:
@@ -199,35 +276,25 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - test:
-          requires:
-            - build
+      - lint:
           filters:
             tags:
               only: /.*/
-      - deploy-heroku-develop:
-          requires:
-            - test
+      - test:
           filters:
-            branches:
-              ignore: master
-      - deploy-heroku-master:
-          requires:
-            - test
-          filters:
-            branches:
-              only: master
-      - deploy-heroku-tag:
-          requires:
-            - test
-          filters:
-            branches:
-              ignore: /.*/
             tags:
-              only: /^\d+\.\d+\.\d+$/
+              only: /.*/
+      - deploy-heroku:
+          requires:
+            - build
+            - lint
+            - test
+          filters:
+            tags:
+              only: /.*/
       - docker-build-push:
           requires:
-            - test
+            - deploy-heroku
           filters:
             branches:
               ignore: /.*/
