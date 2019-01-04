@@ -1,23 +1,18 @@
-version: 2.0
-jobs:
-  build:
-    docker:
-      - image: swagchat/build-base:1.1.0
-    environment:
-      - GOCACHE: /tmp/go/cache
-      - DEP_VERSION: 0.5.0
-    working_directory: /go/src/github.com/swagchat/chat-api
+version: 2.1
+
+commands:
+  dependencies_go:
+    description: "Resolving dependencies(golang)"
+    parameters:
+      dummy:
+        type: string
     steps:
-      - checkout
       - restore_cache:
+          name: Restoring Cache(vendor and dep)
           keys:
             - v1-vendor-{{ checksum "Gopkg.lock" }}
             - v1-dep
-            - v1-build-cache-{{ .Branch }}-{{ .Revision }}
-            - v1-build-cache-{{ .Branch }}-
-            - v1-build-cache-
       - run:
-          name: Resolving dependencies
           command: |
             if [ ! -d vendor ]; then
               if ! type dep >/dev/null 2>&1; then
@@ -36,15 +31,67 @@ jobs:
           key: v1-dep
           paths:
             - /go/bin/dep
+  install_librdkafka:
+    description: "Installing librdkafka"
+    parameters:
+      dummy:
+        type: string
+    steps:
+      - restore_cache:
+          name: Restoring Cache(librdkafka)
+          keys:
+            - v3-librdkafka
+      - run:
+          name: Installing librdkafka
+          command: |
+            if [ `find /tmp/local/lib -type f -name "librdkafka*" | wc -l` == 0 ]; then
+              sudo apt-get update && sudo apt-get install -y build-essential
+              cd /tmp
+              git clone https://github.com/edenhill/librdkafka.git
+              cd librdkafka
+              git checkout -b v$LIBRDKAFKA_VERSION refs/tags/v$LIBRDKAFKA_VERSION
+              mkdir -p /tmp/local
+              ./configure --prefix=/tmp/local && make && sudo make install
+            fi
+      - save_cache:
+          name: Saving cache(librdkafka)
+          key: v3-librdkafka
+          paths:
+            - /tmp/local/lib
+            - /tmp/local/include
+
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11.4
+    environment:
+      - GOCACHE: /tmp/go/cache
+      - DEP_VERSION: 0.5.0
+      - LIBRDKAFKA_VERSION: 0.11.6
+      - LD_LIBRARY_PATH: /tmp/local/lib
+      - PKG_CONFIG_PATH: /tmp/local/lib/pkgconfig
+    working_directory: /go/src/github.com/swagchat/chat-api
+    steps:
+      - checkout
+      - dependencies_go:
+          dummy: ""
+      - install_librdkafka:
+          dummy: ""
+      - restore_cache:
+          name: Restoring Cache(go build)
+          keys:
+            - v1-build-cache-{{ .Branch }}-{{ .Revision }}
+            - v1-build-cache-{{ .Branch }}-
+            - v1-build-cache-
       - run:
           name: Building
-          command: go build
+          command: |
+            go build
       - save_cache:
           name: Saving cache(go build)
           key: v1-build-cache-{{ .Branch }}-{{ .Revision }}
           paths:
               - /tmp/go/cache
-          when: on_fail
       - persist_to_workspace:
           root: /
           paths:
@@ -52,27 +99,23 @@ jobs:
 
   lint:
     docker:
-      - image: swagchat/build-base:1.1.0
+      - image: circleci/golang:1.11.4
     environment:
       - DEP_VERSION: 0.5.0
+      - LIBRDKAFKA_VERSION: 0.11.6
+      - LD_LIBRARY_PATH: /tmp/local/lib
+      - PKG_CONFIG_PATH: /tmp/local/lib/pkgconfig
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
+      - dependencies_go:
+          dummy: ""
+      - install_librdkafka:
+          dummy: ""
       - restore_cache:
+          name: Restoring Cache(gometalinter)
           keys:
-            - v1-vendor-{{ checksum "Gopkg.lock" }}
-            - v1-dep
             - v1-gometalinter
-      - run:
-          name: Resolving dependencies
-          command: |
-            if [ ! -d vendor ]; then
-              if ! type dep >/dev/null 2>&1; then
-                curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o /go/bin/dep
-                chmod +x /go/bin/dep
-              fi
-              dep ensure
-            fi
       - run:
           name: Installing gometalinter
           command: |
@@ -80,16 +123,6 @@ jobs:
               go get -u github.com/alecthomas/gometalinter
               gometalinter --install
             fi
-      - save_cache:
-          name: Saving cache(vendor)
-          key: v1-vendor-{{ checksum "Gopkg.lock" }}
-          paths:
-            - vendor
-      - save_cache:
-          name: Saving cache(dep)
-          key: v1-dep
-          paths:
-            - /go/bin/dep
       - save_cache:
           name: Saving cache(gometalinter)
           key: v1-gometalinter
@@ -100,57 +133,73 @@ jobs:
           command: |
             # gometalinter --cyclo-over=25 --deadline=500s .
             # test -z "$(golint ./... | tee /dev/stderr)"
-      - run:
-          name: gofmt
-          command: |
+      # - run:
+      #     name: gofmt
+      #     command: |
             # test -z "$(gofmt -s -l . | tee /dev/stderr)"
-      - run:
-          name: go vet
-          command: |
+      # - run:
+      #     name: go vet
+      #     command: |
             # go vet ./...
 
   test:
     docker:
-      - image: swagchat/build-base:1.1.0
+      - image: circleci/golang:1.11.4
     working_directory: /go/src/github.com/swagchat/chat-api
     environment:
       - TEST_RESULTS: /tmp/test-results
       - DEP_VERSION: 0.5.0
+      - LIBRDKAFKA_VERSION: 0.11.6
+      - LD_LIBRARY_PATH: /tmp/local/lib
+      - PKG_CONFIG_PATH: /tmp/local/lib/pkgconfig
     steps:
       - checkout
+      - dependencies_go:
+          dummy: ""
+      - install_librdkafka:
+          dummy: ""
       - run: mkdir -p $TEST_RESULTS
+      - restore_cache:
+          name: Restoring Cache(go-junit-report)
+          keys:
+            - v1-go-junit-report
+      - run:
+          name: Installing go-junit-report
+          command: |
+            if ! type go-junit-report >/dev/null 2>&1; then
+              go get github.com/jstemmer/go-junit-report
+            fi
+      - save_cache:
+          name: Saving cache(go-junit-report)
+          key: v1-go-junit-report
+          paths:
+            - /go/bin/go-junit-report
+      - restore_cache:
+          name: Restoring Cache(cc-test-reporter)
+          keys:
+            - v4-cc-test-reporter
+      - run:
+          name: Installing cc-test-reporter
+          command: |
+            if ! type cc-test-reporter >/dev/null 2>&1; then
+              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > /go/bin/cc-test-reporter && chmod +x /go/bin/cc-test-reporter
+            fi
+      - save_cache:
+          name: Saving cache(cc-test-reporter)
+          key: v4-cc-test-reporter
+          paths:
+            - /go/bin/cc-test-reporter
       - run:
           name: Preparing a test report to CodeClimate
           command: cc-test-reporter before-build
+      - attach_workspace:
+          at: /
       - restore_cache:
+          name: Restoring Cache(go build)
           keys:
-            - v1-vendor-{{ checksum "Gopkg.lock" }}
-            - v1-dep
             - v1-build-cache-{{ .Branch }}-{{ .Revision }}
             - v1-build-cache-{{ .Branch }}-
             - v1-build-cache-
-      - run:
-          name: Resolving dependencies
-          command: |
-            if [ ! -d vendor ]; then
-              if ! type dep >/dev/null 2>&1; then
-                curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o /go/bin/dep
-                chmod +x /go/bin/dep
-              fi
-              dep ensure
-            fi
-      - save_cache:
-          name: Saving cache(vendor)
-          key: v1-vendor-{{ checksum "Gopkg.lock" }}
-          paths:
-            - vendor
-      - save_cache:
-          name: Saving cache(dep)
-          key: v1-dep
-          paths:
-            - /go/bin/dep
-      - attach_workspace:
-          at: /
       - run:
           name: Testing
           command: |
@@ -159,10 +208,9 @@ jobs:
             go-junit-report <${TEST_RESULTS}/go-test.out > $TEST_RESULTS/go-test-report.xml
       - save_cache:
           name: Saving cache(go build)
-          key: build-cache-{{ .Branch }}--{{ .Revision }}
+          key: v1-build-cache-{{ .Branch }}-{{ .Revision }}
           paths:
               - /tmp/go/cache
-          when: always
       - run:
           name: Analyzing test coverage
           command: |
@@ -185,49 +233,34 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true # Paid members only
-      - restore_cache:
-          keys:
-            - v1-heroku-docker-layer
-          paths:
-            - /caches/heroku-chat-api.tar
       - run:
-          name: Loading docker image layer cache
+          name: Setting heroku
           command: |
-            set +o pipefail
-            docker load -i /caches/heroku-chat-api.tar | true
-      - run:
-          name: Setting heroku auth
-          command: .circleci/setup-heroku-auth.sh
+            .circleci/setup-heroku-auth.sh
       - add_ssh_keys:
           fingerprints:
           - "cd:da:d5:e9:31:fd:50:0a:54:1e:6e:4f:7e:2f:20:b3"
       - run:
-          name: Deploy to heroku
+          name: Deploying to heroku and saving heroku docker image layers
           command: |
             heroku container:login
 
             if [ -z "$CIRCLE_TAG" ]; then
-              if [ $CIRCLE_BRANCH == "master" ]; then
-                export APP_SUFFIX=mainline
-              else
-                export APP_SUFFIX=$CIRCLE_BRANCH
-              fi
+                if [ $CIRCLE_BRANCH == "master" ]; then
+                  export APP_SUFFIX=mainline
+                else
+                  export APP_SUFFIX=$CIRCLE_BRANCH
+                fi
             else
-              export APP_SUFFIX=${CIRCLE_TAG//./-}
+                export APP_SUFFIX=${CIRCLE_TAG//./-}
             fi
 
             if [ `heroku apps | grep chat-api-$APP_SUFFIX | wc -l` == 0 ]; then
               heroku apps:create chat-api-$APP_SUFFIX
             fi
+
             heroku container:push web --app chat-api-$APP_SUFFIX
             heroku container:release web --app chat-api-$APP_SUFFIX
-
-            mkdir -p /caches && docker save -o /caches/heroku-chat-api.tar registry.heroku.com/chat-api-$APP_SUFFIX/web $(docker history -q registry.heroku.com/chat-api-$APP_SUFFIX/web | tail -n +2 | grep -v \<missing\> | tr '\n' ' ')
-      - save_cache:
-          name: Saving cache(docker layer)
-          key: v1-heroku-docker-layer
-          paths:
-            - /caches/heroku-chat-api.tar
 
   docker-build-push:
     docker:
@@ -237,26 +270,10 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true # Paid members only
-      - restore_cache:
-          keys:
-            - v1-docker-layer
-          paths:
-            - /caches/chat-api.tar
-      - run:
-          name: Loading docker image layer cache
-          command: |
-            set +o pipefail
-            docker load -i /caches/chat-api.tar | true
       - run:
           name: Building docker image
           command: |
             docker build -t swagchat/chat-api:latest .
-            mkdir -p /caches && docker save -o /caches/chat-api.tar swagchat/chat-api $(docker history -q swagchat/chat-api | tail -n +2 | grep -v \<missing\> | tr '\n' ' ')
-      - save_cache:
-          name: Saving cache(docker layer)
-          key: v1-docker-layer
-          paths:
-            - /caches/chat-api.tar
       - run:
           name: Uploading docker image to docker hub
           command: |
