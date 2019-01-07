@@ -226,8 +226,8 @@ jobs:
           path: /tmp/test-results
 
   deploy-heroku:
-    docker:
-      - image: swagchat/heroku-docker-deploy
+    machine:
+      image: circleci/classic:edge
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
@@ -263,8 +263,8 @@ jobs:
             heroku container:release web --app chat-api-$APP_SUFFIX
 
   docker-build-push:
-    docker:
-      - image: docker:18.06.0-ce-git
+    machine:
+      image: circleci/classic:edge
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
