@@ -231,8 +231,8 @@ jobs:
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true # Paid members only
+      # - setup_remote_docker:
+      #     docker_layer_caching: true # Paid members only
       - run:
           name: Setting heroku
           command: |
@@ -268,8 +268,8 @@ jobs:
     working_directory: /go/src/github.com/swagchat/chat-api
     steps:
       - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true # Paid members only
+      # - setup_remote_docker:
+      #     docker_layer_caching: true # Paid members only
       - run:
           name: Building docker image
           command: |
